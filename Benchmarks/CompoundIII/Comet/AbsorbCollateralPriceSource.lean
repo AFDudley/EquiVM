@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AbsorbCollateralPriceModel
 import Benchmarks.CompoundIII.Comet.AbsorbCollateralMathSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -16,7 +16,8 @@ theorem absorbCollateralPrice_source {assetOut : ByteArray} {delta seized : UInt
     (hn : frame.locals.get? "seizeAmount" = some (.int seized.toNat))
     (ha : frame.locals.get? "absorber" = some (.address absorber))
     (hb : frame.locals.get? "account" = some (.address account))
-    (he : frame.locals.get? "asset" = some (.address asset)) :
+    (he : frame.locals.get? "asset" = some (.address asset))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config frame evm absorbCollateralPriceBlock
       (absorbCollateralPriceResult frame delta seized assetOut result) := by
   have hfeed : evalExpr? config frame evm (.field (.var "assetInfo") "priceFeed") =
@@ -47,7 +48,8 @@ theorem absorbCollateralPrice_source {assetOut : ByteArray} {delta seized : UInt
           simp only [f2, f1, absorbCollateralMathFrame, absorbCollateralFactorFrame,
             absorbCollateralValueFrame, absorbCollateralPriceFrame, Std.HashMap.get?_eq_getElem?,
             Std.HashMap.getElem?_insert, beq_iff_eq, if_neg hk1, if_neg hk2, if_neg hk3, if_neg hk4]
-        have hev := absorbCollateralEvent_source f2 evm' absorber account asset seized
+        have hev := absorbCollateralEvent_source
+          (hperm := (congrArg ExecutionEnv.perm (callViaEVM_executionEnv_eq hcall)).trans hperm) f2 evm' absorber account asset seized
           (absorbCollateralValue seized price assetOut)
           ((hget2 _ (by decide) (by decide) (by decide) (by decide)).trans ha)
           ((hget2 _ (by decide) (by decide) (by decide) (by decide)).trans hb)

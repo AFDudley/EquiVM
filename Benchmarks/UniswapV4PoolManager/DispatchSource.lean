@@ -1,8 +1,8 @@
 import Benchmarks.UniswapV4PoolManager.Common
 
-/-! Solm selector routing for PoolManager. -/
+/-! Stele selector routing for PoolManager. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -10,7 +10,7 @@ namespace Benchmarks.UniswapV4PoolManager
 
 set_option maxRecDepth 2000000
 
-/-! ## Solm dispatch: which transition a selector reaches -/
+/-! ## Stele dispatch: which transition a selector reaches -/
 
 theorem poolManagerDispatch_balanceOf {I : ExecutionEnv} 
     (hsel : selIs I (poolManagerSelBytes 0)) :

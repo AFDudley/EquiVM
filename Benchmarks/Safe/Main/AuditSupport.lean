@@ -1,15 +1,15 @@
 import Benchmarks.Safe.Main.Bytecode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 Executable differential-audit support, not a proof of refinement. The bytecode side uses EVM
-`Xstep`; the AST side uses Solm's expression, storage, dispatch, and ABI implementations. Calls
+`Xstep`; the AST side uses Stele's expression, storage, dispatch, and ABI implementations. Calls
 replay the actual EVM call boundary, checking its kind, arguments, and incoming account map.
 Gas witnesses come from the four GAS sites used by execTransaction. Unsupported AST forms and
 exhausted test fuel are test failures. No theorem or axiom is introduced by this harness.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Safe.Main.Audit
 
@@ -68,7 +68,7 @@ def fromEval {α : Type} (result : EvalResult α) : ReplayM α :=
   match result with
   | .ok a => pure a
   | .revert => throw .reverted
-  | .error e => throw (.error s!"Solm evaluator got stuck: {repr e}")
+  | .error e => throw (.error s!"Stele evaluator got stuck: {repr e}")
 
 def eval (expr : Expr) : ReplayM Value := do
   let s ← get
@@ -186,7 +186,7 @@ def runSpec (state : State) (observed : Trace) (constructor : Bool := false) :
   if !constructor then
     match selectorDispatchMsg contract state.executionEnv.calldata with
     | some transition =>
-      match decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      match config.externalABI.decodeCalldata? (transition.params.map Param.name)
           (transition.params.map Param.ty) state.executionEnv.calldata with
       | none => return (.reverted, empty)
       | some args => locals := args; body := transition.body

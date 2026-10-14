@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.GuardSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -9,7 +9,7 @@ theorem guardFinish {kind : GuardKind} {σ σ₀ σ' : AccountMap} {g : UInt256}
     {I : ExecutionEnv} {guard : UInt256} {evm' : EVM.State} {locals : Store}
     (hcode : I.code = safeBytecode)
     (hd : selectorDispatchMsg contract I.calldata = some (guardTransition kind))
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       ((guardTransition kind).params.map Param.name)
       (transitionSignature (guardTransition kind)).paramTypes I.calldata =
       some (guardArgs kind guard))
@@ -32,7 +32,7 @@ theorem guardFinish {kind : GuardKind} {σ σ₀ σ' : AccountMap} {g : UInt256}
       exact RDstatic.reEquivElim hcode (hstatic hp) fun hΞ ↦
         reEquivSelectorExecution hd hdec hbody (.staticHalt hΞ rfl)
   | true =>
-      have hbody := safeGuardSourceSuccess hc hv ha hg hb hcheck
+      have hbody := safeGuardSourceSuccess (hperm := by simpa only [hee] using hp) hc hv ha hg hb hcheck
       refine reEquivReturnElim hcode (hret hp) fun _ _ hsuccess ↦ ?_
       refine reEquivSelectorExecution hd hdec hbody
         (.success hsuccess rfl (by simp only [storageStore_accountMap, hee, hacc]) ?_)

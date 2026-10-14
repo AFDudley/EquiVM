@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cure.Common
 import Ethereum.Theory.OpcodeLemmas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -40,7 +40,7 @@ theorem cureDispatchSrcs {I : ExecutionEnv}
 
 theorem cureDecode_srcs_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
       (transitionSignature srcsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))) := by
   have htlen : I.calldata.toList.length = I.calldata.size := by
@@ -66,7 +66,7 @@ theorem cureDecode_srcs_ok {I : ExecutionEnv}
   rw [hword4]
 
 theorem cureDecode_srcs_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
       (transitionSignature srcsTransition).paramTypes I.calldata = none := by
   have htlen : I.calldata.toList.length = I.calldata.size := by
     rw [byteArray_toList_eq, Array.length_toList]; rfl
@@ -123,17 +123,17 @@ theorem evalExpr_srcsStorage_inBounds {σ σ₀ A I} {g : Sat256}
   · rw [show addrLoc (srcsSlotFor I) = addressOffset0Loc (srcsSlotFor I) by rfl]
     rw [storageLocLoad_address_offset0]
     simp [srcsAddressValue, srcsRawWord, solcSlotWordAt, solcSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   · simp [locals, srcElemRef]
   · have hlenLoad :
         storageLocLoad (initState σ σ₀ g A I) (wordLoc ⟨2⟩) =
           .int (Int.ofNat (srcsLenWord σ I).toNat) := by
       erw [storageLocLoad_uint256]
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
-    have hlength : Solm.EVM.storageLoad (initState σ σ₀ g A I)
+    have hlength : Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ = srcsLenWord σ I := by
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     simp [srcsEvaledRef, srcElemRef, evalStorageRef, evalStorageRefSteps,
       evalStorageRefStep, evalExpr?, EvalResult.ofOption, EvalResult.bind, pure, bind,
@@ -184,15 +184,15 @@ theorem evalExpr_srcsStorage_oob {σ σ₀ A I} {g : Sat256}
       storageLocLoad (initState σ σ₀ g A I) (wordLoc ⟨2⟩) =
         .int (Int.ofNat (srcsLenWord σ I).toNat) := by
     erw [storageLocLoad_uint256]
-    simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage]
   simp only [wordLoc] at hlenLoad
   have her :
       evalStorageRef config { contract := contract, locals := locals }
         (initState σ σ₀ g A I) (srcElemRef (.var "arg0")) = .revert := by
-    have hlength : Solm.EVM.storageLoad (initState σ σ₀ g A I)
+    have hlength : Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ = srcsLenWord σ I := by
-      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+      simp [srcsLenWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     simp [srcElemRef, evalStorageRef, evalStorageRefSteps, evalStorageRefStep, evalExpr?,
       EvalResult.ofOption, EvalResult.bind, pure, bind, valueToKey?, locals,
@@ -524,7 +524,7 @@ theorem RDinvalid.reEquivExecutionInvalid {cfg : Config} {contract : ContractDec
     (hcode : I.code = code)
     (h : RDinvalid code g (initState σ σ₀ g A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
       (initState σ σ₀ g A I) callargs t.body .reverted)
@@ -545,7 +545,7 @@ theorem cureSrcsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some srcsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
         (transitionSignature srcsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))))
     (hlt : (srcsIndex I).toNat < (srcsLenWord σ I).toNat)
@@ -621,7 +621,7 @@ theorem cureSrcsBodyCoreOob
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some srcsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (srcsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (srcsTransition.params.map Param.name)
         (transitionSignature srcsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.int (Int.ofNat (srcsIndex I).toNat))))
     (hle : (srcsLenWord σ I).toNat ≤ (srcsIndex I).toNat)

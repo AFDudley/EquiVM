@@ -4,11 +4,11 @@ import Benchmarks.UniswapV3.Pool.SetFeeProtocolTrace
 # UniswapV3Pool `setFeeProtocol(uint8,uint8)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1486; reach lemma `uniswapV3PoolReachSetFeeProtocolBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -17,7 +17,7 @@ namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 2000000
 
 theorem setFeeProtocolDecode (I : ExecutionEnv) (hlen : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (setFeeProtocolTransition.params.map Param.name)
       (transitionSignature setFeeProtocolTransition).paramTypes I.calldata =
       some (setFeeProtocolLocals
@@ -59,30 +59,31 @@ theorem uniswapV3PoolSetFeeProtocolBody {σ σ₀ A I} {g : UInt256} (v : Uniswa
           rcases setFeeProtocolOwnerX (v := v) (evm := evm) rdLock rfl hperm (by simp) with
             ⟨rdRevert, hfactory⟩ | ⟨out, σ', A', aw', k'', C'', hout, houtsize, hfactory, rdOwner⟩
           · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-              (setFeeProtocolFactoryReverts v evm fp0 fp1 hwv hunlocked hfactory)
+              (setFeeProtocolFactoryReverts (hperm := by assumption) v evm fp0 fp1 hwv hunlocked hfactory)
           · let evm' : EVM.State := { (storeSlot0Unlocked evm false) with accountMap := σ', substate := A' }
             have henv' : evm'.executionEnv = I := storeSlot0Unlocked_executionEnv evm false
             rcases setFeeProtocolOwnerGuardX (v := v) rdOwner hout houtsize (by simp) with
               ⟨rdRevert, howner⟩ | ⟨howner, aw'', kAuth, CAuth, rdAuthorized⟩
             · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-                (setFeeProtocolRevertsOwner v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
+                (setFeeProtocolRevertsOwner (hperm := by assumption) v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
                   (by simpa only [henv'] using howner))
             · rcases setFeeProtocolValidX (v := v) rdAuthorized
                 (maskTwice _ _) (maskTwice _ _) (by simp) with
                 ⟨rdRevert, hinvalid⟩ | ⟨hvalid, kValid, CValid, rdValid⟩
               · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-                  (setFeeProtocolRevertsInvalid v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
+                  (setFeeProtocolRevertsInvalid (hperm := by assumption) v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
                     (by simpa only [henv'] using howner) hinvalid)
               · have hvalids := Bool.and_eq_true_iff.mp hvalid
                 have rdFinal := setFeeProtocolStoreX (v := v) (evm := evm')
                   (by simpa only [henv'] using rdValid) (by simpa only [henv'] using hperm)
                   (feeProtocolValid_le fp0 hvalids.1) (feeProtocolValid_le fp1 hvalids.2) (by simp)
                 exact rdFinal.reEquivExecutionGen hcode hd hdec
-                  (setFeeProtocolReturns v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
+                  (setFeeProtocolReturns (hperm := hperm)
+                    (hperm' := (congrArg ExecutionEnv.perm henv').trans hperm) v evm evm' fp0 fp1 _ _ hwv hunlocked hfactory
                     (by simpa only [henv'] using howner) hvalid) rfl
                   (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
   · have hshort : I.calldata.size < 68 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (setFeeProtocolTransition.params.map Param.name)
         (transitionSignature setFeeProtocolTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyIntPair_none_short (.uint ⟨8, by decide⟩) (.uint ⟨8, by decide⟩) hsz hshort

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.MintAmountsSource
 import Benchmarks.UniswapV3.Pool.BalanceCaller
 import Benchmarks.UniswapV3.Pool.FlashTransferSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -18,7 +18,7 @@ theorem mintBalancesInitSource (v : UniswapV3PoolImmutables) (a : MintArgs)
   unfold mintBalancesInitFrame
   generalize mintAmountsFrame v a a0 a1 = frame
   refine ExecBlock.consNormal
-    (solm' := {frame with locals := frame.locals.insert "balance0Before" (.int 0)}) (evm' := evm)
+    (stele' := {frame with locals := frame.locals.insert "balance0Before" (.int 0)}) (evm' := evm)
     (ExecStmt.letDecl (name := "balance0Before") (value := .int 0)
       (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (name := "balance1Before") (value := .int 0)
@@ -75,7 +75,7 @@ theorem mintBeforeBalanceReturns (v : UniswapV3PoolImmutables) (locals : Store)
   refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal
     (poolBalanceReturns v locals (mintBeforeBalanceTemp second) evm evm' second balance
       calleeFrame hcall) (ExecBlock.consNormal
-        (ExecStmt.assign (value := .int (Int.ofNat balance.toNat)) ?_ ?_) ExecBlock.nil))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat balance.toNat)) ?_ ?_) ExecBlock.nil))
   · simpa only [hp, decide_true] using evalFlashTransferGuard v locals evm second amount ha
   · exact evalExpr_var_get (by simp)
   · apply assignLocalVarBase_frame (old := .int 0)

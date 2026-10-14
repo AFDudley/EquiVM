@@ -7,7 +7,7 @@ Shared tuple, dynamic payload, and return-value decoders. Strict and legacy mode
 original canonicality and input-size requirements.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -26,10 +26,10 @@ abbrev abiUInt96 : ABIType := .elem (.int abiUInt96Int)
 abbrev abiInt256 : ABIType := .elem (.int abiInt256Int)
 abbrev abiBytes : ABIType := .bytes
 
-theorem decodeCalldata_legacyUInt256_ok {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldata_legacyUInt256_ok {cd : ByteArray} {x : Stele.Ident}
     (hsz36 : 36 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x] [abiUInt256] cd =
-      some ((∅ : Solm.Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat))) := by
+      some ((∅ : Stele.Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat))) := by
   have htlen : cd.toList.length = cd.size := by
     rw [byteArray_toList_eq, Array.length_toList]
     rfl
@@ -46,11 +46,11 @@ theorem decodeCalldata_legacyUInt256_ok {cd : ByteArray} {x : Solm.Ident}
     (bytes := cd.toList.drop 4) (start := 0) htake4]
   change decodeCalldata.insertValues [x]
       [.int (Int.ofNat (ABI.bytesToWord ((cd.toList.drop 4).take 32)).toNat)] ∅ =
-    some ((∅ : Solm.Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat)))
+    some ((∅ : Stele.Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat)))
   rw [hword4]
   simp [decodeCalldata.insertValues]
 
-theorem decodeCalldata_legacyUInt256_none_short {cd : ByteArray} {x : Solm.Ident}
+theorem decodeCalldata_legacyUInt256_none_short {cd : ByteArray} {x : Stele.Ident}
     (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 36) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x] [abiUInt256] cd = none := by
   have htlen : cd.toList.length = cd.size := by
@@ -117,9 +117,9 @@ theorem decodeABIValues_uint256_uint256_legacy_none_short {bytes : List UInt8}
     simp [decodeABIValue?, readWord?, readBytes?, decodeABIWord?, htake0, hnot]
 
 theorem decodeCalldata_legacyUInt256_uint256_ok {cd : ByteArray}
-    {x y : Solm.Ident} (hsz68 : 68 ≤ cd.size) :
+    {x y : Stele.Ident} (hsz68 : 68 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiUInt256, abiUInt256] cd =
-      some (((∅ : Solm.Store).insert x
+      some (((∅ : Stele.Store).insert x
         (.int (Int.ofNat (calldataWord cd 4).toNat))).insert y
         (.int (Int.ofNat (calldataWord cd 36).toNat))) := by
   have htlen : cd.toList.length = cd.size := by
@@ -152,7 +152,7 @@ theorem decodeCalldata_legacyUInt256_uint256_ok {cd : ByteArray}
   rw [hword4, hword36]
 
 theorem decodeCalldata_legacyUInt256_uint256_none_short {cd : ByteArray}
-    {x y : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
+    {x y : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiUInt256, abiUInt256] cd =
       none := by
   have htlen : cd.toList.length = cd.size := by
@@ -175,7 +175,7 @@ theorem decodeCalldata_legacyUInt256_uint256_none_short {cd : ByteArray}
         omega)]
 
 theorem decodeCalldata_legacyUint256_uint256_uint256_ok {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz100 : 100 ≤ cd.size) :
+    {x y z : Stele.Ident} (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiUInt256, abiUInt256, abiUInt256] cd =
       some ((((∅ : Store).insert x (.int (Int.ofNat (calldataWord cd 4).toNat))).insert y
@@ -225,7 +225,7 @@ theorem decodeCalldata_legacyUint256_uint256_uint256_ok {cd : ByteArray}
   simp [decodeCalldata.insertValues]
 
 theorem decodeCalldata_legacyUint256_uint256_uint256_none_short {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
+    {x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
       [abiUInt256, abiUInt256, abiUInt256] cd = none := by
   have hlen : cd.toList.length = cd.size := by
@@ -387,11 +387,11 @@ theorem decodeScalarWords_addr_uint256_uint256_none_short {bytes : List UInt8}
   exact Reasoning.Theory.decodeScalarWords_address_uint256_uint256_none_short hshort
 
 
-theorem decodeCalldata_addr_uint256_uint256_ok {cd : ByteArray} {x y z : Solm.Ident}
+theorem decodeCalldata_addr_uint256_uint256_ok {cd : ByteArray} {x y z : Stele.Ident}
     (hsz100 : 100 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4)
     (hcanon : (calldataWord cd 4).toNat < EVM.addressModulus) :
     decodeCalldata [x, y, z] [.elem .address, abiUInt256, abiUInt256] cd =
-      some ((((∅ : Solm.Store).insert x
+      some ((((∅ : Stele.Store).insert x
         (.address (Ethereum.AccountAddress.ofNat (calldataWord cd 4).toNat))).insert y
         (.int (Int.ofNat (calldataWord cd 36).toNat))).insert z
         (.int (Int.ofNat (calldataWord cd 68).toNat))) := by
@@ -400,7 +400,7 @@ theorem decodeCalldata_addr_uint256_uint256_ok {cd : ByteArray} {x y z : Solm.Id
 
 
 theorem decodeCalldata_addr_uint256_uint256_none_noncanon {cd : ByteArray}
-    {x y z : Solm.Ident}
+    {x y z : Stele.Ident}
     (hsz100 : 100 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4)
     (hnc : ¬ (calldataWord cd 4).toNat < EVM.addressModulus) :
     decodeCalldata [x, y, z] [.elem .address, abiUInt256, abiUInt256] cd = none := by
@@ -409,14 +409,14 @@ theorem decodeCalldata_addr_uint256_uint256_none_noncanon {cd : ByteArray}
 
 
 theorem decodeCalldata_addr_uint256_uint256_none_short {cd : ByteArray}
-    {x y z : Solm.Ident}
+    {x y z : Stele.Ident}
     (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldata [x, y, z] [.elem .address, abiUInt256, abiUInt256] cd = none := by
   exact Reasoning.Theory.decodeCalldata_address_uint256_uint256_none_short hsz4 hshort
 
 
 theorem decodeCalldata_addr_uint256_uint256_none_huge {cd : ByteArray}
-    {x y z : Solm.Ident}
+    {x y z : Stele.Ident}
     (hbig : 2 ^ 255 + 4 ≤ cd.size) :
     decodeCalldata [x, y, z] [.elem .address, abiUInt256, abiUInt256] cd = none := by
   exact Reasoning.Theory.decodeCalldata_address_uint256_uint256_none_huge hbig
@@ -542,10 +542,10 @@ theorem scalarValueEncoding {ty : ABIType} {value : Value} {w : UInt256}
     exact congrArg some heq
 
 theorem decodeCalldata_legacyUint256_uint256_address_address_ok {cd : ByteArray}
-    {w x y z : Solm.Ident} (hsz132 : 132 ≤ cd.size) :
+    {w x y z : Stele.Ident} (hsz132 : 132 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [w, x, y, z]
         [abiUInt256, abiUInt256, abiAddress, abiAddress] cd =
-      some (((((∅ : Solm.Store).insert w
+      some (((((∅ : Stele.Store).insert w
         (.int (Int.ofNat (calldataWord cd 4).toNat))).insert x
         (.int (Int.ofNat (calldataWord cd 36).toNat))).insert y
         (.address (AccountAddress.ofNat (calldataWord cd 68).toNat))).insert z
@@ -618,7 +618,7 @@ theorem decodeCalldata_legacyUint256_uint256_address_address_ok {cd : ByteArray}
           (ABI.bytesToWord (((cd.toList.drop 4).drop 64).take 32)).toNat),
         .address (AccountAddress.ofNat
           (ABI.bytesToWord (((cd.toList.drop 4).drop 96).take 32)).toNat)] ∅ =
-    some (((((∅ : Solm.Store).insert w
+    some (((((∅ : Stele.Store).insert w
       (.int (Int.ofNat (calldataWord cd 4).toNat))).insert x
       (.int (Int.ofNat (calldataWord cd 36).toNat))).insert y
       (.address (AccountAddress.ofNat (calldataWord cd 68).toNat))).insert z
@@ -627,7 +627,7 @@ theorem decodeCalldata_legacyUint256_uint256_address_address_ok {cd : ByteArray}
   simp [decodeCalldata.insertValues]
 
 theorem decodeCalldata_legacyUint256_uint256_address_address_none_short {cd : ByteArray}
-    {w x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 132) :
+    {w x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 132) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [w, x, y, z]
       [abiUInt256, abiUInt256, abiAddress, abiAddress] cd = none := by
   have htlen : cd.toList.length = cd.size := by
@@ -719,10 +719,10 @@ theorem decodeCalldata_legacyUint256_uint256_address_address_none_short {cd : By
     rw [hdecode0]
     simp only [Option.bind, bind]
 
-theorem decodeCalldata_legacyUint256_address_ok {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeCalldata_legacyUint256_address_ok {cd : ByteArray} {x y : Stele.Ident}
     (hsz68 : 68 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiUInt256, abiAddress] cd =
-      some (((∅ : Solm.Store).insert x
+      some (((∅ : Stele.Store).insert x
         (.int (Int.ofNat (calldataWord cd 4).toNat))).insert y
         (.address (AccountAddress.ofNat (calldataWord cd 36).toNat))) := by
   have htlen : cd.toList.length = cd.size := by
@@ -763,14 +763,14 @@ theorem decodeCalldata_legacyUint256_address_ok {cd : ByteArray} {x y : Solm.Ide
       [.int (Int.ofNat (ABI.bytesToWord ((cd.toList.drop 4).take 32)).toNat),
         .address (AccountAddress.ofNat
           (ABI.bytesToWord (((cd.toList.drop 4).drop 32).take 32)).toNat)] ∅ =
-    some (((∅ : Solm.Store).insert x
+    some (((∅ : Stele.Store).insert x
       (.int (Int.ofNat (calldataWord cd 4).toNat))).insert y
       (.address (AccountAddress.ofNat (calldataWord cd 36).toNat)))
   rw [hword4, hword36]
   simp [decodeCalldata.insertValues]
 
 theorem decodeCalldata_legacyUint256_address_none_short {cd : ByteArray}
-    {x y : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
+    {x y : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiUInt256, abiAddress] cd = none := by
   have htlen : cd.toList.length = cd.size := by
     rw [byteArray_toList_eq, Array.length_toList]
@@ -816,11 +816,11 @@ theorem decodeCalldata_legacyUint256_address_none_short {cd : ByteArray}
     simp only [Option.bind, bind]
 
 theorem decodeCalldata_legacyAddress_uint256_uint256_ok {cd : ByteArray}
-    {x y z : Solm.Ident}
+    {x y z : Stele.Ident}
     (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiAddress, abiUInt256, abiUInt256] cd =
-      some ((((∅ : Solm.Store).insert x
+      some ((((∅ : Stele.Store).insert x
         (.address (AccountAddress.ofNat (calldataWord cd 4).toNat))).insert y
         (.int (Int.ofNat (calldataWord cd 36).toNat))).insert z
         (.int (Int.ofNat (calldataWord cd 68).toNat))) := by
@@ -862,7 +862,7 @@ theorem decodeCalldata_legacyAddress_uint256_uint256_ok {cd : ByteArray}
           (ABI.bytesToWord (((cd.toList.drop 4).drop 32).take 32)).toNat),
         .int (Int.ofNat
           (ABI.bytesToWord (((cd.toList.drop 4).drop 64).take 32)).toNat)] ∅ =
-    some ((((∅ : Solm.Store).insert x
+    some ((((∅ : Stele.Store).insert x
       (.address (AccountAddress.ofNat (calldataWord cd 4).toNat))).insert y
       (.int (Int.ofNat (calldataWord cd 36).toNat))).insert z
       (.int (Int.ofNat (calldataWord cd 68).toNat)))
@@ -870,7 +870,7 @@ theorem decodeCalldata_legacyAddress_uint256_uint256_ok {cd : ByteArray}
   simp [decodeCalldata.insertValues]
 
 theorem decodeCalldata_legacyAddress_uint256_uint256_none_short {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
+    {x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiAddress, abiUInt256, abiUInt256] cd = none := by
   have htlen : cd.toList.length = cd.size := by
@@ -911,7 +911,7 @@ theorem decodeCalldata_legacyAddress_uint256_uint256_none_short {cd : ByteArray}
     simp only [Option.bind, bind]
 
 theorem decodeCalldata_legacyAddress_address_uint256_uint256_uint256_ok {cd : ByteArray}
-    {x y z w v : Solm.Ident} (hsz164 : 164 ≤ cd.size) :
+    {x y z w v : Stele.Ident} (hsz164 : 164 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z, w, v]
         [abiAddress, abiAddress, abiUInt256, abiUInt256, abiUInt256] cd =
       some ((((((∅ : Store).insert x
@@ -993,7 +993,7 @@ theorem decodeCalldata_legacyAddress_address_uint256_uint256_uint256_ok {cd : By
   rfl
 
 theorem decodeCalldata_legacyAddress_address_uint256_uint256_uint256_none_short
-    {cd : ByteArray} {x y z w v : Solm.Ident}
+    {cd : ByteArray} {x y z w v : Stele.Ident}
     (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 164) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z, w, v]
       [abiAddress, abiAddress, abiUInt256, abiUInt256, abiUInt256] cd = none := by
@@ -1121,10 +1121,10 @@ theorem decodeABIValues_bytes32_address_address_legacy_none_short {bytes : List 
       simp [readWord?, readBytes?, hnot]
 
 theorem decodeCalldataWithMode_legacyBytes32_address_address_ok {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz100 : 100 ≤ cd.size) :
+    {x y z : Stele.Ident} (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
       [abiBytes32, abiAddress, abiAddress] cd =
-        some ((((∅ : Solm.Store).insert x
+        some ((((∅ : Stele.Store).insert x
           (.fixedBytes abiBytes32Width ((cd.toList.drop 4).take 32))).insert y
           (.address (AccountAddress.ofNat (calldataWord cd 36).toNat))).insert z
           (.address (AccountAddress.ofNat (calldataWord cd 68).toNat))) := by
@@ -1162,7 +1162,7 @@ theorem decodeCalldataWithMode_legacyBytes32_address_address_ok {cd : ByteArray}
   rw [hword36, hword68]
 
 theorem decodeCalldataWithMode_legacyBytes32_address_address_none_short
-    {cd : ByteArray} {x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size)
+    {cd : ByteArray} {x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size)
     (hshort : cd.size < 100) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
       [abiBytes32, abiAddress, abiAddress] cd = none := by
@@ -1407,7 +1407,7 @@ theorem decodeABIValues_bytes32_address_address_address_int256_int256_legacy_ok
 
 set_option maxHeartbeats 0 in
 theorem decodeCalldata_legacyBytes32_address_address_address_int256_int256_ok
-    {cd : ByteArray} {a b c d e f : Solm.Ident} (hsz196 : 196 ≤ cd.size) :
+    {cd : ByteArray} {a b c d e f : Stele.Ident} (hsz196 : 196 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [a, b, c, d, e, f]
       [abiBytes32, abiAddress, abiAddress, abiAddress, abiInt256, abiInt256] cd =
       some (((((((∅ : Store).insert a
@@ -1561,7 +1561,7 @@ theorem decodeABIValues_bytes32_address_address_uint256_legacy_ok {bytes : List 
 
 set_option maxHeartbeats 0 in
 theorem decodeCalldata_legacyBytes32_address_address_uint256_ok {cd : ByteArray}
-    {w x y z : Solm.Ident} (hsz132 : 132 ≤ cd.size) :
+    {w x y z : Stele.Ident} (hsz132 : 132 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [w, x, y, z]
       [abiBytes32, abiAddress, abiAddress, abiUInt256] cd =
       some (((((∅ : Store).insert w
@@ -1717,7 +1717,7 @@ theorem decodeABIValues_bytes32_address_address_int256_int256_legacy_ok {bytes :
 
 set_option maxHeartbeats 0 in
 theorem decodeCalldata_legacyBytes32_address_address_int256_int256_ok {cd : ByteArray}
-    {v w x y z : Solm.Ident} (hsz164 : 164 ≤ cd.size) :
+    {v w x y z : Stele.Ident} (hsz164 : 164 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [v, w, x, y, z]
       [abiBytes32, abiAddress, abiAddress, abiInt256, abiInt256] cd =
       some ((((((∅ : Store).insert v
@@ -1826,7 +1826,7 @@ theorem decodeABIValues_bytes32_address_int256_legacy_ok {bytes : List UInt8}
   exact normalizeInt_sint256_word (ABI.bytesToWord ((bytes.drop 64).take 32))
 
 theorem decodeCalldata_legacyBytes32_address_int256_ok {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz100 : 100 ≤ cd.size) :
+    {x y z : Stele.Ident} (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z] [abiBytes32, abiAddress,
       abiInt256] cd =
       some ((((∅ : Store).insert x
@@ -1925,7 +1925,7 @@ abbrev legacyThreeUintAddressBytesDecodedBytes (cd : ByteArray) : ByteArray :=
     ((((cd.toList.drop 4).drop ((calldataWord cd 132).toNat + 32)).take
       (calldataWord cd (4 + (calldataWord cd 132).toNat)).toNat).toArray)
 
-abbrev legacyThreeUintAddressBytesDecodedStore (cd : ByteArray) (a b c d e : Solm.Ident) : Store :=
+abbrev legacyThreeUintAddressBytesDecodedStore (cd : ByteArray) (a b c d e : Stele.Ident) : Store :=
   (((((∅ : Store).insert a (.int (Int.ofNat (calldataWord cd 4).toNat))).insert b
     (.int (Int.ofNat (calldataWord cd 36).toNat))).insert c
     (.int (Int.ofNat (calldataWord cd 68).toNat))).insert d
@@ -1981,7 +1981,7 @@ theorem decodeABIValue_legacyBytes_ok {bytes : List UInt8} {start len : Nat}
 
 set_option maxHeartbeats 1000000 in
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_ok {cd : ByteArray}
-    {a b c d e : Solm.Ident}
+    {a b c d e : Stele.Ident}
     (hsmall : cd.size < 2 ^ 255)
     (hsz164 : 164 ≤ cd.size)
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (calldataWord cd 132).toNat)
@@ -2124,7 +2124,7 @@ theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_ok {cd : Byte
     legacyThreeUintAddressBytesDecodedBytes]
 
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_short
-    {cd : ByteArray} {a b c d e : Solm.Ident} (hsz4 : 4 ≤ cd.size)
+    {cd : ByteArray} {a b c d e : Stele.Ident} (hsz4 : 4 ≤ cd.size)
     (hshort : cd.size < 164) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [a, b, c, d, e]
       [abiUInt256, abiUInt256, abiUInt256, abiAddress, abiBytes] cd = none := by
@@ -2148,7 +2148,7 @@ theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_short
 
 set_option maxHeartbeats 1000000 in
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_offset_huge
-    {cd : ByteArray} {a b c d e : Solm.Ident}
+    {cd : ByteArray} {a b c d e : Stele.Ident}
     (hsmall : cd.size < 2 ^ 255)
     (hsz164 : 164 ≤ cd.size)
     (hoff : solcMaxLen DecodeMode.legacySolc05 < (calldataWord cd 132).toNat) :
@@ -2257,7 +2257,7 @@ theorem decodeABIValue_legacyBytes_none_payload_short {bytes : List UInt8} {star
 
 set_option maxHeartbeats 1000000 in
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_length_short
-    {cd : ByteArray} {a b c d e : Solm.Ident}
+    {cd : ByteArray} {a b c d e : Stele.Ident}
     (hsmall : cd.size < 2 ^ 255)
     (hsz164 : 164 ≤ cd.size)
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (calldataWord cd 132).toNat)
@@ -2358,7 +2358,7 @@ theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_length_s
 
 set_option maxHeartbeats 1000000 in
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_length_huge
-    {cd : ByteArray} {a b c d e : Solm.Ident}
+    {cd : ByteArray} {a b c d e : Stele.Ident}
     (hsmall : cd.size < 2 ^ 255)
     (hsz164 : 164 ≤ cd.size)
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (calldataWord cd 132).toNat)
@@ -2457,7 +2457,7 @@ theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_length_h
 
 set_option maxHeartbeats 1000000 in
 theorem decodeCalldata_legacyUint256_uint256_uint256_address_bytes_none_payload_short
-    {cd : ByteArray} {a b c d e : Solm.Ident}
+    {cd : ByteArray} {a b c d e : Stele.Ident}
     (hsmall : cd.size < 2 ^ 255)
     (hsz164 : 164 ≤ cd.size)
     (hoffMax : ¬ solcMaxLen DecodeMode.legacySolc05 < (calldataWord cd 132).toNat)
@@ -2579,7 +2579,7 @@ end Reasoning.Theory
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -2596,10 +2596,10 @@ theorem decodeABIValues_bytes32_uint256_legacy_ok {bytes : List UInt8}
   simp [readWord?, readBytes?, decodeABIWord?, hlen32]
   exact normalizeInt_uint256_word (ABI.bytesToWord ((bytes.drop 32).take 32))
 
-theorem decodeCalldata_legacyBytes32_uint256_ok {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeCalldata_legacyBytes32_uint256_ok {cd : ByteArray} {x y : Stele.Ident}
     (hsz68 : 68 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiBytes32, abiUInt256] cd =
-      some (((∅ : Solm.Store).insert x
+      some (((∅ : Stele.Store).insert x
         (.fixedBytes abiBytes32Width ((cd.toList.drop 4).take 32))).insert y
         (.int (Int.ofNat (calldataWord cd 36).toNat))) := by
   have htlen : cd.toList.length = cd.size := by
@@ -2653,7 +2653,7 @@ theorem decodeABIValues_bytes32_uint256_legacy_none_short {bytes : List UInt8}
     simp [readWord?, readBytes?, hnot]
 
 theorem decodeCalldata_legacyBytes32_uint256_none_short {cd : ByteArray}
-    {x y : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
+    {x y : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiBytes32, abiUInt256] cd =
       none := by
   have htlen : cd.toList.length = cd.size := by
@@ -2685,10 +2685,10 @@ theorem decodeABIValues_bytes32_address_legacy_ok {bytes : List UInt8}
     staticABIEncodedSize?, decodeABIValue?, readBytes?, hlen0]
   simp [readWord?, readBytes?, decodeABIWord?, UInt256.toNat, hlen32]
 
-theorem decodeCalldata_legacyBytes32_address_ok {cd : ByteArray} {x y : Solm.Ident}
+theorem decodeCalldata_legacyBytes32_address_ok {cd : ByteArray} {x y : Stele.Ident}
     (hsz68 : 68 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiBytes32, abiAddress] cd =
-      some (((∅ : Solm.Store).insert x
+      some (((∅ : Stele.Store).insert x
         (.fixedBytes abiBytes32Width ((cd.toList.drop 4).take 32))).insert y
         (.address (AccountAddress.ofNat (calldataWord cd 36).toNat))) := by
   have htlen : cd.toList.length = cd.size := by
@@ -2742,7 +2742,7 @@ theorem decodeABIValues_bytes32_address_legacy_none_short {bytes : List UInt8}
     simp [readWord?, readBytes?, hnot]
 
 theorem decodeCalldata_legacyBytes32_address_none_short {cd : ByteArray}
-    {x y : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
+    {x y : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 68) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y] [abiBytes32, abiAddress] cd =
       none := by
   have htlen : cd.toList.length = cd.size := by
@@ -2785,10 +2785,10 @@ theorem decodeABIValues_bytes32_bytes32_uint256_legacy_ok {bytes : List UInt8}
   exact normalizeInt_uint256_word (ABI.bytesToWord ((bytes.drop 64).take 32))
 
 theorem decodeCalldata_legacyBytes32_bytes32_uint256_ok {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz100 : 100 ≤ cd.size) :
+    {x y z : Stele.Ident} (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiBytes32, abiBytes32, abiUInt256] cd =
-      some ((((∅ : Solm.Store).insert x
+      some ((((∅ : Stele.Store).insert x
         (.fixedBytes abiBytes32Width ((cd.toList.drop 4).take 32))).insert y
         (.fixedBytes abiBytes32Width ((cd.toList.drop 36).take 32))).insert z
         (.int (Int.ofNat (calldataWord cd 68).toNat))) := by
@@ -2853,7 +2853,7 @@ theorem decodeABIValues_bytes32_bytes32_uint256_legacy_none_short {bytes : List 
       simp [readWord?, readBytes?, hnot]
 
 theorem decodeCalldata_legacyBytes32_bytes32_uint256_none_short {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
+    {x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiBytes32, abiBytes32, abiUInt256] cd =
       none := by
@@ -2898,10 +2898,10 @@ theorem decodeABIValues_bytes32_bytes32_address_legacy_ok {bytes : List UInt8}
   simp [readWord?, readBytes?, decodeABIWord?, UInt256.toNat, hlen64]
 
 theorem decodeCalldata_legacyBytes32_bytes32_address_ok {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz100 : 100 ≤ cd.size) :
+    {x y z : Stele.Ident} (hsz100 : 100 ≤ cd.size) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiBytes32, abiBytes32, abiAddress] cd =
-      some ((((∅ : Solm.Store).insert x
+      some ((((∅ : Stele.Store).insert x
         (.fixedBytes abiBytes32Width ((cd.toList.drop 4).take 32))).insert y
         (.fixedBytes abiBytes32Width ((cd.toList.drop 36).take 32))).insert z
         (.address (AccountAddress.ofNat (calldataWord cd 68).toNat))) := by
@@ -2958,7 +2958,7 @@ theorem decodeABIValues_bytes32_bytes32_address_legacy_none_short {bytes : List 
       simp [readWord?, readBytes?, hnot]
 
 theorem decodeCalldata_legacyBytes32_bytes32_address_none_short {cd : ByteArray}
-    {x y z : Solm.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
+    {x y z : Stele.Ident} (hsz4 : 4 ≤ cd.size) (hshort : cd.size < 100) :
     decodeCalldataWithMode DecodeMode.legacySolc05 [x, y, z]
         [abiBytes32, abiBytes32, abiAddress] cd =
       none := by

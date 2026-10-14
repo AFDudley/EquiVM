@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TickResultMemory
 import Benchmarks.UniswapV4PoolManager.TickUpperStoreTrace
 import Benchmarks.UniswapV4PoolManager.WordStoreMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem tickLowerResultMemory_span (mem : ByteArray) (ptr gross flipped : UInt256)

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -45,13 +45,13 @@ abbrev burnTotalSupplySlot : UInt256 :=
   ⟨1⟩
 
 def burnUsrBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (burnUsrSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (burnUsrSlot I)
 
 def burnAllowanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (burnAllowanceSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (burnAllowanceSlot evm I)
 
 def burnTotalSupplyWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner burnTotalSupplySlot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner burnTotalSupplySlot
 
 def burnAllowanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((burnAllowanceWord evm I).toNat - (burnWadWord I).toNat)
@@ -63,7 +63,7 @@ def burnSupplyDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((burnTotalSupplyWord evm).toNat - (burnWadWord I).toNat)
 
 def burnAfterAllowanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (burnAllowanceSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (burnAllowanceSlot evm I)
     (burnAllowanceDebitWord evm I)
 
 theorem burnAfterAllowance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
@@ -75,7 +75,7 @@ theorem burnAfterAllowance_source (evm : EVM.State) (I : ExecutionEnv) :
   simp [burnAfterAllowanceState, storageStore_executionEnv]
 
 def burnAfterUsrDebitState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (burnUsrSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (burnUsrSlot I)
     (burnUsrDebitWord evm I)
 
 theorem burnAfterUsrDebit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
@@ -83,7 +83,7 @@ theorem burnAfterUsrDebit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
   simp [burnAfterUsrDebitState, storageStore_executionEnv]
 
 def burnPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (burnAfterUsrDebitState evm I)
+  Stele.EVM.storageStore (burnAfterUsrDebitState evm I)
     (burnAfterUsrDebitState evm I).executionEnv.codeOwner burnTotalSupplySlot
     (burnSupplyDebitWord (burnAfterUsrDebitState evm I) I)
 
@@ -1966,9 +1966,9 @@ theorem daiBurnX_tailSupplyRevert {σ I} {g : Sat256} {s0 : State}
     husrEnough hltSupply (by simpa using h)
 
 theorem daiDecode_burn_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some (burnStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [burnStore, burnUsrValue, burnWadValue, burnUsrWord, burnWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -1976,9 +1976,9 @@ theorem daiDecode_burn_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem daiDecode_burn_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -2038,7 +2038,7 @@ theorem evalExpr_burn_usr_balance (evm : EVM.State) (I : ExecutionEnv) :
         .ok (burnUsrBalanceValue evm I) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := burnStore I })
+    (stele := { contract := contract, locals := burnStore I })
     (slot := balanceOfRef (.var "usr"))
     (er := burnUsrBalanceRef I)
     (t := .int uint256Int)
@@ -2060,7 +2060,7 @@ theorem evalExpr_burn_allowance (evm : EVM.State) (I : ExecutionEnv) :
         .ok (burnAllowanceValue evm I) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := burnStore I })
+    (stele := { contract := contract, locals := burnStore I })
     (slot := allowanceRef (.var "usr") sender)
     (er := burnAllowanceRef evm I)
     (t := .int uint256Int)
@@ -2082,7 +2082,7 @@ theorem evalExpr_burn_totalSupply (evm : EVM.State) (I : ExecutionEnv) :
       (.storage totalSupplyRef) = .ok (burnTotalSupplyValue evm) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := burnStore I })
+    (stele := { contract := contract, locals := burnStore I })
     (slot := totalSupplyRef)
     (er := burnTotalSupplyRef)
     (t := .int uint256Int)
@@ -2497,7 +2497,7 @@ theorem burnAssignSupply (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := burnStore I } evm
       .storage totalSupplyRef (burnSupplyDebitValue evm I) =
         .ok ({ contract := contract, locals := burnStore I },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner burnTotalSupplySlot
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner burnTotalSupplySlot
             (burnSupplyDebitWord evm I)) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (slot := totalSupplyRef)
@@ -2526,7 +2526,8 @@ theorem daiBurnBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
         (burnUsrBalanceWord (burnAfterAllowanceState evm I) I).toNat)
     (hsupplyEnough :
       (burnWadWord I).toNat ≤
-        (burnTotalSupplyWord (burnAfterUsrDebitState (burnAfterAllowanceState evm I) I)).toNat) :
+        (burnTotalSupplyWord (burnAfterUsrDebitState (burnAfterAllowanceState evm I) I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body
       (.returned { contract := contract, locals := burnStore I }
         (burnPostState (burnAfterAllowanceState evm I) I) none) := by
@@ -2546,7 +2547,8 @@ theorem daiBurnBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_burn_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_burn_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_allowance_debit evm I hallowEnough)
         (burnAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   · refine ExecBlock.consNormal
@@ -2558,7 +2560,8 @@ theorem daiBurnBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
         (evalExpr_burn_usr_checkedSub_true (burnAfterAllowanceState evm I) I
           husrDebitEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_burn_usr_debit (burnAfterAllowanceState evm I) I husrDebitEnough)
         (burnAssignUsr (burnAfterAllowanceState evm I) I)) ?_
     refine ExecBlock.consNormal
@@ -2566,7 +2569,8 @@ theorem daiBurnBodyReturns_spend (evm : EVM.State) (I : ExecutionEnv)
         (evalExpr_burn_supply_checkedSub_true
           (burnAfterUsrDebitState (burnAfterAllowanceState evm I) I) I hsupplyEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm))
         (evalExpr_burn_supply_debit
           (burnAfterUsrDebitState (burnAfterAllowanceState evm I) I) I hsupplyEnough)
         (by
@@ -2605,7 +2609,8 @@ theorem daiBurnBodyReturns_skipSender (evm : EVM.State) (I : ExecutionEnv)
     (heq : AccountAddress.ofNat (burnUsrWord I).toNat = evm.executionEnv.source)
     (hsupplyEnough :
       (burnWadWord I).toNat ≤
-        (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat) :
+        (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body
       (.returned { contract := contract, locals := burnStore I } (burnPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -2623,13 +2628,15 @@ theorem daiBurnBodyReturns_skipSender (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_burn_usr_checkedSub_true evm I husrEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_burn_supply_checkedSub_true (burnAfterUsrDebitState evm I) I
         hsupplyEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_burn_supply_debit (burnAfterUsrDebitState evm I) I hsupplyEnough)
       (by simpa [burnPostState] using burnAssignSupply (burnAfterUsrDebitState evm I) I)) ?_
   exact ExecBlock.nil
@@ -2666,7 +2673,8 @@ theorem daiBurnBodyReturns_skipMax (evm : EVM.State) (I : ExecutionEnv)
     (hmax : (burnAllowanceWord evm I).toNat = UInt256.size - 1)
     (hsupplyEnough :
       (burnWadWord I).toNat ≤
-        (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat) :
+        (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body
       (.returned { contract := contract, locals := burnStore I } (burnPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
@@ -2684,13 +2692,15 @@ theorem daiBurnBodyReturns_skipMax (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_burn_usr_checkedSub_true evm I husrEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_burn_supply_checkedSub_true (burnAfterUsrDebitState evm I) I
         hsupplyEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_burn_supply_debit (burnAfterUsrDebitState evm I) I hsupplyEnough)
       (by simpa [burnPostState] using burnAssignSupply (burnAfterUsrDebitState evm I) I)) ?_
   exact ExecBlock.nil
@@ -2761,7 +2771,8 @@ theorem daiBurnBodyReverts_usrDebit (evm : EVM.State) (I : ExecutionEnv)
     (hnotMax : (burnAllowanceWord evm I).toNat ≠ UInt256.size - 1)
     (hallowEnough : (burnWadWord I).toNat ≤ (burnAllowanceWord evm I).toNat)
     (hltDebit :
-      (burnUsrBalanceWord (burnAfterAllowanceState evm I) I).toNat < (burnWadWord I).toNat) :
+      (burnUsrBalanceWord (burnAfterAllowanceState evm I) I).toNat < (burnWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [burnTransition, nonpayable, spendAllowance, debitBalance, checkedSub,
@@ -2779,7 +2790,8 @@ theorem daiBurnBodyReverts_usrDebit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_burn_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_burn_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_allowance_debit evm I hallowEnough)
         (burnAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   exact ExecBlock.consRevert
@@ -2798,7 +2810,8 @@ theorem daiBurnBodyReverts_supply_spend (evm : EVM.State) (I : ExecutionEnv)
         (burnUsrBalanceWord (burnAfterAllowanceState evm I) I).toNat)
     (hltSupply :
       (burnTotalSupplyWord (burnAfterUsrDebitState (burnAfterAllowanceState evm I) I)).toNat <
-        (burnWadWord I).toNat) :
+        (burnWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [burnTransition, nonpayable, spendAllowance, debitBalance, checkedSub,
@@ -2816,7 +2829,8 @@ theorem daiBurnBodyReverts_supply_spend (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal
       (ExecStmt.requireTrue (evalExpr_burn_allowance_checkedSub_true evm I hallowEnough)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_burn_allowance_debit evm I hallowEnough)
+      (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_allowance_debit evm I hallowEnough)
         (burnAssignAllowance evm I)) ?_
     exact ExecBlock.nil
   refine ExecBlock.consNormal
@@ -2828,7 +2842,8 @@ theorem daiBurnBodyReverts_supply_spend (evm : EVM.State) (I : ExecutionEnv)
       (evalExpr_burn_usr_checkedSub_true (burnAfterAllowanceState evm I) I
         husrDebitEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm))
       (evalExpr_burn_usr_debit (burnAfterAllowanceState evm I) I husrDebitEnough)
       (burnAssignUsr (burnAfterAllowanceState evm I) I)) ?_
   exact ExecBlock.consRevert
@@ -2842,7 +2857,8 @@ theorem daiBurnBodyReverts_supply_skipSender (evm : EVM.State) (I : ExecutionEnv
     (husrEnough : (burnWadWord I).toNat ≤ (burnUsrBalanceWord evm I).toNat)
     (heq : AccountAddress.ofNat (burnUsrWord I).toNat = evm.executionEnv.source)
     (hltSupply : (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat <
-      (burnWadWord I).toNat) :
+      (burnWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [burnTransition, nonpayable, spendAllowance, debitBalance, checkedSub,
@@ -2859,7 +2875,8 @@ theorem daiBurnBodyReverts_supply_skipSender (evm : EVM.State) (I : ExecutionEnv
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_burn_usr_checkedSub_true evm I husrEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
       (evalExpr_burn_supply_checkedSub_revert (burnAfterUsrDebitState evm I) I hltSupply))
@@ -2871,7 +2888,8 @@ theorem daiBurnBodyReverts_supply_skipMax (evm : EVM.State) (I : ExecutionEnv)
     (hne : AccountAddress.ofNat (burnUsrWord I).toNat ≠ evm.executionEnv.source)
     (hmax : (burnAllowanceWord evm I).toNat = UInt256.size - 1)
     (hltSupply : (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat <
-      (burnWadWord I).toNat) :
+      (burnWadWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [burnTransition, nonpayable, spendAllowance, debitBalance, checkedSub,
@@ -2888,7 +2906,8 @@ theorem daiBurnBodyReverts_supply_skipMax (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_burn_usr_checkedSub_true evm I husrEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [burnAfterAllowanceState,
+        burnAfterUsrDebitState, storageStore_executionEnv] using hperm)) (evalExpr_burn_usr_debit evm I husrEnough) (burnAssignUsr evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
       (evalExpr_burn_supply_checkedSub_revert (burnAfterUsrDebitState evm I) I hltSupply))
@@ -2899,7 +2918,7 @@ theorem burnUsrBalanceWordEq {σ : AccountMap} {evm : EVM.State}
     (hmap : evm.accountMap = σ) :
     burnEvmTailUsrBalanceWord σ I = burnUsrBalanceWord evm I := by
   simpa [burnEvmTailUsrBalanceWord, burnUsrBalanceWord, burnEvmUsrSlot,
-    burnUsrSlot_eq_mapSlot_masked, Solm.EVM.storageLoad, State.lookupAccount,
+    burnUsrSlot_eq_mapSlot_masked, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage, solcSlotWord, howner, hmap]
 
 theorem burnAllowanceWordEq {σ : AccountMap} {evm : EVM.State}
@@ -2912,7 +2931,7 @@ theorem burnAllowanceWordEq {σ : AccountMap} {evm : EVM.State}
   rw [show burnAllowanceSlot evm I = burnEvmAllowanceSlot I by
     simpa [burnEvmAllowanceSlot] using
       burnAllowanceSlot_eq_mapSlot_masked evm I hsource]
-  simpa [burnEvmAllowanceWord, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [burnEvmAllowanceWord, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage, solcSlotWord, howner, hmap]
 
 theorem burnAfterAllowanceAccountMapEq {σ : AccountMap} {evm : EVM.State}
@@ -2930,7 +2949,7 @@ theorem burnAfterAllowanceAccountMapEq {σ : AccountMap} {evm : EVM.State}
     apply u256_inj
     unfold burnEvmAllowanceDebitWord burnAllowanceDebitWord
     rw [usub_toNat hallowEnough]
-    have hallowEnoughSolm :
+    have hallowEnoughStele :
         (burnWadWord I).toNat ≤ (burnAllowanceWord evm I).toNat := by
       rw [← hallowWord]
       exact hallowEnough
@@ -2947,7 +2966,7 @@ theorem burnAfterAllowanceAccountMapEq {σ : AccountMap} {evm : EVM.State}
     howner, hslot, hallowDebitEq, hmap]
 
 set_option maxHeartbeats 1000000 in
-theorem burnTailSolmPrefixBridge {σ : AccountMap} {evm : EVM.State}
+theorem burnTailStelePrefixBridge {σ : AccountMap} {evm : EVM.State}
     {I : ExecutionEnv}
     (howner : evm.executionEnv.codeOwner = I.codeOwner)
     (hmap : evm.accountMap = σ)
@@ -2960,7 +2979,7 @@ theorem burnTailSolmPrefixBridge {σ : AccountMap} {evm : EVM.State}
       (burnAfterUsrDebitState evm I).accountMap := by
   have husrWord :=
     burnUsrBalanceWordEq (σ := σ) (evm := evm) (I := I) howner hmap
-  have husrEnoughSolm :
+  have husrEnoughStele :
       (burnWadWord I).toNat ≤ (burnUsrBalanceWord evm I).toNat := by
     rw [← husrWord]
     exact husrEnough
@@ -2984,12 +3003,12 @@ theorem burnTailSolmPrefixBridge {σ : AccountMap} {evm : EVM.State}
     have hownerAfter :
         (burnAfterUsrDebitState evm I).executionEnv.codeOwner = I.codeOwner := by
       simpa [burnAfterUsrDebit_codeOwner evm I] using howner
-    simpa [burnEvmTailSupplyWord, burnTotalSupplyWord, Solm.EVM.storageLoad,
+    simpa [burnEvmTailSupplyWord, burnTotalSupplyWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, solcSlotWord, hownerAfter, husrMap]
-  exact ⟨husrEnoughSolm, by rw [← hsupplyWord], husrMap⟩
+  exact ⟨husrEnoughStele, by rw [← hsupplyWord], husrMap⟩
 
 set_option maxHeartbeats 1000000 in
-theorem burnTailSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
+theorem burnTailSteleBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
     (howner : evm.executionEnv.codeOwner = I.codeOwner)
     (hmap : evm.accountMap = σ)
     (husrEnough :
@@ -3000,9 +3019,9 @@ theorem burnTailSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv
     (burnWadWord I).toNat ≤
       (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat ∧
     burnEvmTailPostAccountMap σ I = (burnPostState evm I).accountMap := by
-  rcases burnTailSolmPrefixBridge howner hmap husrEnough with
-    ⟨husrEnoughSolm, hsupplyWordNat, husrMap⟩
-  have hsupplyEnoughSolm :
+  rcases burnTailStelePrefixBridge howner hmap husrEnough with
+    ⟨husrEnoughStele, hsupplyWordNat, husrMap⟩
+  have hsupplyEnoughStele :
       (burnWadWord I).toNat ≤
         (burnTotalSupplyWord (burnAfterUsrDebitState evm I)).toNat := by
     rw [hsupplyWordNat]
@@ -3027,9 +3046,9 @@ theorem burnTailSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv
       burnEvmTailPostAccountMap σ I = (burnPostState evm I).accountMap := by
     simp [burnEvmTailPostAccountMap, burnPostState, storageStore_accountMap,
       hownerAfter, hsupplyDebitEq, husrMap]
-  exact ⟨husrEnoughSolm, hsupplyEnoughSolm, hfinal⟩
+  exact ⟨husrEnoughStele, hsupplyEnoughStele, hfinal⟩
 
-/-- `burn(address,uint256)` body refines its Solm transition. -/
+/-- `burn(address,uint256)` body refines its Stele transition. -/
 theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -3046,20 +3065,20 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
   · have hdecode := daiDecode_burn_ok (I := I) hsz68
     obtain ⟨_, _, rd3336⟩ :=
       daiBurnX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    have hownerSolm : evmSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmSolm, initState]
-    have hsourceSolm : evmSolm.executionEnv.source = I.source := by
-      simp [evmSolm, initState]
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    have hownerStele : evmStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmStele, initState]
+    have hsourceStele : evmStele.executionEnv.source = I.source := by
+      simp [evmStele, initState]
     have husrWord :
-        burnEvmTailUsrBalanceWord σ I = burnUsrBalanceWord evmSolm I :=
-      burnUsrBalanceWordEq (σ := σ) (evm := evmSolm) (I := I)
-        hownerSolm (by simp [evmSolm, initState])
+        burnEvmTailUsrBalanceWord σ I = burnUsrBalanceWord evmStele I :=
+      burnUsrBalanceWordEq (σ := σ) (evm := evmStele) (I := I)
+        hownerStele (by simp [evmStele, initState])
     by_cases husrEnough :
         (burnWadWord I).toNat ≤ (burnEvmTailUsrBalanceWord σ I).toNat
     · obtain ⟨_, _, rd3440⟩ := daiBurnX_initialBalanceOk husrEnough rd3336
-      have husrEnoughSolm :
-          (burnWadWord I).toNat ≤ (burnUsrBalanceWord evmSolm I).toNat := by
+      have husrEnoughStele :
+          (burnWadWord I).toNat ≤ (burnUsrBalanceWord evmStele I).toNat := by
         rw [← husrWord]
         exact husrEnough
       by_cases husrIsSender :
@@ -3069,29 +3088,29 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
         by_cases hperm : I.perm = true
         swap
         · have hstatic : I.perm = false := by simpa using hperm
-          have hbody := daiBurnBodyStatic_skipSender evmSolm I
-            (by simpa [evmSolm, initState] using hwv) husrEnoughSolm
-            (by simpa [evmSolm, initState] using husrIsSender)
-            (by simpa [evmSolm, initState] using hstatic)
+          have hbody := daiBurnBodyStatic_skipSender evmStele I
+            (by simpa [evmStele, initState] using hwv) husrEnoughStele
+            (by simpa [evmStele, initState] using husrIsSender)
+            (by simpa [evmStele, initState] using hstatic)
           exact (permSplit_false hstatic (daiBurnX_tailAfterUsrStoreContSplit
             (burnUsrHashMem_size I) (by simp only [List.length_cons, List.length_nil]; omega)
             husrEnough rd3710))
             |>.reEquivStaticHalt hcode hdispatch hdecode hbody
         by_cases hsupplyEnough :
             (burnWadWord I).toNat ≤ (burnEvmTailSupplyWord σ I).toNat
-        · rcases burnTailSolmBridge hownerSolm (by simp [evmSolm, initState])
+        · rcases burnTailSteleBridge hownerStele (by simp [evmStele, initState])
             husrEnough hsupplyEnough with
             ⟨husrEnoughBody, hsupplyEnoughBody, hfinal⟩
           have hbody :
-              ExecTransitionBody config contract evmSolm (burnStore I)
+              ExecTransitionBody config contract evmStele (burnStore I)
                 burnTransition.body
                 (.returned { contract := contract, locals := burnStore I }
-                  (burnPostState evmSolm I) none) := by
-            simpa [evmSolm] using
-              daiBurnBodyReturns_skipSender evmSolm I
-                (by simp only [evmSolm, initState]; exact hwv)
+                  (burnPostState evmStele I) none) := by
+            simpa [evmStele] using
+              daiBurnBodyReturns_skipSender (hperm := hperm) evmStele I
+                (by simp only [evmStele, initState]; exact hwv)
                 husrEnoughBody
-                (by simpa [evmSolm, initState] using husrIsSender)
+                (by simpa [evmStele, initState] using husrIsSender)
                 hsupplyEnoughBody
           exact (daiBurnX_tailSuccess hperm (burnUsrHashMem_size I)
               (burnUsrHashMem_read64 I) husrEnough hsupplyEnough rd3710)
@@ -3104,22 +3123,22 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
         · have hltSupply :
               (burnEvmTailSupplyWord σ I).toNat < (burnWadWord I).toNat := by
             omega
-          rcases burnTailSolmPrefixBridge hownerSolm (by simp [evmSolm, initState])
+          rcases burnTailStelePrefixBridge hownerStele (by simp [evmStele, initState])
             husrEnough with
             ⟨husrEnoughBody, hsupplyNat, _⟩
           have hltSupplyBody :
-              (burnTotalSupplyWord (burnAfterUsrDebitState evmSolm I)).toNat <
+              (burnTotalSupplyWord (burnAfterUsrDebitState evmStele I)).toNat <
                 (burnWadWord I).toNat := by
             rw [hsupplyNat]
             exact hltSupply
           have hbody :
-              ExecTransitionBody config contract evmSolm (burnStore I)
+              ExecTransitionBody config contract evmStele (burnStore I)
                 burnTransition.body .reverted := by
-            simpa [evmSolm] using
-              daiBurnBodyReverts_supply_skipSender evmSolm I
-                (by simp only [evmSolm, initState]; exact hwv)
+            simpa [evmStele] using
+              daiBurnBodyReverts_supply_skipSender (hperm := hperm) evmStele I
+                (by simp only [evmStele, initState]; exact hwv)
                 husrEnoughBody
-                (by simpa [evmSolm, initState] using husrIsSender)
+                (by simpa [evmStele, initState] using husrIsSender)
                 hltSupplyBody
           exact (daiBurnX_tailSupplyRevert hperm (burnUsrHashMem_size I)
               husrEnough hltSupply rd3710)
@@ -3128,21 +3147,21 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
           intro hbad
           exact husrIsSender (burn_address_eq_of_usrMaskedWord_eq I hbad)
         have hallowWord :=
-          burnAllowanceWordEq (σ := σ) (evm := evmSolm) (I := I)
-            hownerSolm hsourceSolm (by simp [evmSolm, initState])
+          burnAllowanceWordEq (σ := σ) (evm := evmStele) (I := I)
+            hownerStele hsourceStele (by simp [evmStele, initState])
         by_cases hmax :
             (burnEvmAllowanceWord σ I).toNat = UInt256.size - 1
-        · have hmaxBody : (burnAllowanceWord evmSolm I).toNat = UInt256.size - 1 := by
+        · have hmaxBody : (burnAllowanceWord evmStele I).toNat = UInt256.size - 1 := by
             rw [← hallowWord]
             exact hmax
           obtain ⟨_, _, rd3710⟩ := daiBurnX_allowanceSkipMax hneWord hmax rd3440
           by_cases hperm : I.perm = true
           swap
           · have hstatic : I.perm = false := by simpa using hperm
-            have hbody := daiBurnBodyStatic_skipMax evmSolm I
-              (by simpa [evmSolm, initState] using hwv) husrEnoughSolm
-              (by simpa [evmSolm, initState] using husrIsSender) hmaxBody
-              (by simpa [evmSolm, initState] using hstatic)
+            have hbody := daiBurnBodyStatic_skipMax evmStele I
+              (by simpa [evmStele, initState] using hwv) husrEnoughStele
+              (by simpa [evmStele, initState] using husrIsSender) hmaxBody
+              (by simpa [evmStele, initState] using hstatic)
             exact (permSplit_false hstatic (daiBurnX_tailAfterUsrStoreContSplit
               (burnAllowanceHashMem_size I)
                 (by simp only [List.length_cons, List.length_nil]; omega)
@@ -3150,19 +3169,19 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
               |>.reEquivStaticHalt hcode hdispatch hdecode hbody
           by_cases hsupplyEnough :
               (burnWadWord I).toNat ≤ (burnEvmTailSupplyWord σ I).toNat
-          · rcases burnTailSolmBridge hownerSolm (by simp [evmSolm, initState])
+          · rcases burnTailSteleBridge hownerStele (by simp [evmStele, initState])
               husrEnough hsupplyEnough with
               ⟨husrEnoughBody, hsupplyEnoughBody, hfinal⟩
             have hbody :
-                ExecTransitionBody config contract evmSolm (burnStore I)
+                ExecTransitionBody config contract evmStele (burnStore I)
                   burnTransition.body
                   (.returned { contract := contract, locals := burnStore I }
-                    (burnPostState evmSolm I) none) := by
-              simpa [evmSolm] using
-                daiBurnBodyReturns_skipMax evmSolm I
-                  (by simp only [evmSolm, initState]; exact hwv)
+                    (burnPostState evmStele I) none) := by
+              simpa [evmStele] using
+                daiBurnBodyReturns_skipMax (hperm := hperm) evmStele I
+                  (by simp only [evmStele, initState]; exact hwv)
                   husrEnoughBody
-                  (by simpa [evmSolm, initState] using husrIsSender)
+                  (by simpa [evmStele, initState] using husrIsSender)
                   hmaxBody
                   hsupplyEnoughBody
             exact (daiBurnX_tailSuccess hperm (burnAllowanceHashMem_size I)
@@ -3176,22 +3195,22 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
           · have hltSupply :
                 (burnEvmTailSupplyWord σ I).toNat < (burnWadWord I).toNat := by
               omega
-            rcases burnTailSolmPrefixBridge hownerSolm (by simp [evmSolm, initState])
+            rcases burnTailStelePrefixBridge hownerStele (by simp [evmStele, initState])
               husrEnough with
               ⟨husrEnoughBody, hsupplyNat, _⟩
             have hltSupplyBody :
-                (burnTotalSupplyWord (burnAfterUsrDebitState evmSolm I)).toNat <
+                (burnTotalSupplyWord (burnAfterUsrDebitState evmStele I)).toNat <
                   (burnWadWord I).toNat := by
               rw [hsupplyNat]
               exact hltSupply
             have hbody :
-                ExecTransitionBody config contract evmSolm (burnStore I)
+                ExecTransitionBody config contract evmStele (burnStore I)
                   burnTransition.body .reverted := by
-              simpa [evmSolm] using
-                daiBurnBodyReverts_supply_skipMax evmSolm I
-                  (by simp only [evmSolm, initState]; exact hwv)
+              simpa [evmStele] using
+                daiBurnBodyReverts_supply_skipMax (hperm := hperm) evmStele I
+                  (by simp only [evmStele, initState]; exact hwv)
                   husrEnoughBody
-                  (by simpa [evmSolm, initState] using husrIsSender)
+                  (by simpa [evmStele, initState] using husrIsSender)
                   hmaxBody
                   hltSupplyBody
             exact (daiBurnX_tailSupplyRevert hperm (burnAllowanceHashMem_size I)
@@ -3200,30 +3219,30 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
         · by_cases hallowEnough :
               (burnWadWord I).toNat ≤ (burnEvmAllowanceWord σ I).toNat
           · have hnotMaxBody :
-                (burnAllowanceWord evmSolm I).toNat ≠ UInt256.size - 1 := by
+                (burnAllowanceWord evmStele I).toNat ≠ UInt256.size - 1 := by
               rw [← hallowWord]
               exact hmax
             have hallowEnoughBody :
-                (burnWadWord I).toNat ≤ (burnAllowanceWord evmSolm I).toNat := by
+                (burnWadWord I).toNat ≤ (burnAllowanceWord evmStele I).toNat := by
               rw [← hallowWord]
               exact hallowEnough
             have hallowAcc :=
               burnAfterAllowanceAccountMapEq
-                (σ := σ) (evm := evmSolm) (I := I)
-                hownerSolm hsourceSolm (by simp [evmSolm, initState]) hallowEnough
-            let evmAfterAllowance := burnAfterAllowanceState evmSolm I
+                (σ := σ) (evm := evmStele) (I := I)
+                hownerStele hsourceStele (by simp [evmStele, initState]) hallowEnough
+            let evmAfterAllowance := burnAfterAllowanceState evmStele I
             have hownerAfterAllowance :
                 evmAfterAllowance.executionEnv.codeOwner = I.codeOwner := by
-              simpa [evmAfterAllowance, burnAfterAllowance_codeOwner evmSolm I]
-                using hownerSolm
+              simpa [evmAfterAllowance, burnAfterAllowance_codeOwner evmStele I]
+                using hownerStele
             by_cases hperm : I.perm = true
             swap
             · have hstatic : I.perm = false := by simpa using hperm
-              have hbody := daiBurnBodyStatic_spend evmSolm I
-                (by simpa [evmSolm, initState] using hwv) husrEnoughSolm
-                (by simpa [evmSolm, initState] using husrIsSender)
+              have hbody := daiBurnBodyStatic_spend evmStele I
+                (by simpa [evmStele, initState] using hwv) husrEnoughStele
+                (by simpa [evmStele, initState] using husrIsSender)
                 hnotMaxBody hallowEnoughBody
-                (by simpa [evmSolm, initState] using hstatic)
+                (by simpa [evmStele, initState] using hstatic)
               exact (permSplit_false hstatic (daiBurnX_spendToTailContSplit
                 hneWord hmax hallowEnough
                 (by simp only [List.length_cons, List.length_nil]; omega) rd3440))
@@ -3238,19 +3257,19 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                   (burnWadWord I).toNat ≤
                     (burnEvmTailSupplyWord (burnEvmAfterAllowanceAccountMap σ I)
                       I).toNat
-              · rcases burnTailSolmBridge hownerAfterAllowance hallowAcc.symm
+              · rcases burnTailSteleBridge hownerAfterAllowance hallowAcc.symm
                     husrDebitEnough hsupplyEnough with
                   ⟨husrDebitEnoughBody, hsupplyEnoughBody, hfinal⟩
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (burnStore I)
+                    ExecTransitionBody config contract evmStele (burnStore I)
                       burnTransition.body
                       (.returned { contract := contract, locals := burnStore I }
                         (burnPostState evmAfterAllowance I) none) := by
-                  simpa [evmAfterAllowance, evmSolm] using
-                    daiBurnBodyReturns_spend evmSolm I
-                      (by simp only [evmSolm, initState]; exact hwv)
-                      husrEnoughSolm
-                      (by simpa [evmSolm, initState] using husrIsSender)
+                  simpa [evmAfterAllowance, evmStele] using
+                    daiBurnBodyReturns_spend (hperm := hperm) evmStele I
+                      (by simp only [evmStele, initState]; exact hwv)
+                      husrEnoughStele
+                      (by simpa [evmStele, initState] using husrIsSender)
                       hnotMaxBody
                       hallowEnoughBody
                       husrDebitEnoughBody
@@ -3269,7 +3288,7 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                         (burnEvmAfterAllowanceAccountMap σ I) I).toNat <
                       (burnWadWord I).toNat := by
                   omega
-                rcases burnTailSolmPrefixBridge hownerAfterAllowance hallowAcc.symm
+                rcases burnTailStelePrefixBridge hownerAfterAllowance hallowAcc.symm
                     husrDebitEnough with
                   ⟨husrDebitEnoughBody, hsupplyNat, _⟩
                 have hltSupplyBody :
@@ -3279,13 +3298,13 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                   rw [hsupplyNat]
                   exact hltSupply
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (burnStore I)
+                    ExecTransitionBody config contract evmStele (burnStore I)
                       burnTransition.body .reverted := by
-                  simpa [evmAfterAllowance, evmSolm] using
-                    daiBurnBodyReverts_supply_spend evmSolm I
-                      (by simp only [evmSolm, initState]; exact hwv)
-                      husrEnoughSolm
-                      (by simpa [evmSolm, initState] using husrIsSender)
+                  simpa [evmAfterAllowance, evmStele] using
+                    daiBurnBodyReverts_supply_spend (hperm := hperm) evmStele I
+                      (by simp only [evmStele, initState]; exact hwv)
+                      husrEnoughStele
+                      (by simpa [evmStele, initState] using husrIsSender)
                       hnotMaxBody
                       hallowEnoughBody
                       husrDebitEnoughBody
@@ -3310,7 +3329,7 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                   unfold solcSlotWord
                   rw [hallowAcc]
                 simpa [burnEvmTailUsrBalanceWord, burnUsrBalanceWord, burnEvmUsrSlot,
-                  burnUsrSlot_eq_mapSlot_masked, Solm.EVM.storageLoad, State.lookupAccount,
+                  burnUsrSlot_eq_mapSlot_masked, Stele.EVM.storageLoad, State.lookupAccount,
                   Account.lookupStorage, solcSlotWord, hownerAfterAllowance] using hread
               have hltDebitBody :
                   (burnUsrBalanceWord evmAfterAllowance I).toNat <
@@ -3318,13 +3337,13 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                 rw [← husrAfterWord]
                 exact hltDebit
               have hbody :
-                  ExecTransitionBody config contract evmSolm (burnStore I)
+                  ExecTransitionBody config contract evmStele (burnStore I)
                     burnTransition.body .reverted := by
-                simpa [evmAfterAllowance, evmSolm] using
-                  daiBurnBodyReverts_usrDebit evmSolm I
-                    (by simp only [evmSolm, initState]; exact hwv)
-                    husrEnoughSolm
-                    (by simpa [evmSolm, initState] using husrIsSender)
+                simpa [evmAfterAllowance, evmStele] using
+                  daiBurnBodyReverts_usrDebit (hperm := hperm) evmStele I
+                    (by simp only [evmStele, initState]; exact hwv)
+                    husrEnoughStele
+                    (by simpa [evmStele, initState] using husrIsSender)
                     hnotMaxBody
                     hallowEnoughBody
                     hltDebitBody
@@ -3337,21 +3356,21 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
                 (burnEvmAllowanceWord σ I).toNat < (burnWadWord I).toNat := by
               omega
             have hnotMaxBody :
-                (burnAllowanceWord evmSolm I).toNat ≠ UInt256.size - 1 := by
+                (burnAllowanceWord evmStele I).toNat ≠ UInt256.size - 1 := by
               rw [← hallowWord]
               exact hmax
             have hltAllowBody :
-                (burnAllowanceWord evmSolm I).toNat < (burnWadWord I).toNat := by
+                (burnAllowanceWord evmStele I).toNat < (burnWadWord I).toNat := by
               rw [← hallowWord]
               exact hltAllow
             have hbody :
-                ExecTransitionBody config contract evmSolm (burnStore I)
+                ExecTransitionBody config contract evmStele (burnStore I)
                   burnTransition.body .reverted := by
-              simpa [evmSolm] using
-                daiBurnBodyReverts_allowance evmSolm I
-                  (by simp only [evmSolm, initState]; exact hwv)
-                  husrEnoughSolm
-                  (by simpa [evmSolm, initState] using husrIsSender)
+              simpa [evmStele] using
+                daiBurnBodyReverts_allowance evmStele I
+                  (by simp only [evmStele, initState]; exact hwv)
+                  husrEnoughStele
+                  (by simpa [evmStele, initState] using husrIsSender)
                   hnotMaxBody
                   hltAllowBody
             exact (daiBurnX_allowanceRevert hneWord hmax hltAllow rd3440)
@@ -3360,15 +3379,15 @@ theorem daiBurnBodyCore {σ σ₀ A I} {g : UInt256}
           (burnEvmTailUsrBalanceWord σ I).toNat < (burnWadWord I).toNat := by
         omega
       have hltBody :
-          (burnUsrBalanceWord evmSolm I).toNat < (burnWadWord I).toNat := by
+          (burnUsrBalanceWord evmStele I).toNat < (burnWadWord I).toNat := by
         rw [← husrWord]
         exact hlt
       have hbody :
-          ExecTransitionBody config contract evmSolm (burnStore I)
+          ExecTransitionBody config contract evmStele (burnStore I)
             burnTransition.body .reverted := by
-        simpa [evmSolm] using
-          daiBurnBodyReverts_initialBalance evmSolm I
-            (by simp only [evmSolm, initState]; exact hwv)
+        simpa [evmStele] using
+          daiBurnBodyReverts_initialBalance evmStele I
+            (by simp only [evmStele, initState]; exact hwv)
             hltBody
       exact (daiBurnX_initialBalanceRevert hlt rd3336)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.UpdateBaseModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -27,5 +27,15 @@ def transferBaseUpdateResult (frame : Frame) (v : CometWithExtendedAssetListImmu
   | .ok evm' => .ok (transferBaseUpdatedFrame frame) evm'
   | .reverted => .reverted
   | .staticViolation => .staticViolation
+
+theorem transferBaseUpdateOutcome_result_perm
+    {v evm src dst srcBasic dstBasic srcNext dstNext updated}
+    (hu : transferBaseUpdateOutcome v evm src dst srcBasic dstBasic srcNext dstNext = .ok updated) :
+    updated.executionEnv.perm = true := by
+  unfold transferBaseUpdateOutcome at hu
+  split at hu
+  · exact updateBaseOutcome_result_perm hu
+  · cases hu
+  · cases hu
 
 end Benchmarks.CompoundIII.Comet

@@ -1,17 +1,17 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # OpenZeppelin VestingWallet benchmark spec
 
-Solm specification for `VestingWalletBench`, the concrete payable wrapper with owner `msg.sender`,
+Stele specification for `VestingWalletBench`, the concrete payable wrapper with owner `msg.sender`,
 start `0`, and duration `365 days`.  Events are omitted.  ERC20 balance reads are static calls;
 token release models OpenZeppelin `SafeERC20.safeTransfer` as the raw call plus optional bool
 return check used by the compiled bytecode.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace OpenZeppelinBench.VestingWallet
 

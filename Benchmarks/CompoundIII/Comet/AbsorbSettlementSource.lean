@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbRepayResult
 import Benchmarks.CompoundIII.Comet.AbsorbDebtTailSource
 import Benchmarks.CompoundIII.Comet.InternalBlockComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -28,9 +28,10 @@ theorem absorbSettlement_source (frame : Frame) (v : CometWithExtendedAssetListI
     (hS : frame.locals.get? "totalSupplyBase" = none)
     (hB : frame.locals.get? "totalBorrowBase" = none)
     (hI : frame.locals.get? "baseSupplyIndex" = none)
-    (hnext : next.toNat < 2^255) (hprincipal : principal.toNat < 2^103) :
+    (hnext : next.toNat < 2^255) (hprincipal : principal.toNat < 2^103)
+    (hperm : evm.executionEnv.perm = true) :
     internalBlockResult config frame evm absorbSettlementBlock result := by
-  have hclear := absorbClear_source frame evm account hc hU hb
+  have hclear := absorbClear_source (hperm := by assumption) frame evm account hc hU hb
   have hrepay := absorbRepay_source frame (absorbClearState evm account) oldPrincipal principal
     hc hop hnp hS hB
   let repaid := absorbRepayFrame frame oldPrincipal principal
@@ -38,7 +39,7 @@ theorem absorbSettlement_source (frame : Frame) (v : CometWithExtendedAssetListI
       (hs : "supplyAmount" ≠ key) : repaid.locals.get? key = frame.locals.get? key := by
     simp only [repaid, absorbRepayFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert, beq_iff_eq, if_neg ht, if_neg hr, if_neg hs]
-  have htail (totaled : State) := absorbDebtTail_source repaid totaled v absorber account
+  have htail (totaled : State) (hpermTotal : totaled.executionEnv.perm = true) := absorbDebtTail_source (hperm := hpermTotal) repaid totaled v absorber account
     old next price principal hc hi
     ((hget _ (by decide) (by decide) (by decide)).trans ha)
     ((hget _ (by decide) (by decide) (by decide)).trans hb)
@@ -57,11 +58,11 @@ theorem absorbSettlement_source (frame : Frame) (v : CometWithExtendedAssetListI
   | repayStatic hr =>
     exact execBlock_append_term (absorbRepay_result hrepay hr) (by intro _ _ he; cases he)
   | debtReverted totaled hr hd =>
-    have hb := htail totaled
+    have hb := htail totaled (absorbRepayOutcome_result_perm hr)
     rw [if_neg hd] at hb
     exact hb.prependBlock (absorbRepay_result hrepay hr)
   | ok totaled hr hd =>
-    have hb := htail totaled
+    have hb := htail totaled (absorbRepayOutcome_result_perm hr)
     rw [if_pos hd] at hb
     exact hb.prependBlock (absorbRepay_result hrepay hr)
 

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.LegacyBytesDecode
 import Benchmarks.UniswapV3.Pool.SwapModel
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -48,7 +48,7 @@ theorem decodeScalarWord_legacyBool_ok {bytes : List UInt8} {start : Nat}
       decodeScalarWordWithMode_legacy_bool_true hlen hz
 
 theorem swapDecode (cd : ByteArray) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes cd =
       if SwapCalldataValid cd then some (swapLocals (swapDecodedArgs cd)) else none := by
   change decodeCalldataWithMode .legacySolc05
@@ -100,12 +100,12 @@ theorem swapDecode (cd : ByteArray) :
   simp only [swapLocals, swapDecodedArgs, signedWordInt]
 
 theorem swapDecodeValid {cd : ByteArray} (h : SwapCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes cd =
       some (swapLocals (swapDecodedArgs cd)) := by rw [swapDecode, if_pos h]
 
 theorem swapDecodeInvalid {cd : ByteArray} (h : ¬ SwapCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (swapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (swapTransition.params.map Param.name)
       (transitionSignature swapTransition).paramTypes cd = none := by rw [swapDecode, if_neg h]
 
 end Benchmarks.UniswapV3.Pool

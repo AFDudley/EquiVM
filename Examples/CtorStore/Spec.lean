@@ -1,20 +1,20 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
-# CtorStore — Solm specification for a constructor-storage equivalence test
+# CtorStore — Stele specification for a constructor-storage equivalence test
 
 The constructor takes a `uint256` argument and writes it to storage slot 0.  The storage field is
 private so the runtime surface stays empty while the constructor proof exercises ABI arguments and
 `SSTORE`.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace CtorStore
 
-/-- The ABI/Solm type `uint256`. -/
+/-- The ABI/Stele type `uint256`. -/
 def uint256 : ABIType := .elem (.int (.uint ⟨256, by decide⟩))
 
 /-- A payable constructor stores its `uint256` argument into slot 0. -/
@@ -22,7 +22,7 @@ def ctor : ConstructorDecl :=
   { params := [{ name := "x", ty := uint256 }]
     body := [ .assign .storage { base := "stored" } (.var "x") ] }
 
-/-- Solm specification of `CtorStore`; the private storage field has no public runtime transition. -/
+/-- Stele specification of `CtorStore`; the private storage field has no public runtime transition. -/
 def contract : ContractDecl :=
   { name := "CtorStore"
     storage := [{ name := "stored", ty := .elem (.int (.uint ⟨256, by decide⟩)) }]

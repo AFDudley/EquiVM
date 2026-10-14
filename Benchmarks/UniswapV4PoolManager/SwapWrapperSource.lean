@@ -3,12 +3,12 @@ import Benchmarks.UniswapV4PoolManager.ProtocolFeesUpdateSource
 import Benchmarks.UniswapV4PoolManager.PoolSwapFinishSource
 import Benchmarks.UniswapV4PoolManager.LocalBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def swapWrapperAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.15"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.15"
 
 def swapWrapperUnpackFrame (f : Frame) (delta fee amount : UInt256) (r : PoolSwapResultWords) : Frame :=
   valueLocal (wordLocal (wordLocal (valueLocal f "delta" (.int (EVM.signed delta)))

@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.SupplyBaseAfterSource
 import Benchmarks.CompoundIII.Comet.TransferInSource
 import Benchmarks.CompoundIII.Comet.AccrueInternalSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -54,7 +54,7 @@ theorem supplyBase_source {v sender dst amount evm result}
     have hassign : ExecStmt config read evm'
         (.assign .localVar ⟨"amount", []⟩ (.var "__c0"))
         (.ok (supplyBaseReceivedFrame v sender dst amount received) evm') :=
-      ExecStmt.assign he (assignLocalFrame (by
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalFrame (by
         simp only [read, frame, supplyBaseEntry, Std.HashMap.get?_eq_getElem?,
           Std.HashMap.getElem?_insert]; rfl))
     exact ((supplyBaseAfterTransfer_source amount tail).prepend hassign).prepend hcall

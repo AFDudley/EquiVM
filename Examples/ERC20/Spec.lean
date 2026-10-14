@@ -1,19 +1,19 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.SolidityStorage
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.SolidityStorage
+import Stele.MetaSolidityLayout
 
 /-!
-# ERC20 — Solm specification for `ERC20.sol`
+# ERC20 — Stele specification for `ERC20.sol`
 
-This is the Solm-level specification for the core ERC20 surface:
+This is the Stele-level specification for the core ERC20 surface:
 `totalSupply`, `balanceOf`, `allowance`, `approve`, `transfer`, and `transferFrom`.
 The bodies follow `ERC20.sol`, including its constructor event and fresh storage reads at each
 compound assignment. Logs and revert messages are not compared by the refinement relation.
 The checked-in creation wrapper is hand assembled and does not emit the constructor event.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace ERC20
 

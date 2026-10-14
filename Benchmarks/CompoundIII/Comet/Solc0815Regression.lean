@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
-open Solm ABI Solm.DiffTest Ethereum Ethereum.EVM
+open Stele ABI Stele.DiffTest Ethereum Ethereum.EVM
 open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
 namespace Benchmarks.CompoundIII.Comet.Solc0815Regression
@@ -36,14 +36,14 @@ def verdicts : List (String × Verdict) :=
 theorem cases_agree : verdicts.all (fun entry ↦ entry.2.isAgree) = true := by native_decide
 
 theorem dirty_calldata_decodes :
-    (decodeCalldataWithMode .solc0815 (absorbTransition.params.map Param.name)
+    (config.externalABI.decodeCalldata? (absorbTransition.params.map Param.name)
       (transitionSignature absorbTransition).paramTypes dirtyData).isSome = true := by native_decide
 
 -- The same word still fails when used as a scalar or in returned memory data.
 #guard decodeABIWord? (.elem .address) (.ofNat (2^160)) .solc0815 = none
-#guard decodeReturnValueWithMode? .solc0815 (.dynamicArray (.elem .address))
+#guard config.externalABI.decodeValue? (.dynamicArray (.elem .address))
   (wordBytes 32 ++ wordBytes 1 ++ wordBytes (2^160)) = none
-#guard decodeReturnValueWithMode? .solc0815 (.dynamicArray (.elem .address))
+#guard config.externalABI.decodeValue? (.dynamicArray (.elem .address))
   (wordBytes 32 ++ wordBytes 1 ++ wordBytes 7) =
     some (.array [.address (AccountAddress.ofNat 7)])
 #guard evalIndex? (.array [Solc0815.addressArrayWord (2^160)]) (.int 0) = .revert

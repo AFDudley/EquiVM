@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Flipper.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Flipper spec in the Solidity-faithful Solm frontend
+# Flipper spec in the Solidity-faithful Stele frontend
 
 The whole `flip.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked-math helper statement lists are inlined; the `Bid.end` field is
@@ -10,7 +10,7 @@ the guillemet-escaped `«end»`; `extCodeSize` guards on storage receivers use `
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Flipper
+open Stele Stele.Notation Benchmarks.Dss.Flipper
 
 namespace Benchmarks.Dss.Flipper.Syntax
 

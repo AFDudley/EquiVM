@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapFinishStorage
 import Benchmarks.UniswapV4PoolManager.PoolSwapSyntax
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -17,7 +17,8 @@ theorem poolSwapSlot0Frame_get (f : Frame) (packed : UInt256) (r : PoolSwapResul
 
 theorem poolSwapLiquiditySource {f : Frame} {evm : State} {id : UInt256} {r : PoolSwapResultWords}
     (hs : f.locals.get? "self" = some (poolRefValue id))
-    (hr : f.locals.get? "result" = some (poolSwapResultValue r)) (hl : r.liquidity.toNat < 2^128) :
+    (hr : f.locals.get? "result" = some (poolSwapResultValue r)) (hl : r.liquidity.toNat < 2^128)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config f evm poolSwapFunction.body[32]! (.ok f (poolSwapLiquidityPost evm id r.liquidity)) := by
   have hg := evalNeWords (poolLiquidity_read (evm := evm) hs)
     (evalStructField (field := "liquidity") (evalLocalValue hr) rfl)
@@ -26,21 +27,22 @@ theorem poolSwapLiquiditySource {f : Frame} {evm : State} {id : UInt256} {r : Po
     exact ExecStmt.iteFalse (by simpa only [he, ne_eq, not_true_eq_false, decide_false] using hg) ExecBlock.nil
   · rw [poolSwapLiquidityPost, if_neg he]
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true he] using hg)
-      (execBlock_singleton (ExecStmt.assign
+      (execBlock_singleton (ExecStmt.assign (hperm := Or.inr hperm)
         (evalStructField (field := "liquidity") (evalLocalValue hr) rfl) (poolLiquidity_write hs hl)))
 
 theorem poolSwapGrowthStoreSource {f : Frame} {evm : State} {id : UInt256} {s : PoolSwapStepWords}
     {zeroForOne : Bool}
     (hs : f.locals.get? "self" = some (poolRefValue id))
     (ht : f.locals.get? "step" = some (poolSwapStepValue s))
-    (hz : f.locals.get? "zeroForOne" = some (.bool zeroForOne)) :
+    (hz : f.locals.get? "zeroForOne" = some (.bool zeroForOne))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config f evm poolSwapFunction.body[33]!
       (.ok f (poolSwapGrowthPost evm id s.feeGrowthGlobal zeroForOne)) := by
   have hg := evalNotBool (evalLocalValue (cfg := config) (evm := evm) hz)
   have hv := evalStructField (field := "feeGrowthGlobalX128") (evalLocalValue (cfg := config) (evm := evm) ht) rfl
   cases zeroForOne
-  · exact ExecStmt.iteTrue hg (execBlock_singleton (ExecStmt.assign hv (poolFeeGrowth_write hs true)))
-  · exact ExecStmt.iteFalse hg (execBlock_singleton (ExecStmt.assign hv (poolFeeGrowth_write hs false)))
+  · exact ExecStmt.iteTrue hg (execBlock_singleton (ExecStmt.assign (hperm := Or.inr hperm) hv (poolFeeGrowth_write hs true)))
+  · exact ExecStmt.iteFalse hg (execBlock_singleton (ExecStmt.assign (hperm := Or.inr hperm) hv (poolFeeGrowth_write hs false)))
 
 theorem poolSwapStoreSource {f : Frame} {evm : State} {id packed : UInt256}
     {s : PoolSwapStepWords} {r : PoolSwapResultWords} {zeroForOne : Bool}
@@ -76,8 +78,8 @@ theorem poolSwapStoreSource {f : Frame} {evm : State} {id packed : UInt256}
       (ExecBlock.consStatic (ExecStmt.assignStatic hv hw hperm)))
   · rw [if_neg hperm]
     exact ExecBlock.consNormal htick (ExecBlock.consNormal hprice
-      (ExecBlock.consNormal (ExecStmt.assign hv hw)
-        (ExecBlock.consNormal (poolSwapLiquiditySource hs2 hr2 hl)
-          (execBlock_singleton (poolSwapGrowthStoreSource hs2 ht2 hz2)))))
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) hv hw)
+        (ExecBlock.consNormal (poolSwapLiquiditySource (hperm := by simpa only [poolSwapLiquidityPost_executionEnv, poolSwapSlot0Post_executionEnv, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hperm) hs2 hr2 hl)
+          (execBlock_singleton (poolSwapGrowthStoreSource (hperm := by simpa only [poolSwapLiquidityPost_executionEnv, poolSwapSlot0Post_executionEnv, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hperm) hs2 ht2 hz2)))))
 
 end Benchmarks.UniswapV4PoolManager

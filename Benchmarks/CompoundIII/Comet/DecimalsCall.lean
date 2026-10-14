@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.TokenBalanceTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -57,7 +57,7 @@ theorem decimals_source_ok {frame : Frame} {evm evm' : EVM.State}
       (.ok { frame with locals :=
         frame.locals.insert ret (.int (Int.ofNat (calldataWord out 0).toNat)) } evm') := by
   rw [← addressOfAddress asset] at hc
-  exact ExecStmt.externalCallSuccess (eth := .intLit 0) (args := []) he
+  exact ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (eth := .intLit 0) (args := []) he
     (by simp only [evalExpr?, pure]) (by rfl) (decimals_typed hc)
     (by rw [decimals_decode hhi, if_pos hv])
 
@@ -71,10 +71,10 @@ theorem decimals_source_revert {frame : Frame} {evm evm' : EVM.State}
   rw [← addressOfAddress asset] at hc
   cases z with
   | false =>
-    exact ExecStmt.externalCallFailure he
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
       (by simp only [evalExpr?, pure]) (by rfl) (decimals_typed hc)
   | true =>
-    exact ExecStmt.externalCallReturnDecodeRevert he
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
       (by simp only [evalExpr?, pure]) (by rfl) (decimals_typed hc)
       (by rw [decimals_decode hhi, if_neg (fun h ↦ hv ⟨rfl, h⟩)])
 

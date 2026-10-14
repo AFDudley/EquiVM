@@ -3,7 +3,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.End.Common
 import Benchmarks.Dss.End.FileUint
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -222,19 +222,19 @@ theorem endCageCallMadeBridge {evmE evmS : EVM.State} {slot : UInt256}
     (hAccounts : Eq evmE.accountMap evmS.accountMap)
     (hOriginalAccounts : evmE.σ₀ = evmS.σ₀)
     (hEnv : evmS.executionEnv = evmE.executionEnv) :
-    ∃ (σ'_solm : AccountMap) (A'_solm : Substate),
+    ∃ (σ'_stele : AccountMap) (A'_stele : Substate),
       typedCallViaEVM config evmS
         (EVM.address (endCageCallTargetAddr slot evmS.accountMap evmS.executionEnv))
         "cage" 0 [] (z,
           { evmS with
-              accountMap := σ'_solm
-              substate := A'_solm },
+              accountMap := σ'_stele
+              substate := A'_stele },
           out) true ∧
       EVMStateEquiv
         { evmE with accountMap := σ', substate := A' }
         { evmS with
-            accountMap := σ'_solm
-            substate := A'_solm } := by
+            accountMap := σ'_stele
+            substate := A'_stele } := by
   have htgt :
       EVM.address (endCageCallTargetAddr slot evmS.accountMap evmE.executionEnv) =
         AccountAddress.ofUInt256
@@ -321,9 +321,9 @@ theorem endCageCallTargetCode_pos_of_codeSize_ne {σ : AccountMap} {I : Executio
 
 
 theorem endDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem endDispatchCage {I : ExecutionEnv}
@@ -468,7 +468,7 @@ theorem evalStorageRef_endCage_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endCage_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -477,7 +477,7 @@ theorem evalExpr_endCage_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -495,7 +495,7 @@ theorem evalExpr_endCage_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endCage_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -503,11 +503,11 @@ theorem evalExpr_endCage_auth_false (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? config { contract := contract, locals := ∅ } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -519,7 +519,7 @@ theorem evalExpr_endCage_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (endRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -527,13 +527,13 @@ theorem evalExpr_endCage_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (endRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -546,7 +546,7 @@ theorem evalStorageRef_endCage_live (evm : EVM.State) :
     pure, bind]
 
 theorem evalExpr_endCage_live_true (evm : EVM.State)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -554,7 +554,7 @@ theorem evalExpr_endCage_live_true (evm : EVM.State)
         (.storage liveRef) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -569,17 +569,17 @@ theorem evalExpr_endCage_live_true (evm : EVM.State)
   rfl
 
 theorem evalExpr_endCage_live_false (evm : EVM.State)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := ∅ } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := ∅ } evm
         (.storage liveRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -591,7 +591,7 @@ theorem evalExpr_endCage_live_false (evm : EVM.State)
       (hload := by exact storageLocLoad_uint256 evm ⟨8⟩)
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
         Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -599,13 +599,13 @@ theorem evalExpr_endCage_live_false (evm : EVM.State)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
         Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -615,8 +615,8 @@ abbrev endCageTimestampWord (evm : EVM.State) : UInt256 :=
 
 
 def endCagePostStoresState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩)
     evm.executionEnv.codeOwner ⟨9⟩ (endCageTimestampWord evm)
 
 def endCageStoredAccountMap (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
@@ -632,7 +632,7 @@ theorem endCageAssignLive (evm : EVM.State) :
     assignStorageRef? config { contract := contract, locals := ∅ } evm
       .storage liveRef (.int 0) =
         .ok ({ contract := contract, locals := ∅ },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (er := endLiveEvaledRef)
@@ -645,7 +645,7 @@ theorem endCageAssignLive (evm : EVM.State) :
 
 theorem endCageAssignWhen (evm : EVM.State) :
     assignStorageRef? config { contract := contract, locals := ∅ }
-      (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩)
+      (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩)
       .storage whenRef (.int (Int.ofNat (endCageTimestampWord evm).toNat)) =
         .ok ({ contract := contract, locals := ∅ }, endCagePostStoresState evm) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
@@ -659,7 +659,7 @@ theorem endCageAssignWhen (evm : EVM.State) :
       (hloc := by rfl)
   simpa [endCagePostStoresState, endCageTimestampWord, storageStore_executionEnv] using
     storageLocStore_uint256
-      (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩) ⟨9⟩
+      (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ ⟨0⟩) ⟨9⟩
       (endCageTimestampWord evm)
 
 theorem endCageX_storePrefixSplit {σ I} {g : Sat256} {s0 : State} {k C : ℕ}
@@ -2799,7 +2799,7 @@ theorem endCageSourceStoresPrefixSplit {σ σ₀ A I} {g : UInt256}
     (hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evmStores := endCagePostStoresState evm0
-    (ExecBlock config { contract := contract, locals := ∅ } evm0
+    (I.perm = true → ExecBlock config { contract := contract, locals := ∅ } evm0
       (nonpayable ++ auth ++
         [ .require (.binary .eq (.storage liveRef) (.intLit 1)),
           .assign .storage liveRef (.intLit 0),
@@ -2812,17 +2812,17 @@ theorem endCageSourceStoresPrefixSplit {σ σ₀ A I} {g : UInt256}
               .assign .storage liveRef (.intLit 0),
               .assign .storage whenRef nowT ])      .staticViolation) := by
   intro evm0 evmStores
-  let evmLive := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨8⟩ ⟨0⟩
+  let evmLive := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨8⟩ ⟨0⟩
   have hguardAuth :
       evalExpr? config { contract := contract, locals := ∅ } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endCage_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := ∅ } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_endCage_live_true evm0 hlive
   have hassignLive :
       assignStorageRef? config { contract := contract, locals := ∅ } evm0
@@ -2851,9 +2851,10 @@ theorem endCageSourceStoresPrefixSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) htail
   constructor
-  · apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign htimestamp hassignWhen) ExecBlock.nil
+  · intro hperm
+    apply hprefix
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignLive) ?_
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmLive, storageStore_executionEnv] using hperm)) htimestamp hassignWhen) ExecBlock.nil
   · intro hperm
     exact hprefix (ExecBlock.consStatic
       (ExecStmt.assignStatic (by simp [evalExpr?, pure]) hassignLive
@@ -2869,7 +2870,7 @@ theorem evalExpr_endCage_storageAddr {evm : EVM.State} {locals : Store}
       .ok (.address (endCageCallTargetAddr slot evm.accountMap evm.executionEnv)) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := ref)
     (er := er)
     (t := .address)
@@ -2880,7 +2881,7 @@ theorem evalExpr_endCage_storageAddr {evm : EVM.State} {locals : Store}
     (hloc := hloc)
     (hload := by exact storageLocLoad_address_offset0 evm slot)]
   simp [endCageCallTargetAddr, endCageCallTargetWord, solcAddressSlotWord, solcSlotWordAt,
-    solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+    solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
 
 theorem endCageCheckedCallNoCode {evm : EVM.State} {locals : Store}
     {ref : StorageRef} {er : EvaledStorageRef} {slot : UInt256} {retVar : Ident}
@@ -2950,7 +2951,7 @@ theorem endCageCheckedCallFailed {evm evm' : EVM.State} {locals : Store}
       evalExprs? config { contract := contract, locals := locals } evm [] = .ok [] := by
     rfl
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := locals) (receiver := .storage ref)
       (retVar := retVar) (name := "cage")
@@ -2994,7 +2995,7 @@ theorem endCageCheckedCallSuccess {evm evm' : EVM.State} {locals : Store}
     rfl
   have hdec : config.externalABI.decode? "cage" out = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evm')
     (locals := locals) (receiver := .storage ref)
     (retVar := retVar) (name := "cage")
@@ -3063,14 +3064,14 @@ theorem endCageSourceAuthReverts {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := ∅ } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
-    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endCage_auth_false evm0 I (by simp [evm0, initState]) hauth
   refine ExecFuncBody.execBlockRevert ?_
   simpa [cageTransition, nonpayable, auth, checkedExternalCallStmts] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := ∅ })
+      (stele := { contract := contract, locals := ∅ })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest :=
@@ -3097,13 +3098,13 @@ theorem endCageSourceLiveReverts {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := ∅ } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endCage_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := ∅ } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
-    simpa [evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       evalExpr_endCage_live_false evm0 hlive
   have hblock :
       ExecBlock config { contract := contract, locals := ∅ } evm0 cageTransition.body
@@ -3131,7 +3132,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     hcode hwv hsz4 hsize hsel'
   obtain ⟨_, _, hAuthPc⟩ := endCageX_entry hreach
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   by_cases hauth : endRelyAuthWord σ I = ⟨1⟩
   · obtain ⟨_, _, hLivePc⟩ := endCageX_authorized hauth hAuthPc
     by_cases hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩
@@ -3141,15 +3142,15 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
       rcases endCageX_storePrefixSplit hStorePc with
         ⟨hperm, _, _, hVatStart⟩ | ⟨hperm, hstatic⟩
       swap
-      · have hbody : ExecTransitionBody config contract evmSolm ∅
+      · have hbody : ExecTransitionBody config contract evmStele ∅
             cageTransition.body .staticViolation := by
           apply ExecFuncBody.execBlockStatic
           rw [endCageSourceBody_eq]
           exact execBlock_append_term (s2 := endCageSourceCallStmts)
-            (by simpa [evmSolm, endCageSourceStorePrefixStmts] using hsrcSplit.2 hperm)
+            (by simpa [evmStele, endCageSourceStorePrefixStmts] using hsrcSplit.2 hperm)
             (by intro f e h; cases h)
         exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hbody
-      let evmS0 := endCagePostStoresState evmSolm
+      let evmS0 := endCagePostStoresState evmStele
       let evmE0 := endCagePostStoresState
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       let l0 : Store := ∅
@@ -3161,27 +3162,27 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
       let lPot := lSpot.insert "_potCage" .unit
       let lCure := lPot.insert "_cureCage" .unit
       have hSrc0 :
-          ExecBlock config { contract := contract, locals := ∅ } evmSolm
+          ExecBlock config { contract := contract, locals := ∅ } evmStele
             endCageSourceStorePrefixStmts
             (.ok { contract := contract, locals := ∅ } evmS0) := by
-        simpa [evmSolm, evmS0, endCageSourceStorePrefixStmts] using
-          hsrcSplit.1
+        simpa [evmStele, evmS0, endCageSourceStorePrefixStmts] using
+          hsrcSplit.1 hperm
       have hAccounts0 : Eq evmE0.accountMap evmS0.accountMap := rfl
       have hState0 : EVMStateEquiv evmE0 evmS0 := by
         refine ⟨?_, ?_⟩
-        · simp [evmE0, evmS0, evmSolm, endCagePostStoresState, initState,
+        · simp [evmE0, evmS0, evmStele, endCagePostStoresState, initState,
             storageStore_executionEnv]
         · exact hAccounts0
       have mkRevert
           {f1 : Frame} {e1 : EVM.State} {s1 s2 tail : List Stmt}
           (h1 :
-            ExecBlock config { contract := contract, locals := ∅ } evmSolm s1
+            ExecBlock config { contract := contract, locals := ∅ } evmStele s1
               (.ok f1 e1))
           (h2 : ExecBlock config f1 e1 s2 .reverted)
           (hshape : cageTransition.body = s1 ++ s2 ++ tail) :
-          ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted := by
+          ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted := by
         have hblock :
-            ExecBlock config { contract := contract, locals := ∅ } evmSolm
+            ExecBlock config { contract := contract, locals := ∅ } evmStele
               cageTransition.body .reverted := by
           rw [hshape]
           exact endCageExecBlock_append_revert (tail := tail) h1 h2
@@ -3210,7 +3211,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
               (by rfl)
               hVatCodeS
         have hbody :
-            ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted :=
+            ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted :=
           mkRevert
             (s1 := endCageSourceStorePrefixStmts)
             (s2 := endCageSourceVatStmts)
@@ -3269,14 +3270,14 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
             simpa [evmE0, endCagePostStoresState, initState, storageStore_accountMap,
               storageStore_executionEnv, endCageStoredAccountMap,
               hperm] using hΘ1eq
-          obtain ⟨σ1s, A1s, hcall1Solm, hState1⟩ :=
+          obtain ⟨σ1s, A1s, hcall1Stele, hState1⟩ :=
             endCageCallMadeBridge (slot := ⟨1⟩)
               (evmE := evmE0) (evmS := evmS0)
               (σ' := σ1) (A' := A1) (Ain := Ain1)
               (z := z1) (out := out1) (g'' := g1'') (callGas := callGas1)
               hdepthNe0 hΘ1bridge hAccounts0
-              (by simp [evmE0, evmS0, evmSolm, endCagePostStoresState, initState])
-              (by simp [evmE0, evmS0, evmSolm, endCagePostStoresState, initState,
+              (by simp [evmE0, evmS0, evmStele, endCagePostStoresState, initState])
+              (by simp [evmE0, evmS0, evmStele, endCagePostStoresState, initState,
                 storageStore_executionEnv])
           let evmS1 := { evmS0 with accountMap := σ1s, substate := A1s }
           cases z1
@@ -3297,9 +3298,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                   (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                   (by rfl)
                   hVatCodeSNE
-                  (by simpa [evmS1] using hcall1Solm)
+                  (by simpa [evmS1] using hcall1Stele)
             have hbody :
-                ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted :=
+                ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted :=
               mkRevert
                 (s1 := endCageSourceStorePrefixStmts)
                 (s2 := endCageSourceVatStmts)
@@ -3330,9 +3331,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                   (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                   (by rfl)
                   hVatCodeSNE
-                  (by simpa [evmS1] using hcall1Solm)
+                  (by simpa [evmS1] using hcall1Stele)
             have hSrcVat :
-                ExecBlock config { contract := contract, locals := ∅ } evmSolm
+                ExecBlock config { contract := contract, locals := ∅ } evmStele
                   (endCageSourceStorePrefixStmts ++ endCageSourceVatStmts)
                   (.ok { contract := contract, locals := lVat } evmS1) := by
               simpa [l0, List.append_assoc] using
@@ -3366,7 +3367,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                     (by rfl)
                     hCatCodeS
               have hbody :
-                  ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted :=
+                  ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted :=
                 mkRevert
                   (s1 := endCageSourceStorePrefixStmts ++ endCageSourceVatStmts)
                   (s2 := endCageSourceCatStmts)
@@ -3415,13 +3416,13 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                 simpa [evmE1, evmE0, endCagePostStoresState, initState,
                   storageStore_accountMap,
                   storageStore_executionEnv, endCageStoredAccountMap, endCageTimestampWord, hperm] using hΘ2eq
-              obtain ⟨σ2s, A2s, hcall2Solm, hState2⟩ :=
+              obtain ⟨σ2s, A2s, hcall2Stele, hState2⟩ :=
                 endCageCallMadeBridge (slot := ⟨2⟩)
                   (evmE := evmE1) (evmS := evmS1)
                   (σ' := σ2) (A' := A2) (Ain := Ain2)
                   (z := z2) (out := out2) (g'' := g2'') (callGas := callGas2)
                   hdepthNe1 hΘ2bridge hState1.accountMap
-                  (by simp [evmE1, evmS1, evmE0, evmS0, evmSolm, endCagePostStoresState,
+                  (by simp [evmE1, evmS1, evmE0, evmS0, evmStele, endCagePostStoresState,
                     initState])
                   (by simpa [evmE1, evmS1] using hState1.executionEnv.symm)
               let evmS2 :=
@@ -3445,9 +3446,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                       (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                       (by rfl)
                       hCatCodeSNE
-                      (by simpa [evmS2] using hcall2Solm)
+                      (by simpa [evmS2] using hcall2Stele)
                 have hbody :
-                    ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                    ExecTransitionBody config contract evmStele ∅ cageTransition.body
                       .reverted :=
                   mkRevert
                     (s1 := endCageSourceStorePrefixStmts ++ endCageSourceVatStmts)
@@ -3481,9 +3482,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                       (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                       (by rfl)
                       hCatCodeSNE
-                      (by simpa [evmS2] using hcall2Solm)
+                      (by simpa [evmS2] using hcall2Stele)
                 have hSrcCat :
-                    ExecBlock config { contract := contract, locals := ∅ } evmSolm
+                    ExecBlock config { contract := contract, locals := ∅ } evmStele
                       (endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
                         endCageSourceCatStmts)
                       (.ok { contract := contract, locals := lCat } evmS2) := by
@@ -3518,7 +3519,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                         (by rfl)
                         hDogCodeS
                   have hbody :
-                      ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                      ExecTransitionBody config contract evmStele ∅ cageTransition.body
                         .reverted :=
                     mkRevert
                       (s1 := endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
@@ -3572,13 +3573,13 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                     simpa [evmE2, evmE1, evmE0, endCagePostStoresState, initState,
                       storageStore_accountMap,
                       storageStore_executionEnv, endCageStoredAccountMap, endCageTimestampWord, hperm] using hΘ3eq
-                  obtain ⟨σ3s, A3s, hcall3Solm, hState3⟩ :=
+                  obtain ⟨σ3s, A3s, hcall3Stele, hState3⟩ :=
                     endCageCallMadeBridge (slot := ⟨3⟩)
                       (evmE := evmE2) (evmS := evmS2)
                       (σ' := σ3) (A' := A3) (Ain := Ain3)
                       (z := z3) (out := out3) (g'' := g3'') (callGas := callGas3)
                       hdepthNe2 hΘ3bridge hState2.accountMap
-                      (by simp [evmE2, evmS2, evmE1, evmS1, evmE0, evmS0, evmSolm,
+                      (by simp [evmE2, evmS2, evmE1, evmS1, evmE0, evmS0, evmStele,
                         endCagePostStoresState, initState])
                       (by simpa [evmE2, evmS2] using hState2.executionEnv.symm)
                   let evmS3 := { evmS2 with accountMap := σ3s, substate := A3s }
@@ -3600,9 +3601,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                           (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                           (by rfl)
                           hDogCodeSNE
-                          (by simpa [evmS3] using hcall3Solm)
+                          (by simpa [evmS3] using hcall3Stele)
                     have hbody :
-                        ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                        ExecTransitionBody config contract evmStele ∅ cageTransition.body
                           .reverted :=
                       mkRevert
                         (s1 := endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
@@ -3635,9 +3636,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                           (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                           (by rfl)
                           hDogCodeSNE
-                          (by simpa [evmS3] using hcall3Solm)
+                          (by simpa [evmS3] using hcall3Stele)
                     have hSrcDog :
-                        ExecBlock config { contract := contract, locals := ∅ } evmSolm
+                        ExecBlock config { contract := contract, locals := ∅ } evmStele
                           (endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
                             endCageSourceCatStmts ++ endCageSourceDogStmts)
                           (.ok { contract := contract, locals := lDog } evmS3) := by
@@ -3672,7 +3673,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                             (by rfl)
                             hVowCodeS
                       have hbody :
-                          ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                          ExecTransitionBody config contract evmStele ∅ cageTransition.body
                             .reverted :=
                         mkRevert
                           (s1 := endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
@@ -3729,14 +3730,14 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                           initState, storageStore_accountMap,
                           storageStore_executionEnv, endCageStoredAccountMap, endCageTimestampWord, hperm] using
                           hΘ4eq
-                      obtain ⟨σ4s, A4s, hcall4Solm, hState4⟩ :=
+                      obtain ⟨σ4s, A4s, hcall4Stele, hState4⟩ :=
                         endCageCallMadeBridge (slot := ⟨4⟩)
                           (evmE := evmE3) (evmS := evmS3)
                           (σ' := σ4) (A' := A4) (Ain := Ain4)
                           (z := z4) (out := out4) (g'' := g4'') (callGas := callGas4)
                           hdepthNe3 hΘ4bridge hState3.accountMap
                           (by simp [evmE3, evmS3, evmE2, evmS2, evmE1, evmS1,
-                            evmE0, evmS0, evmSolm, endCagePostStoresState, initState])
+                            evmE0, evmS0, evmStele, endCagePostStoresState, initState])
                           (by simpa [evmE3, evmS3] using hState3.executionEnv.symm)
                       let evmS4 := { evmS3 with accountMap := σ4s, substate := A4s }
                       cases z4
@@ -3757,9 +3758,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                               (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                               (by rfl)
                               hVowCodeSNE
-                              (by simpa [evmS4] using hcall4Solm)
+                              (by simpa [evmS4] using hcall4Stele)
                         have hbody :
-                            ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                            ExecTransitionBody config contract evmStele ∅ cageTransition.body
                               .reverted :=
                           mkRevert
                             (s1 := endCageSourceStorePrefixStmts ++
@@ -3793,9 +3794,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                               (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                               (by rfl)
                               hVowCodeSNE
-                              (by simpa [evmS4] using hcall4Solm)
+                              (by simpa [evmS4] using hcall4Stele)
                         have hSrcVow :
-                            ExecBlock config { contract := contract, locals := ∅ } evmSolm
+                            ExecBlock config { contract := contract, locals := ∅ } evmStele
                               (endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
                                 endCageSourceCatStmts ++ endCageSourceDogStmts ++
                                 endCageSourceVowStmts)
@@ -3832,7 +3833,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                 (by rfl)
                                 hSpotCodeS
                           have hbody :
-                              ExecTransitionBody config contract evmSolm ∅ cageTransition.body
+                              ExecTransitionBody config contract evmStele ∅ cageTransition.body
                                 .reverted :=
                             mkRevert
                               (s1 := endCageSourceStorePrefixStmts ++
@@ -3889,7 +3890,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                               endCagePostStoresState, initState, storageStore_accountMap,
                               storageStore_executionEnv,
                               endCageStoredAccountMap, endCageTimestampWord, hperm] using hΘ5eq
-                          obtain ⟨σ5s, A5s, hcall5Solm, hState5⟩ :=
+                          obtain ⟨σ5s, A5s, hcall5Stele, hState5⟩ :=
                             endCageCallMadeBridge (slot := ⟨6⟩)
                               (evmE := evmE4) (evmS := evmS4)
                               (σ' := σ5) (A' := A5) (Ain := Ain5)
@@ -3897,7 +3898,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                               (callGas := callGas5)
                               hdepthNe4 hΘ5bridge hState4.accountMap
                               (by simp [evmE4, evmS4, evmE3, evmS3, evmE2, evmS2,
-                                evmE1, evmS1, evmE0, evmS0, evmSolm,
+                                evmE1, evmS1, evmE0, evmS0, evmStele,
                                 endCagePostStoresState, initState])
                               (by simpa [evmE4, evmS4] using hState4.executionEnv.symm)
                           let evmS5 := { evmS4 with accountMap := σ5s, substate := A5s }
@@ -3920,9 +3921,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                   (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                   (by rfl)
                                   hSpotCodeSNE
-                                  (by simpa [evmS5] using hcall5Solm)
+                                  (by simpa [evmS5] using hcall5Stele)
                             have hbody :
-                                ExecTransitionBody config contract evmSolm ∅
+                                ExecTransitionBody config contract evmStele ∅
                                   cageTransition.body .reverted :=
                               mkRevert
                                 (s1 := endCageSourceStorePrefixStmts ++
@@ -3958,10 +3959,10 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                   (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                   (by rfl)
                                   hSpotCodeSNE
-                                  (by simpa [evmS5] using hcall5Solm)
+                                  (by simpa [evmS5] using hcall5Stele)
                             have hSrcSpot :
                                 ExecBlock config { contract := contract, locals := ∅ }
-                                  evmSolm
+                                  evmStele
                                   (endCageSourceStorePrefixStmts ++ endCageSourceVatStmts ++
                                     endCageSourceCatStmts ++ endCageSourceDogStmts ++
                                     endCageSourceVowStmts ++ endCageSourceSpotStmts)
@@ -3999,7 +4000,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                     (by rfl)
                                     hPotCodeS
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm ∅
+                                  ExecTransitionBody config contract evmStele ∅
                                     cageTransition.body .reverted :=
                                 mkRevert
                                   (s1 := endCageSourceStorePrefixStmts ++
@@ -4059,7 +4060,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                   endCagePostStoresState, initState, storageStore_accountMap,
                                   storageStore_executionEnv,
                                   endCageStoredAccountMap, endCageTimestampWord, hperm] using hΘ6eq
-                              obtain ⟨σ6s, A6s, hcall6Solm, hState6⟩ :=
+                              obtain ⟨σ6s, A6s, hcall6Stele, hState6⟩ :=
                                 endCageCallMadeBridge (slot := ⟨5⟩)
                                   (evmE := evmE5) (evmS := evmS5)
                                   (σ' := σ6) (A' := A6) (Ain := Ain6)
@@ -4067,7 +4068,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                   (callGas := callGas6)
                                   hdepthNe5 hΘ6bridge hState5.accountMap
                                   (by simp [evmE5, evmS5, evmE4, evmS4, evmE3, evmS3,
-                                    evmE2, evmS2, evmE1, evmS1, evmE0, evmS0, evmSolm,
+                                    evmE2, evmS2, evmE1, evmS1, evmE0, evmS0, evmStele,
                                     endCagePostStoresState, initState])
                                   (by simpa [evmE5, evmS5] using
                                     hState5.executionEnv.symm)
@@ -4094,9 +4095,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                       (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                       (by rfl)
                                       hPotCodeSNE
-                                      (by simpa [evmS6] using hcall6Solm)
+                                      (by simpa [evmS6] using hcall6Stele)
                                 have hbody :
-                                    ExecTransitionBody config contract evmSolm ∅
+                                    ExecTransitionBody config contract evmStele ∅
                                       cageTransition.body .reverted :=
                                   mkRevert
                                     (s1 := endCageSourceStorePrefixStmts ++
@@ -4136,10 +4137,10 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                       (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                       (by rfl)
                                       hPotCodeSNE
-                                      (by simpa [evmS6] using hcall6Solm)
+                                      (by simpa [evmS6] using hcall6Stele)
                                 have hSrcPot :
                                     ExecBlock config { contract := contract, locals := ∅ }
-                                      evmSolm
+                                      evmStele
                                       (endCageSourceStorePrefixStmts ++
                                         endCageSourceVatStmts ++ endCageSourceCatStmts ++
                                         endCageSourceDogStmts ++ endCageSourceVowStmts ++
@@ -4181,7 +4182,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                         (by rfl)
                                         hCureCodeS
                                   have hbody :
-                                      ExecTransitionBody config contract evmSolm ∅
+                                      ExecTransitionBody config contract evmStele ∅
                                         cageTransition.body .reverted :=
                                     mkRevert
                                       (s1 := endCageSourceStorePrefixStmts ++
@@ -4246,7 +4247,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                       storageStore_accountMap,
                                       storageStore_executionEnv, endCageStoredAccountMap,
                                       hperm] using hΘ7eq
-                                  obtain ⟨σ7s, A7s, hcall7Solm, hState7⟩ :=
+                                  obtain ⟨σ7s, A7s, hcall7Stele, hState7⟩ :=
                                     endCageCallMadeBridge (slot := ⟨7⟩)
                                       (evmE := evmE6) (evmS := evmS6)
                                       (σ' := σ7) (A' := A7)
@@ -4255,7 +4256,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                       hdepthNe6 hΘ7bridge hState6.accountMap
                                       (by simp [evmE6, evmS6, evmE5, evmS5, evmE4,
                                         evmS4, evmE3, evmS3, evmE2, evmS2, evmE1,
-                                        evmS1, evmE0, evmS0, evmSolm,
+                                        evmS1, evmE0, evmS0, evmStele,
                                         endCagePostStoresState, initState])
                                       (by simpa [evmE6, evmS6] using
                                         hState6.executionEnv.symm)
@@ -4283,9 +4284,9 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                           (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                           (by rfl)
                                           hCureCodeSNE
-                                          (by simpa [evmS7] using hcall7Solm)
+                                          (by simpa [evmS7] using hcall7Stele)
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm ∅
+                                        ExecTransitionBody config contract evmStele ∅
                                           cageTransition.body .reverted :=
                                       mkRevert
                                         (s1 := endCageSourceStorePrefixStmts ++
@@ -4328,10 +4329,10 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                           (by simp [storageTypeAt?, contract, storageDecls, addrSt])
                                           (by rfl)
                                           hCureCodeSNE
-                                          (by simpa [evmS7] using hcall7Solm)
+                                          (by simpa [evmS7] using hcall7Stele)
                                     have hSrcCure :
                                         ExecBlock config
-                                          { contract := contract, locals := ∅ } evmSolm
+                                          { contract := contract, locals := ∅ } evmStele
                                           (endCageSourceStorePrefixStmts ++
                                             endCageSourceVatStmts ++
                                             endCageSourceCatStmts ++
@@ -4347,14 +4348,14 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                                           (s2 := endCageSourceCureStmts) hSrcPot
                                           hCureBlock
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm ∅
+                                        ExecTransitionBody config contract evmStele ∅
                                           cageTransition.body
                                           (.returned
                                             { contract := contract, locals := lCure }
                                             evmS7 none) := by
                                       have hblock :
                                           ExecBlock config
-                                            { contract := contract, locals := ∅ } evmSolm
+                                            { contract := contract, locals := ∅ } evmStele
                                             cageTransition.body
                                             (.ok { contract := contract, locals := lCure }
                                               evmS7) := by
@@ -4398,7 +4399,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
             simpa using
               endCageCallNotMadeDepthLimit evmS0 ⟨1⟩
                 (by
-                  simpa [evmS0, evmSolm, endCagePostStoresState, initState,
+                  simpa [evmS0, evmStele, endCagePostStoresState, initState,
                     storageStore_executionEnv] using hdepthEq)
           have hVatBlock :
               ExecBlock config { contract := contract, locals := l0 } evmS0
@@ -4424,7 +4425,7 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
                 hVatCodeSNE
                 hcallDepth
           have hbody :
-              ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted :=
+              ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted :=
             mkRevert
               (s1 := endCageSourceStorePrefixStmts)
               (s2 := endCageSourceVatStmts)
@@ -4436,16 +4437,16 @@ theorem endCageBody {σ σ₀ A I} {g : UInt256}
           exact (endCageX_vatCallFailed rdVatDepth (by native_decide))
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have hbody :
-          ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted := by
-        simpa [evmSolm] using
+          ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted := by
+        simpa [evmStele] using
           endCageSourceLiveReverts
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
             hwv hauth hlive
       exact (endCageX_notLive hlive hLivePc)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · have hbody :
-        ExecTransitionBody config contract evmSolm ∅ cageTransition.body .reverted := by
-      simpa [evmSolm] using
+        ExecTransitionBody config contract evmStele ∅ cageTransition.body .reverted := by
+      simpa [evmStele] using
         endCageSourceAuthReverts
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
           hwv hauth

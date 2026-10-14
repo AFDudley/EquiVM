@@ -1,12 +1,12 @@
 import Benchmarks.Dss.Flapper.ConstructorSource
 import Benchmarks.Dss.Flapper.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Flapper constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flapper
 
@@ -36,9 +36,9 @@ private theorem flapperCtorStateEquiv
     let evm0s := initState σ σ₀ g A I
     let evm1e := flapperCtorAfterBegState evm0e
     let evm1s := flapperCtorAfterBegState evm0s
-    let evm2e := Solm.EVM.storageStore evm1e evm1e.executionEnv.codeOwner ⟨5⟩
+    let evm2e := Stele.EVM.storageStore evm1e evm1e.executionEnv.codeOwner ⟨5⟩
       (flapperCtorDefaultsSlot5Word
-        (Solm.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩))
+        (Stele.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩))
     let evm2s := flapperCtorAfterTtlState evm1s
     let evm3s := flapperCtorAfterTauState evm2s
     let evm4e := flapperCtorAfterKicksState evm2e
@@ -59,20 +59,20 @@ private theorem flapperCtorStateEquiv
       storageStore_accountMap]
   let packedS :=
     flapperCtorDefaultsSlot5Word
-      (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+      (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
   let evm3sPacked :=
-    Solm.EVM.storageStore evm1s evm1s.executionEnv.codeOwner ⟨5⟩ packedS
+    Stele.EVM.storageStore evm1s evm1s.executionEnv.codeOwner ⟨5⟩ packedS
   have hPacked : evm2e.accountMap = evm3sPacked.accountMap := by
     have hEnv : evm1e.executionEnv = evm1s.executionEnv := by
       simp [evm1e, evm1s, evm0e, evm0s, flapperCtorAfterBegState,
         storageStore_executionEnv]
     have hLoad :
-        Solm.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩ =
-          Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
-      simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h1, hEnv]
+        Stele.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩ =
+          Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
+      simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h1, hEnv]
     have hval :
         flapperCtorDefaultsSlot5Word
-            (Solm.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩) =
+            (Stele.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩) =
           packedS := by
       simpa [packedS] using congrArg flapperCtorDefaultsSlot5Word hLoad
     simp only [evm2e, evm3sPacked, storageStore_accountMap]
@@ -88,41 +88,41 @@ private theorem flapperCtorStateEquiv
           simpa [evm2s, flapperCtorAfterTtlState] using
             storageStore_absent evm1s evm1s.executionEnv.codeOwner hacc ⟨5⟩
               (setUint48Offset0Word
-                (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTtlWord)
         have hTauNoop : evm3s = evm1s := by
           simpa [evm3s, flapperCtorAfterTauState, hTtlNoop] using
             storageStore_absent evm1s evm1s.executionEnv.codeOwner hacc ⟨5⟩
               (setUint48Offset6Word
-                (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTauWord)
         simpa [hPackedNoop, hTauNoop]
     | some acc =>
         have hTtlLoad :
-            Solm.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩ =
+            Stele.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩ =
               setUint48Offset0Word
-                (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTtlWord := by
           simpa [evm2s, flapperCtorAfterTtlState, storageStore_executionEnv] using
             storageLoad_storageStore_same_present evm1s evm1s.executionEnv.codeOwner hacc
               ⟨5⟩
               (setUint48Offset0Word
-                (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTtlWord)
         have hTauVal :
             setUint48Offset6Word
-                (Solm.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩)
+                (Stele.EVM.storageLoad evm2s evm2s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTauWord =
               packedS := by
           rw [hTtlLoad]
           exact (flapperCtorDefaultsSlot5Word_eq_source
-            (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)).symm
+            (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)).symm
         have hTauVal' :
             setUint48Offset6Word
-                (Solm.EVM.storageLoad
-                  (Solm.EVM.storageStore evm1s evm1s.executionEnv.codeOwner ⟨5⟩
+                (Stele.EVM.storageLoad
+                  (Stele.EVM.storageStore evm1s evm1s.executionEnv.codeOwner ⟨5⟩
                     (setUint48Offset0Word
-                      (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+                      (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
                       flapperCtorTtlWord))
                   evm1s.executionEnv.codeOwner ⟨5⟩)
                 flapperCtorTauWord =
@@ -132,7 +132,7 @@ private theorem flapperCtorStateEquiv
           sstoreAccountMap_self_update evm1s.accountMap
             evm1s.executionEnv.codeOwner ⟨5⟩
             (setUint48Offset0Word
-              (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
+              (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩)
               flapperCtorTtlWord)
             packedS
         simpa [evm3sPacked, evm3s, evm2s, flapperCtorAfterTtlState,
@@ -174,22 +174,22 @@ private theorem flapperCtorStateEquiv
         storageStore_executionEnv, initState]
     have hval :
         setAddressOffset0Word
-            (Solm.EVM.storageLoad evm5e evm5e.executionEnv.codeOwner ⟨2⟩)
+            (Stele.EVM.storageLoad evm5e evm5e.executionEnv.codeOwner ⟨2⟩)
             (EVM.word vat.val) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩)
+            (Stele.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩)
             (EVM.word vat.val) := by
-      have hLoad : Solm.EVM.storageLoad evm5e evm5e.executionEnv.codeOwner ⟨2⟩ =
-          Solm.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩ := by
-        simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h4, hEnv]
+      have hLoad : Stele.EVM.storageLoad evm5e evm5e.executionEnv.codeOwner ⟨2⟩ =
+          Stele.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩ := by
+        simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h4, hEnv]
       exact congrArg (fun old => setAddressOffset0Word old (EVM.word vat.val)) hLoad
     simp only [evm6e, evm6s, flapperCtorAfterVatState, storageStore_accountMap]
     have hval' :
         setAddressOffset0Word
-            (Solm.EVM.storageLoad evm5e evm5s.executionEnv.codeOwner ⟨2⟩)
+            (Stele.EVM.storageLoad evm5e evm5s.executionEnv.codeOwner ⟨2⟩)
             (EVM.word vat.val) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩)
+            (Stele.EVM.storageLoad evm5s evm5s.executionEnv.codeOwner ⟨2⟩)
             (EVM.word vat.val) := by
       simpa [show evm5e.executionEnv.codeOwner = evm5s.executionEnv.codeOwner from
         congrArg ExecutionEnv.codeOwner hEnv] using hval
@@ -204,22 +204,22 @@ private theorem flapperCtorStateEquiv
         storageStore_executionEnv, initState]
     have hval :
         setAddressOffset0Word
-            (Solm.EVM.storageLoad evm6e evm6e.executionEnv.codeOwner ⟨3⟩)
+            (Stele.EVM.storageLoad evm6e evm6e.executionEnv.codeOwner ⟨3⟩)
             (EVM.word gem.val) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩)
+            (Stele.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩)
             (EVM.word gem.val) := by
-      have hLoad : Solm.EVM.storageLoad evm6e evm6e.executionEnv.codeOwner ⟨3⟩ =
-          Solm.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩ := by
-        simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h5, hEnv]
+      have hLoad : Stele.EVM.storageLoad evm6e evm6e.executionEnv.codeOwner ⟨3⟩ =
+          Stele.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩ := by
+        simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, h5, hEnv]
       exact congrArg (fun old => setAddressOffset0Word old (EVM.word gem.val)) hLoad
     simp only [evm7e, evm7s, flapperCtorAfterGemState, storageStore_accountMap]
     have hval' :
         setAddressOffset0Word
-            (Solm.EVM.storageLoad evm6e evm6s.executionEnv.codeOwner ⟨3⟩)
+            (Stele.EVM.storageLoad evm6e evm6s.executionEnv.codeOwner ⟨3⟩)
             (EVM.word gem.val) =
           setAddressOffset0Word
-            (Solm.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩)
+            (Stele.EVM.storageLoad evm6s evm6s.executionEnv.codeOwner ⟨3⟩)
             (EVM.word gem.val) := by
       simpa [show evm6e.executionEnv.codeOwner = evm6s.executionEnv.codeOwner from
         congrArg ExecutionEnv.codeOwner hEnv] using hval
@@ -275,9 +275,9 @@ theorem flapperConstructorCorrect :
       let evm0e :=
         initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evm1e := flapperCtorAfterBegState evm0e
-      let evm2e := Solm.EVM.storageStore evm1e evm1e.executionEnv.codeOwner ⟨5⟩
+      let evm2e := Stele.EVM.storageStore evm1e evm1e.executionEnv.codeOwner ⟨5⟩
         (flapperCtorDefaultsSlot5Word
-          (Solm.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩))
+          (Stele.EVM.storageLoad evm1e evm1e.executionEnv.codeOwner ⟨5⟩))
       let evm4e := flapperCtorAfterKicksState evm2e
       let evm5e := flapperCtorAfterWardsState evm4e
       let evm6e := flapperCtorAfterVatState evm5e vat
@@ -299,7 +299,7 @@ theorem flapperConstructorCorrect :
           flapperCtorAfterLiveState, flapperCtorAfterGemState,
           flapperCtorAfterVatState, flapperCtorAfterWardsState,
           flapperCtorAfterKicksState, flapperCtorAfterBegState, initState,
-          storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad,
+          storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage, solcSlotWord,
           flapperCtorCallerWardsSlot_eq]
       have hMapFinal :
@@ -308,7 +308,7 @@ theorem flapperConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s, evm5s, evm6s, evm7s, evm8s] using
-            flapperSolmCtorExecSuccess
+            flapperSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat gem hwv)
         ?_
@@ -319,7 +319,7 @@ theorem flapperConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (flapperSolmCtorExecReverts_nonpayable
+        (flapperSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat gem hwv)
         ?_

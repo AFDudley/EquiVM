@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.BitmapStorage
 import Benchmarks.UniswapV3.Pool.BitMsbSource
 import Benchmarks.UniswapV3.Pool.BitLsbSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 

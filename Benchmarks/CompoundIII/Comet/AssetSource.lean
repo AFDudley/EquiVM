@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AssetDecode
 import Benchmarks.CompoundIII.Comet.StaticCallBridge
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -109,7 +109,7 @@ theorem assetPrefix_exec (imms : Store) (i : UInt256) (addr : AccountAddress)
       (.ok (assetCallFrame imms i addr z out) evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (value := .address addr) ?_)
   · apply ExecBlock.consNormal (ExecStmt.letDecl (assetPayload_eval _ _ i ?_))
-    · apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (target := addr)
+    · apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := addr)
         (value := 0) (calldata := assetPayload i) ?_ (by simp only [evalExpr?, pure]) ?_ hc)
       · exact ExecBlock.nil
       all_goals
@@ -192,7 +192,7 @@ theorem asset_call_ok (frame : Frame) (evm evm' : EVM.State) (i : UInt256)
       (assetRemainder_returns _ _ _ _ _ hhi hv))
   exact ExecStmt.internalCallReturn (callee := assetCallable)
     (locals := (∅ : Store).insert "i" (.int (Int.ofNat i.toNat)))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.int (Int.ofNat i.toNat)])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact assetCallable_lookup) rfl (by simpa only [hf] using hb)
@@ -207,7 +207,7 @@ theorem asset_call_revert (frame : Frame) (evm evm' : EVM.State) (i : UInt256)
     ExecStmt config frame evm (.internalCall "getAssetInfo_body" [expr] ret) .reverted := by
   apply ExecStmt.internalCallRevert (callee := assetCallable)
     (locals := (∅ : Store).insert "i" (.int (Int.ofNat i.toNat)))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr])
     (argVals := [.int (Int.ofNat i.toNat)])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact assetCallable_lookup) rfl

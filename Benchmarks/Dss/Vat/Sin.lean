@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -26,7 +26,7 @@ theorem sinMappingSlotFor_eq (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem vatDecode_sin_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
       (transitionSignature sinTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (sinMappingArg I))) := by
   simpa [config, sinTransition, sinMappingArg] using
@@ -34,7 +34,7 @@ theorem vatDecode_sin_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vatDecode_sin_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
       (transitionSignature sinTransition).paramTypes I.calldata = none := by
   simpa [config, sinTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -80,7 +80,7 @@ theorem vatSinBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some sinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
         (transitionSignature sinTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (sinMappingArg I))))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -98,7 +98,7 @@ theorem vatSinBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (sinMappingSlotFor I) σ I).toNat))])) := by
-    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

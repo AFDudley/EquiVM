@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapAccountingFrameLaws
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem swapAccountingFrame_parts (frame : Frame) (exactInput : Bool)

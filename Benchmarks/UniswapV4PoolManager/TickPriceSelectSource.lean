@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.TickPriceWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -54,7 +54,7 @@ theorem tickPriceSelectSource {f : Frame} {evm : EVM.State} {sqrtPrice low high 
         (store_get_ne _ _ (by decide : ("priceHi" == "tick") = false)).trans ht
       have hbranch : ExecStmt config f evm tickPriceFunction.body[53]! (.ok f6 evm) :=
         ExecStmt.iteTrue (by simpa only [decide_eq_true heq] using hneq)
-          (ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign hselect (assignLocalValue ht5))))
+          (ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hselect (assignLocalValue ht5))))
       simp only [signedWordResult, tickPriceChoose, if_neg heq, if_pos hb]
       have ht6 : f6.locals.get? "tick" = some (.int (EVM.signed result)) := store_get_self _ _ _
       exact ⟨f6, (ExecBlock.consNormal hbranch

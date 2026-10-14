@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleWriteModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -14,7 +14,7 @@ theorem oracleWriteZeroSource (imms : Store) (evm : EVM.State) (a : OracleWriteA
       (.ok (oracleWriteZeroFrame imms a) evm) := by
   let f : Frame := {oracleWriteFrame imms a with
     locals := (oracleWriteLocals a).insert "indexUpdated" (.int 0)}
-  refine ExecBlock.consNormal (solm' := f) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := f) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil
 

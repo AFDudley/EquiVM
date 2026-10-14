@@ -9,7 +9,7 @@ import Reasoning.Initcode
 import Reasoning.Memory
 import Reasoning.Reach
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 import Mathlib.Tactic.IntervalCases
 
@@ -19,7 +19,7 @@ import Mathlib.Tactic.IntervalCases
 Contract-wide selector notation and constants for the optimized Clipper runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 set_option maxRecDepth 2000000
 namespace Benchmarks.Dss.Clipper
@@ -186,7 +186,7 @@ theorem clipperJumpDestBeforeFirstPatch (v : ClipperImmutables) {code : ByteArra
 theorem clipperStorageLocLoad_uint64 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint64Loc slot ⟨0, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (UInt256.ofNat (2 ^ 64 - 1))).toNat) := by
   simpa [uint64Loc, uint64Int] using
     storageLocLoad_uint_offset0 (evm := evm) (slot := slot)
@@ -196,7 +196,7 @@ theorem clipperStorageLocLoad_uint64 (evm : EVM.State) (slot : UInt256) :
 theorem clipperStorageLocLoad_uint192 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint192Loc slot ⟨8, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨64⟩))
         (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨192⟩) ⟨1⟩)).toNat) := by
   have h := storageLocLoad_uint_offset (evm := evm) (slot := slot)
@@ -267,7 +267,7 @@ theorem clipperUint256GetterBodyCore (v : ClipperImmutables) {code : ByteArray}
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -308,7 +308,7 @@ theorem clipperAddressGetterBodyCore (v : ClipperImmutables) {code : ByteArray}
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -355,7 +355,7 @@ theorem clipperAddressConstGetterBodyCore (v : ClipperImmutables) {code : ByteAr
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -396,7 +396,7 @@ theorem clipperBytes32ConstGetterBodyCore (v : ClipperImmutables) {code : ByteAr
     (hcode : I.code = code)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -428,7 +428,7 @@ theorem clipperBytes32ConstGetterBodyCore (v : ClipperImmutables) {code : ByteAr
 
 theorem clipperActiveDynamicLength (evm : EVM.State) :
     solidityDynamicLength? storageLayoutRaw evm { base := "active" } =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat := by
   have hloc : solidityAnchorWordLoc ⟨11⟩ = wordLoc ⟨11⟩ := rfl
   simp only [solidityDynamicLength?, solidityLengthLoc?, solidityAnchor?,
     storageLayoutRaw, hloc, Option.map_some, EvalResult.ofOption, EvalResult.bind, bind]
@@ -437,7 +437,7 @@ theorem clipperActiveDynamicLength (evm : EVM.State) :
 
 theorem clipperActiveLength (evm : EVM.State) :
     solidityStorageLength? storageLayoutRaw { base := "active" } (.dynamicArray uint256St) evm =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat := by
   simpa only [solidityStorageLength?] using clipperActiveDynamicLength evm
 
 end Benchmarks.Dss.Clipper

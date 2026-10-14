@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolDonateModel
 import Benchmarks.UniswapV4PoolManager.SafeCast
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -48,7 +48,7 @@ theorem poolDonateDeltaSource {f : Frame} {evm : State} {amount0 amount1 : UInt2
       have hc2 := balanceDeltaCall (f := f1) (evm := evm) hf he0 he1 "__c2"
       have hass : ExecStmt config f2 evm poolDonateFunction.body[6]!
           (.ok (poolDonateDeltaFrame f amount0 amount1) evm) :=
-        ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
           (assignLocalValue ((store_get_ne3 _ _ _ _ (by decide : ("__c0" == "delta") = false)
             (by decide : ("__c1" == "delta") = false) (by decide : ("__c2" == "delta") = false)).trans hd))
       exact ExecBlock.consNormal hc0 (ExecBlock.consNormal hc1 (ExecBlock.consNormal hc2 (execBlock_singleton hass)))

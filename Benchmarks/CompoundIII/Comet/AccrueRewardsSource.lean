@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AccrueInternalModel
 import Benchmarks.CompoundIII.Comet.TrackingAccrualSource
 import Benchmarks.CompoundIII.Comet.TrackingFrame
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -21,7 +21,8 @@ theorem accrueRewards_source (v : CometWithExtendedAssetListImmutables)
     (hn : evalExpr? config frame evm (.var "now_") = .ok (.int time.toNat))
     (hp : ∀ b, frame.locals.get? (totalsPrincipalName b) = none)
     (hx : ∀ b, frame.locals.get? (trackingIndexName b) = none)
-    (hl : frame.locals.get? "lastAccrualTime" = none) :
+    (hl : frame.locals.get? "lastAccrualTime" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config frame evm accrueRewardsBlock
       (if AccrueRewardsValid v evm elapsed then
         .ok (accrueRewardsFrame frame evm v elapsed) (accrueRewardsState evm v elapsed time)
@@ -30,7 +31,11 @@ theorem accrueRewards_source (v : CometWithExtendedAssetListImmutables)
   let evm1 := trackingBranchState evm v false elapsed
   let f2 := accrueRewardsFrame frame evm v elapsed
   let evm2 := trackingBranchState evm1 v true elapsed
-  have hsupply := trackingBranch_source v false frame evm elapsed hc hi ht (hp false) (hx false)
+  have henv (e : EVM.State) (b : Bool) :
+      (trackingBranchState e v b elapsed).executionEnv = e.executionEnv := by
+    unfold trackingBranchState
+    split <;> simp only [trackingAccrualState, storeTrackingIndex, storageStore_executionEnv]
+  have hsupply := trackingBranch_source (hperm := hperm) v false frame evm elapsed hc hi ht (hp false) (hx false)
   by_cases hsup : TrackingBranchValid v false evm elapsed
   · rw [if_pos hsup] at hsupply
     apply ExecBlock.consNormal hsupply
@@ -45,7 +50,7 @@ theorem accrueRewards_source (v : CometWithExtendedAssetListImmutables)
     have hx1 : f1.locals.get? (trackingIndexName true) = none := by
       rw [trackingBranchFrame_get _ _ _ _ _ _ (by decide) (by decide)]
       exact hx true
-    have hborrow := trackingBranch_source v true f1 evm1 elapsed hfc hfi ht1 hp1 hx1
+    have hborrow := trackingBranch_source (hperm := by simpa only [evm1, henv] using hperm) v true f1 evm1 elapsed hfc hfi ht1 hp1 hx1
     by_cases hbor : TrackingBranchValid v true evm1 elapsed
     · rw [if_pos hbor] at hborrow
       apply ExecBlock.consNormal hborrow
@@ -65,7 +70,7 @@ theorem accrueRewards_source (v : CometWithExtendedAssetListImmutables)
       have ha : assignStorageRef? config f2 evm2 .storage ⟨"lastAccrualTime", []⟩
           (.int time.toNat) = .ok (f2, storeLastAccrual evm2 time) := by
         simpa only [← hfc2] using assignLastAccrual evm2 f2.locals f2.immutables time hl2
-      exact ExecBlock.consNormal (ExecStmt.assign hn2 ha) ExecBlock.nil
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, henv] using hperm)) hn2 ha) ExecBlock.nil
     · rw [if_neg hbor] at hborrow
       rw [if_neg (show ¬ AccrueRewardsValid v evm elapsed from fun h ↦ hbor h.2)]
       exact ExecBlock.consRevert hborrow

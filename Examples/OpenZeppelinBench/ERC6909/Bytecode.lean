@@ -2,7 +2,7 @@ import Examples.OpenZeppelinBench.ERC6909.Spec
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.ERC6909
 

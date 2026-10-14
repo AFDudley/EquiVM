@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.AfterSwapPackSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 attribute [local irreducible] afterSwapPackWord balanceDeltaCombineWord balanceDeltaCombineFits
@@ -70,7 +70,7 @@ theorem afterSwapFinishSource {f : Frame} {evm : State} {p : SwapParamsWords} {d
       have hset : ExecStmt config (valueLocal f1 "remaining" (.int (EVM.signed (balanceDeltaCombineWord true delta packed))))
           evm (.assign .localVar {base := "swapDelta"} (.var "remaining"))
           (.ok (afterSwapFinishFrame f first delta specified unspecified) evm) :=
-        ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
           (assignLocalValue ((store_get_ne _ _ (by decide : ("remaining" == "swapDelta") = false)).trans hd1))
       have hbranch : ExecBlock config f0 evm afterSwapFinishBranch
           (.ok (afterSwapFinishFrame f first delta specified unspecified) evm) :=

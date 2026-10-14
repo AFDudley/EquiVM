@@ -3,8 +3,8 @@ import Benchmarks.Safe.Main.SignatureContractTrace
 import Benchmarks.Safe.Main.SignaturePlainTrace
 import Benchmarks.Safe.Main.SignatureEthTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

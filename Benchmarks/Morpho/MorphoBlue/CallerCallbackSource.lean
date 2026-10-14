@@ -1,7 +1,7 @@
 import Reasoning.ExternalCall
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -63,7 +63,7 @@ theorem callerCallbackSourceFailure (cfg : Config) (frame : Frame) (evm evm' : E
     ExecBlock cfg frame evm (callerCallbackBody name args retVar ++ tail) .reverted := by
   apply (callerCallbackSourceGuard cfg frame evm name args retVar tail hc).run
   apply ExecBlock.consRevert
-  exact ExecStmt.externalCallFailure (sendVal := 0) (callerCallback_receiver cfg frame evm)
+  exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) (sendVal := 0) (callerCallback_receiver cfg frame evm)
     (by simp only [evalExpr?, pure]) he (by simpa only [address_of_val] using hcall)
 
 theorem callerCallbackSourceSuccess (cfg : Config) (frame : Frame) (evm evm' : EVM.State)
@@ -75,8 +75,8 @@ theorem callerCallbackSourceSuccess (cfg : Config) (frame : Frame) (evm evm' : E
     (htail : ExecBlock cfg (callerCallbackCalledFrame frame evm.executionEnv.source retVar) evm' tail result) :
     ExecBlock cfg frame evm (callerCallbackBody name args retVar ++ tail) result := by
   apply (callerCallbackSourceGuard cfg frame evm name args retVar tail hc).run
-  apply ExecBlock.consNormal (solm' := callerCallbackCalledFrame frame evm.executionEnv.source retVar) (evm' := evm') ?_ htail
-  exact ExecStmt.externalCallSuccess (sendVal := 0) (value := []) (callerCallback_receiver cfg frame evm)
+  apply ExecBlock.consNormal (stele' := callerCallbackCalledFrame frame evm.executionEnv.source retVar) (evm' := evm') ?_ htail
+  exact ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (sendVal := 0) (value := []) (callerCallback_receiver cfg frame evm)
     (by simp only [evalExpr?, pure]) he (by simpa only [address_of_val] using hcall) hd
 
 end Benchmarks.Morpho.MorphoBlue

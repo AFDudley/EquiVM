@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Amount0DeltaCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -16,7 +16,7 @@ theorem amount0DeltaAssignSource (imms : Store) (evm : EVM.State) (a : AmountDel
         amount0DeltaCallName, amount0DeltaZeroFrame, hr, Bool.false_eq_true, if_false, if_true,
         Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     all_goals rfl
-  apply ExecStmt.assign (value := .int (Int.ofNat (amountDeltaResult false a).toNat)) ?_
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (amountDeltaResult false a).toNat)) ?_
     (assignLocalVarBase_frame hc)
   cases hr : a.roundUp
   · have hx : evalExpr? config (amount0DeltaCallFrame imms a) evm (.var "__c4") =

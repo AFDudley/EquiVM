@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordLowBitPower
 import Benchmarks.UniswapV4PoolManager.WordShiftSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def lsbLowBit (x : UInt256) : UInt256 := UInt256.land (UInt256.sub ⟨0⟩ x) x

@@ -2,7 +2,7 @@ import Benchmarks.Auction.BidMinimumCheck
 import Benchmarks.Auction.BidAfter
 import Benchmarks.Auction.ReentrancyGuard
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -62,7 +62,7 @@ theorem bidRoutineSplit {I g s0 noun ret R mem aw rdata σ k C evm}
       intro name hn
       simp only [bidStorageNames, List.mem_cons, List.not_mem_nil, or_false] at hn
       rcases hn with rfl | rfl | rfl | rfl | rfl <;> simp [locals2, bidParams]
-    have hstore := hstoreSplit.1
+    have hstore := hstoreSplit.1 (by rw [hs.env]; exact hperm)
     have hsnap := snapshotSourceRead (statusState evm ⟨2⟩) (bidParams noun) (by simp [bidParams])
     rw [snapshotSourceState hs2] at hsnap
     have hprefix : ExecBlock auctionConfig

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ReservesMath
 import Benchmarks.CompoundIII.Comet.TokenBalanceCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -52,8 +52,8 @@ theorem reservesTail_result (v : CometWithExtendedAssetListImmutables)
 
 theorem reserves_body_early_revert (v : CometWithExtendedAssetListImmutables) (evm : EVM.State)
     (hv : ¬ CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
     ExecFuncBody config { contract := contract, locals := ∅, immutables := immStore v }
       evm reservesCallable.body .reverted := by
   have hs := reservesStart_result v evm
@@ -64,12 +64,12 @@ theorem reserves_body_early_revert (v : CometWithExtendedAssetListImmutables) (e
 theorem reserves_body_result (v : CometWithExtendedAssetListImmutables)
     (evm evm' : EVM.State) (z : Bool) (out : ByteArray)
     (hv : CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv))
     (hc : callViaEVM evm v.baseToken 0 (tokenBalancePayload evm.executionEnv.codeOwner)
       (z, evm', out) false) (hhi : out.size < 2^255) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecFuncBody config { contract := contract, locals := ∅, immutables := immStore v }
       evm reservesCallable.body
@@ -91,11 +91,11 @@ theorem reserves_call_early_revert (v : CometWithExtendedAssetListImmutables)
     (frame : Frame) (evm : EVM.State) (ret : Ident)
     (hf : frame.contract = contract) (hi : frame.immutables = immStore v)
     (hv : ¬ CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv)) :
     ExecStmt config frame evm (.internalCall "getReserves_body" [] ret) .reverted := by
   exact ExecStmt.internalCallRevert (callee := reservesCallable) (locals := ∅)
-    (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := []) rfl
+    (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := []) rfl
     (by rw [hf]; exact reservesCallable_lookup) rfl
     (by simpa only [hf, hi] using reserves_body_early_revert v evm hv)
 
@@ -103,12 +103,12 @@ theorem reserves_call_result (v : CometWithExtendedAssetListImmutables)
     (frame : Frame) (evm evm' : EVM.State) (ret : Ident) (z : Bool) (out : ByteArray)
     (hf : frame.contract = contract) (hi : frame.immutables = immStore v)
     (hv : CurrentIndicesValid v
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) (timestampWord evm.executionEnv))
     (hc : callViaEVM evm v.baseToken 0 (tokenBalancePayload evm.executionEnv.codeOwner)
       (z, evm', out) false) (hhi : out.size < 2^255) :
-    let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-    let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+    let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+    let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
     let time := timestampWord evm.executionEnv
     ExecStmt config frame evm (.internalCall "getReserves_body" [] ret)
       (if ReservesReplyValid v w0 w1 time z out then
@@ -121,11 +121,11 @@ theorem reserves_call_result (v : CometWithExtendedAssetListImmutables)
   split_ifs with hm
   · rw [if_pos hm] at hb
     exact ExecStmt.internalCallReturn (callee := reservesCallable) (locals := ∅)
-      (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := []) rfl
+      (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := []) rfl
       (by rw [hf]; exact reservesCallable_lookup) rfl (by simpa only [hf, hi] using hb)
   · rw [if_neg hm] at hb
     exact ExecStmt.internalCallRevert (callee := reservesCallable) (locals := ∅)
-      (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := []) rfl
+      (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := []) rfl
       (by rw [hf]; exact reservesCallable_lookup) rfl (by simpa only [hf, hi] using hb)
 
 end Benchmarks.CompoundIII.Comet

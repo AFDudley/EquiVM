@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.UserCollateralRead
 import Benchmarks.CompoundIII.Comet.TotalsCollateralStorage
 import Benchmarks.CompoundIII.Comet.PackedStateWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

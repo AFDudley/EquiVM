@@ -1,10 +1,10 @@
 import Benchmarks.UniswapV4PoolManager.PoolProtocolFeeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
-def setProtocolFeeAlias : Ident := "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.29"
+def setProtocolFeeAlias : Ident := "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.29"
 def setProtocolFeeFinalFrame (f : Frame) (key : PoolKeyWords) (fee : UInt256) : Frame :=
   let locals := f.locals.insert "key" (poolKeyValue key)
   let locals := locals.insert "__c0" (.bool (decide (protocolFeeValid fee)))
@@ -39,7 +39,7 @@ theorem setProtocolFeeTail {f : Frame} {evm : EVM.State} {id fee : UInt256}
     · rw [if_neg hp] at hset ⊢
       apply ExecFuncBody.execBlockOK
       refine ExecBlock.consNormal hset (ExecBlock.consNormal
-        (ExecStmt.emit (vals := [wordBytes32Value id, .int (Int.ofNat fee.toNat)]) ?_) ExecBlock.nil)
+        (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp) (vals := [wordBytes32Value id, .int (Int.ofNat fee.toNat)]) ?_) ExecBlock.nil)
       have hi' := evalLocalValue (cfg := config) (f := {f with locals := f.locals.insert "__c3" .unit})
         (evm := poolSetProtocolPost evm id fee)
         ((store_get_ne _ _ (by decide : ("__c3" == "id") = false)).trans hi)

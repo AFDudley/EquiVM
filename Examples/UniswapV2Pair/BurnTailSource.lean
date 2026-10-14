@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintAfterUpdateCases
 import Examples.UniswapV2Pair.BurnUpdateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -12,7 +12,8 @@ abbrev uniswapKLastIfFeeStmt : Stmt := .ite (.var "feeOn")
 theorem uniswapKLastIfFeeSource {locals : Store} (evm : EVM.State) (fee : Bool)
     (hfee : locals.get? "feeOn" = some (.bool fee))
     (hr0 : locals.get? "reserve0" = none) (hr1 : locals.get? "reserve1" = none)
-    (hk : locals.get? "kLast" = none) :
+    (hk : locals.get? "kLast" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals } evm uniswapKLastIfFeeStmt
       (.ok { contract := contract, locals := locals } (uniswapKLastIfFeeState evm fee)) := by
   have heval : evalExpr? config { contract := contract, locals := locals } evm (.var "feeOn") = .ok (.bool fee) := by
@@ -21,7 +22,9 @@ theorem uniswapKLastIfFeeSource {locals : Store} (evm : EVM.State) (fee : Bool)
   | false => exact ExecStmt.iteFalse heval ExecBlock.nil
   | true =>
     exact ExecStmt.iteTrue heval (ExecBlock.consNormal
-      (ExecStmt.assign (evalExpr_mint_kLastReserveProduct_of_storage evm hr0 hr1
+      (ExecStmt.assign
+        (hperm := Or.inr hperm)
+        (evalExpr_mint_kLastReserveProduct_of_storage evm hr0 hr1
         (mintFeeReserveProductNat_source_lt evm)) (mintAssignKLastProduct evm hk)) ExecBlock.nil)
 
 abbrev burnAfterUpdateTail : List Stmt := [uniswapKLastIfFeeStmt] ++ lockExit ++ [.return [.var "amount0", .var "amount1"]]
@@ -31,13 +34,16 @@ theorem uniswapBurnAfterUpdateSourceReturns {locals : Store} (evm : EVM.State) (
     (ha0 : locals.get? "amount0" = some (uniswapUint256Value amount0))
     (ha1 : locals.get? "amount1" = some (uniswapUint256Value amount1))
     (hr0 : locals.get? "reserve0" = none) (hr1 : locals.get? "reserve1" = none)
-    (hk : locals.get? "kLast" = none) (hu : locals.get? "unlocked" = none) :
+    (hk : locals.get? "kLast" = none) (hu : locals.get? "unlocked" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm burnAfterUpdateTail
       (.returned { contract := contract, locals := locals }
         (uniswapLockExitedState (uniswapKLastIfFeeState evm fee))
         (some [uniswapUint256Value amount0, uniswapUint256Value amount1])) := by
-  have hkStep := uniswapKLastIfFeeSource evm fee hfee hr0 hr1 hk
-  have hlock := uniswapLockExitSuffix (uniswapKLastIfFeeState evm fee) locals hu
+  have hkStep := uniswapKLastIfFeeSource (hperm := by assumption) evm fee hfee hr0 hr1 hk
+  have hlock := uniswapLockExitSuffix
+    (hperm := by cases fee <;> simpa [uniswapKLastIfFeeState, mintKLastUpdatedState] using hperm)
+    (uniswapKLastIfFeeState evm fee) locals hu
   have hreturn : ExecBlock config { contract := contract, locals := locals }
       (uniswapLockExitedState (uniswapKLastIfFeeState evm fee)) [.return [.var "amount0", .var "amount1"]]
       (.returned { contract := contract, locals := locals }

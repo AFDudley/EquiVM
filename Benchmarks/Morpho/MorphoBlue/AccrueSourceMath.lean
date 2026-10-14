@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AccrueSourceCall
 import Benchmarks.Morpho.MorphoBlue.WadSource
 import Benchmarks.Morpho.MorphoBlue.Uint128Arithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -80,9 +80,9 @@ theorem morphoAccrueAssetsAssign (p : MarketParamsWords) (locals imms : Store) (
       (.assign .storage ⟨"market", [.mindex (.var "id"), .field (marketFieldName i)]⟩
         (.inRange (.uint ⟨128, by decide⟩) (.binary .add
           (.storage ⟨"market", [.mindex (.var "id"), .field (marketFieldName i)]⟩) (.var name))))
-      (.ok { contract := contract, locals := locals, immutables := imms }
-        (storeMarketField evm p.id i (marketFieldWord evm.accountMap evm.executionEnv p.id i + interest))) := by
-  apply ExecStmt.assign (evalCheckedUint128AddOk (hl.evalField imms evm i) hi hfit)
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms }
+        (storeMarketField evm p.id i (marketFieldWord evm.accountMap evm.executionEnv p.id i + interest)) else .staticViolation) := by
+  apply execStmt_assign_storage (evalCheckedUint128AddOk (hl.evalField imms evm i) hi hfit)
   apply assignMarketField evm locals imms (.var "id") p.id i _ _ hl.market (hl.evalId imms evm)
   rw [uadd_toNat, Nat.mod_eq_of_lt (show
     (marketFieldWord evm.accountMap evm.executionEnv p.id i).toNat + interest.toNat < UInt256.size by

@@ -1,8 +1,8 @@
 import Examples.Ballot.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Ballot spec in the Solidity-faithful Solm frontend
+# Ballot spec in the Solidity-faithful Stele frontend
 
 The whole Ballot spec (structs, storage aliases, delegation-chain `while`, both `for` loops, and
 the auto-generated public getters), written with `solidity%` and proven definitionally equal to
@@ -12,7 +12,7 @@ the AST spec in `Examples/Ballot/Spec.lean`.
 Transition order matches `ballotContract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Ballot.Syntax
 

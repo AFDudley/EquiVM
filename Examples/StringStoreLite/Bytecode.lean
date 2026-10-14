@@ -1,5 +1,5 @@
 import Examples.StringStoreLite.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.Initcode
 import Reasoning.JumpDest
@@ -17,7 +17,7 @@ with optimizer off. The bytecode and selector facts live here so proof modules c
 small trusted-base boundary instead of re-running `solc`.
 -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 /-- `StringStoreLite.sol` deployed runtime bytecode. Produced by
 `solc --bin-runtime --evm-version shanghai Examples/StringStoreLite/StringStoreLite.sol`
@@ -153,10 +153,10 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("set(string)")[0:4]`. -/
 theorem setSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr StringStoreLite.setTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr StringStoreLite.setTransition))).extract 0 4
       = ⟨#[0x4e, 0xd3, 0x88, 0x5e]⟩ := by
-  have hsig : Solm.transitionSigStr StringStoreLite.setTransition = "set(string)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+  have hsig : Stele.transitionSigStr StringStoreLite.setTransition = "set(string)" := by
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       StringStoreLite.setTransition, StringStoreLite.stringTy,
       ABI.abiToSigStr]
     decide +kernel
@@ -167,7 +167,7 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("clearCurrent()")[0:4]`. -/
 theorem clearCurrentSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr StringStoreLite.clearCurrentTransition))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr StringStoreLite.clearCurrentTransition))).extract 0 4
       = ⟨#[0xa6, 0xdf, 0xa2, 0x62]⟩ := by
   decide +kernel
 
@@ -175,6 +175,6 @@ set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in
 /-- `keccak("currentLength()")[0:4]`. -/
 theorem currentLengthSelectorBytes :
-    (KEC (String.toByteArray (Solm.transitionSigStr StringStoreLite.currentLengthGetter))).extract 0 4
+    (KEC (String.toByteArray (Stele.transitionSigStr StringStoreLite.currentLengthGetter))).extract 0 4
       = ⟨#[0xa3, 0xd3, 0x5f, 0x36]⟩ := by
   decide +kernel

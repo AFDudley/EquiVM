@@ -6,7 +6,7 @@ import Examples.UniswapV2Pair.PermitDecode
 import Examples.UniswapV2Pair.PermitRuntime
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -240,7 +240,7 @@ abbrev permitAfterNonceAccountMap (σ : AccountMap) (I : ExecutionEnv) : Account
     (permitNonceNextWord σ I)
 
 abbrev permitNonceLoadedWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (permitNonceStorageSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (permitNonceStorageSlot I)
 
 abbrev permitNonceLoadedValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (permitNonceLoadedWord evm I).toNat)
@@ -252,7 +252,7 @@ abbrev permitNonceNextLoadedValue (evm : EVM.State) (I : ExecutionEnv) : Value :
   .int (Int.ofNat (permitNonceNextLoadedWord evm I).toNat)
 
 abbrev permitDomainSeparatorLoadedWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
 
 abbrev permitDomainSeparatorLoadedValue (evm : EVM.State) : Value :=
   wordBytes32Value (permitDomainSeparatorLoadedWord evm)
@@ -285,7 +285,7 @@ def permitApproveStorageSlot (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (permitOwnerKey I) (permitSpenderKey I)
 
 def permitApprovePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (permitApproveStorageSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (permitApproveStorageSlot I)
     (permitValueWord I)
 
 theorem permitApproveStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
@@ -448,7 +448,7 @@ abbrev permitAfterApproveStore (evm : EVM.State) (I : ExecutionEnv)
   (permitAfterEcrecoverStore evm I structHash digest recovered).insert "_approveResult" .unit
 
 def permitAfterNonceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (permitNonceStorageSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (permitNonceStorageSlot I)
     (permitNonceNextLoadedWord evm I)
 
 
@@ -612,7 +612,7 @@ theorem permitDecodeABIValues_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata
   permitDecodeABIValues_ok_core hsz228
 
 theorem uniswapDecode_permit_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = some (permitStore I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["owner", "spender", "value", "deadline", "v", "r", "s"]
@@ -693,7 +693,7 @@ theorem uniswapDecode_permit_ok {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata.
 
 theorem uniswapDecode_permit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 228) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = none :=
   uniswapDecode_permit_none_short_core hsz4 hshort
 

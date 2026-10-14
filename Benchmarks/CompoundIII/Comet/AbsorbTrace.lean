@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.AbsorbBeforePointsModel
 import Benchmarks.CompoundIII.Comet.AbsorbPointsModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet

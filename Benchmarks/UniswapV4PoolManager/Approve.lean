@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.Dispatch
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_027
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -16,7 +16,7 @@ def approveSlot (evm : EVM.State) (spender id : UInt256) : UInt256 :=
   mappingSlotWord id (mappingSlotWord spender (mappingSlotWord (accountWord evm.executionEnv.source) ⟨5⟩))
 
 def approvePost (evm : EVM.State) (spender id amount : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm spender id) amount
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveSlot evm spender id) amount
 
 theorem approveAssign (evm : EVM.State) (locals imms : Store) (spender id amount : UInt256)
     (hcanon : spender.toNat < EVM.addressModulus)
@@ -42,7 +42,8 @@ theorem approveBodyReturns (evm : EVM.State) (locals imms : Store) (spender id a
     (hsp : locals.get? "spender" = some (.address (AccountAddress.ofNat spender.toNat)))
     (hid : locals.get? "id" = some (.int (Int.ofNat id.toNat)))
     (hamt : locals.get? "amount" = some (.int (Int.ofNat amount.toNat)))
-    (hbase : locals.get? "allowance" = none) :
+    (hbase : locals.get? "allowance" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals approveTransition.body
       (.returned (calldataFrame contract locals imms evm) (approvePost evm spender id amount)
         (some [.bool true])) imms := by
@@ -51,9 +52,9 @@ theorem approveBodyReturns (evm : EVM.State) (locals imms : Store) (spender id a
   have hi := (store_get_ne locals (.bytes evm.executionEnv.calldata) (by decide : ("__calldata" == "id") = false)).trans hid
   apply ExecFuncBody.execBlockRet
   apply nonpayableCalldataBlock hwv hhi
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue ha)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalLocalValue ha)
     (approveAssign evm locals imms spender id amount hcanon hsp hid hbase)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [approvePost, storageStore_executionEnv] using hperm)
     (vals := [.address evm.executionEnv.source, .address (AccountAddress.ofNat spender.toNat),
       .int (Int.ofNat id.toNat), .int (Int.ofNat amount.toNat)]) ?_) ?_
   · simp only [evalExprs?, evalExpr?, calldataFrame, ha, hs, hi, EvalResult.ofOption,
@@ -191,7 +192,7 @@ theorem poolManagerApproveBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManager
             (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "id"
             (.int (Int.ofNat (calldataWord I.calldata 36).toNat))).insert "amount"
             (.int (Int.ofNat (calldataWord I.calldata 68).toNat))
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (approveTransition.params.map Param.name)
               (transitionSignature approveTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_uint256_uint256_ok hlen hhi hcanon
@@ -212,7 +213,7 @@ theorem poolManagerApproveBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManager
                 _ _ _ hwv hhi hcanon hsp hid (store_get_self _ _ _) hbase hperm)
           | true =>
             have hret := approveTrace v (by simp) hcanon hperm rdReturn
-            have hbody := approveBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
+            have hbody := approveBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
               (immStore v) _ _ _ hwv hhi hcanon hsp hid (store_get_self _ _ _) hbase
             exact hret.reEquivExecutionGen hcode hd hdec hbody
               (storageStore_accountMap (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner

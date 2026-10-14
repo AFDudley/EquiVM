@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Routines
 import Benchmarks.UniswapV4PoolManager.Authorization
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_008
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -11,8 +11,8 @@ namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
 def transferOwnershipPost (evm : EVM.State) (newOwner : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) newOwner)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) newOwner)
 
 theorem transferOwnershipAssign (evm : EVM.State) (locals imms : Store) (newOwner : UInt256)
     (hc : newOwner.toNat < EVM.addressModulus) (hbase : locals.get? "owner" = none) :
@@ -28,7 +28,8 @@ theorem transferOwnershipBodyReturns (evm : EVM.State) (locals imms : Store) (ne
     (hhi : evm.executionEnv.calldata.size < calldataLimit)
     (hc : newOwner.toNat < EVM.addressModulus)
     (hnew : locals.get? "newOwner" = some (.address (AccountAddress.ofNat newOwner.toNat)))
-    (hbase : locals.get? "owner" = none) (hauth : ownerAuthorized evm) :
+    (hbase : locals.get? "owner" = none) (hauth : ownerAuthorized evm)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm locals transferOwnershipTransition.body
       (.returned (calldataFrame contract locals imms evm) (transferOwnershipPost evm newOwner) none) imms := by
   have hn := (store_get_ne locals (.bytes evm.executionEnv.calldata) (by decide : ("__calldata" == "newOwner") = false)).trans hnew
@@ -37,9 +38,9 @@ theorem transferOwnershipBodyReturns (evm : EVM.State) (locals imms : Store) (ne
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact (ownerGuard_eval rfl ((store_get_ne locals _ (by decide : ("__calldata" == "owner") = false)).trans hbase)).trans
       (by rw [decide_eq_true hauth])
-  refine ExecBlock.consNormal (ExecStmt.assign (evalLocalValue hn)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (evalLocalValue hn)
     (transferOwnershipAssign evm locals imms newOwner hc hbase)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [transferOwnershipPost, storageStore_executionEnv] using hperm)
     (vals := [.address evm.executionEnv.source, .address (AccountAddress.ofNat newOwner.toNat)]) ?_) ExecBlock.nil
   simp only [evalExprs?, evalExpr?, calldataFrame, hn, EvalResult.ofOption,
     bind, EvalResult.bind, pure, envValue, transferOwnershipPost, storageStore_executionEnv]
@@ -115,7 +116,7 @@ theorem poolManagerTransferOwnershipBodyCore {σ σ₀ A I} {g : UInt256} (v : P
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k'', C'', rdAuth⟩ := poolManagerBlocks.poolManager_block_2208 (by simp) hjumpAuth rdLoad
           let args := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (transferOwnershipTransition.params.map Param.name)
               (transitionSignature transferOwnershipTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_ok hlen hhi hcanon
@@ -133,7 +134,7 @@ theorem poolManagerTransferOwnershipBodyCore {σ σ₀ A I} {g : UInt256} (v : P
                   _ hwv hhi hcanon (store_get_self _ _ _) hbase hauth hperm)
             | true =>
               have hret := poolManagerBlocks.poolManager_block_2245 (by simp) hperm rdStore
-              have hbody := transferOwnershipBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
+              have hbody := transferOwnershipBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) args
                 (immStore v) _ hwv hhi hcanon (store_get_self _ _ _) hbase hauth
               exact hret.reEquivExecutionGen hcode hd hdec hbody
                 (storageStore_accountMap (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨0⟩

@@ -1,12 +1,12 @@
-# Differential tests of Solm specifications
+# Differential tests of Stele specifications
 
 Every registered specification is run against its compiled bytecode on generated inputs: the
-bytecode in evmlean, the specification in the executable Solm semantics (`Solm/Interp.lean`).
-The two results are compared with the cases of the refinement relation (`Solm/Refine.lean`):
+bytecode in evmlean, the specification in the executable Stele semantics (`Stele/Interp.lean`).
+The two results are compared with the cases of the refinement relation (`Stele/Refine.lean`):
 `runtimeRefinementFor` for messages, `ctorResultEquiv` for constructors.
 
 ```
-lake exe solm-difftest [--seed N] [--count N] [--only NAME[,NAME…]]
+lake exe stele-difftest [--seed N] [--count N] [--only NAME[,NAME…]]
 ```
 
 `--count` is the number of cases per transition (default 20). The exit status is nonzero when a
@@ -35,7 +35,7 @@ path. A transition at `0/N` is only tested on its revert paths: raise `--count`,
 `Target.words` that its guards need.
 
 A disagreement is either a specification error, a harness or generator error, or a bytecode
-feature the Solm semantics does not model. Check the case (`calldata`, label with `mutated`,
+feature the Stele semantics does not model. Check the case (`calldata`, label with `mutated`,
 `static`, `value=`, `time=`) against the source before changing a specification.
 
 ## Gas as the oracle
@@ -44,7 +44,7 @@ The relation leaves open the gas and the input substate of every external call a
 creation, and the word of `gasleft()`. The harness runs the bytecode first and records every
 call boundary (`CALL`, `CALLCODE`, `DELEGATECALL`, `STATICCALL`, `CREATE`, `CREATE2`: arguments and
 result) and every `GAS` result. The interpreter then replays them through an `Oracle`
-(`Solm/Interp.lean`): each external call of the specification is matched against the next
+(`Stele/Interp.lean`): each external call of the specification is matched against the next
 recorded boundary (kind, target, value, calldata, incoming accounts) and receives the result the
 EVM got. Unmatched or leftover boundaries are disagreements. The EVM runs with a fixed budget
 (`Target.gas`, 3,000,000); out-of-gas cases are inconclusive.
@@ -67,11 +67,11 @@ deployed code with `runtimeCodeOf` of the final immutables.
 
 | File | Contents |
 |---|---|
-| `Solm/Interp.lean` | the executable statement semantics: one match arm per rule of `ExecStmt`/`ExecForLoop`/`ExecBlock`/`ExecFuncBody`, `solmExecRun`, `solmCtorExecRun`; the `Oracle` for the existentials; a stateless `thetaOracle` |
-| `Solm/DiffTest/Trace.lean` | the EVM run with recorded boundaries and `GAS` words; the replaying oracle |
-| `Solm/DiffTest/Compare.lean` | `execResultsEquiv`, `ctorResultEquiv`, `runtimeRefinementFor` as decision procedures |
-| `Solm/DiffTest/Gen.lean` | generators: values, calldata, mutations, storage pre-states, the literal dictionary |
-| `Solm/DiffTest/Harness.lean` | `Target`, case generation, summaries |
+| `Stele/Interp.lean` | the executable statement semantics: one match arm per rule of `ExecStmt`/`ExecForLoop`/`ExecBlock`/`ExecFuncBody`, `steleExecRun`, `steleCtorExecRun`; the `Oracle` for the existentials; a stateless `thetaOracle` |
+| `Stele/DiffTest/Trace.lean` | the EVM run with recorded boundaries and `GAS` words; the replaying oracle |
+| `Stele/DiffTest/Compare.lean` | `execResultsEquiv`, `ctorResultEquiv`, `runtimeRefinementFor` as decision procedures |
+| `Stele/DiffTest/Gen.lean` | generators: values, calldata, mutations, storage pre-states, the literal dictionary |
+| `Stele/DiffTest/Harness.lean` | `Target`, case generation, summaries |
 | `Tests/DiffTest/Targets.lean` | every registered specification with its artifact |
 | `Tests/DiffTest/Fixtures/` | contracts written for the suite (`Factory`: `new` with and without salt, `for`/`break`/`continue`, `try`/`catch`, `pop`, `delete`) |
 
@@ -97,22 +97,22 @@ function (see `tinyImmutable`); when the constructor fixes the immutables itself
 `deployedRuntime := true` takes the runtime from a constructor run instead (see `vestingWallet`).
 `gas` bounds the EVM budget per case (`safe` lowers it: linked-list walks over random storage
 cycle until out of gas). A fixture needs `Spec.lean` and `Bytecode.lean`; `scripts/scaffold.py
-compile` and `lean` produce the bytecode module and `scripts/sol2solm.py` a draft of the
+compile` and `lean` produce the bytecode module and `scripts/sol2stele.py` a draft of the
 specification.
 
 ## Towards the equivalence proof
 
 The interpreter is written for it: its result type is the relation's `ExecResult`, every arm is
 labelled with the rule it implements, and the nondeterminism is isolated in the `Oracle`. The
-intended statements are soundness (`execStmt fuel o ω cfg solm evm s = (.result r, ω') →
-ExecStmt cfg solm evm s r`, under an oracle whose witnesses are `Θ`/`Lambda` results) and
+intended statements are soundness (`execStmt fuel o ω cfg stele evm s = (.result r, ω') →
+ExecStmt cfg stele evm s r`, under an oracle whose witnesses are `Θ`/`Lambda` results) and
 completeness up to the oracle (every derivation is reached by some fuel and some oracle).
 
 ## Limits
 
 - Precompiles: evmlean's `sha256`, `ripemd160` and `ecrecover` are foreign functions the
   interpreter cannot run; the generators never produce a precompile address.
-- Specifications whose modules import the proof library (`Reasoning.SolmBody`) are not registered
+- Specifications whose modules import the proof library (`Reasoning.SteleBody`) are not registered
   (`Clipper`, `Dog`, `Comet`, `UniswapV2Router02`, `Conduit`, `UniswapV3Pool`).
 - Guards that need several storage entries to agree (allowances with a specific spender, the same
   block as a previous call) are reached rarely; `--count` is the lever.

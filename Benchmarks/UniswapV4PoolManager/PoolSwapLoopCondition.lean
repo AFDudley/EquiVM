@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapLoopInvariant
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapLoopCondition : Expr :=

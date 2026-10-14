@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AssetDecode
 import Benchmarks.CompoundIII.Comet.StaticReturns
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 

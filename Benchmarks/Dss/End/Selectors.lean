@@ -4,10 +4,10 @@ import Benchmarks.Dss.End.Common
 # MakerDAO/Sky DSS End selector proofs
 
 The selector theorems connect
-the Solm transition signatures to the concrete selector bytes present in `endBytecode`.
+the Stele transition signatures to the concrete selector bytes present in `endBytecode`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Dss.End
 

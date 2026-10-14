@@ -2,8 +2,8 @@ import Benchmarks.Safe.Main.Authorization
 import Benchmarks.Safe.Main.Storage
 import Benchmarks.Safe.Main.Blocks.Runtime_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -23,9 +23,9 @@ theorem safeEvalThreshold (evm : EVM.State) (value : UInt256) :
 theorem safeThresholdBound (evm : EVM.State) (value : UInt256) :
     evalExpr? config (thresholdFrame value) evm (leE (.var "_threshold") (.storage ownerCountRef)) =
       .ok (.bool (decide (value.toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat))) := by
   have hload : evalExpr? config (thresholdFrame value) evm (.storage ownerCountRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)) := by
     apply evalExpr_storage_scalar_value (er := { base := "ownerCount" }) (loc := uint256Loc ⟨3⟩)
     · simp [thresholdFrame, thresholdArgs, ownerCountRef]
     · simp [evalStorageRef, evalStorageRefSteps, ownerCountRef, EvalResult.bind, bind, pure]
@@ -47,7 +47,7 @@ theorem safeThresholdNonzero (evm : EVM.State) (value : UInt256) :
 theorem safeAssignThreshold (evm : EVM.State) (value : UInt256) :
     assignStorageRef? config (thresholdFrame value) evm .storage thresholdRef
       (.int (Int.ofNat value.toNat)) = .ok (thresholdFrame value,
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "threshold" }) (loc := uint256Loc
     ⟨4⟩)
   · simp [thresholdFrame, thresholdArgs, thresholdRef]
@@ -59,19 +59,20 @@ theorem safeAssignThreshold (evm : EVM.State) (value : UInt256) :
   · exact storageLocStore_uint256 evm ⟨4⟩ value
 
 theorem safeThresholdSource (evm : EVM.State) (value : UInt256)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
-    (hnz : value ≠ ⟨0⟩) :
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hnz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (thresholdFrame value) evm changeThresholdBodyFunction.body
       (.returned (thresholdFrame value)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
   have hn : value.toNat ≠ 0 := fun h ↦ hnz (uint256_toNat_eq_zero h)
   exact .execBlockOK (.consNormal (.requireTrue (by simpa [hle] using safeThresholdBound evm value))
     (.consNormal (.requireTrue (by simpa [hn] using safeThresholdNonzero evm value))
-      (.consNormal (.assign (safeEvalThreshold evm value) (safeAssignThreshold evm value))
-        (.consNormal (.emit (evalExprs?_singleton (safeEvalThreshold _ value))) .nil))))
+      (.consNormal (.assign (hperm := Or.inr hperm) (safeEvalThreshold evm value) (safeAssignThreshold evm value))
+        (.consNormal (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeEvalThreshold _ value))) .nil))))
 
 theorem safeThresholdSourceStatic (evm : EVM.State) (value : UInt256)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
     (hnz : value ≠ ⟨0⟩) (hperm : evm.executionEnv.perm = false) :
     ExecFuncBody config (thresholdFrame value) evm changeThresholdBodyFunction.body
       .staticViolation := by
@@ -83,7 +84,7 @@ theorem safeThresholdSourceStatic (evm : EVM.State) (value : UInt256)
           (safeAssignThreshold evm value) hperm))))
 
 theorem safeThresholdSourceTooLarge (evm : EVM.State) (value : UInt256)
-    (hle : ¬ value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
+    (hle : ¬ value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat) :
     ExecFuncBody config (thresholdFrame value) evm changeThresholdBodyFunction.body .reverted :=
   .execBlockRevert (.consRevert (.requireFalse (by simpa [hle] using safeThresholdBound evm value)))
 

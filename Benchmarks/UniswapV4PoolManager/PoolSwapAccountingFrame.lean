@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapAmountSource
 import Benchmarks.UniswapV4PoolManager.PoolSwapFeeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolSwapAmountFrame_contract (f : Frame) (s : PoolSwapStepWords)

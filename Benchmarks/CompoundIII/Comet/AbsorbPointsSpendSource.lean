@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbPointsModel
 import Benchmarks.CompoundIII.Comet.SafeUintSource
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -59,7 +59,7 @@ theorem absorbPointsSpend_source (frame : Frame) (evm : State) (p : LiquidatorPo
         have hadd := checkedNarrowAddSourceOk ⟨128, by decide⟩ (by decide)
           (evalLiquidatorPointsLocalField 2 hep) hec hsum
         exact ExecBlock.consNormal hcall (ExecBlock.consNormal
-          (ExecStmt.assign hadd (assignLiquidatorPointsLocalField 2 (p.spend + cost) hp1))
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hadd (assignLiquidatorPointsLocalField 2 (p.spend + cost) hp1))
           ExecBlock.nil)
       · rw [if_neg (show ¬ AbsorbPointsSpendValid p gasUsed fee from fun hv ↦ hsum hv.2.2)]
         exact ExecBlock.consNormal hcall (ExecBlock.consRevert (ExecStmt.assignExprRevert

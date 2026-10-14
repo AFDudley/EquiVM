@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.RepayAmountsModel
 import Benchmarks.CompoundIII.Comet.SupplyBaseTotalsModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -29,5 +29,14 @@ def absorbRepayResult (frame : Frame) (evm : State) (old next : UInt256) : ExecR
     supplyBaseTotalsResult (absorbRepayFrame frame old next) evm
       (supplyAmount old next) (repayAmount old next)
   else .reverted
+
+theorem absorbRepayOutcome_result_perm {evm old next updated}
+    (hr : absorbRepayOutcome evm old next = .ok updated) :
+    updated.executionEnv.perm = true := by
+  unfold absorbRepayOutcome supplyBaseTotalsOutcome at hr
+  split_ifs at hr with hf hs hp hb
+  cases hr
+  simpa only [supplyBaseTotalsState, supplyBaseSupplyState, storeTotalsPrincipal,
+    storageStore_executionEnv] using hp
 
 end Benchmarks.CompoundIII.Comet

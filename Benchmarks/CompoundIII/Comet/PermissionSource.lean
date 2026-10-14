@@ -1,13 +1,13 @@
 import Benchmarks.CompoundIII.Comet.Storage
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def permissionBool (evm : EVM.State) (owner manager : AccountAddress) : Bool :=
   decide (owner = manager) || decide ((UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (isAllowedSlot owner manager))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (isAllowedSlot owner manager))
       ⟨255⟩).toNat ≠ 0)
 
 def permissionLocals (owner manager : AccountAddress) : Store :=
@@ -63,7 +63,7 @@ theorem hasPermission_call (frame : Frame) (evm : EVM.State) (owner manager : Ac
     ExecStmt config frame evm (.internalCall "hasPermission_body" [ownerExpr, managerExpr] ret)
       (.ok { frame with locals := frame.locals.insert ret (.bool (permissionBool evm owner manager)) } evm) := by
   exact ExecStmt.internalCallReturn (callee := hasPermissionCallable)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [ownerExpr, managerExpr]) (argVals := [.address owner, .address manager])
     (by simp only [evalExprs?, ho, hm, pure, bind, EvalResult.bind])
     (by rw [hc]; exact hasPermissionCallable_lookup) rfl

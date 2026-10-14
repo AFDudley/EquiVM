@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleOracleTrace
 import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleStoresTrace
 import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleFinalTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -51,7 +51,7 @@ theorem modifyPositionMiddleX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     have hs5 : ExecBlock config (modifyPositionUpdatedFrame (immStore v) a evm)
         (modifyPositionUpdatedState v a evm) (modifyPositionMiddleBody.take 5)
         (.ok (modifyPositionMiddleOracleFrame v a evm) (modifyPositionMiddleStoresState v a evm)) :=
-      execBlock_append_ok hsrc (modifyPositionMiddleStoresSource v a evm)
+      execBlock_append_ok hsrc (modifyPositionMiddleStoresSource (hperm := (congrArg ExecutionEnv.perm hs1.env).trans hperm) v a evm)
     rcases modifyPositionMiddleAmountX (v := v) a evm (modifyPositionMiddleStoresState v a evm) false
       r2 ha ht hm2 hq1 hp1 (by omega) (by omega) hov with
         ⟨hsrc0, rr⟩ | ⟨hsrc0, hv0, aw3, k3, C3, r3, hm3⟩

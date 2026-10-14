@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueFinishRefine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 
@@ -41,6 +41,7 @@ inductive AccrueTailRefinesWithMemory (v : MorphoImmutables) (ee : ExecutionEnv)
   | static : ExecBlock config { contract := contract, locals := locals, immutables := imms } evm stmts .staticViolation →
       RDstatic (deployedRuntime v) g s0 → AccrueTailRefinesWithMemory v ee g s0 p imms locals evm stmts ret R spare mem fp extra
   | ok {locals' evm' σ' mem' fp' aw' rdata' k' C'} :
+      ee.perm = true →
       ExecBlock config { contract := contract, locals := locals, immutables := imms } evm stmts
         (.ok { contract := contract, locals := locals', immutables := imms } evm') →
       MarketLocals p locals' → SourceState s0 ee σ'
@@ -56,7 +57,7 @@ theorem AccrueTailRefinesWithMemory.forget {v ee g s0 p imms locals evm stmts re
   cases h with
   | reverted he hr => exact .reverted he hr
   | static he hr => exact .static he hr
-  | ok he hl hs hm ha hr => exact .ok he hl hs hm hr
+  | ok _ he hl hs hm ha hr => exact .ok he hl hs hm hr
 
 theorem AccrueTailRefinesWithMemory.prepend {v ee g s0 p imms locals evm stmts ret R spare mem fp extra locals₀ evm₀ stmts₀}
     (h : AccrueTailRefinesWithMemory v ee g s0 p imms locals evm stmts ret R spare mem fp extra)
@@ -66,7 +67,7 @@ theorem AccrueTailRefinesWithMemory.prepend {v ee g s0 p imms locals evm stmts r
   cases h with
   | reverted he hr => exact .reverted (hab.run he) hr
   | static he hr => exact .static (hab.run he) hr
-  | ok he hl hs hm ha hr => exact .ok (hab.run he) hl hs hm ha hr
+  | ok hp he hl hs hm ha hr => exact .ok hp (hab.run he) hl hs hm ha hr
 
 theorem AccrueTailRefinesWithMemory.memoryPrepend {v ee g s0 p imms locals evm stmts ret R spare mem fp extra mem₀ fp₀ count}
     (h : AccrueTailRefinesWithMemory v ee g s0 p imms locals evm stmts ret R spare mem fp extra)
@@ -75,8 +76,8 @@ theorem AccrueTailRefinesWithMemory.memoryPrepend {v ee g s0 p imms locals evm s
   cases h with
   | reverted he hr => exact .reverted he hr
   | static he hr => exact .static he hr
-  | ok he hl hs hm hb hr =>
-    exact .ok he hl hs hm (by simpa only [Nat.add_assoc] using ha.trans hb) hr
+  | ok hp he hl hs hm hb hr =>
+    exact .ok hp he hl hs hm (by simpa only [Nat.add_assoc] using ha.trans hb) hr
 
 theorem morphoAccrueFinishTailWithMemory {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256} {s0 evm : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}
@@ -93,7 +94,7 @@ theorem morphoAccrueFinishTailWithMemory {v : MorphoImmutables} {ee : ExecutionE
   rcases morphoAccrueFinishRefineWithMemory p locals imms hstack hp hs hm hb hl hvalid h with hr | hok
   · exact .reverted hr.1 hr.2
   · obtain ⟨locals', evm', σ', mem', fp', aw', k', C', he, hl, hs, hm, ha, hr⟩ := hok
-    exact .ok he hl hs hm (by simpa only [Nat.zero_add] using ha) hr
+    exact .ok hp he hl hs hm (by simpa only [Nat.zero_add] using ha) hr
 
 theorem morphoAccrueFinishTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256} {s0 evm : State}
     {mem : ByteArray} {aw : UInt256} {rdata : ByteArray} {σ : AccountMap} {k C : Nat}

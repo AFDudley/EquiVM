@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.ModulesFillSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -123,7 +123,7 @@ theorem safeModulesSelectNext (evm : EVM.State) {locals start pageSize index cur
     refine ⟨locals.insert "next" (addressArrayValue last),
       .iteTrue (by simpa [hs] using he)
         (.consNormal (.requireTrue (by simpa only [hi, decide_true] using hpositive))
-          (.consNormal (.assign (evalLocalValue hl.last) (assignLocalVarBase_ok hl.next)) .nil)),
+          (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hl.last) (assignLocalVarBase_ok hl.next)) .nil)),
             ?_⟩
     simp only [hs, if_false]
     constructor

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.TransferBaseTotalsModel
 import Benchmarks.CompoundIII.Comet.CheckedAddSubSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -35,7 +35,7 @@ theorem totalsChange_source (frame : Frame) (evm : EVM.State) (borrow : Bool)
     · simp only [totalsChangeResult, totalsChangeOutcome, if_pos hf, hp, Bool.false_eq_true, if_false]
       exact ExecStmt.assignStatic he hw hp
     · simp only [totalsChangeResult, totalsChangeOutcome, if_pos hf, hp, if_true]
-      exact ExecStmt.assign he hw
+      exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he hw
   · rw [if_neg hf] at he
     simp only [totalsChangeResult, totalsChangeOutcome, if_neg hf]
     exact ExecStmt.assignExprRevert he

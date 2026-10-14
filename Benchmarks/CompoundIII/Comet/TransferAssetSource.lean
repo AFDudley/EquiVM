@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.TransferCollateralSource
 import Benchmarks.CompoundIII.Comet.SafeUintSource
 import Benchmarks.CompoundIII.Comet.AssetDispatchSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -54,7 +54,7 @@ theorem transferAsset_source {v src dst asset amount evm result}
       simp only [evalExpr?, read, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,
         EvalResult.ofOption]; rfl
     have hassign : ExecStmt config read evm (.assign .localVar ⟨"amount", []⟩ (.var "__c3"))
-        (.ok ready evm) := ExecStmt.assign he (assignLocalFrame (by
+        (.ok ready evm) := ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalFrame (by
       simpa only [read, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using hf.amount))
     have hcall := transferBase_call ht ready (.var "src") (.var "dst") (.var "amount") "__c4"
       hf.contract hf.immutables

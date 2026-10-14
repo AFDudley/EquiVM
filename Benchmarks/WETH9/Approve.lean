@@ -9,7 +9,7 @@ import Benchmarks.WETH9.Routines
 DappHub/Dai `approve` (caller-keyed outer hash, masked-argument inner hash) over slot 4.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -46,7 +46,7 @@ def approveStorageSlot (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (approveOwnerKey I) (approveGuyKey I)
 
 def approvePostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveStorageSlot I) (approveWadWord I)
 
 abbrev approveEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "allowance", steps := [.mindex (approveOwnerKey I), .mindex (approveGuyKey I)] }
@@ -98,10 +98,10 @@ theorem weth9SelectorDispatchApprove {I : ExecutionEnv} (hsel : selIs I (weth9Se
   native_decide
 
 theorem weth9Decode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata =
         some (approveStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["guy", "wad"] [addr, uint256]
     I.calldata = _
   simpa [approveStore, approveGuyValue, approveWadValue, approveGuyWord, approveWadWord,
     calldataWord]
@@ -110,9 +110,9 @@ theorem weth9Decode_approve_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.siz
 
 theorem weth9Decode_approve_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (approveTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["guy", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "guy") (y := "wad") hsz4 hshort
@@ -150,12 +150,12 @@ theorem approveAssign (evm : EVM.State) (I : ExecutionEnv)
   simpa [approvePostState, wordLoc, uint256Loc, uint256Int] using
     storageLocStore_uint256 evm (approveStorageSlot I) (approveWadWord I)
 
-/-- The Solm `approve(address,uint256)` body stores `allowance[msg.sender][guy] = wad` and returns
+/-- The Stele `approve(address,uint256)` body stores `allowance[msg.sender][guy] = wad` and returns
     `true`. -/
 theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source) :
-    (ExecTransitionBody config contract evm (approveStore I) approveTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I }
         (approvePostState evm I) (some [.bool true]))) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody config contract evm
@@ -169,9 +169,10 @@ theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
         approveTransition.body result :=
     ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true h)) htail
   constructor
-  · apply ExecFuncBody.execBlockRet
+  · intro hperm
+    apply ExecFuncBody.execBlockRet
     apply hprefix
-    refine ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (Or.inr hperm) hvalue hassign) ?_
     exact ExecBlock.consReturn
       (ExecStmt.return (evalExprs?_singleton (by simp [evalExpr?, pure])))
   · intro hperm
@@ -180,11 +181,12 @@ theorem weth9ApproveBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
 
 theorem weth9ApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
-    (hsrc : evm.executionEnv.source = I.source) :
+    (hsrc : evm.executionEnv.source = I.source)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveStore I) approveTransition.body
       (.returned { contract := contract, locals := approveStore I }
         (approvePostState evm I) (some [.bool true])) :=
-  (weth9ApproveBodyReturnsSplit evm I h hsrc).1
+  (weth9ApproveBodyReturnsSplit evm I h hsrc).1 hperm
 
 /-! ## EVM trace : scratch-memory abbreviations -/
 
@@ -503,7 +505,7 @@ theorem weth9ApproveBodyCoreOk {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := approveStore I }
           (approvePostState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
           (some [.bool true])) :=
-    weth9ApproveBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
+    weth9ApproveBodyReturns (hperm := by assumption) (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
       (by simp only [initState]; exact hwv) (by simp [initState])
   refine weth9ReEquivExecGen (t := approveTransition) hcode
     (weth9ApproveX_ok (g := Sat256.ofUInt256 g) hcode hwv hperm hsz68 hsize hsel)
@@ -559,7 +561,7 @@ theorem weth9ApproveBodyCoreDecodeFailed_short {σ σ₀ A I} {g : UInt256}
   exact weth9ReEquivDecodeFailed hcode hrev (weth9SelectorDispatchApprove hsel)
     (weth9Decode_approve_none_short hsz4 hshort)
 
-/-- `approve(address,uint256)` body refines its Solm transition (all branches). -/
+/-- `approve(address,uint256)` body refines its Stele transition (all branches). -/
 theorem weth9ApproveBodyCoreAnyPerm {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hsel : selIs I (weth9SelBytes 1)) :

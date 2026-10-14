@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSearchCompare
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -87,7 +87,7 @@ theorem oracleSearchAdvance (locals imms : Store) (evm : EVM.State)
         simp only [hf, bind, EvalResult.bind, evalUnaryOp?]
         rfl
       · exact ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_word_sub ei eone) (assignLocalVarBase_frame hframe.right)) ExecBlock.nil
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_sub ei eone) (assignLocalVarBase_frame hframe.right)) ExecBlock.nil
     · exact hframe.set_right next
   · let next := oracleSearchMiddle left right + ⟨1⟩
     refine ⟨frame.locals.insert "l" (.int (Int.ofNat next.toNat)), ?_, ?_⟩
@@ -100,7 +100,7 @@ theorem oracleSearchAdvance (locals imms : Store) (evm : EVM.State)
         simp only [hf, bind, EvalResult.bind, evalUnaryOp?]
         rfl
       · exact ExecBlock.consNormal
-          (ExecStmt.assign (evalExpr_word_add ei eone) (assignLocalVarBase_frame hframe.left)) ExecBlock.nil
+          (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_add ei eone) (assignLocalVarBase_frame hframe.left)) ExecBlock.nil
     · exact hframe.set_left next
 
 end Benchmarks.UniswapV3.Pool

@@ -4,8 +4,8 @@ import Benchmarks.Safe.Main.Blocks.Runtime_006
 import Benchmarks.Safe.Main.Blocks.Runtime_012
 import Benchmarks.Safe.Main.Blocks.Runtime_028
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -17,21 +17,22 @@ theorem safeSetFallbackHandlerSource (evm : EVM.State) (handler : UInt256)
     (hcanon : handler.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner) :
+    (hne : AccountAddress.ofNat handler.toNat ≠ evm.executionEnv.codeOwner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (fallbackHandlerArgs handler)
       setfallbackhandlerTransition.body
       (.returned (resumeAfterInternalCall (fallbackHandlerFrame handler) "_ok" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner fallbackHandlerSlot handler) none)
           := by
   have hcall := internalCallFunctionReturn (caller := fallbackHandlerFrame handler)
     (name := "internalSetFallbackHandler") (retVar := "_ok")
     (callee := internalSetFallbackHandlerFunction)
     (evalExprs?_singleton (safeEvalHandler evm handler)) rfl rfl
-    (safeInternalSetFallbackHandlerSource evm handler hcanon hne)
+    (safeInternalSetFallbackHandlerSource (hperm := by assumption) evm handler hcanon hne)
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
       (.consNormal hcall (.consNormal
-        (.emit (vals := [.address (AccountAddress.ofNat handler.toNat)]) ?_) .nil))))
+        (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [.address (AccountAddress.ofNat handler.toNat)]) ?_) .nil))))
   apply evalExprs?_singleton
   simp [resumeAfterInternalCall, fallbackHandlerFrame, fallbackHandlerArgs,
     evalExpr?, EvalResult.ofOption, Std.HashMap.getElem_insert]
@@ -45,7 +46,7 @@ theorem safeSetFallbackHandlerSourceStatic (evm : EVM.State) (handler : UInt256)
     ExecTransitionBody config contract evm (fallbackHandlerArgs handler)
       setfallbackhandlerTransition.body
       .staticViolation := by
-  have hcall := ExecStmt.internalCallStatic (cfg := config) (solm := fallbackHandlerFrame handler)
+  have hcall := ExecStmt.internalCallStatic (cfg := config) (stele := fallbackHandlerFrame handler)
     (name := "internalSetFallbackHandler") (retVar := "_ok")
     (callee := internalSetFallbackHandlerFunction.toCallable)
     (evalExprs?_singleton (safeEvalHandler evm handler)) rfl rfl
@@ -109,7 +110,7 @@ theorem safeSetfallbackhandlerBodyCore
         · obtain ⟨_, _, h1547⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
           have h6455 := safeRuntime_block_1547 (by simp) (by jump_dest) h1547
           have h6757 := safeRuntime_block_6455 (by simp) (by jump_dest) h6455
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (setfallbackhandlerTransition.params.map Param.name)
               (transitionSignature setfallbackhandlerTransition).paramTypes I.calldata =
               some (fallbackHandlerArgs (calldataWord I.calldata 4)) :=
@@ -144,7 +145,7 @@ theorem safeSetfallbackhandlerBodyCore
                     reEquivSelectorExecution hdispatch hdec hbody (.staticHalt hΞ rfl)
               | true =>
                   have hret := safeSetFallbackHandlerTrace h8283 (by simp) hperm
-                  have hbody := safeSetFallbackHandlerSource
+                  have hbody := safeSetFallbackHandlerSource (hperm := by assumption)
                     (initState σ σ₀ (.ofUInt256 g) A I) (calldataWord I.calldata 4)
                     hcanon hvalue hauth heq
                   refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_

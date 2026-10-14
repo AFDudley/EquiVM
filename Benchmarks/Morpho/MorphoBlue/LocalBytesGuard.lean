@@ -1,6 +1,6 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- LIBRARY CANDIDATE: a bytes-length guard depends only on the decoded byte array.

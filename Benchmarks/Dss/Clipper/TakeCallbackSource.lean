@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Clipper.TakeCallbackCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -291,7 +291,7 @@ theorem clipperTakeCallbackCallFailureStmt (v : ClipperImmutables)
       (clipperEvalTakeCallbackCodeGuardTrue v evmLoc evmRead evmVat I price slice owe0
         owe slice' tabNew lotNew hcode))
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalTakeCallbackTarget v evmLoc evmRead evmVat I price slice owe0 owe
             slice' tabNew lotNew)
           (by simp [evalExpr?, pure]) (by simpa [dogFrame] using hargs) hcall)))
@@ -345,7 +345,7 @@ theorem clipperTakeCallbackCallSuccessStmt (v : ClipperImmutables)
       (clipperEvalTakeCallbackCodeGuardTrue v evmLoc evmRead evmVat I price slice owe0
         owe slice' tabNew lotNew hcode))
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalTakeCallbackTarget v evmLoc evmRead evmVat I price slice owe0 owe
             slice' tabNew lotNew)
           (by simp [evalExpr?, pure]) (by simpa [dogFrame] using hargs) hcall

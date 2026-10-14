@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapPreludeMemory
 import Benchmarks.UniswapV4PoolManager.PoolSwapGuardsTrace
 import Benchmarks.UniswapV4PoolManager.MemoryActiveRange
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolSwapResultZeroAW_covers (aw : UInt256) {state params : UInt256}

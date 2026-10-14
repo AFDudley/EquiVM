@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepFeeCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -13,7 +13,7 @@ theorem swapStepUnusedFeeAssign (imms : Store) (evm : EVM.State) (a : SwapStepAr
           (.var "amountIn")) (.elem (.int (.uint ⟨256, by decide⟩)))))
       (.ok (swapStepResultFrame imms a) evm) := by
   simp only [swapStepResultFrame, swapStepFee, hu, if_true]
-  exact ExecStmt.assign
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_word_sub (evalSwapStepRemainingWord _ evm a (swapStepCapExtraGet imms a).1)
       (evalExpr_var_get (swapStepCapAmountsGet imms a).1))
     (assignLocalVarBase_frame (swapStepCapExtraGet imms a).2.2.2)
@@ -27,7 +27,7 @@ theorem swapStepFeeCallAssign (imms : Store) (evm : EVM.State) (a : SwapStepArgs
     simpa only [swapStepFeeCallFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert] using (swapStepCapExtraGet imms a).2.2.2
   simp only [swapStepResultFrame, swapStepFee, hu, Bool.false_eq_true, if_false]
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame hg)
 
 theorem swapStepFeeSource (imms : Store) (evm : EVM.State) (a : SwapStepArgs)

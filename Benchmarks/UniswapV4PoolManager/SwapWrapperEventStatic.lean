@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_007
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 open poolManagerBlocks

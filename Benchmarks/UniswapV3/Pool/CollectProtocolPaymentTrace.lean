@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.CollectProtocolPaymentsSource
 import Benchmarks.UniswapV3.Pool.SafeTransfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -226,11 +226,11 @@ theorem collectProtocolPositiveX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat2
       (by rw [hsel]; exact hadjust) hm hmem hzero hb hov with
     ⟨rdRev, hcall⟩ | ⟨evm', σ', out, mem', aw', next, k', C', hs', hcall, rdDone, hm', hmem', hz', hn⟩
   · rw [hsel] at hcall
-    exact Or.inl ⟨rdRev, collectProtocolTokenReverts v locals evm second recipient amount
+    exact Or.inl ⟨rdRev, collectProtocolTokenReverts (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v locals evm second recipient amount
       hvalues.recipient hget hvalues.fees hpos hcall⟩
   · rw [hsel] at hcall
     exact Or.inr ⟨evm', σ', out, mem', aw', next, k', C', hs',
-      collectProtocolTokenReturns v locals evm evm' second recipient amount _
+      collectProtocolTokenReturns (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v locals evm evm' second recipient amount _
         hvalues.recipient hget hvalues.fees hpos hcall, rdDone, hm', hmem', hz', hn⟩
 
 def collectProtocolGuardStack (second : Bool) (amount0 amount1 junk : UInt256)

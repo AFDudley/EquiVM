@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.BoolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -33,10 +33,10 @@ set_option maxRecDepth 10000
 
 theorem pauseDecode_result {cd : ByteArray} (hlo : 164 ≤ cd.size)
     (hhi : cd.size < 2^255 + 4) :
-    decodeCalldataWithMode config.abiDecodeMode (pauseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pauseTransition.params.map Param.name)
       (transitionSignature pauseTransition).paramTypes cd =
       if PauseCanonical cd then some (pauseInputStore (pauseInputs cd)) else none := by
-  rw [show config.abiDecodeMode = .solc0815 from rfl,
+  rw [show config.externalABI.decodeCalldata? = decodeCalldataWithMode .solc0815 from rfl,
     solc0815_decodeCalldata_scalar_eq (by decide)]
   change decodeCalldata
     ["supplyPaused", "transferPaused", "withdrawPaused", "absorbPaused", "buyPaused"]
@@ -68,16 +68,16 @@ theorem pauseDecode_result {cd : ByteArray} (hlo : 164 ≤ cd.size)
       decodeCalldata.insertValues]
 
 theorem pauseDecode_short {cd : ByteArray} (hshort : cd.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (pauseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pauseTransition.params.map Param.name)
       (transitionSignature pauseTransition).paramTypes cd = none := by
-  rw [show config.abiDecodeMode = .solc0815 from rfl,
+  rw [show config.externalABI.decodeCalldata? = decodeCalldataWithMode .solc0815 from rfl,
     solc0815_decodeCalldata_scalar_eq (by decide)]
   exact decodeCalldata_scalar_none_short (by decide) hshort
 
 theorem pauseDecode_huge {cd : ByteArray} (hhuge : 2^255 + 4 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (pauseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pauseTransition.params.map Param.name)
       (transitionSignature pauseTransition).paramTypes cd = none := by
-  rw [show config.abiDecodeMode = .solc0815 from rfl,
+  rw [show config.externalABI.decodeCalldata? = decodeCalldataWithMode .solc0815 from rfl,
     solc0815_decodeCalldata_scalar_eq (by decide)]
   exact decodeCalldata_scalar_none_huge (by decide) (by decide) hhuge
 

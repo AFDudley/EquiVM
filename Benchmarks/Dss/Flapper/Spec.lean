@@ -1,15 +1,15 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS Flapper benchmark spec
 
-Faithful Solm benchmark spec for upstream `dss/src/flap.sol`.
+Faithful Stele benchmark spec for upstream `dss/src/flap.sol`.
 Events are omitted, matching the existing event-bearing DSS benchmarks.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.Flapper
 
@@ -494,8 +494,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := externalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (externalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.Flapper

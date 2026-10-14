@@ -8,11 +8,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_010
 # PoolManager `isOperator(address,address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2517; reach lemma `poolManagerReachIsOperatorBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem isOperatorBodyReturns (evm : EVM.State) (locals imms : Store) (a b : UIn
     ExecTransitionBody config contract evm locals isOperatorTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [wordToElem .bool (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mappingSlotWord b (mappingSlotWord a ⟨3⟩))) ⟨255⟩)])) imms := by
   apply guardedReturnBody hwv hhi
   apply evalExpr_storage_scalar_value (hbackend := rfl) (hloc := isOperator_loc a b hca hcb)
@@ -116,7 +116,7 @@ theorem poolManagerIsOperatorBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolMana
             obtain ⟨k'', C'', rdReturn1⟩ := decodeAddress36 v (by simp) hcanon1 hjumpReturn1 rdAddr1
             have hret := isOperatorTrace v (by simp) hcanon hcanon1 rdReturn1
             let args := (((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))).insert "arg1" (.address (AccountAddress.ofNat (calldataWord I.calldata 36).toNat))
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (isOperatorTransition.params.map Param.name)
                 (transitionSignature isOperatorTransition).paramTypes I.calldata = some args :=
               decodeCalldata_address_address_ok hlen hhi hcanon hcanon1

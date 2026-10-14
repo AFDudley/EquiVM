@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.AbsorbBalanceModel
 import Benchmarks.CompoundIII.Comet.Signed256
 import Benchmarks.CompoundIII.Comet.IndexAccrual
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -77,7 +77,7 @@ theorem absorbBalance_source (frame : Frame) (evm : EVM.State)
           exact ExecBlock.consNormal hdiv (ExecBlock.consNormal hsigned
             (ExecBlock.consNormal (ExecStmt.letDecl he') (ExecBlock.consNormal
               (ExecStmt.iteTrue (hcond.trans (by rw [decide_eq_true hneg]))
-                (execBlock_singleton (ExecStmt.assign (by simp only [evalExpr?, pure])
+                (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, pure])
                   (assignLocalFrame hget)))) .nil)))
       · rw [if_neg (fun hh ↦ hsum hh.2.2)]
         exact ExecBlock.consNormal hdiv (ExecBlock.consNormal hsigned

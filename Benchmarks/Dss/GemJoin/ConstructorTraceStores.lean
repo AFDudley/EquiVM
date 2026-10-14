@@ -4,7 +4,7 @@ import Benchmarks.Dss.GemJoin.ConstructorTraceWards
 # MakerDAO/Sky DSS GemJoin constructor storage-write traces
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 

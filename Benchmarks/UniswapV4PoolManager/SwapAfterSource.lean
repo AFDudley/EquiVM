@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.AfterSwapCall
 import Benchmarks.UniswapV4PoolManager.TupleLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapAfterStartFrame (f : Frame) : Frame := {f with locals := f.locals.insert "hookDelta" (.int 0)}

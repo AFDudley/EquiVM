@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.NextAmount1Words
 import Benchmarks.UniswapV4PoolManager.FullMathRoundSource
 import Benchmarks.UniswapV4PoolManager.DivRoundSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -52,7 +52,7 @@ theorem nextAmount1QuotientSource {f : Frame} {evm : EVM.State} {liquidity amoun
   have hproduct (w : UInt256) : ExecStmt config (wordLocal f "product" w) evm
       (.assign .localVar {base := "quotient"} (.var "product"))
       (.ok (wordLocal (wordLocal f "product" w) "quotient" w) evm) :=
-    ExecStmt.assign wordLocal_eval (assignLocalValue
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue
       ((store_get_ne _ _ (by decide : ("product" == "quotient") = false)).trans hq))
   by_cases hs : amount.toNat < 2^160
   · cases add with
@@ -67,7 +67,7 @@ theorem nextAmount1QuotientSource {f : Frame} {evm : EVM.State} {liquidity amoun
     | true =>
       simp only [nextAmount1QuotientFits, hs, if_true, nextAmount1QuotientStmt]
       convert ExecStmt.iteTrue (by simpa only [decide_eq_true hs] using hguard)
-        (execBlock_singleton (ExecStmt.assign (evalWordDiv hshift (evalLocalValue hl) hn)
+        (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordDiv hshift (evalLocalValue hl) hn)
           (assignLocalValue hq))) using 1
       simp only [nextAmount1QuotientFrame, nextAmount1Quotient, hs, if_true, and_self]
   · cases add with

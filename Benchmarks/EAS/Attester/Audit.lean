@@ -4,13 +4,13 @@ import Benchmarks.EAS.Attester.Bytecode
 # Executable Attester audit
 
 These differential checks execute the real bytecode with `Ethereum.EVM.Ξ` and evaluate the
-canonical surface AST using Solm's expression, assignment, ABI, and external-call operations.
+canonical surface AST using Stele's expression, assignment, ABI, and external-call operations.
 The small fuelled statement runner covers exactly the statements used by this benchmark;
 unsupported statements and exhausted test fuel are errors, never successful tests.
 This is regression evidence, not a proof of the refinement theorems.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.EAS.Attester.Audit
 
@@ -164,7 +164,7 @@ def check (name : String) (data calleeCode : ByteArray) (value := 0) (perm := tr
   let s := runtimeState data calleeCode value perm depth target
   let source := do
     let t ← EvalResult.ofOption .typeError (selectorDispatchMsg contract data)
-    match decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+    match config.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes data with
     | none => .revert
     | some locals =>

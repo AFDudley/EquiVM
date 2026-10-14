@@ -5,11 +5,11 @@ import Benchmarks.UniswapV3.Pool.Routines
 # UniswapV3Pool `token0()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 435; reach lemma `uniswapV3PoolReachToken0Body`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -54,9 +54,11 @@ theorem uniswapV3PoolToken0Body {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolI
     (hsel : selIs I (uniswapV3PoolSelBytes 0)) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (uniswapV3PoolSelBytes 0) rfl hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (token0Transition.params.map Param.name) (transitionSignature token0Transition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolToken0X (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode (uniswapV3PoolDispatch_token0 hsel) hdec
       (uniswapV3PoolToken0Returns v _ ∅ hwv)

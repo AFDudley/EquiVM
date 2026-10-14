@@ -7,7 +7,7 @@ import Benchmarks.UniswapV4PoolManager.WordWrappingSource
 import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -51,7 +51,7 @@ theorem poolSwapProtocolSource {f : Frame} {evm : State}
           (.cast (.binary .sub (.field (.var "step") "feeAmount") (.var "delta")) (.elem (.int (.uint ⟨256, by decide⟩)))))
         (.ok f2 evm) := by
       simpa only [f2, poolSwapProtocolStep, if_neg hz] using
-        ExecStmt.assign (evalWordSub (evalStructField (field := "feeAmount") (evalLocalValue hs1) rfl)
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordSub (evalStructField (field := "feeAmount") (evalLocalValue hs1) rfl)
           (evalLocalValue (store_get_self _ _ _))) (assignLocalField hs1 rfl rfl)
     have ha2 : f2.locals.get? "amountToProtocol" = some (.int (Int.ofNat amount.toNat)) :=
       (store_get_ne2 _ _ _ (by decide : ("delta" == "amountToProtocol") = false)
@@ -63,7 +63,7 @@ theorem poolSwapProtocolSource {f : Frame} {evm : State}
           (.cast (.binary .add (.var "amountToProtocol") (.var "delta")) (.elem (.int (.uint ⟨256, by decide⟩)))))
         (.ok (wordLocal f2 "amountToProtocol" (poolSwapProtocolAmount s fee protocol amount)) evm) := by
       simpa only [poolSwapProtocolAmount, if_neg hz] using
-        ExecStmt.assign (evalWordAdd (evalLocalValue ha2) (evalLocalValue hd2)) (assignLocalValue ha2)
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordAdd (evalLocalValue ha2) (evalLocalValue hd2)) (assignLocalValue ha2)
     exact ExecStmt.iteTrue (by simpa only [decide_eq_true hz] using hg)
       (ExecBlock.consNormal (ExecStmt.letDecl hdelta) (ExecBlock.consNormal hfee (execBlock_singleton hamount)))
 

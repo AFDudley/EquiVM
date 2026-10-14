@@ -31,13 +31,13 @@ import Benchmarks.Dss.End.Thaw
 import Benchmarks.Dss.End.Flow
 import Benchmarks.Dss.End.Pack
 import Benchmarks.Dss.End.Cash
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS End benchmark correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.End
 

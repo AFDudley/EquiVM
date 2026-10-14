@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.SignedMulPriceModel
 import Benchmarks.CompoundIII.Comet.AccountMagnitude
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -105,13 +105,13 @@ theorem signedMulPrice_call (frame : Frame) (evm : EVM.State) (m p scale : UInt2
   have hb := signedMulPrice_source evm frame.immutables m p scale hp hscale
   by_cases hv : signedDebtPriceValid m p scale
   · rw [if_pos hv] at hb ⊢
-    exact ExecStmt.internalCallReturn (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallReturn (cfg := config) (stele := frame) (evm := evm)
       (args := [nExpr, priceExpr, scaleExpr]) (callee := signedMulPriceCallable)
       (argVals := [.int (-Int.ofNat m.toNat), .int p.toNat, .int scale.toNat])
       (by simp only [evalExprs?, hn, hep, hes, pure, bind, EvalResult.bind])
       (by rw [hc]; exact signedMulPriceCallable_lookup) rfl (by simpa only [hc] using hb)
   · rw [if_neg hv] at hb ⊢
-    exact ExecStmt.internalCallRevert (cfg := config) (solm := frame) (evm := evm)
+    exact ExecStmt.internalCallRevert (cfg := config) (stele := frame) (evm := evm)
       (args := [nExpr, priceExpr, scaleExpr]) (callee := signedMulPriceCallable)
       (argVals := [.int (-Int.ofNat m.toNat), .int p.toNat, .int scale.toNat])
       (by simp only [evalExprs?, hn, hep, hes, pure, bind, EvalResult.bind])

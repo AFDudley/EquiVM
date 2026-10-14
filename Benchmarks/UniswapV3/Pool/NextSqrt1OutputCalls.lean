@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt1QuotientSource
 import Benchmarks.UniswapV3.Pool.LowGasSafeAdd
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -46,7 +46,7 @@ theorem nextSqrt1AddReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
       (.ok (nextSqrt1AddFrame imms a) evm) :=
   internalCallFunctionReturn (callee := safeAddFunction)
     (locals := safeAddLocals a.price (nextSqrt1Quotient a))
-    (calleeSolm := safeAddResultFrame imms a.price (nextSqrt1Quotient a))
+    (calleeStele := safeAddResultFrame imms a.price (nextSqrt1Quotient a))
     (value := some [.int (Int.ofNat (a.price + nextSqrt1Quotient a).toNat)])
     (evalNextSqrt1AddArgs imms evm a) safeAddLookup (safeAddBind _ _)
     (safeAddReturns imms evm _ _ hv)
@@ -75,7 +75,7 @@ theorem nextSqrt1CastReturns (imms : Store) (evm : EVM.State) (a : NextSqrtArgs)
       (.ok (nextSqrt1CastFrame imms a) evm) :=
   internalCallFunctionReturn (callee := safeCast160Function)
     (locals := safeCast160Locals (a.price + nextSqrt1Quotient a))
-    (calleeSolm := safeCast160ReadyFrame imms (a.price + nextSqrt1Quotient a))
+    (calleeStele := safeCast160ReadyFrame imms (a.price + nextSqrt1Quotient a))
     (value := some [.int (Int.ofNat (a.price + nextSqrt1Quotient a).toNat)])
     (evalNextSqrt1CastArgs imms evm a) safeCast160Lookup (safeCast160Bind _)
     (safeCast160Returns imms evm _ hv)

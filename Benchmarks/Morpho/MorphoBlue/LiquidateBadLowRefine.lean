@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.LiquidateBadLowReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -20,7 +20,8 @@ theorem liquidateBadLowAssign (borrow : Bool) (p : MarketParamsWords) (locals im
     (evm : EVM.State) (badAssets : UInt256) (hl : MarketLocals p locals)
     (he : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.var (liquidateBadLowName borrow)) = .ok (.int (Int.ofNat badAssets.toNat)))
-    (hf : badAssets.toNat ≤ (marketFieldWord evm.accountMap evm.executionEnv p.id (liquidateBadLowField borrow)).toNat) :
+    (hf : badAssets.toNat ≤ (marketFieldWord evm.accountMap evm.executionEnv p.id (liquidateBadLowField borrow)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     StateBlock config { contract := contract, locals := locals, immutables := imms } evm
       (liquidateBadBody.drop (liquidateBadLowIndex borrow)) { contract := contract, locals := locals, immutables := imms }
       (storeMarketField evm p.id (liquidateBadLowField borrow)
@@ -28,6 +29,7 @@ theorem liquidateBadLowAssign (borrow : Bool) (p : MarketParamsWords) (locals im
       (liquidateBadBody.drop (liquidateBadLowIndex borrow + 1)) := by
   have hass := morphoMarketSubtractAssign p locals imms evm (liquidateBadLowField borrow) (liquidateBadLowName borrow)
     badAssets hl he hf
+  simp only [hperm, if_true] at hass
   cases borrow <;> exact StateBlock.start.step hass
 
 theorem liquidateBadLowAssignReverts (borrow : Bool) (p : MarketParamsWords) (locals imms : Store)
@@ -133,7 +135,7 @@ theorem morphoLiquidateBadLowRefine {v : MorphoImmutables} {ee : ExecutionEnv} {
   have hs1 : SourceState s0 ee σ1 e1 := by
     simpa only [e1, σ1, value, hs.env, ← hs.accounts] using storeMarketField_bridge hs p.id (liquidateBadLowField borrow)
       (UInt256.sub (marketFieldWord σ ee p.id (liquidateBadLowField borrow)) badAssets)
-  have ab1 := liquidateBadLowAssign borrow p locals imms evm badAssets hl.toMarketLocals hecast
+  have ab1 := liquidateBadLowAssign (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) borrow p locals imms evm badAssets hl.toMarketLocals hecast
     (by simpa only [hs.env, ← hs.accounts] using hf)
   obtain ⟨k2, C2, rd2⟩ := morphoCheckedSub128Ok (v := v) (ret := liquidateBadLowStore borrow)
     (R := liquidateBadLowStoreTail borrow σ ee p.id assets seized shares badAssets badShares srcOff len R) (by change R.length + 15 + 6 ≤ 1024; omega)

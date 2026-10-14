@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.AddressGetter
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -34,7 +34,7 @@ theorem twoAddressGetter_refines {t : TransitionDecl} {imms : Store}
     (hX : TwoAddressGetterResult code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ out) :
     runtimeRefinementFor config contract σ σ₀ g A I imms := by
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+  have hdecode : config.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata =
       decodeCalldata [name₀, name₁] [.elem .address, .elem .address] I.calldata := by
     simp only [transitionSignature, hp, List.map_cons, List.map_nil]

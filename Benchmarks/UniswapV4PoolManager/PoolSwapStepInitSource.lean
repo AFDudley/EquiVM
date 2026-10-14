@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.PoolFeeGrowthStorage
 import Benchmarks.UniswapV4PoolManager.WordConditionalSource
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -29,7 +29,7 @@ theorem poolSwapStepInitSource {f : Frame} {evm : State} {id : UInt256} {zeroFor
   have hz' : evalExpr? config f1 evm (.var "zeroForOne") = .ok (.bool (decide (zeroForOne = true))) := by
     simpa only [Bool.decide_coe] using evalLocalValue (cfg := config) (evm := evm) hz1
   have h1 : ExecStmt config f1 evm poolSwapFunction.body[27]! (.ok (poolSwapStepInitFrame f evm id zeroForOne) evm) :=
-    ExecStmt.assign (evalWordConditional hz' (poolFeeGrowth_read hs1 false) (poolFeeGrowth_read hs1 true))
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordConditional hz' (poolFeeGrowth_read hs1 false) (poolFeeGrowth_read hs1 true))
       (assignLocalField (store_get_self _ _ _) rfl rfl)
   exact ExecBlock.consNormal h0 (execBlock_singleton h1)
 

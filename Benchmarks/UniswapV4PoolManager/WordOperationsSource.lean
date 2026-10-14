@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.Slot0Source
 import Benchmarks.UniswapV4PoolManager.SignedWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES Reasoning.Theory.rpowShiftRight128_toNat to arbitrary bounded shifts.

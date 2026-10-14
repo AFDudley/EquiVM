@@ -5,8 +5,8 @@ import Benchmarks.Safe.Main.SignatureDecodedMemory
 import Benchmarks.Safe.Main.CheckNSignaturesTrace
 import Benchmarks.Safe.Main.Blocks.Runtime_006
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -54,7 +54,7 @@ theorem safeChecknsignaturesAddressBytes32BytesUint256BodyCore
     have hlen : payload.size = len := by
       dsimp only [payload]
       rw [ByteArray.size_extract]; omega
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (checknsignaturesAddressBytes32BytesUint256Transition.params.map Param.name)
         (transitionSignature checknsignaturesAddressBytes32BytesUint256Transition).paramTypes
         I.calldata =

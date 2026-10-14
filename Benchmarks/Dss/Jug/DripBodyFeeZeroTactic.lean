@@ -3,7 +3,7 @@ import Mathlib.Util.ParseCommand
 import Lean.Elab.Tactic
 
 open Lean Elab Tactic
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -15,7 +15,7 @@ by_cases hprevMaxNot :
 · let locals := dripLocals I
   let evm :=
     initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
           (((initState σ σ₀
@@ -70,7 +70,7 @@ by_cases hprevMaxNot :
         (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g)
         (evmVat := { evm with accountMap := σ', substate := A' })
-        (out := out) hwv hsz36 hle hvatCodeSolm
+        (out := out) hwv hsz36 hle hvatCodeStele
         (by simpa [evm] using hcall) _hdecOut
         (by
           simpa [evm, initState, solcSlotWordAt] using
@@ -127,7 +127,7 @@ by_cases hprevMaxNot :
   · let locals := dripLocals I
     let evm :=
       initState σ σ₀ (Sat256.ofUInt256 g) A I
-    have hvatCodeSolm :
+    have hvatCodeStele :
         0 <
           (UInt256.ofNat
             (((initState σ σ₀
@@ -174,7 +174,7 @@ by_cases hprevMaxNot :
           [.fixedBytes bytes32Width (fileDutyIlkBytes I)]
           (true, { evm with accountMap := σ', substate := A' }, out) true :=
       callCoincides hdepthNe htgt (dripVatIlksEncode_eq I hsz36) hΘE
-    have hfoldNoCodeSolmRaw :
+    have hfoldNoCodeSteleRaw :
         (UInt256.ofNat
           ((σ'.get? (dripVatAddress σ' I)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
@@ -190,7 +190,7 @@ by_cases hprevMaxNot :
           (σ := σ)
           (σ₀ := σ₀) (A := A) (I := I) (g := g)
           (evmVat := { evm with accountMap := σ', substate := A' })
-          (out := out) hwv hsz36 hle hvatCodeSolm
+          (out := out) hwv hsz36 hle hvatCodeStele
           (by simpa [evm] using hcall) _hdecOut
           (by
             simpa [evm, initState, solcSlotWordAt] using
@@ -204,7 +204,7 @@ by_cases hprevMaxNot :
           hprevMax
           (by
             simpa [evm, initState, State.lookupAccount] using
-              hfoldNoCodeSolmRaw))
+              hfoldNoCodeSteleRaw))
     have hfitZero :
         ((⟨0⟩ : UInt256).toNat *
           (dripVatIlksPrevWord out).toNat) < UInt256.size := by
@@ -351,7 +351,7 @@ by_cases hprevMaxNot :
       RD.jugDripVatFoldPostCall rd1650 hdepth
     cases z
     · rcases hΘFold with ⟨gFold'', AFold', hΘFold'⟩
-      have hvatCodeSolm :
+      have hvatCodeStele :
           0 <
             (UInt256.ofNat
               (((initState σ σ₀
@@ -455,7 +455,7 @@ by_cases hprevMaxNot :
             (false, { evmVat with accountMap := σ'', substate := AFold' }, foldOut)
             true :=
         callCoincides hfoldDepthNe hfoldTarget hfoldEncode hΘFoldE
-      have hfoldCodeSolm :
+      have hfoldCodeStele :
           0 <
             (UInt256.ofNat
               ((evmVat.lookupAccount
@@ -479,7 +479,7 @@ by_cases hprevMaxNot :
                 accountMap := σ'',
                 substate := AFold' })
             (out := out) (foldOut := foldOut)
-            hwv hsz36 hle hvatCodeSolm
+            hwv hsz36 hle hvatCodeStele
             (by simpa [evm, evmVat] using hcall)
             _hdecOut
             (by
@@ -491,7 +491,7 @@ by_cases hprevMaxNot :
             (by
               simpa [evmVat, evm, initState, solcSlotWordAt] using
                 (by simpa [age] using hageNZ))
-            hprevMax hfoldCodeSolm
+            hprevMax hfoldCodeStele
             (by simpa [evmVat] using hfoldCall))
       have hrev := RD.jugDripVatFoldCallFailed
         (targetWord := dripVatTargetWord σ' I) rd1651 hfoldOutSize
@@ -514,7 +514,7 @@ by_cases hprevMaxNot :
           (UInt256.sub (⟨0⟩ : UInt256)
             (dripVatIlksPrevWord out)) hfoldBaseSize
           hfoldBaseRead64
-      have hvatCodeSolm :
+      have hvatCodeStele :
           0 <
             (UInt256.ofNat
               (((initState σ σ₀
@@ -618,7 +618,7 @@ by_cases hprevMaxNot :
             (true, { evmVat with accountMap := σ'', substate := AFold' }, foldOut)
             true :=
         callCoincides hfoldDepthNe hfoldTarget hfoldEncode hΘFoldE
-      have hfoldCodeSolm :
+      have hfoldCodeStele :
           0 <
             (UInt256.ofNat
               ((evmVat.lookupAccount
@@ -643,7 +643,7 @@ by_cases hprevMaxNot :
             ((dripVatIlksPrevWord out).toNat : Int))).insert
               "_foldRet" .unit
       let evmRhoS :=
-        Solm.EVM.storageStore evmFoldS evmFoldS.executionEnv.codeOwner
+        Stele.EVM.storageStore evmFoldS evmFoldS.executionEnv.codeOwner
           (fileDutyRhoSlotFor I)
           (UInt256.ofNat evmFoldS.executionEnv.header.timestamp)
       have hboth :=
@@ -652,7 +652,7 @@ by_cases hprevMaxNot :
             (σ₀ := σ₀) (A := A) (I := I) (g := g)
             (evmVat := evmVat) (evmFold := evmFoldS)
             (out := out) (foldOut := foldOut)
-            hwv hsz36 hle hvatCodeSolm
+            hwv hsz36 hle hvatCodeStele
             (by simpa [evm, evmVat] using hcall)
             _hdecOut
             (by
@@ -664,25 +664,25 @@ by_cases hprevMaxNot :
             (by
               simpa [evmVat, evm, initState, solcSlotWordAt] using
                 (by simpa [age] using hageNZ))
-            hprevMax hfoldCodeSolm
+            hprevMax hfoldCodeStele
             (by simpa [evmVat] using hfoldCall))
-      have hbody :
+      have hbody (hpt : I.perm = true) :
           ExecTransitionBody config contract evm locals
             dripTransition.body
             (.returned { contract := contract, locals := finalLocals }
               evmRhoS
               (some [.int (Int.ofNat (⟨0⟩ : UInt256).toNat)])) := by
         simpa [evm, evmVat, evmFoldS, finalLocals, evmRhoS,
-          locals, initState, solcSlotWordAt] using hboth.1
+          locals, initState, solcSlotWordAt] using (hboth.1 hpt)
       obtain ⟨_, _, rd1669⟩ :=
         RD.jugDripVatFoldCallSucceeded
           (targetWord := dripVatTargetWord σ' I) rd1651
       rcases RD.jugDripVatFoldStoreRhoReturnsSplit
           (targetWord := dripVatTargetWord σ' I)
           hsz36 hfoldCallMemSize hfoldCallMemRead64 rd1669 with
-        ⟨_, hret⟩ | ⟨hpf, hstatic⟩
+        ⟨hpt, hret⟩ | ⟨hpf, hstatic⟩
       · exact hret.reEquivExecutionGen hcode hdispatch
-          (jugDecode_drip_ok hsz36) hbody
+          (jugDecode_drip_ok hsz36) (hbody hpt)
           (by simp [evmRhoS, evmFoldS, evmVat, evm, initState,
             storageStore_accountMap])
           (by

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapDeltaWords
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -69,7 +69,7 @@ theorem poolSwapDeltaBranchSource {f : Frame} {evm : State} {p : PoolSwapParamsW
           (by cases cf <;> decide : (poolSwapDeltaName1 cf == "swapDelta") = false)
           (by cases cf <;> decide : (poolSwapDeltaName2 cf == "swapDelta") = false)).trans hd
       exact ExecBlock.consNormal hfirst (ExecBlock.consNormal hsecond (ExecBlock.consNormal hpack
-        (execBlock_singleton (ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) (assignLocalValue hd3)))))
+        (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _)) (assignLocalValue hd3)))))
     · rw [if_neg (show ¬poolSwapDeltaFits cf p.amountSpecified remaining calculated from fun hh => hb hh.2)]
       rw [if_neg hb] at hsecond
       exact ExecBlock.consNormal hfirst (ExecBlock.consRevert hsecond)

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleSurroundingModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -60,7 +60,7 @@ theorem oracleSurroundingCandidatePrefix (imms : Store) (evm : EVM.State) (time 
         evm) := by
     refine ExecBlock.consNormal (ExecStmt.iteFalse ?_ ExecBlock.nil) ?_
     · exact evalExpr_var_get (by simp [f, oracleSurroundingFirstFrame, hf])
-    · refine ExecBlock.consNormal (ExecStmt.assign hread ?_) ExecBlock.nil
+    · refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hread ?_) ExecBlock.nil
       exact assignLocalVarBase_frame
         (old := (oracleStoredObservation index evm.accountMap evm.executionEnv).value)
         (by simp [f, oracleSurroundingFirstFrame, oracleSurroundingReadFrame,
@@ -100,7 +100,7 @@ theorem oracleSurroundingOldestFallback (imms : Store) (evm : EVM.State) (time t
     rw [hh]
     refine ExecStmt.iteTrue (by simpa only [candidate, hz, Bool.not_false] using he) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign
+      (ExecStmt.assign (hperm := Or.inl rfl)
         (value := (oracleStoredObservation ⟨0⟩ evm.accountMap evm.executionEnv).value)
         ?_ ?_) ExecBlock.nil
     · exact evalOracleObservationExpr f.locals imms evm (.intLit 0) ⟨0⟩

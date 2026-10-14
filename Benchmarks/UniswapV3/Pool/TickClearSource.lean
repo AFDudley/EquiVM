@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickClearStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -27,11 +27,12 @@ theorem deleteTick (imms : Store) (evm : EVM.State) (tick : Int) :
     Bool.false_eq_true, if_false, hr, EvalResult.bind, bind]
   exact tickClearStorage evm tick
 
-theorem tickClearReturns (imms : Store) (evm : EVM.State) (tick : Int) :
+theorem tickClearReturns (imms : Store) (evm : EVM.State) (tick : Int)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (tickClearFrame imms tick) evm tickClearFunction.body
       (.returned (tickClearFrame imms tick) (tickClearState evm tick) none) := by
   apply ExecFuncBody.execBlockOK
-  exact ExecBlock.consNormal (ExecStmt.delete (deleteTick imms evm tick)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.delete (hperm := hperm) (deleteTick imms evm tick)) ExecBlock.nil
 
 theorem tickClearStatic (imms : Store) (evm : EVM.State) (tick : Int)
     (hp : evm.executionEnv.perm = false) :

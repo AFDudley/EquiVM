@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintFeeRuntimeSqrt
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -243,7 +243,7 @@ theorem mintFunctionPostState_accountMap_eq_of_runtimeMintRecipient
     have hword := congrArg
       (fun m => uniswapCodeOwnerStorageWord I m
         (mapSlot (UInt256.land recipientWord solcAddrMask) ⟨1⟩)) hafterTotal
-    simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Solm.EVM.storageLoad,
+    simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, henv, henvAfter, hslotSource, hslotRuntime]
       using hword.symm
   have hnewBalance :
@@ -339,7 +339,7 @@ theorem mintFunctionPostState_accountMap_eq_of_runtimeMint
     have hword := congrArg
       (fun m => uniswapCodeOwnerStorageWord I m (mapSlot (mintToMaskedWord I) ⟨1⟩))
       hafterTotal
-    simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Solm.EVM.storageLoad,
+    simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, henv, henvAfter, hslotSource, hslotRuntime]
       using hword.symm
   have hnewBalance :

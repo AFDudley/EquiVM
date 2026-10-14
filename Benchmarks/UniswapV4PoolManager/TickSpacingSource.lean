@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SignedQuotientSource
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -57,11 +57,11 @@ theorem tickSpacingPrelude {f : Frame} {evm : EVM.State} {spacing : Int}
     let f3 : Frame := {f2 with locals := f2.locals.insert "minTick" (.int (tickSpacingMin spacing))}
     let f4 : Frame := {f3 with locals := f3.locals.insert "maxTick" (.int (tickSpacingMax spacing))}
     have hmin : ExecStmt config f2 evm (.assign .localVar {base := "minTick"} _ ) (.ok f3 evm) :=
-      ExecStmt.assign (tickSpacingMin_eval hs2 hn) (assignLocalValue
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (tickSpacingMin_eval hs2 hn) (assignLocalValue
         ((store_get_ne _ _ (by decide : ("maxTick" == "minTick") = false)).trans (store_get_self _ _ _)))
     have hmax : ExecStmt config f3 evm (.assign .localVar {base := "maxTick"}
         (.binary .sdiv (.intLit 887272) (.var "tickSpacing"))) (.ok f4 evm) := by
-      apply ExecStmt.assign _ (assignLocalValue
+      apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) _ (assignLocalValue
         ((store_get_ne _ _ (by decide : ("minTick" == "maxTick") = false)).trans (store_get_self _ _ _)))
       rw [tickSpacingMax, if_neg hn]
       exact evalSignedDiv (by simp only [evalExpr?, pure]) (evalLocalValue

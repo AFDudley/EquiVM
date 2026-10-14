@@ -1,7 +1,7 @@
 import Examples.Ballot.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -22,10 +22,10 @@ def winningProposalVoteCountWord (sigma : AccountMap) (I : ExecutionEnv) (p : UI
     (fun acc => acc.storage.getD (winningProposalVoteCountSlot p) ⟨0⟩)
 
 def winningProposalLengthCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def winningProposalVoteCountCurrent (evm : EVM.State) (p : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (winningProposalVoteCountSlot p)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (winningProposalVoteCountSlot p)
 
 def winningProposalCountEvaledRef (p : UInt256) : EvaledStorageRef :=
   { base := "proposals",
@@ -68,7 +68,7 @@ theorem winningProposalArrayIndexInBounds_ok (evm : EVM.State) (p : UInt256)
       (.int (Int.ofNat p.toNat)) = .ok () := by
   have hboundStorage :
       p.toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [winningProposalLengthCurrent] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
   rw [ballotProposalsLength]
@@ -300,6 +300,7 @@ theorem winningProposalLoopPostStep (evm : EVM.State) (locals : Store) (p : UInt
         (locals.insert "p" (.int (Int.ofNat (p + ⟨1⟩).toNat)))) evm) := by
   apply ExecBlock.consNormal
   · apply ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
     · have hadd : Int.ofNat p.toNat + 1 = Int.ofNat (p + ⟨1⟩).toNat := by
         rw [add1_toNat hsize]
         norm_num
@@ -356,11 +357,13 @@ theorem winningProposalLoopBodyTake (evm : EVM.State) (locals : Store)
       (winningProposalEvalVoteGt_true evm locals p winningVoteCount hbase hp hcount hbound hgt)
     apply ExecBlock.consNormal
     · apply ExecStmt.assign
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       · exact winningProposalEvalVoteCount evm locals p hbase hp hbound
       · exact winningProposalAssignLocal evm locals "winningVoteCount" winningVoteCount
           (winningProposalVoteCountCurrent evm p) hcount
     · apply ExecBlock.consNormal
       · apply ExecStmt.assign
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
         · have hp' :
               (locals.insert "winningVoteCount"
                 (.int (Int.ofNat (winningProposalVoteCountCurrent evm p).toNat))).get? "p" =

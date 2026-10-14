@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -10,9 +10,9 @@ def vowWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨3⟩ σ I
 
 theorem jugDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem jugReachVowBody {σ σ₀ A I} {g : Sat256}
@@ -46,7 +46,7 @@ theorem jugVowBodyCore
     (hcode : I.code = jugBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
         (transitionSignature vowTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD jugBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨383⟩ [sel]
@@ -58,7 +58,7 @@ theorem jugVowBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (vowWord σ I).toNat))])) := by
-    simpa [vowTransition, vowWord, solcAddressSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [vowTransition, vowWord, solcAddressSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       jugAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalTransferEventSource
 import Benchmarks.CompoundIII.Comet.TotalsStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -44,14 +44,15 @@ theorem SupplyBaseArgs.insert {frame sender dst amount supplied}
 
 theorem supplyBaseEvents_source {sender dst amount supplied}
     (frame : Frame) (evm : EVM.State) (hf : SupplyBaseArgs frame sender dst amount supplied)
-    (hsupplied : supplied.toNat < 2^104) :
+    (hsupplied : supplied.toNat < 2^104)
+    (hperm : evm.executionEnv.perm = true) :
     ∃ final, ExecBlock config frame evm supplyBaseEvents (.ok final evm) := by
   have hem : ExecStmt config frame evm (.emit "Supply"
       [.var "from", .var "dst", .var "amount"]) (.ok frame evm) :=
-    ExecStmt.emit (vals := [.address sender, .address dst, .int amount.toNat]) (by
+    ExecStmt.emit (hperm := hperm) (vals := [.address sender, .address dst, .int amount.toNat]) (by
       simp only [evalExprs?, evalExpr?, hf.sender, hf.dst, hf.amount,
         EvalResult.ofOption, pure, bind, EvalResult.bind])
-  have hmint := principalTransferEvent_source frame evm true dst supplied
+  have hmint := principalTransferEvent_source (hperm := by assumption) frame evm true dst supplied
     "dst" "supplyAmount" "__c7" (by decide) hf.contract hf.dst hf.supplied hf.index hsupplied
   exact ⟨_, ExecBlock.consNormal hem (ExecBlock.consNormal hmint .nil)⟩
 

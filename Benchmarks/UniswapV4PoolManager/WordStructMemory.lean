@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordStoreMemory
 import Benchmarks.UniswapV4PoolManager.MappingScratchMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a finite sequence of word fields at a memory pointer.

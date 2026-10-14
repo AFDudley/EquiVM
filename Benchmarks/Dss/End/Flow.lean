@@ -5,7 +5,7 @@ import Benchmarks.Dss.End.Pack
 import Benchmarks.Dss.End.Cash
 import Benchmarks.Dss.End.Thaw
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -13,7 +13,7 @@ set_option maxHeartbeats 0
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.End
 
@@ -201,7 +201,7 @@ abbrev endFlowStoreFixV (σ : AccountMap) (I : ExecutionEnv) (out : ByteArray) :
 
 def endFlowPostState (evm : EVM.State) (I : ExecutionEnv) (fixV : UInt256) :
     EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endFlowFixSlot I) fixV
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (endFlowFixSlot I) fixV
 
 def endFlowPostAccountMap (σ : AccountMap) (I : ExecutionEnv) (fixV : UInt256) :
     AccountMap :=
@@ -694,18 +694,18 @@ theorem RD.endFlowFixDefinedRevert {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     raw rev 0 (by native_decide) mem_cost (by evm_ov)]
 
 theorem endDecode_flow_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flowTransition.params.map Param.name)
       (transitionSignature flowTransition).paramTypes I.calldata = some (endFlowStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, endFlowStore, endFlowIlkValue, endFlowIlkWord, bytes32, bytes32Width,
     abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem endDecode_flow_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (flowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flowTransition.params.map Param.name)
       (transitionSignature flowTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, bytes32, bytes32Width, abiBytes32, abiBytes32Width] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 
@@ -2392,7 +2392,7 @@ theorem endFlowCheckedVatIlksNoCode {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endFlowStore I).get? "vat" = none := by
       simp [endFlowStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endFlowStore I) evm0 hbase
   have hcodeZero :
@@ -2433,7 +2433,7 @@ theorem endFlowCheckedVatIlksFailure {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endFlowStore I).get? "vat" = none := by
       simp [endFlowStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endFlowStore I) evm0 hbase
   have hcodePos :
@@ -2460,7 +2460,7 @@ theorem endFlowCheckedVatIlksFailure {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
       (locals := endFlowStore I) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -2488,7 +2488,7 @@ theorem endFlowCheckedVatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endFlowStore I).get? "vat" = none := by
       simp [endFlowStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endFlowStore I) evm0 hbase
   have hcodePos :
@@ -2515,7 +2515,7 @@ theorem endFlowCheckedVatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
       (locals := endFlowStore I) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -2545,7 +2545,7 @@ theorem endFlowCheckedVatIlksSuccess {σ σ₀ A I} {g : UInt256}
         (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
     have hbase : (endFlowStore I).get? "vat" = none := by
       simp [endFlowStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vat (locals := endFlowStore I) evm0 hbase
   have hcodePos :
@@ -2572,7 +2572,7 @@ theorem endFlowCheckedVatIlksSuccess {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, EvalResult.bind, bind, pure]
   have hvalue := endFlowVatIlksDecode_ok (out := out) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm0) (evm' := evmVat)
     (locals := endFlowStore I) (receiver := .storage vatRef)
     (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -2597,10 +2597,10 @@ theorem evalExpr_endFlow_debt (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.storage debtRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := endFlowStore I })
+    (stele := { contract := contract, locals := endFlowStore I })
     (slot := debtRef)
     (er := ({ base := "debt", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int)
@@ -2616,10 +2616,10 @@ theorem evalExpr_endFlow_debt_of_base {locals : Store} (evm : EVM.State) (I : Ex
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage debtRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := debtRef)
     (er := ({ base := "debt", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int)
@@ -2633,7 +2633,7 @@ theorem evalExpr_endFlow_debt_of_base {locals : Store} (evm : EVM.State) (I : Ex
     (hload := storageLocLoad_uint256 evm ⟨11⟩)
 
 theorem evalExpr_endFlow_debt_ne_false (evm : EVM.State) (I : ExecutionEnv)
-    (hdebt : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩) :
+    (hdebt : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.binary .ne (.storage debtRef) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
@@ -2647,14 +2647,14 @@ theorem evalExpr_endFlow_debt_ne_false (evm : EVM.State) (I : ExecutionEnv)
   exact endEvalExpr_ne_int_false hstorage hzero rfl
 
 theorem evalExpr_endFlow_debt_ne_true (evm : EVM.State) (I : ExecutionEnv)
-    (hdebt : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩) :
+    (hdebt : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.binary .ne (.storage debtRef) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm
         (.storage debtRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) :=
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) :=
     evalExpr_endFlow_debt evm I
   have hzero :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm
@@ -2716,11 +2716,11 @@ theorem evalExpr_endFlow_fix (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.storage (fixRef (.var "ilk"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endFlowFixSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := endFlowStore I })
+    (stele := { contract := contract, locals := endFlowStore I })
     (slot := fixRef (.var "ilk"))
     (er := endFlowFixEvaledRef I)
     (t := .int uint256Int)
@@ -2734,14 +2734,14 @@ theorem evalExpr_endFlow_fix (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFlow_fix_eq_false (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size)
     (hfix :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowFixSlot I) ≠ ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowFixSlot I) ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.binary .eq (.storage (fixRef (.var "ilk"))) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm
         (.storage (fixRef (.var "ilk"))) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endFlowFixSlot I)).toNat)) :=
     evalExpr_endFlow_fix evm I hsz36
   have hzero :
@@ -2756,7 +2756,7 @@ theorem evalExpr_endFlow_fix_eq_false (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFlow_fix_eq_true (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size)
     (hfix :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endFlowStore I } evm
       (.binary .eq (.storage (fixRef (.var "ilk"))) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
@@ -2821,11 +2821,11 @@ theorem evalExpr_endFlow_Art_of_get {locals : Store} (evm : EVM.State)
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (ArtRef (.var "ilk"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endFlowArtSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := ArtRef (.var "ilk"))
     (er := endFlowArtEvaledRef I)
     (t := .int uint256Int)
@@ -2844,7 +2844,7 @@ theorem endFlowAssignArtOfGet {locals : Store} (evm : EVM.State) (I : ExecutionE
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage (ArtRef (.var "ilk")) (.int (Int.ofNat artNew.toNat)) =
         .ok ({ contract := contract, locals := locals },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endFlowArtSlot I) artNew) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner (endFlowArtSlot I) artNew) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc (endFlowArtSlot I)) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -2880,11 +2880,11 @@ theorem evalExpr_endFlow_tag_of_get {locals : Store} (evm : EVM.State)
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (tagRef (.var "ilk"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endFlowTagSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := tagRef (.var "ilk"))
     (er := endFlowTagEvaledRef I)
     (t := .int uint256Int)
@@ -2921,11 +2921,11 @@ theorem evalExpr_endFlow_gap_of_get {locals : Store} (evm : EVM.State)
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage (gapRef (.var "ilk"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endFlowGapSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := gapRef (.var "ilk"))
     (er := endFlowGapEvaledRef I)
     (t := .int uint256Int)
@@ -2947,7 +2947,7 @@ theorem endFlowStmtWad0RmulReturns (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hfit : (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size) :
     ExecStmt config { contract := contract, locals := endFlowStoreRate I out } evm
@@ -3005,7 +3005,7 @@ theorem endFlowStmtWadRmulReturns (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hfit : (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat < UInt256.size) :
     ExecStmt config { contract := contract, locals := endFlowStoreWad0 σ I out } evm
@@ -3064,7 +3064,7 @@ theorem endFlowStmtNum0SubReturns (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hle : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat) :
     ExecStmt config { contract := contract, locals := endFlowStoreWad σ I out } evm
@@ -3170,7 +3170,7 @@ theorem endFlowStmtNumMulReturns (evm : EVM.State) (I : ExecutionEnv)
 theorem endFlowStmtDenLet (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hDebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
         endFlowDebtWord σ I) :
     ExecStmt config { contract := contract, locals := endFlowStoreNum σ I out } evm
       (.letDecl "den" (some uint256) (.binary .div (.storage debtRef) (.intLit RAY)))
@@ -3228,7 +3228,7 @@ theorem endFlowStmtFixVLet (evm : EVM.State) (I : ExecutionEnv)
 theorem endFlowStmtAssignFixVSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size) :
-    (ExecStmt config { contract := contract, locals := endFlowStoreFixV σ I out } evm
+    (evm.executionEnv.perm = true → ExecStmt config { contract := contract, locals := endFlowStoreFixV σ I out } evm
       (.assign .storage (fixRef (.var "ilk")) (.var "fixV"))
       (.ok { contract := contract, locals := endFlowStoreFixV σ I out }
         (endFlowPostState evm I (endFlowFixVWord σ I out)))) ∧
@@ -3273,23 +3273,23 @@ theorem endFlowStmtAssignFixVSplit (evm : EVM.State) (I : ExecutionEnv)
       (hloc := by rfl)
     simpa [endFlowPostState] using
       storageLocStore_uint256 evm (endFlowFixSlot I) (endFlowFixVWord σ I out)
-  exact ⟨ExecStmt.assign hfixV hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hfixV hassign,
     fun hperm ↦ ExecStmt.assignStatic hfixV hassign hperm⟩
 
 theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hDebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
         endFlowDebtWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3298,7 +3298,7 @@ theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
     (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
-    (ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
+    (evm.executionEnv.perm = true → ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
       [ .letDecl "rate" (some uint256) (.tupleGet (.var "vatIlk") 1),
         .internalCall "rmul" [.storage (ArtRef (.var "ilk")), .var "rate"] "wad0",
         .internalCall "rmul" [.var "wad0", .storage (tagRef (.var "ilk"))] "wad",
@@ -3346,7 +3346,8 @@ theorem endFlowTailReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     exact hwrite
   have hwrite := endFlowStmtAssignFixVSplit evm I σ out hsz36
   constructor
-  · exact hprefix (ExecBlock.consNormal hwrite.1 ExecBlock.nil)
+  · intro hperm
+    exact hprefix (ExecBlock.consNormal (hwrite.1 hperm) ExecBlock.nil)
   · intro hperm
     exact hprefix (ExecBlock.consStatic (hwrite.2 hperm))
 
@@ -3354,16 +3355,16 @@ theorem endFlowTailReturns (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hDebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
         endFlowDebtWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3371,7 +3372,8 @@ theorem endFlowTailReturns (evm : EVM.State) (I : ExecutionEnv)
       (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat < UInt256.size)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
-    (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
+    (hden : endFlowDenWord σ I ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endFlowStoreVatIlk I out } evm
       [ .letDecl "rate" (some uint256) (.tupleGet (.var "vatIlk") 1),
         .internalCall "rmul" [.storage (ArtRef (.var "ilk")), .var "rate"] "wad0",
@@ -3384,7 +3386,7 @@ theorem endFlowTailReturns (evm : EVM.State) (I : ExecutionEnv)
       (.ok { contract := contract, locals := endFlowStoreFixV σ I out }
         (endFlowPostState evm I (endFlowFixVWord σ I out))) :=
   (endFlowTailReturnsSplit evm I σ out hsz36
-    hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad hleSub hfitMul hden).1
+    hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad hleSub hfitMul hden).1 hperm
 
 theorem endEvalExpr_div_uint256_revert {evm : EVM.State} {locals : Store}
     {x y : Expr} {a : UInt256}
@@ -3400,7 +3402,7 @@ theorem endFlowStmtWad0RmulReverts (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hover :
       UInt256.size ≤ (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat) :
@@ -3456,7 +3458,7 @@ theorem endFlowStmtWadRmulReverts (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hover :
       UInt256.size ≤ (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat) :
@@ -3513,7 +3515,7 @@ theorem endFlowStmtNum0SubReverts (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hlt : (endFlowWadWord σ I out).toNat < (endFlowGapWord σ I).toNat) :
     ExecStmt config { contract := contract, locals := endFlowStoreWad σ I out } evm
@@ -3644,7 +3646,7 @@ theorem endFlowTailReverts_wad0RmulOverflow (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hover :
       UInt256.size ≤ (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat) :
@@ -3666,10 +3668,10 @@ theorem endFlowTailReverts_wadRmulOverflow (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3695,13 +3697,13 @@ theorem endFlowTailReverts_subUnderflow (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3730,13 +3732,13 @@ theorem endFlowTailReverts_mulOverflow (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3768,16 +3770,16 @@ theorem endFlowTailReverts_denZero (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (out : ByteArray)
     (hsz36 : 36 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hDebtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩ =
         endFlowDebtWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -3814,8 +3816,8 @@ theorem endFlowBodyReverts_debtZero {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endFlowStore I) flowTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ = ⟨0⟩ := by
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowDebtWord, solcSlotWordAt, solcSlotWord] using hdebt
   have hguard :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm0
@@ -3825,7 +3827,7 @@ theorem endFlowBodyReverts_debtZero {σ σ₀ A I} {g : UInt256}
   simpa [flowTransition, nonpayable, checkedExternalCallStmts] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := endFlowStore I })
+      (stele := { contract := contract, locals := endFlowStore I })
       (evm := evm0)
       (guard := .binary .ne (.storage debtRef) (.intLit 0))
       (rest :=
@@ -3851,16 +3853,16 @@ theorem endFlowBodyReverts_fixNonzero {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endFlowStore I) flowTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hfixLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) ≠ ⟨0⟩ := by
     intro hbad
     apply hfix
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowFixWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm0
@@ -3893,14 +3895,14 @@ theorem endFlowBodyReverts_vatIlksBlock {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endFlowStore I) flowTransition.body .reverted := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hfixLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩ := by
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩ := by
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowFixWord, solcSlotWordAt, solcSlotWord] using hfix
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm0
@@ -4042,14 +4044,14 @@ theorem endFlowPrefixVatIlksSuccess {σ σ₀ A I} {g : UInt256}
       (.ok { contract := contract, locals := endFlowStoreVatIlk I out } evmVat) := by
   intro evm0
   have hdebtLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner ⟨11⟩ ≠ ⟨0⟩ := by
     intro hbad
     apply hdebt
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowDebtWord, solcSlotWordAt, solcSlotWord] using hbad
   have hfixLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩ := by
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endFlowFixSlot I) = ⟨0⟩ := by
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endFlowFixWord, solcSlotWordAt, solcSlotWord] using hfix
   have hguardDebt :
       evalExpr? config { contract := contract, locals := endFlowStore I } evm0
@@ -4235,16 +4237,16 @@ theorem endFlowBodyReturns {σ σ₀ A I} {g : UInt256}
         (true, evmVat, out) true)
     (hlo : 160 ≤ out.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowArtSlot I) =
+      Stele.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowArtSlot I) =
         endFlowArtWord σ I)
     (hTagLoad :
-      Solm.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowTagSlot I) =
+      Stele.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowTagSlot I) =
         endFlowTagWord σ I)
     (hGapLoad :
-      Solm.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowGapSlot I) =
+      Stele.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner (endFlowGapSlot I) =
         endFlowGapWord σ I)
     (hDebtLoad :
-      Solm.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner ⟨11⟩ =
+      Stele.EVM.storageLoad evmVat evmVat.executionEnv.codeOwner ⟨11⟩ =
         endFlowDebtWord σ I)
     (hfitWad0 :
       (endFlowArtWord σ I).toNat * (endFlowVatIlkRateWord out).toNat < UInt256.size)
@@ -4252,7 +4254,8 @@ theorem endFlowBodyReturns {σ σ₀ A I} {g : UInt256}
       (endFlowWad0Word σ I out).toNat * (endFlowTagWord σ I).toNat < UInt256.size)
     (hleSub : (endFlowGapWord σ I).toNat ≤ (endFlowWadWord σ I out).toNat)
     (hfitMul : (endFlowNum0Word σ I out).toNat * endRayWord.toNat < UInt256.size)
-    (hden : endFlowDenWord σ I ≠ ⟨0⟩) :
+    (hden : endFlowDenWord σ I ≠ ⟨0⟩)
+    (hperm : evmVat.executionEnv.perm = true) :
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 (endFlowStore I) flowTransition.body
       (.returned { contract := contract, locals := endFlowStoreFixV σ I out }
@@ -4272,7 +4275,7 @@ theorem endFlowBodyReturns {σ σ₀ A I} {g : UInt256}
         (A := A) (I := I) (g := g) (evmVat := evmVat) (out := out)
         hwv hsz36 hdebt hfix hcodeSize hcall hlo
   have htail :=
-    endFlowTailReturns evmVat I σ out hsz36 hArtLoad hTagLoad hGapLoad hDebtLoad
+    endFlowTailReturns (hperm := hperm) evmVat I σ out hsz36 hArtLoad hTagLoad hGapLoad hDebtLoad
       hfitWad0 hfitWad hleSub hfitMul hden
   have hblock :
       ExecBlock config { contract := contract, locals := endFlowStore I } evm0
@@ -4344,13 +4347,13 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := endDecode_flow_ok (I := I) hsz36
     obtain ⟨_, _, hbodyReach⟩ :=
       endFlowX_decoded (g := Sat256.ofUInt256 g) hsz36 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hdebt : endFlowDebtWord σ I = ⟨0⟩
     ·
       have hbody :
-          ExecTransitionBody config contract evmSolm (endFlowStore I)
+          ExecTransitionBody config contract evmStele (endFlowStore I)
             flowTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           endFlowBodyReverts_debtZero
             (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := g) hwv hdebt
@@ -4364,9 +4367,9 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
               ⟨0⟩
         ·
           have hbody :
-              ExecTransitionBody config contract evmSolm (endFlowStore I)
+              ExecTransitionBody config contract evmStele (endFlowStore I)
                 flowTransition.body .reverted := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endFlowBodyReverts_vatIlksNoCode
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) hwv hsz36 hdebt hfix hvatCode
@@ -4432,50 +4435,50 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                 (endFlowVatIlksEncode_eq I hsz36
                   (twoWordHashMem_size_96 (endFlowIlkWord I) ⟨15⟩ solcFreePtrMem_size))
                 (by simpa [initState] using hΘeq)
-            have hcallSolm :
-                typedCallViaEVM config evmSolm
+            have hcallStele :
+                typedCallViaEVM config evmStele
                   (EVM.address (endPackVatAddr σ I)) "vatIlks" 0
                   [.fixedBytes bytes32Width (endBytes32ArgBytes I)]
                   (z,
-                    { evmSolm with
+                    { evmStele with
                       accountMap := σ'
                       substate := A' },
                   out) true := by
-              simpa [evmSolm] using hcallEvm
+              simpa [evmStele] using hcallEvm
             cases z
             · have hbody :
-                  ExecTransitionBody config contract evmSolm (endFlowStore I)
+                  ExecTransitionBody config contract evmStele (endFlowStore I)
                     flowTransition.body .reverted := by
-                simpa [evmSolm] using
+                simpa [evmStele] using
                   endFlowBodyReverts_vatIlksCallFailed
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g)
                     (evmVat :=
-                      { evmSolm with
+                      { evmStele with
                         accountMap := σ'
                         substate := A' })
                     (out := out)
                     hwv hsz36 hdebt hfix hvatCodeNE
-                    (by simpa [evmSolm] using hcallSolm)
+                    (by simpa [evmStele] using hcallStele)
               exact (endFlowX_vatIlksCallFailed (g := Sat256.ofUInt256 g) rd2964 hout)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-            · let evmVatSolm :=
-                { evmSolm with
+            · let evmVatStele :=
+                { evmStele with
                   accountMap := σ'
                   substate := A' }
               obtain ⟨_, _, rd2982⟩ :=
                 endFlowX_vatIlksCallSucceeded (g := Sat256.ofUInt256 g) rd2964
               by_cases hshortOut : out.size < 160
               · have hbody :
-                    ExecTransitionBody config contract evmSolm (endFlowStore I)
+                    ExecTransitionBody config contract evmStele (endFlowStore I)
                       flowTransition.body .reverted := by
-                  simpa [evmVatSolm, evmSolm] using
+                  simpa [evmVatStele, evmStele] using
                     endFlowBodyReverts_vatIlksDecodeShort
                       (σ := σ) (σ₀ := σ₀)
                       (A := A) (I := I) (g := g)
-                      (evmVat := evmVatSolm) (out := out)
+                      (evmVat := evmVatStele) (out := out)
                       hwv hsz36 hdebt hfix hvatCodeNE
-                      (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                      (by simpa [evmVatStele, evmStele] using hcallStele)
                       hshortOut
                 exact (endFlowX_vatIlksReturnDecodeShort rd2982 hshortOut hout)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -4483,30 +4486,30 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                 obtain ⟨_, _, rd3010⟩ :=
                   endFlowX_vatIlksReturnDecodeOk rd2982 hlo hout
                 have hArtLoad :
-                    Solm.EVM.storageLoad evmVatSolm evmVatSolm.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmVatStele evmVatStele.executionEnv.codeOwner
                         (endFlowArtSlot I) =
                       endFlowArtWord σ' I := by
-                  simp [evmVatSolm, evmSolm, initState, Solm.EVM.storageLoad,
+                  simp [evmVatStele, evmStele, initState, Stele.EVM.storageLoad,
                     State.lookupAccount, Account.lookupStorage, endFlowArtWord,
                     solcSlotWordAt, solcSlotWord]
                 have hTagLoad :
-                    Solm.EVM.storageLoad evmVatSolm evmVatSolm.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmVatStele evmVatStele.executionEnv.codeOwner
                         (endFlowTagSlot I) =
                       endFlowTagWord σ' I := by
-                  simp [evmVatSolm, evmSolm, initState, Solm.EVM.storageLoad,
+                  simp [evmVatStele, evmStele, initState, Stele.EVM.storageLoad,
                     State.lookupAccount, Account.lookupStorage, endFlowTagWord,
                     solcSlotWordAt, solcSlotWord]
                 have hGapLoad :
-                    Solm.EVM.storageLoad evmVatSolm evmVatSolm.executionEnv.codeOwner
+                    Stele.EVM.storageLoad evmVatStele evmVatStele.executionEnv.codeOwner
                         (endFlowGapSlot I) =
                       endFlowGapWord σ' I := by
-                  simp [evmVatSolm, evmSolm, initState, Solm.EVM.storageLoad,
+                  simp [evmVatStele, evmStele, initState, Stele.EVM.storageLoad,
                     State.lookupAccount, Account.lookupStorage, endFlowGapWord,
                     solcSlotWordAt, solcSlotWord]
                 have hDebtLoad :
-                    Solm.EVM.storageLoad evmVatSolm evmVatSolm.executionEnv.codeOwner ⟨11⟩ =
+                    Stele.EVM.storageLoad evmVatStele evmVatStele.executionEnv.codeOwner ⟨11⟩ =
                       endFlowDebtWord σ' I := by
-                  simp [evmVatSolm, evmSolm, initState, Solm.EVM.storageLoad,
+                  simp [evmVatStele, evmStele, initState, Stele.EVM.storageLoad,
                     State.lookupAccount, Account.lookupStorage, endFlowDebtWord,
                     solcSlotWordAt, solcSlotWord]
                 obtain ⟨_, _, rdWad0Entry⟩ :=
@@ -4515,18 +4518,18 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                     UInt256.size ≤
                       (endFlowArtWord σ' I).toNat * (endFlowVatIlkRateWord out).toNat
                 · have htail :=
-                    endFlowTailReverts_wad0RmulOverflow evmVatSolm I σ' out hsz36
+                    endFlowTailReverts_wad0RmulOverflow evmVatStele I σ' out hsz36
                       hArtLoad hoverWad0
                   have hbody :
-                      ExecTransitionBody config contract evmSolm (endFlowStore I)
+                      ExecTransitionBody config contract evmStele (endFlowStore I)
                         flowTransition.body .reverted := by
-                    simpa [evmVatSolm, evmSolm] using
+                    simpa [evmVatStele, evmStele] using
                       endFlowBodyReverts_vatIlksOkTailReverted
                         (σ := σ) (σ₀ := σ₀)
                         (A := A) (I := I) (g := g)
-                        (evmVat := evmVatSolm) (out := out)
+                        (evmVat := evmVatStele) (out := out)
                         hwv hsz36 hdebt hfix hvatCodeNE
-                        (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                        (by simpa [evmVatStele, evmStele] using hcallStele)
                         hlo htail
                   exact
                     (endFlowX_rmulOverflow
@@ -4575,18 +4578,18 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                       UInt256.size ≤
                         (endFlowWad0Word σ' I out).toNat * (endFlowTagWord σ' I).toNat
                   · have htail :=
-                      endFlowTailReverts_wadRmulOverflow evmVatSolm I σ' out hsz36
+                      endFlowTailReverts_wadRmulOverflow evmVatStele I σ' out hsz36
                         hArtLoad hTagLoad hfitWad0 hoverWad
                     have hbody :
-                        ExecTransitionBody config contract evmSolm (endFlowStore I)
+                        ExecTransitionBody config contract evmStele (endFlowStore I)
                           flowTransition.body .reverted := by
-                      simpa [evmVatSolm, evmSolm] using
+                      simpa [evmVatStele, evmStele] using
                         endFlowBodyReverts_vatIlksOkTailReverted
                           (σ := σ) (σ₀ := σ₀)
                           (A := A) (I := I) (g := g)
-                          (evmVat := evmVatSolm) (out := out)
+                          (evmVat := evmVatStele) (out := out)
                           hwv hsz36 hdebt hfix hvatCodeNE
-                          (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                          (by simpa [evmVatStele, evmStele] using hcallStele)
                           hlo htail
                     exact
                       (endFlowX_rmulOverflow
@@ -4635,18 +4638,18 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                     by_cases hsubUnder :
                         (endFlowWadWord σ' I out).toNat < (endFlowGapWord σ' I).toNat
                     · have htail :=
-                        endFlowTailReverts_subUnderflow evmVatSolm I σ' out hsz36
+                        endFlowTailReverts_subUnderflow evmVatStele I σ' out hsz36
                           hArtLoad hTagLoad hGapLoad hfitWad0 hfitWad hsubUnder
                       have hbody :
-                          ExecTransitionBody config contract evmSolm (endFlowStore I)
+                          ExecTransitionBody config contract evmStele (endFlowStore I)
                             flowTransition.body .reverted := by
-                        simpa [evmVatSolm, evmSolm] using
+                        simpa [evmVatStele, evmStele] using
                           endFlowBodyReverts_vatIlksOkTailReverted
                             (σ := σ) (σ₀ := σ₀)
                             (A := A) (I := I) (g := g)
-                            (evmVat := evmVatSolm) (out := out)
+                            (evmVat := evmVatStele) (out := out)
                             hwv hsz36 hdebt hfix hvatCodeNE
-                            (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                            (by simpa [evmVatStele, evmStele] using hcallStele)
                             hlo htail
                       exact (endFlowX_tailSubUnderflow hsz36 hlo hsubUnder rd3061)
                         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -4658,18 +4661,18 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                           UInt256.size ≤
                             (endFlowNum0Word σ' I out).toNat * endRayWord.toNat
                       · have htail :=
-                          endFlowTailReverts_mulOverflow evmVatSolm I σ' out hsz36
+                          endFlowTailReverts_mulOverflow evmVatStele I σ' out hsz36
                             hArtLoad hTagLoad hGapLoad hfitWad0 hfitWad hleSub hoverMul
                         have hbody :
-                            ExecTransitionBody config contract evmSolm (endFlowStore I)
+                            ExecTransitionBody config contract evmStele (endFlowStore I)
                               flowTransition.body .reverted := by
-                          simpa [evmVatSolm, evmSolm] using
+                          simpa [evmVatStele, evmStele] using
                             endFlowBodyReverts_vatIlksOkTailReverted
                               (σ := σ) (σ₀ := σ₀)
                               (A := A) (I := I) (g := g)
-                              (evmVat := evmVatSolm) (out := out)
+                              (evmVat := evmVatStele) (out := out)
                               hwv hsz36 hdebt hfix hvatCodeNE
-                              (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                              (by simpa [evmVatStele, evmStele] using hcallStele)
                               hlo htail
                         exact (endFlowX_tailMulOverflow hsz36 hlo hleSub hoverMul rd3061)
                           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -4679,19 +4682,19 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                           Nat.lt_of_not_ge hoverMul
                         by_cases hdenZero : endFlowDenWord σ' I = ⟨0⟩
                         · have htail :=
-                            endFlowTailReverts_denZero evmVatSolm I σ' out hsz36
+                            endFlowTailReverts_denZero evmVatStele I σ' out hsz36
                               hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad hleSub
                               hfitMul hdenZero
                           have hbody :
-                              ExecTransitionBody config contract evmSolm (endFlowStore I)
+                              ExecTransitionBody config contract evmStele (endFlowStore I)
                                 flowTransition.body .reverted := by
-                            simpa [evmVatSolm, evmSolm] using
+                            simpa [evmVatStele, evmStele] using
                               endFlowBodyReverts_vatIlksOkTailReverted
                                 (σ := σ)
                                 (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                                (evmVat := evmVatSolm) (out := out)
+                                (evmVat := evmVatStele) (out := out)
                                 hwv hsz36 hdebt hfix hvatCodeNE
-                                (by simpa [evmVatSolm, evmSolm] using hcallSolm)
+                                (by simpa [evmVatStele, evmStele] using hcallStele)
                                 hlo htail
                           have hinvalidOr :=
                             endFlowX_tailDenInvalid
@@ -4710,7 +4713,7 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                             exact reEquiv_execution hdispatch hdecode hbody
                               (execResultsEquiv.invalidHalt hxi rfl)
                         · have htail :=
-                            endFlowTailReturnsSplit evmVatSolm I σ' out hsz36
+                            endFlowTailReturnsSplit evmVatStele I σ' out hsz36
                               hArtLoad hTagLoad hGapLoad hDebtLoad hfitWad0 hfitWad
                               hleSub hfitMul hdenZero
                           rcases
@@ -4719,33 +4722,33 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
                               hdenZero rd3061 with
                               ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
                           swap
-                          · have hbody : ExecTransitionBody config contract evmSolm
+                          · have hbody : ExecTransitionBody config contract evmStele
                                 (endFlowStore I) flowTransition.body .staticViolation := by
                               apply ExecFuncBody.execBlockStatic
                               exact endFlowBodyBlock_vatIlksOkTail
                                 hwv hsz36 hdebt hfix hvatCodeNE
-                                (by simpa [evmVatSolm, evmSolm] using hcallSolm) hlo
-                                (htail.2 (by simpa [evmVatSolm, evmSolm, initState] using hperm))
+                                (by simpa [evmVatStele, evmStele] using hcallStele) hlo
+                                (htail.2 (by simpa [evmVatStele, evmStele, initState] using hperm))
                             exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hbody
                           have hbody :
-                              ExecTransitionBody config contract evmSolm (endFlowStore I)
+                              ExecTransitionBody config contract evmStele (endFlowStore I)
                                 flowTransition.body
                                 (.returned
                                   { contract := contract,
                                     locals := endFlowStoreFixV σ' I out }
-                                  (endFlowPostState evmVatSolm I
+                                  (endFlowPostState evmVatStele I
                                     (endFlowFixVWord σ' I out)) none) := by
-                            simpa [evmVatSolm, evmSolm] using
+                            simpa [evmVatStele, evmStele] using
                               endFlowBodyReturns_vatIlksOkTail
                                 (σ := σ)
                                 (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                                (evmVat := evmVatSolm) (out := out)
+                                (evmVat := evmVatStele) (out := out)
                                 hwv hsz36 hdebt hfix hvatCodeNE
-                                (by simpa [evmVatSolm, evmSolm] using hcallSolm)
-                                hlo htail.1
+                                (by simpa [evmVatStele, evmStele] using hcallStele)
+                                hlo (htail.1 (by simpa [evmVatStele, evmStele, initState] using _hperm))
                           exact hret.reEquivExecutionGen
                             hcode hdispatch hdecode hbody
-                            (by simp [evmVatSolm, evmSolm, endFlowPostState,
+                            (by simp [evmVatStele, evmStele, endFlowPostState,
                               storageStore_accountMap, endFlowPostAccountMap, initState])
                             (by
                               simpa [flowTransition] using
@@ -4759,39 +4762,39 @@ theorem endFlowBody {σ σ₀ A I} {g : UInt256}
               endFlowX_vatIlksCallDepthLimit
                 (g := Sat256.ofUInt256 g) hcallReady hdepthEq
             let A_vat :=
-              (evmSolm.addAccessedAccount (EVM.address (endPackVatAddr σ I))).substate
-            have hcallSolm :
-                typedCallViaEVM config evmSolm
+              (evmStele.addAccessedAccount (EVM.address (endPackVatAddr σ I))).substate
+            have hcallStele :
+                typedCallViaEVM config evmStele
                   (EVM.address (endPackVatAddr σ I)) "vatIlks" 0
                   [.fixedBytes bytes32Width (endBytes32ArgBytes I)]
-                  (false, { evmSolm with substate := A_vat }, ByteArray.empty) true := by
-              simpa [evmSolm, A_vat] using
-                (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
+                  (false, { evmStele with substate := A_vat }, ByteArray.empty) true := by
+              simpa [evmStele, A_vat] using
+                (callNotMade_depthLimit (cfg := config) (evm := evmStele)
                   (tgt := EVM.address (endPackVatAddr σ I)) (name := "vatIlks")
                   (args := [.fixedBytes bytes32Width (endBytes32ArgBytes I)])
                   (callPerm := true)
                   (endFlowVatIlksEncode_eq I hsz36
                     (twoWordHashMem_size_96 (endFlowIlkWord I) ⟨15⟩ solcFreePtrMem_size))
-                  (by simpa [evmSolm, initState] using hdepthEq))
+                  (by simpa [evmStele, initState] using hdepthEq))
             have hbody :
-                ExecTransitionBody config contract evmSolm (endFlowStore I)
+                ExecTransitionBody config contract evmStele (endFlowStore I)
                   flowTransition.body .reverted := by
-              simpa [evmSolm] using
+              simpa [evmStele] using
                 endFlowBodyReverts_vatIlksCallFailed
                   (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := g)
-                  (evmVat := { evmSolm with substate := A_vat })
+                  (evmVat := { evmStele with substate := A_vat })
                   (out := ByteArray.empty)
                   hwv hsz36 hdebt hfix hvatCodeNE
-                  (by simpa [evmSolm] using hcallSolm)
+                  (by simpa [evmStele] using hcallStele)
             exact (endFlowX_vatIlksCallFailed (g := Sat256.ofUInt256 g) rd2964
               (by native_decide))
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       ·
         have hbody :
-            ExecTransitionBody config contract evmSolm (endFlowStore I)
+            ExecTransitionBody config contract evmStele (endFlowStore I)
               flowTransition.body .reverted := by
-          simpa [evmSolm] using
+          simpa [evmStele] using
             endFlowBodyReverts_fixNonzero
               (σ := σ) (σ₀ := σ₀)
               (A := A) (I := I) (g := g) hwv hsz36 hdebt hfix

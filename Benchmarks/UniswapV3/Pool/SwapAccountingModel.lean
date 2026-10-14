@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.SafeSignedMathWords
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 import Benchmarks.UniswapV3.Pool.SwapMemoryModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 

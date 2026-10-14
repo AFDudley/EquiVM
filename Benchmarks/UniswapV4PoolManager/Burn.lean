@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.BurnTrace
 # PoolManager `burn(address,uint256,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 820; reach lemma `poolManagerReachBurnBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -23,7 +23,7 @@ theorem burnBalanceRefinement {σ σ₀ A I} {g : UInt256} {args imms : Store} {
     {evm : EVM.State} {sender amount : UInt256} {currency : AccountAddress} (v : PoolManagerImmutables)
     (hcode : I.code = deployedRuntime v) (hI : evm.executionEnv = I)
     (hd : dispatchMsg contract I.calldata = some burnTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    (hdec : config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) args burnTransition.body
       (balanceBurnResult f evm sender (accountWord currency) amount) imms)
@@ -46,7 +46,7 @@ theorem burnFromRefinement {σ σ₀ A I} {g : UInt256} {args imms : Store} {f :
     {evm : EVM.State} {sender amount : UInt256} {currency : AccountAddress} (v : PoolManagerImmutables)
     (hcode : I.code = deployedRuntime v) (hI : evm.executionEnv = I)
     (hd : dispatchMsg contract I.calldata = some burnTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    (hdec : config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) args burnTransition.body
       (burnFromResult f evm sender (accountWord currency) amount) imms)
@@ -111,7 +111,7 @@ theorem poolManagerBurnBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManagerImm
             (.int (Int.ofNat id.toNat))).insert "amount" (.int (Int.ofNat amount.toNat))
           let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hI : evm.executionEnv = I := rfl
-          have hdec : decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+          have hdec : config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
               (transitionSignature burnTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_uint256_uint256_ok hlen hhi hcanon
           have hr : args.get? "from" = some (.address (AccountAddress.ofNat sender.toNat)) :=

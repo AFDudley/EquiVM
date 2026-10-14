@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.AddressArrayMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.Safe.Main
 

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SignedRemainder
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -75,12 +75,12 @@ theorem bitmapPositionReturns (imms : Store) (evm : EVM.State) (tick : Int) :
       (.returned (bitmapPositionReadyFrame imms tick) evm
         (some [.int (bitmapWordPos tick), .int (bitmapBitPos tick)])) := by
   apply ExecFuncBody.execBlockRet
-  refine ExecBlock.consNormal (solm' := bitmapPositionWordZeroFrame imms tick)
+  refine ExecBlock.consNormal (stele' := bitmapPositionWordZeroFrame imms tick)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := bitmapPositionZeroFrame imms tick)
+  refine ExecBlock.consNormal (stele' := bitmapPositionZeroFrame imms tick)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := bitmapPositionWordFrame imms tick) (evm' := evm)
-    (ExecStmt.assign (value := .int (bitmapWordPos tick)) ?_ ?_) ?_
+  refine ExecBlock.consNormal (stele' := bitmapPositionWordFrame imms tick) (evm' := evm)
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (bitmapWordPos tick)) ?_ ?_) ?_
   · have he := evalExpr_var_get (cfg := config) (evm := evm)
       (bitmapPositionGetTick imms tick).1
     change evalExpr? config (bitmapPositionZeroFrame imms tick) evm
@@ -96,8 +96,8 @@ theorem bitmapPositionReturns (imms : Store) (evm : EVM.State) (tick : Int) :
     simp only [bitmapPositionZeroFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert]
     exact Std.HashMap.getElem?_insert_self
-  · refine ExecBlock.consNormal (solm' := bitmapPositionReadyFrame imms tick) (evm' := evm)
-      (ExecStmt.assign (value := .int (bitmapBitPos tick)) ?_ ?_) ?_
+  · refine ExecBlock.consNormal (stele' := bitmapPositionReadyFrame imms tick) (evm' := evm)
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (bitmapBitPos tick)) ?_ ?_) ?_
     · have he := evalExpr_var_get (cfg := config) (evm := evm)
         (bitmapPositionGetTick imms tick).2
       change evalExpr? config (bitmapPositionWordFrame imms tick) evm

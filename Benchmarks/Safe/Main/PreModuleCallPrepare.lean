@@ -2,8 +2,8 @@ import Benchmarks.Safe.Main.PreModuleEncode
 import Benchmarks.Safe.Main.PreModuleCallMemory
 import Benchmarks.Safe.Main.Blocks.Runtime_031
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

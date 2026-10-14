@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.AttestABI
 import Reasoning.ExternalCall
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.EAS.Attester
 
@@ -11,7 +11,7 @@ def attestLocals (schema input : UInt256) : Store :=
 
 theorem attesterAttestDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     (hhi : cd.size < 2 ^ 255 + 4) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd =
         some (attestLocals (calldataWord cd 4) (calldataWord cd 36)) := by
   have hlenList : cd.toList.length = cd.size := by
@@ -27,12 +27,12 @@ theorem attesterAttestDecode {cd : ByteArray} (hlen : 68 ≤ cd.size)
     decode_word_at_eq cd 36 (by omega) (by decide)] using hd
 
 theorem attesterAttestDecodeShort {cd : ByteArray} (hshort : cd.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd = none :=
   decodeCalldata_head_none_short (headSize := 64) (by native_decide) hshort
 
 theorem attesterAttestDecodeHuge {cd : ByteArray} (hhi : 2 ^ 255 + 4 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (attestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (attestTransition.params.map Param.name)
       (transitionSignature attestTransition).paramTypes cd = none :=
   decodeCalldata_nonempty_none_huge hhi
 
@@ -119,7 +119,7 @@ theorem attestSourceFailure {imms : Store} {eas : EVM.Address} {schema input : U
       .reverted imms := by
   apply ExecFuncBody.execBlockRevert
   apply attestSourcePrefix hvalue hget
-  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (sendVal := 0) attestSourceReceiver
+  exact ExecBlock.consRevert (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) attestSourceReceiver
     (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall))
 
@@ -132,7 +132,7 @@ theorem attestSourceDecodeFailure {imms : Store} {eas : EVM.Address} {schema inp
       .reverted imms := by
   apply ExecFuncBody.execBlockRevert
   apply attestSourcePrefix hvalue hget
-  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (sendVal := 0)
+  exact ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     attestSourceReceiver (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall) hdec)
 
@@ -151,7 +151,7 @@ theorem attestSourceSuccess {imms : Store} {eas : EVM.Address} {schema input uid
         (some [wordBytes32Value uid])) imms := by
   apply ExecFuncBody.execBlockRet
   apply attestSourcePrefix hvalue hget
-  refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (sendVal := 0)
+  refine ExecBlock.consNormal (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0)
     attestSourceReceiver (by simp only [evalExpr?, pure]) attestSourceArgs
     (by simpa only [address_of_val] using hcall) hdec) ?_
   refine ExecBlock.consReturn (ExecStmt.return ?_)

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.SimpleMulDivSource
 import Benchmarks.UniswapV4PoolManager.WordBoolean
 import Benchmarks.UniswapV4PoolManager.WordBorrowSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -68,6 +68,6 @@ theorem poolDonateGrowthSource {f : Frame} {evm : State} {id amount liquidity : 
     · rw [if_neg (fun hh => hperm hh.2)]
       simp only [poolDonateGrowthFrame, poolDonateStep, if_neg hz]
       exact ExecStmt.iteTrue (by simpa only [decide_eq_true hz] using hg)
-        (ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign he hw)))
+        (ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) he hw)))
 
 end Benchmarks.UniswapV4PoolManager

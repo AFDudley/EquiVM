@@ -3,7 +3,7 @@ import Benchmarks.Dss.Cat.BiteRevertPrim
 import Benchmarks.Dss.Cat.BiteSource
 import Benchmarks.Dss.Cat.BiteTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -14,7 +14,7 @@ namespace Benchmarks.Dss.Cat
 
 Each leaf concludes the SUCCESS-branch `runtimeRefinementFor …` shape but under a failing-condition
 hypothesis, via the revert path: reach the divergence with the public `catBiteReach*`/`catBiteTraceSeg*`
-segment lemmas, fire the matching revert primitive to get `RDrev`, and bridge to the Solm body's
+segment lemmas, fire the matching revert primitive to get `RDrev`, and bridge to the Stele body's
 `.reverted` result with `RDrev.reEquivExecutionRevert` + the matching `catBiteSource*Revert`.
 
 Template: `catBiteShort` (BiteConnect.lean). Revert primitives: `RD.catBiteCheckedMulRevert`,
@@ -25,7 +25,7 @@ Template: `catBiteShort` (BiteConnect.lean). Revert primitives: `RD.catBiteCheck
 yet completed (the inter-call return-data→memory threading is still open). Exactly as the success
 leaf `catBiteSuccessLeaf` takes the whole-run `RDret` as a hypothesis, each revert leaf takes the EVM
 reach cursor *at the divergence* as a hypothesis and completes the revert branch: fire the primitive
-→ `RDrev`, run the Solm `catBiteSource*Revert`, bridge with `RDrev.reEquivExecutionRevert`. When the
+→ `RDrev`, run the Stele `catBiteSource*Revert`, bridge with `RDrev.reEquivExecutionRevert`. When the
 reach assembler lands, its cursors discharge these hypotheses. -/
 
 /-- **Generic `require(cond, "msg")`-false → `Error(string)` revert combinator.** From a reach-cursor
@@ -57,7 +57,7 @@ theorem RD.catBiteGuardStringRevert {σ σ₀ A I} {g : Sat256}
   exact RD.solcErrorStringRevertTailGrown rd3 htail hpush hword hmemsz haw hawsz hread64 hov
 
 /-- **mul-overflow leaf (artRate = art·rate).** EVM cursor at the shared `checkedMul` routine `@3720`
-with the `artRate` operands; overflow (`hover`) fires `RD.catBiteCheckedMulRevert`, the Solm body
+with the `artRate` operands; overflow (`hover`) fires `RD.catBiteCheckedMulRevert`, the Stele body
 reverts via `catBiteSourceArtRateOverflowRevert`, bridged by `RDrev.reEquivExecutionRevert`. -/
 theorem catBiteArtRateOverflowLeaf {σ σ₀ A I} {g : UInt256}
     {evmIlk evmUrn : EVM.State} {ilksOut urnsOut : ByteArray}
@@ -67,7 +67,7 @@ theorem catBiteArtRateOverflowLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3720⟩
@@ -111,7 +111,7 @@ theorem catBiteArtRateOverflowLeaf {σ σ₀ A I} {g : UInt256}
 
 /-- **call-fail leaf (kick).** EVM cursor at the `kick` success-guard `@2532` with a failed-call
 status `⟨0⟩` on top; `RD.catBiteKickCallFailed` produces `RDrev`, bridged by
-`RDrev.reEquivExecutionRevert`. The Solm body reverts via `catBiteSourceKickFailRevert` (green in
+`RDrev.reEquivExecutionRevert`. The Stele body reverts via `catBiteSourceKickFailRevert` (green in
 BiteSource; its `ExecTransitionBody … .reverted` is taken here as `hbody`, plugging in identically to
 the mul-overflow leaf's `catBiteSourceArtRateOverflowRevert`). -/
 theorem catBiteKickFailLeaf {σ σ₀ A I} {g : UInt256}
@@ -120,7 +120,7 @@ theorem catBiteKickFailLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2532⟩
@@ -146,7 +146,7 @@ theorem catBiteMulOverflowRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3720⟩
@@ -167,7 +167,7 @@ theorem catBiteGrabFailLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2193⟩
@@ -187,7 +187,7 @@ theorem catBiteFessFailLeaf {σ σ' σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2300⟩
@@ -213,7 +213,7 @@ theorem catBiteRequireStringRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) guardPc
@@ -247,7 +247,7 @@ theorem catBiteRoomUnderflowRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨3762⟩
@@ -274,7 +274,7 @@ theorem catBiteRoomUnderflowRevertLeaf {σ σ₀ A I} {g : UInt256}
 `.error .InvalidInstruction` (or OOG on the way). Unlike the `REVERT` leaves this uses the distinct
 `execResultsEquiv.invalidHalt` bridge: `RD.reachInvalidHaltXi`'s two-way halt disjunction maps its
 `OutOfGass` disjunct to the `outOfGas` equivalence case and its `InvalidInstruction` disjunct to
-`execResultsEquiv.invalidHalt`, feeding the Solm `.div`-revert body (`catBiteSourceMilkChopZeroRevert`,
+`execResultsEquiv.invalidHalt`, feeding the Stele `.div`-revert body (`catBiteSourceMilkChopZeroRevert`,
 supplied as `hbody`). -/
 theorem catBiteMilkChopZeroRevertLeaf {σ σ₀ A I} {g : UInt256}
     {mem rdata : ByteArray} {aw : UInt256}
@@ -283,7 +283,7 @@ theorem catBiteMilkChopZeroRevertLeaf {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (rd : RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) invalidPc stk mem aw rdata acc k C)

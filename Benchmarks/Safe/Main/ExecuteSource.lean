@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.ExecuteCallSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -52,19 +52,20 @@ theorem safeExecuteDelegateSource {evm evm' : EVM.State} {target : EVM.Address}
       (.returned (executeFinalFrame target value payload operation txGas z out) evm'
         (some [.bool z])) := by
   exact .execBlockRet (.consNormal
-    (safeExecuteCallStatement (safeExecuteLocals target value payload operation txGas)
+    (safeExecuteCallStatement (hperm := Or.inl hop) (safeExecuteLocals target value payload operation txGas)
       (Or.inl ⟨hop, hcall⟩)) (safeExecuteReturn evm' target value payload operation txGas z out))
 
 theorem safeExecuteCallSource {evm evm' : EVM.State} {target : EVM.Address}
     {value operation txGas : UInt256} {payload out : ByteArray} {z : Bool}
     (hop : operation ≠ ⟨1⟩)
-    (hcall : callViaEVM evm (EVM.address target) (Int.ofNat value.toNat) payload (z, evm', out)) :
+    (hcall : callViaEVM evm (EVM.address target) (Int.ofNat value.toNat) payload (z, evm', out))
+    (hperm : value = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecFuncBody config (executeFrame target value payload operation txGas) evm
       executeFunction.body
       (.returned (executeFinalFrame target value payload operation txGas z out) evm'
         (some [.bool z])) := by
   exact .execBlockRet (.consNormal
-    (safeExecuteCallStatement (safeExecuteLocals target value payload operation txGas)
+    (safeExecuteCallStatement (hperm := Or.inr hperm) (safeExecuteLocals target value payload operation txGas)
       (Or.inr ⟨hop, hcall⟩)) (safeExecuteReturn evm' target value payload operation txGas z out))
 
 theorem safeExecuteCallStaticSource {evm : EVM.State} {target : EVM.Address}

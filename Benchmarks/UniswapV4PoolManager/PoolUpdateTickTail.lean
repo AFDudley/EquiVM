@@ -1,12 +1,12 @@
 import Benchmarks.UniswapV4PoolManager.PoolUpdateTickFees
 import Benchmarks.UniswapV4PoolManager.TickLiquidityWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def tickLiquidityStore (evm : EVM.State) (id : UInt256) (tick : Int) (gross : UInt256) (net : Int) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickSlot id tick)
     (tickLiquidityPacked gross (EVM.wordOfInt net))
 def poolUpdateTickTailResult (f : Frame) (evm : EVM.State) (id packed gross : UInt256)
     (tick delta : Int) (upper flipped : Bool) : ExecResult :=
@@ -61,7 +61,7 @@ theorem poolUpdateTickTail {f : Frame} {evm : EVM.State} {id packed gross : UInt
       exact .execBlockStatic (ExecBlock.consNormal hlet (ExecBlock.consStatic (ExecStmt.assignStatic hval hwrite hp)))
     · rw [if_neg hp]
       refine .execBlockRet (ExecBlock.consNormal hlet (ExecBlock.consNormal
-        (ExecStmt.assign hval hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
+        (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) hval hwrite) (ExecBlock.consReturn (ExecStmt.return ?_))))
       have hf1 : f1.locals.get? "flipped" = some (.bool flipped) :=
         (store_get_ne _ _ (by decide : ("liquidityNet" == "flipped") = false)).trans hflip
       have hg1 : f1.locals.get? "liquidityGrossAfter" = some (.int (Int.ofNat gross.toNat)) :=

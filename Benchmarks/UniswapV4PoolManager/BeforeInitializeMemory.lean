@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.InitializeHookMemory
 import Benchmarks.UniswapV4PoolManager.PoolKeyPreservation
 import Benchmarks.UniswapV4PoolManager.ReturnDataAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def beforeInitializeReplyMemory (mem : ByteArray) (free : UInt256) (sender : AccountAddress)

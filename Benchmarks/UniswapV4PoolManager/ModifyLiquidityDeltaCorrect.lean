@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.ModifyLiquidityEventTrace
 import Benchmarks.UniswapV4PoolManager.BalanceDeltaAddCostTrace
 import Benchmarks.UniswapV4PoolManager.BlockResultTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -64,8 +64,9 @@ theorem modifyLiquidityDeltaCorrect {I : ExecutionEnv} {g : Sat256} {s0 evm : St
         (Nat.le_trans hpaid hcost) rd1 with hstatic | hnext
     · exact ⟨.staticViolation, execBlock_append hs
         (modifyLiquidityEventStaticSource hdframeid hdframeparams (by rw [hI]; exact hstatic.1)), hstatic.2⟩
-    · exact ⟨_, execBlock_append hs (modifyLiquidityEventSource hdframeid hdframeparams),
-        rfl, rfl, hnext⟩
+    · exact ⟨_, execBlock_append hs (modifyLiquidityEventSource
+        (hperm := by simpa only [hI] using hnext.1) hdframeid hdframeparams),
+        rfl, rfl, hnext.2⟩
   · rw [if_neg hsum] at hs
     rw [balanceDeltaCombineResult, if_neg hsum] at hr
     exact ⟨.reverted, execBlock_reverted_append hs, hr⟩

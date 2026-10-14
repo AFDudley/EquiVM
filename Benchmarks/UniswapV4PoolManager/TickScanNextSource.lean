@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TickScanNextWords
 import Benchmarks.UniswapV4PoolManager.WordNarrowArithmeticSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickScanNextExpr (distance : Expr) (lte : Bool) : Expr :=

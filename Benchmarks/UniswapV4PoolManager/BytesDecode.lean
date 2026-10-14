@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.DynamicDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: bytes decoding reduces to a bounded length and payload slice.

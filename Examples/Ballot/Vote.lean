@@ -2,10 +2,10 @@ import Reasoning.Storage
 import Reasoning.WordArithmetic
 import Examples.Ballot.Common
 import Examples.Ballot.Proposals
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Data.Nat.Bitwise
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -53,19 +53,19 @@ def voteProposalCountWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD (voteProposalCountSlot I) ⟨0⟩)
 
 def voteProposalsLengthCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩
 
 def voteSenderWeightCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (voteSenderSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (voteSenderSlot I)
 
 def voteSenderPackedCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (voteSenderPackedSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (voteSenderPackedSlot I)
 
 def voteSenderVotedByteCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land (voteSenderPackedCurrent evm I) ⟨255⟩
 
 def voteProposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (voteProposalCountSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (voteProposalCountSlot I)
 
 def voteSenderVotedStoreWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   UInt256.lor (UInt256.land (voteSenderPackedWord σ I) (UInt256.lnot ⟨255⟩)) ⟨1⟩
@@ -74,11 +74,11 @@ def voteSenderVotedStoreCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :
   UInt256.lor (UInt256.land (voteSenderPackedCurrent evm I) (UInt256.lnot ⟨255⟩)) ⟨1⟩
 
 def voteAfterVotedState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (voteSenderPackedSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (voteSenderPackedSlot I)
     (voteSenderVotedStoreCurrent evm I)
 
 def voteAfterVoteState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (voteAfterVotedState evm I) (voteAfterVotedState evm I).executionEnv.codeOwner
+  Stele.EVM.storageStore (voteAfterVotedState evm I) (voteAfterVotedState evm I).executionEnv.codeOwner
     (voteSenderVoteSlot I) (voteProposalWord I)
 
 def voteUpdatedProposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
@@ -86,7 +86,7 @@ def voteUpdatedProposalCountCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt2
     (voteSenderWeightCurrent (voteAfterVoteState evm I) I)
 
 def voteFinalState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (voteAfterVoteState evm I) (voteAfterVoteState evm I).executionEnv.codeOwner
+  Stele.EVM.storageStore (voteAfterVoteState evm I) (voteAfterVoteState evm I).executionEnv.codeOwner
     (voteProposalCountSlot I) (voteUpdatedProposalCountCurrent evm I)
 
 def voteAfterVotedMap (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
@@ -303,7 +303,7 @@ theorem voteArrayIndexInBounds_ok (evm : EVM.State) (I : ExecutionEnv)
       (.int (Int.ofNat (voteProposalWord I).toNat)) = .ok () := by
   have hboundStorage :
       (voteProposalWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [voteProposalsLengthCurrent] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
   rw [ballotProposalsLength]
@@ -315,10 +315,10 @@ theorem voteArrayIndexInBounds_revert (evm : EVM.State) (I : ExecutionEnv)
       (.int (Int.ofNat (voteProposalWord I).toNat)) = .revert := by
   have hboundStorage :
       ¬ (voteProposalWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [voteProposalsLengthCurrent] using hbound
   have hleStorage :
-      UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤
+      UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤
         (voteProposalWord I).toNat :=
     Nat.le_of_not_gt hboundStorage
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
@@ -520,9 +520,9 @@ theorem voteAssignVote (evm : EVM.State) (I : ExecutionEnv) :
         (.int (Int.ofNat (voteProposalWord I).toNat)) = _
       rw [storageLocStore_uint256]
       all_goals simp [voteAfterVoteState, voteAfterVotedState, voteProposalValue, voteSenderVoteSlot,
-        voteSenderSlot, Solm.EVM.storageStore])]
+        voteSenderSlot, Stele.EVM.storageStore])]
   simp [voteAfterVoteState, voteAfterVotedState, voteProposalValue, voteSenderVoteSlot,
-    voteSenderSlot, Solm.EVM.storageStore]
+    voteSenderSlot, Stele.EVM.storageStore]
 
 theorem voteAssignProposalCount (evm : EVM.State) (I : ExecutionEnv)
     (hbound : (voteProposalWord I).toNat < (voteProposalsLengthCurrent evm).toNat)
@@ -533,7 +533,7 @@ theorem voteAssignProposalCount (evm : EVM.State) (I : ExecutionEnv)
       (.int (Int.ofNat (UInt256.add (voteProposalCountCurrent evm I)
         (voteSenderWeightCurrent evm I)).toNat)) =
         .ok ({ contract := ballotContract, locals := voteAliasStore I },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner (voteProposalCountSlot I)
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner (voteProposalCountSlot I)
             (UInt256.add (voteProposalCountCurrent evm I) (voteSenderWeightCurrent evm I))) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩) (er := voteProposalCountEvaledRef I)
       (loc := wordLoc (voteProposalCountSlot I)) (ty := .elem (.int uint256Int))
@@ -567,7 +567,8 @@ theorem ballotVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hfit :
       (voteProposalCountCurrent (voteAfterVoteState evm I) I).toNat +
           (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body
       (.returned { contract := ballotContract, locals := voteAliasStore I }
         (voteFinalState evm I) none) := by
@@ -580,12 +581,17 @@ theorem ballotVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   refine ExecBlock.consNormal ?_ ExecBlock.nil
   apply ExecStmt.assign
+    (hperm := Or.inr (by simpa [voteAfterVoteState, voteAfterVotedState] using hperm))
   · exact evalExpr_vote_proposal_count_add (voteAfterVoteState evm I) I hbound hfit
   · simpa [voteFinalState, voteUpdatedProposalCountCurrent] using
       voteAssignProposalCount (voteAfterVoteState evm I) I hbound hfit
@@ -644,7 +650,8 @@ theorem ballotVoteBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
     (hvoted : voteSenderVotedByteCurrent evm I = ⟨0⟩)
     (hbound :
       ¬ (voteProposalWord I).toNat <
-        (voteProposalsLengthCurrent (voteAfterVoteState evm I)).toNat) :
+        (voteProposalsLengthCurrent (voteAfterVoteState evm I)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
@@ -655,9 +662,13 @@ theorem ballotVoteBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   exact ExecBlock.consRevert (ExecStmt.assignExprRevert
     (evalExpr_vote_proposal_count_add_oob_revert (voteAfterVoteState evm I) I hbound))
@@ -672,7 +683,8 @@ theorem ballotVoteBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
     (hover :
       UInt256.size ≤
         (voteProposalCountCurrent (voteAfterVoteState evm I) I).toNat +
-          (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat) :
+          (voteSenderWeightCurrent (voteAfterVoteState evm I) I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (voteStore I) voteTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
@@ -683,9 +695,13 @@ theorem ballotVoteBodyReverts_overflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_vote_sender_not_voted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (voteAssignVoted evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [voteAfterVotedState] using hperm))
+      (evalExpr_vote_proposal (voteAfterVotedState evm I) I)
       (voteAssignVote evm I)) ?_
   exact ExecBlock.consRevert (ExecStmt.assignExprRevert
     (evalExpr_vote_proposal_count_add_revert (voteAfterVoteState evm I) I hbound hover))
@@ -1012,13 +1028,13 @@ end Ballot
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 end Reasoning.Theory
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 end Reasoning.Reach
 
@@ -1524,7 +1540,7 @@ theorem voteProposalsLengthCurrent_afterVoteState_init {σ σ₀ A I} {g : Sat25
   unfold voteProposalsLengthCurrent voteProposalsLengthWord voteAfterVoteState
     voteAfterVotedState voteAfterVoteMap voteAfterVotedMap voteSenderVotedStoreCurrent
     voteSenderVotedStoreWord voteSenderPackedCurrent voteSenderPackedWord
-    Solm.EVM.storageLoad State.lookupAccount Account.lookupStorage
+    Stele.EVM.storageLoad State.lookupAccount Account.lookupStorage
   simp [initState, storageStore_accountMap]
 
 theorem voteProposalCountCurrent_afterVoteState_init {σ σ₀ A I} {g : Sat256} :
@@ -1533,7 +1549,7 @@ theorem voteProposalCountCurrent_afterVoteState_init {σ σ₀ A I} {g : Sat256}
   unfold voteProposalCountCurrent voteProposalCountWord voteAfterVoteState
     voteAfterVotedState voteAfterVoteMap voteAfterVotedMap voteSenderVotedStoreCurrent
     voteSenderVotedStoreWord voteSenderPackedCurrent voteSenderPackedWord
-    Solm.EVM.storageLoad State.lookupAccount Account.lookupStorage
+    Stele.EVM.storageLoad State.lookupAccount Account.lookupStorage
   simp [initState, storageStore_accountMap]
 
 theorem voteSenderWeightCurrent_afterVoteState_init {σ σ₀ A I} {g : Sat256} :
@@ -1542,7 +1558,7 @@ theorem voteSenderWeightCurrent_afterVoteState_init {σ σ₀ A I} {g : Sat256} 
   unfold voteSenderWeightCurrent voteSenderWeightWord voteAfterVoteState
     voteAfterVotedState voteAfterVoteMap voteAfterVotedMap voteSenderVotedStoreCurrent
     voteSenderVotedStoreWord voteSenderPackedCurrent voteSenderPackedWord
-    Solm.EVM.storageLoad State.lookupAccount Account.lookupStorage
+    Stele.EVM.storageLoad State.lookupAccount Account.lookupStorage
   simp [initState, storageStore_accountMap]
 
 theorem voteFinalState_acc_init {σ σ₀ A I} {g : Sat256} :
@@ -1553,7 +1569,7 @@ theorem voteFinalState_acc_init {σ σ₀ A I} {g : Sat256} :
     voteUpdatedProposalCountCurrent, voteProposalCountWord, voteProposalCountCurrent,
     voteSenderWeightWord, voteSenderWeightCurrent, voteSenderVotedStoreWord,
     voteSenderVotedStoreCurrent, voteSenderPackedWord, voteSenderPackedCurrent, initState,
-    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     storageStore_accountMap]
 
 /-! ## Dispatch/decode glue -/
@@ -1656,7 +1672,7 @@ theorem ballotVoteBodyCore_success
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReturns
+  have hbody := ballotVoteBodyReturns (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -1702,7 +1718,7 @@ theorem ballotVoteBodyCore_overflow
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReverts_overflow
+  have hbody := ballotVoteBodyReverts_overflow (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])
@@ -1741,7 +1757,7 @@ theorem ballotVoteBodyCore_oob
       σ σ₀ g A I := by
   have hd := ballotDispatch_vote (cd := I.calldata) hsel
   have hdec := ballotDecode_vote_ok (I := I) hsz36 hbig
-  have hbody := ballotVoteBodyReverts_oob
+  have hbody := ballotVoteBodyReverts_oob (hperm := by assumption)
     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
     (by simp only [initState]; exact hwv)
     (by simp [initState])

@@ -2,8 +2,8 @@ import Benchmarks.Safe.Main.ExecTransactionExecuteTrace
 import Benchmarks.Safe.Main.SafeSubSource
 import Benchmarks.Safe.Main.SafeSubTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

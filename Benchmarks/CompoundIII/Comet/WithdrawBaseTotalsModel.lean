@@ -1,12 +1,12 @@
 import Benchmarks.CompoundIII.Comet.TotalsPrincipalWrite
 import Benchmarks.CompoundIII.Comet.InternalOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
 def withdrawBaseTotal (evm : EVM.State) (borrow : Bool) : UInt256 :=
-  totalsPrincipalWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow
+  totalsPrincipalWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow
 
 def withdrawBaseSupplyState (evm : EVM.State) (supplied : UInt256) : EVM.State :=
   storeTotalsPrincipal evm false (UInt256.sub (withdrawBaseTotal evm false) supplied)

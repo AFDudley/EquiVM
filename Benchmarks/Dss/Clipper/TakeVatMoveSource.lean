@@ -3,16 +3,16 @@ import Benchmarks.Dss.Clipper.TakeVatFluxSource
 import Benchmarks.Dss.Clipper.TakeVatMove
 import Benchmarks.Dss.Clipper.Vow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
 
 abbrev clipperTakeDogEVMWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) solcAddrMask
 
 abbrev clipperTakeVowEVMWord (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) solcAddrMask
 
 abbrev clipperTakeLocalsDogLoaded (evmLoc evmRead evmVat : EVM.State)
     (I : ExecutionEnv) (price slice owe0 owe slice' tabNew lotNew : UInt256) : Store :=
@@ -466,7 +466,7 @@ theorem clipperTakeDogDigsOweCallFailureBlock (v : ClipperImmutables)
     simpa [checkedExternalCallStmts, moveFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure htarget (by simp [evalExpr?, pure]) hargs hcallDog)))
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htarget (by simp [evalExpr?, pure]) hargs hcallDog)))
   simpa [moveFrame] using
     ExecBlock.consRevert (ExecStmt.iteFalse hlotCond hdogRevert)
 
@@ -542,7 +542,7 @@ theorem clipperTakeDogDigsOweCallSuccessBlock (v : ClipperImmutables)
       collapseReturns] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consNormal
-          (ExecStmt.externalCallSuccess htarget (by simp [evalExpr?, pure]) hargs hcallDog
+          (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htarget (by simp [evalExpr?, pure]) hargs hcallDog
             (clipperTakeDecodeDigsVoid outDog))
           ExecBlock.nil))
   simpa [moveFrame, digsFrame] using
@@ -668,7 +668,7 @@ theorem clipperTakeVatMoveNoCodeBlock (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -761,7 +761,7 @@ theorem clipperTakeVatMoveCallFailureBlock (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -818,7 +818,7 @@ theorem clipperTakeVatMoveCallFailureBlock (v : ClipperImmutables)
     simpa [checkedExternalCallStmts, dogFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))
@@ -880,7 +880,7 @@ theorem clipperTakeVatMoveNoCodeBlockOfCallbackFalse (v : ClipperImmutables)
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -973,7 +973,7 @@ theorem clipperTakeVatMoveCallFailureBlockOfCallbackFalse (v : ClipperImmutables
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -1013,7 +1013,7 @@ theorem clipperTakeVatMoveCallFailureBlockOfCallbackFalse (v : ClipperImmutables
     simpa [checkedExternalCallStmts, dogFrame] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consRevert
-          (ExecStmt.externalCallFailure
+          (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))
@@ -1087,7 +1087,7 @@ theorem clipperTakeVatMoveCallSuccessBlockOfCallbackFalse (v : ClipperImmutables
         (.ok dogFrame evmVat) := by
     simpa [startFrame, dogFrame, clipperTakeLocalsDogLoaded] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmVat) (name := "dog_")
+        (cfg := config) (stele := startFrame) (evm := evmVat) (name := "dog_")
         (ty := some addr) (expr := .storage dogRef)
         (value := .address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         (by
@@ -1128,7 +1128,7 @@ theorem clipperTakeVatMoveCallSuccessBlockOfCallbackFalse (v : ClipperImmutables
       collapseReturns] using
       (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
         (ExecBlock.consNormal
-          (ExecStmt.externalCallSuccess
+          (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
             (clipperEvalVat v evmVat
               (clipperTakeLocalsDogLoaded evmLoc evmRead evmVat I price slice owe0 owe
                 slice' tabNew lotNew))

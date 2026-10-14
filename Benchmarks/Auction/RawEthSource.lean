@@ -1,6 +1,6 @@
 import Benchmarks.Auction.PaymentLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -51,7 +51,8 @@ theorem rawEthSource {locals : Store} {evm evm' : EVM.State} {recipient amount p
     {out : ByteArray} {z : Bool} (hv : PaymentValues locals recipient amount ptr)
     (hb : ptr.toNat + 2 ^ 139 ≤ 2 ^ 200) (ho : out.size < 2 ^ 138)
     (hc : callViaEVM evm (paymentAddress recipient) (Int.ofNat amount.toNat)
-      ByteArray.empty (z, evm', out)) :
+      ByteArray.empty (z, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ∃ locals', ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       paymentRawStmts (.ok { contract := auctionContract, locals := locals' } evm') ∧
       PaymentValues locals' recipient amount (rawEthPtr ptr out) ∧
@@ -69,7 +70,7 @@ theorem rawEthSource {locals : Store} {evm evm' : EVM.State} {recipient amount p
   have st2 : ExecStmt auctionConfig { contract := auctionContract, locals := l1 } evm
       (.lowLevelCall (.var "to") (.var "amount") (.newBytes (.intLit 0)) "success" "_data")
       (.ok { contract := auctionContract, locals := l2 } evm') := by
-    apply lowLevelCallSource (target := paymentAddress recipient)
+    apply lowLevelCallSource (hperm := Or.inr hperm) (target := paymentAddress recipient)
       (value := Int.ofNat amount.toNat) (calldata := ByteArray.empty)
     · simp only [evalExpr?, h1.recipient, EvalResult.ofOption]
     · simp only [evalExpr?, h1.amount, EvalResult.ofOption]

@@ -1,7 +1,7 @@
 import Benchmarks.Auction.SettleEntry
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -15,7 +15,7 @@ theorem settleAuctionBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 13 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 13) (entryBytes_size 13) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (settleAuctionTransition.params.map Param.name)
         (transitionSignature settleAuctionTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz
@@ -63,7 +63,7 @@ theorem settleAuctionBodyCore {σ σ₀ A I} {g : UInt256}
         swap
         · exact hstatic.reEquivStaticHalt hcode hd hdec
             (ExecFuncBody.execBlockStatic (hprefix (ExecBlock.consStatic (hstoreSplit.2 hperm))))
-        have hstore := hstoreSplit.1
+        have hstore := hstoreSplit.1 hperm
         have hargs : evalExprs? auctionConfig { contract := auctionContract, locals := ∅ }
             (statusState evm0 ⟨2⟩) [.intLit 128] = .ok [.int (Int.ofNat (⟨128⟩ :
               UInt256).toNat)] := by
@@ -75,7 +75,7 @@ theorem settleAuctionBodyCore {σ σ₀ A I} {g : UInt256}
           ⟨evm', σ', mem', aw', ptr', out, _, _, hcall, hs', rd2471, _, _, _, _, _⟩ |
             ⟨hcall, hr⟩
         · obtain ⟨_, _, rd413⟩ := settleExit rd2471 hperm (by jump_dest) (by evm_ov)
-          have hexit := statusStoreSource (evm := evm')
+          have hexit := statusStoreSource (hperm := by rw [hs'.env]; exact hperm) (evm := evm')
             (locals := (∅ : Store).insert "_s" (.int (Int.ofNat ptr'.toNat))) (word := ⟨1⟩)
             (e := notEntered) (by simp) (by simp only [notEntered, evalExpr?, pure]; rfl)
           have hbody : ExecTransitionBody auctionConfig auctionContract evm0 ∅

@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.LiquidityAddWords
 import Benchmarks.UniswapV4PoolManager.LiquidityAddSource
 import Benchmarks.UniswapV4PoolManager.WordLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolModifyLiquidityBlock : List Stmt :=
@@ -34,7 +34,7 @@ theorem poolModifyLiquidity {f : Frame} {evm : State} {id : UInt256} {p : PoolMo
     · rw [if_pos hp]
       exact ExecBlock.consNormal hcall (ExecBlock.consStatic (ExecStmt.assignStatic wordLocal_eval hw hp))
     · rw [if_neg hp]
-      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign wordLocal_eval hw))
+      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) wordLocal_eval hw))
   · rw [poolModifyLiquidityResult, if_neg hfit]
     exact ExecBlock.consRevert (by simpa only [if_neg hfit] using hcall)
 

@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.MintReturnSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,7 +12,7 @@ theorem uniswapMintAfterLiquidityZeroReverts
       mintAfterLiquidityTailStmts .reverted := by
   have hreq :=
     evalExpr_mint_liquidity_gt_zero_false
-      (solm := { contract := contract, locals := locals }) evm hliq
+      (stele := { contract := contract, locals := locals }) evm hliq
   simpa [mintAfterLiquidityTailStmts] using
     (ExecBlock.consRevert (ExecStmt.requireFalse hreq) :
       ExecBlock config { contract := contract, locals := locals } evm
@@ -84,10 +84,10 @@ theorem uniswapMintProportionalLiquidityZeroReverts
   simpa [List.append_assoc] using execBlock_append hbranch htail
 
 theorem evalExpr_mint_initialLiquidity_sub_underflow
-    {solm : Frame} (evm : EVM.State) (rootLiquidity : Int)
-    (hroot : solm.locals.get? "rootLiquidity" = some (.int rootLiquidity))
+    {stele : Frame} (evm : EVM.State) (rootLiquidity : Int)
+    (hroot : stele.locals.get? "rootLiquidity" = some (.int rootLiquidity))
     (hlt : rootLiquidity < minimumLiquidity) :
-    evalExpr? config solm evm
+    evalExpr? config stele evm
       (u256 (.binary .sub (.var "rootLiquidity") (.intLit minimumLiquidity))) = .revert := by
   have hneg : rootLiquidity - minimumLiquidity < 0 := by omega
   simp only [u256, evalExpr?, EvalResult.ofOption, hroot, EvalResult.bind, bind, pure]
@@ -293,7 +293,7 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastZero
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm := mintFeeAfterKLastFrame reserve0 reserve1 feeTo false (mintFeeKLastWord evmFee))
+    (calleeStele := mintFeeAfterKLastFrame reserve0 reserve1 feeTo false (mintFeeKLastWord evmFee))
     (value := some [.bool false])
     (by simpa [reserve0, reserve1] using
       evalExprs_mint_mintFeeArgs reserveEvm callEvm I balance0 balance1)
@@ -338,7 +338,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastZero
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm := mintFeeAfterKLastFrame reserve0 reserve1 feeTo true (mintFeeKLastWord evmFee))
+    (calleeStele := mintFeeAfterKLastFrame reserve0 reserve1 feeTo true (mintFeeKLastWord evmFee))
     (value := some [.bool true])
     (by simpa [reserve0, reserve1] using
       evalExprs_mint_mintFeeArgs reserveEvm callEvm I balance0 balance1)
@@ -361,7 +361,8 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastNonzero
       "feeTo" 0 [] (true, evmFee, out) false)
     (hdec : config.externalABI.decode? "feeTo" out = some [.address feeTo])
     (hfeeTo : feeTo = AccountAddress.ofNat 0)
-    (hkLast : (mintFeeKLastWord evmFee).toNat ≠ 0) :
+    (hkLast : (mintFeeKLastWord evmFee).toNat ≠ 0)
+    (hperm : callEvm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := mintAmountStore reserveEvm I balance0 balance1 }
       callEvm
@@ -383,7 +384,7 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastNonzero
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm := mintFeeAfterKLastFrame reserve0 reserve1 feeTo false (mintFeeKLastWord evmFee))
+    (calleeStele := mintFeeAfterKLastFrame reserve0 reserve1 feeTo false (mintFeeKLastWord evmFee))
     (value := some [.bool false])
     (by simpa [reserve0, reserve1] using
       evalExprs_mint_mintFeeArgs reserveEvm callEvm I balance0 balance1)
@@ -391,7 +392,7 @@ theorem uniswapMintFeeCallFromMint_feeOff_kLastNonzero
     (by simpa [reserve0, reserve1] using bindParams_mintFeeFunction_call reserve0 reserve1)
     (by
       simpa [reserve0, reserve1] using
-        uniswapMintFeeFunctionBody_feeOff_kLastNonzero callEvm evmFee reserve0 reserve1
+        uniswapMintFeeFunctionBody_feeOff_kLastNonzero (hperm := by assumption) callEvm evmFee reserve0 reserve1
           feeTo hguard hcall hdec hfeeTo hkLast)
 
 theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_noMint
@@ -443,7 +444,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_noMint
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true (mintFeeKLastWord evmFee)
         rootK rootKLast)
     (value := some [.bool true])
@@ -511,7 +512,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveNoLiquidity
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       mintFeeAfterLiquidityFrame evmFee reserve0 reserve1 feeTo true (mintFeeKLastWord evmFee)
         rootK rootKLast)
     (value := some [.bool true])
@@ -566,7 +567,8 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity
         UInt256.size)
     (hfitBalance :
       mintFunctionToBalanceNewNat evmFee feeTo (mintFeeLiquidityWord evmFee rootK rootKLast) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : callEvm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := mintAmountStore reserveEvm I balance0 balance1 }
       callEvm
@@ -588,7 +590,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm :=
+    (calleeStele :=
       mintFeeAfterFeeMintFrame evmFee reserve0 reserve1 feeTo (mintFeeKLastWord evmFee)
         rootK rootKLast)
     (value := some [.bool true])
@@ -598,7 +600,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity
     (by simpa [reserve0, reserve1] using bindParams_mintFeeFunction_call reserve0 reserve1)
     (by
       simpa [reserve0, reserve1] using
-        uniswapMintFeeFunctionBody_feeOn_kLastNonzero_positiveWithLiquidity callEvm evmFee
+        uniswapMintFeeFunctionBody_feeOn_kLastNonzero_positiveWithLiquidity (hperm := by assumption) callEvm evmFee
           reserve0 reserve1 feeTo rootK rootKLast hguard hcall hdec hfeeTo hkLast hprefix
           hroot hrootKNonneg hrootKSize hrootKLastNonneg hnumFit hrootFiveFit hdenFit
           hdenom hliq hliqFit hfitSupply hfitBalance)

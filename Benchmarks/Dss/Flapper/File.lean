@@ -2,7 +2,7 @@ import Reasoning.PackedStorage
 import Benchmarks.Dss.Flapper.Deny
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -34,7 +34,7 @@ abbrev fileLocals (I : ExecutionEnv) : Store :=
 
 
 theorem flapperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
     fileLocals, fileWhat, fileData, abiBytes32, abiBytes32Width, abiUInt256] using
@@ -43,7 +43,7 @@ theorem flapperDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem flapperDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -179,17 +179,17 @@ theorem evalExpr_fileWhatEq_false {evm : EVM.State} {I : ExecutionEnv} {locals :
 
 
 def fileBegPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ (fileData I)
 
 def fileLidPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨8⟩ (fileData I)
 
 def fileTtlStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  setUint48Offset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
     (fileData I)
 
 def fileTtlPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileTtlStoredWord evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileTtlStoredWord evm I)
 
 def fileTtlStoredWordMap (I : ExecutionEnv) (σ : AccountMap) : UInt256 :=
   setUint48Offset0Word (solcSlotWord σ I ⟨5⟩) (fileData I)
@@ -198,11 +198,11 @@ def fileTtlPostAccountMap (I : ExecutionEnv) (σ : AccountMap) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨5⟩ (fileTtlStoredWordMap I σ)
 
 def fileTauStoredWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  setUint48Offset6Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
     (fileData I)
 
 def fileTauPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileTauStoredWord evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ (fileTauStoredWord evm I)
 
 def fileTauStoredWordMap (I : ExecutionEnv) (σ : AccountMap) : UInt256 :=
   setUint48Offset6Word (solcSlotWord σ I ⟨5⟩) (fileData I)
@@ -277,7 +277,7 @@ theorem flapperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileBegPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -289,7 +289,7 @@ theorem flapperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -317,8 +317,9 @@ theorem flapperFileBegSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -332,7 +333,7 @@ theorem flapperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTtlPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -344,7 +345,7 @@ theorem flapperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -379,8 +380,9 @@ theorem flapperFileTtlSourceBodySplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hbegCond
       (execBlock_singleton (ExecStmt.iteTrue httlCond hwrite)))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -396,7 +398,7 @@ theorem flapperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileTauPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -408,7 +410,7 @@ theorem flapperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -450,8 +452,9 @@ theorem flapperFileTauSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (execBlock_singleton (ExecStmt.iteFalse httlCond
         (execBlock_singleton (ExecStmt.iteTrue htauCond hwrite)))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -468,7 +471,7 @@ theorem flapperFileLidSourceBodySplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileLidPostState evm0 I
-    (ExecTransitionBody config contract evm0 locals fileTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
@@ -480,7 +483,7 @@ theorem flapperFileLidSourceBodySplit {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -529,8 +532,9 @@ theorem flapperFileLidSourceBodySplit {σ σ₀ A I} {g : UInt256}
         (execBlock_singleton (ExecStmt.iteFalse htauCond
           (execBlock_singleton (ExecStmt.iteTrue hlidCond hwrite)))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -550,13 +554,13 @@ theorem flapperFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.ite
@@ -593,7 +597,7 @@ theorem flapperFileSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
       (by simp [locals])
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hbegCond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1457,7 +1461,7 @@ theorem flapperFileBodyCoreBeg
     (hwhat : fileWhat I = fileBegBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1467,19 +1471,19 @@ theorem flapperFileBodyCoreBeg
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileBegPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, data] using
       (flapperFileBegSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flapperFileX_authorized (I := I) hauth hdecoded
@@ -1489,7 +1493,7 @@ theorem flapperFileBodyCoreBeg
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileBegPostState, storageStore_accountMap, data])
     (by
@@ -1509,7 +1513,7 @@ theorem flapperFileBodyCoreLid
     (hwhat : fileWhat I = fileLidBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1519,19 +1523,19 @@ theorem flapperFileBodyCoreLid
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileLidPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, data] using
       (flapperFileLidSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg httl htau hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg httl htau hwhat)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flapperFileX_authorized (I := I) hauth hdecoded
@@ -1548,7 +1552,7 @@ theorem flapperFileBodyCoreLid
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simp [evm1, evm0, initState, fileLidPostState, storageStore_accountMap, data])
     (by
@@ -1566,7 +1570,7 @@ theorem flapperFileBodyCoreTtl
     (hwhat : fileWhat I = fileTtlBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1575,19 +1579,19 @@ theorem flapperFileBodyCoreTtl
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileTtlPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals] using
       (flapperFileTtlSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg hwhat)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flapperFileX_authorized (I := I) hauth hdecoded
@@ -1599,11 +1603,11 @@ theorem flapperFileBodyCoreTtl
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simpa [evm1, evm0, initState, fileTtlPostState, fileTtlStoredWord,
         fileTtlPostAccountMap, fileTtlStoredWordMap, storageStore_accountMap,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         solcSlotWord])
     (by
       simpa [fileTransition] using
@@ -1621,7 +1625,7 @@ theorem flapperFileBodyCoreTau
     (hwhat : fileWhat I = fileTauBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1630,19 +1634,19 @@ theorem flapperFileBodyCoreTau
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evm1 := fileTauPostState evm0 I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     rw [← hword]
     exact hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals] using
       (flapperFileTauSourceBodySplit (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg httl hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg httl hwhat)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flapperFileX_authorized (I := I) hauth hdecoded
@@ -1656,11 +1660,11 @@ theorem flapperFileBodyCoreTau
       ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
     (by
       simpa [evm1, evm0, initState, fileTauPostState, fileTauStoredWord,
         fileTauPostAccountMap, fileTauStoredWordMap, storageStore_accountMap,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         solcSlotWord])
     (by
       simpa [fileTransition] using
@@ -1675,7 +1679,7 @@ theorem flapperFileBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1683,7 +1687,7 @@ theorem flapperFileBodyCoreUnauthorized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I ≠ ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I ≠ ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     intro hbad
@@ -1692,7 +1696,7 @@ theorem flapperFileBodyCoreUnauthorized
       ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
     simpa [evm0, locals] using
       (flapperFileSourceBodyAuthReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   exact (flapperFileX_unauthorized (I := I) hauth hdecoded)
@@ -1710,7 +1714,7 @@ theorem flapperFileBodyCoreUnrecognized
     (hlid : fileWhat I ≠ fileLidBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
         (transitionSignature fileTransition).paramTypes I.calldata = some (fileLocals I))
     (hreach : ∃ k C, RD flapperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨362⟩ [sel]
@@ -1718,7 +1722,7 @@ theorem flapperFileBodyCoreUnrecognized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := by
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := by
     have hword : relyAuthWord σ I = relyAuthWord σ I :=
       rfl
     rw [← hword]
@@ -1727,7 +1731,7 @@ theorem flapperFileBodyCoreUnrecognized
       ExecTransitionBody config contract evm0 locals fileTransition.body .reverted := by
     simpa [evm0, locals] using
       (flapperFileSourceBodyUnrecognized (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hbeg httl htau hlid)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hbeg httl htau hlid)
   obtain ⟨_, _, hdecoded⟩ := flapperFileX_decoded (g := Sat256.ofUInt256 g)
     hsz68 hsize hreach
   obtain ⟨_, _, hswitch⟩ := flapperFileX_authorized (I := I) hauth hdecoded

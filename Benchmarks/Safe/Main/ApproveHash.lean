@@ -5,8 +5,8 @@ import Benchmarks.Safe.Main.Blocks.Runtime_010
 import Benchmarks.Safe.Main.Blocks.Runtime_011
 import Benchmarks.Safe.Main.Blocks.Runtime_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -49,7 +49,7 @@ theorem safeAssignApprovedHash (evm : EVM.State) (key : UInt256) :
     assignStorageRef? config (approveHashFrame key) evm .storage
       (approvedHashesRef sender (.var "hashToApprove")) (.int 1) =
       .ok (approveHashFrame key,
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
           key) ⟨1⟩) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "approvedHashes", steps :=
       [.mindex (.address evm.executionEnv.source),
@@ -73,16 +73,17 @@ theorem safeAssignApprovedHash (evm : EVM.State) (key : UInt256) :
 
 theorem safeApproveHashSource (evm : EVM.State) (key : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
-    (howner : approveHashOwnerWord evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (howner : approveHashOwnerWord evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (approveHashArgs key) approvehashTransition.body
       (.returned (approveHashFrame key)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (approveHashSlot evm.executionEnv
           key) ⟨1⟩)
         none) := by
   refine .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [howner] using safeApproveHashGuard evm key))
-      (.consNormal (.assign (by simp [evalExpr?, pure]) (safeAssignApprovedHash evm key))
-        (.consNormal (.emit (vals := [wordBytes32Value key, .address evm.executionEnv.source]) ?_)
+      (.consNormal (.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) (safeAssignApprovedHash evm key))
+        (.consNormal (.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [wordBytes32Value key, .address evm.executionEnv.source]) ?_)
           .nil))))
   simp [evalExprs?, evalExpr?, sender, envValue, approveHashFrame, approveHashArgs,
     EvalResult.bind, EvalResult.ofOption, bind, pure]
@@ -178,7 +179,7 @@ theorem safeApprovehashBodyCore
       · obtain ⟨_, _, h1341⟩ := safeDecodeWord h9894 (by simp)
           (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
         have h5195 := safeRuntime_block_1341 (by simp) (by jump_dest) h1341
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (approvehashTransition.params.map Param.name)
             (transitionSignature approvehashTransition).paramTypes I.calldata =
             some (approveHashArgs (calldataWord I.calldata 4)) := decodeCalldataBytes32Word hlen
@@ -203,7 +204,7 @@ theorem safeApprovehashBodyCore
           | true =>
               have hret := safeApproveHashTrace h5240 (by simp)
                 (twoWordHashMem_size_96 (solcSourceWord I) ⟨2⟩ solcFreePtrMem_size) hperm
-              have hbody := safeApproveHashSource (initState σ σ₀ (.ofUInt256 g) A I)
+              have hbody := safeApproveHashSource (hperm := by assumption) (initState σ σ₀ (.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hvalue howner
               refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
               exact reEquivSelectorExecution hdispatch hdec hbody

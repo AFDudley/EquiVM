@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.Calls
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 import Benchmarks.UniswapV3.Pool.TupleReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -64,7 +64,7 @@ theorem balanceCall (v : UniswapV3PoolImmutables) (second : Bool) (evm evm' : EV
       (balanceCalldata evm.executionEnv.codeOwner) (ok, evm', out) false) :
     ExecStmt config (balanceTokenFrame v second) evm balanceCallStmt
       (.ok (balanceCallFrame v second ok out) evm') := by
-  apply lowLevelCallWithPermSource (target := balanceToken v second)
+  apply lowLevelCallWithPermSource (hperm := Or.inl rfl) (target := balanceToken v second)
     (calldata := balanceCalldata evm.executionEnv.codeOwner)
     (value := 0) _ (by simp only [evalExpr?, pure]) _ hcall
   · exact evalExpr_var_get (by simp [balanceTokenFrame])
@@ -104,7 +104,7 @@ theorem balanceReturns (v : UniswapV3PoolImmutables) (second : Bool) (evm evm' :
   have hd : evalExpr? config (balanceCallFrame v second true out) evm' (.var "data") =
       .ok (.bytes out) := evalExpr_var_get (by simp [balanceCallFrame])
   simp only [evalExprs?, evalExpr?, hd, bind, EvalResult.bind, pure]
-  rw [show decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 out =
+  rw [show config.externalABI.decodeValue? abiUInt256 out =
       some (.int (Int.ofNat (fromByteArrayBigEndian (out.extract 0 32)))) from
     decodeReturnValueWithMode_legacy_uint256_ok hout, balanceValue_toNat out hout]
 

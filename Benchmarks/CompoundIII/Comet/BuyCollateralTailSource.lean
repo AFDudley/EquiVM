@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.BuyCollateralFrames
 import Benchmarks.CompoundIII.Comet.SafeUintSource
 import Benchmarks.CompoundIII.Comet.ReentrancySource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -50,7 +50,7 @@ theorem buyCollateralTransfer_source {asset recipient amount evm result}
     simp only [reentrancyOutcome, Bool.false_and, Bool.false_eq_true, if_false,
       reentrancyWriteOutcome, hp, if_true, internalStmtResult] at hend
     exact ⟨_, ExecBlock.consNormal hc (ExecBlock.consNormal ho
-      (ExecBlock.consNormal (ExecStmt.emit hemit) (execBlock_singleton hend)))⟩
+      (ExecBlock.consNormal (ExecStmt.emit (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hemit) (execBlock_singleton hend)))⟩
 
 theorem buyCollateralAfterQuote_source {asset recipient minimum amount evm result}
     (ht : BuyCollateralAfterQuote asset recipient minimum amount evm result)

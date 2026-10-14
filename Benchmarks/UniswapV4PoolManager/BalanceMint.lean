@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.BalanceTransfer
 import Benchmarks.UniswapV4PoolManager.DeltaCount
 
 /-! Shared source proof of the internal ERC6909 mint helper. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -38,7 +38,7 @@ theorem balanceMintBodyExec {f : Frame} {evm : EVM.State} {receiver id amount : 
       exact ExecFuncBody.execBlockStatic (ExecBlock.consStatic (ExecStmt.assignStatic heval hwrite hp))
     · rw [if_neg hp]
       apply ExecFuncBody.execBlockOK
-      refine ExecBlock.consNormal (ExecStmt.assign heval hwrite) (ExecBlock.consNormal (ExecStmt.emit
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) heval hwrite) (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [balancePost_env] using Bool.eq_true_of_not_eq_false hp)
         (vals := [.address evm.executionEnv.source, .address (AccountAddress.ofNat 0),
           .address (AccountAddress.ofNat receiver.toNat), .int (Int.ofNat id.toNat), .int (Int.ofNat amount.toNat)]) ?_) ExecBlock.nil)
       simp only [evalExprs?, evalExpr?, hr, hi, ha, EvalResult.ofOption, bind, EvalResult.bind,

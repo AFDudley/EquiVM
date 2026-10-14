@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.SignedArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: every word's signed interpretation lies in the int256 range.

@@ -5,8 +5,8 @@ import Benchmarks.Safe.Main.Blocks.Runtime_008
 import Benchmarks.Safe.Main.Blocks.Runtime_018
 import Benchmarks.Safe.Main.Blocks.Runtime_019
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -47,7 +47,8 @@ theorem safeEnableModuleSource (evm : EVM.State) (key : UInt256)
     (hcanon : key.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hgood : key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩) (hempty : moduleLink evm key = ⟨0⟩) :
+    (hgood : key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩) (hempty : moduleLink evm key = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (enableModuleArgs key) enablemoduleTransition.body
       (.returned (enableModuleFrame key) (enableModuleState evm key) none) := by
   have hbase : (enableModuleArgs key)["modules"]? = none := by simp [enableModuleArgs]
@@ -62,9 +63,9 @@ theorem safeEnableModuleSource (evm : EVM.State) (key : UInt256)
       (.consNormal (.requireTrue (by simpa [hgood] using safeEnableModuleGuard evm key hcanon))
         (.consNormal (.requireTrue (by
           simpa [hempty] using safeEnableModuleEmptyGuard evm key hcanon))
-          (.consNormal (.assign hsent hfirst)
-            (.consNormal (.assign (safeEvalModule _ key) hsecond)
-              (.consNormal (.emit (evalExprs?_singleton (safeEvalModule _ key))) .nil)))))))
+          (.consNormal (.assign (hperm := Or.inr hperm) hsent hfirst)
+            (.consNormal (.assign (hperm := Or.inr (by simpa only [writeModuleLink, storageStore_executionEnv] using hperm)) (safeEvalModule _ key) hsecond)
+              (.consNormal (.emit (hperm := by simpa only [writeModuleLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeEvalModule _ key))) .nil)))))))
 
 theorem safeEnableModuleSourceStatic (evm : EVM.State) (key : UInt256)
     (hcanon : key.toNat < EVM.addressModulus)
@@ -254,7 +255,7 @@ theorem safeEnablemoduleBodyCore
         · obtain ⟨_, _, h1014⟩ := safeDecodeAddress h9591 (by simp) hcheck hcanon (by jump_dest)
           have h3168 := safeRuntime_block_1014 (by simp) (by jump_dest) h1014
           have h6757 := safeRuntime_block_3168 (by simp) (by jump_dest) h3168
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (enablemoduleTransition.params.map Param.name)
               (transitionSignature enablemoduleTransition).paramTypes I.calldata =
               some (enableModuleArgs (calldataWord I.calldata 4)) :=
@@ -295,7 +296,7 @@ theorem safeEnablemoduleBodyCore
                         solcAddrMask_clean_left hcanon]
                       exact twoWordHashMem_size_96 _ _ solcFreePtrMem_size
                     have hret := safeEnableModuleTrace h3277 (by simp) hmem hcanon hperm
-                    have hbody := safeEnableModuleSource (initState σ σ₀ (.ofUInt256 g) A I)
+                    have hbody := safeEnableModuleSource (hperm := by assumption) (initState σ σ₀ (.ofUInt256 g) A I)
                       (calldataWord I.calldata 4) hcanon hvalue hauth hgood hempty'
                     refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
                     exact reEquivSelectorExecution hdispatch hdec hbody

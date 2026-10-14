@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.UpdateDynamicCallRuntimeCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -14,7 +14,8 @@ theorem uniswapMintUpdateCallReturns_conditionFalse_packed_with
       locals.get? "_reserve1" = some (.int (Int.ofNat reserve1.toNat)))
     (hbound0 : Int.ofNat balance0.toNat ≤ maxUint112)
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
-    (hskip : syncTimeElapsedInt evm = 0 ∨ reserve0 = ⟨0⟩ ∨ reserve1 = ⟨0⟩) :
+    (hskip : syncTimeElapsedInt evm = 0 ∨ reserve0 = ⟨0⟩ ∨ reserve1 = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals } evm
       (.internalCall "_update"
         [ .var "balance0", .var "balance1", .var "_reserve0", .var "_reserve1" ]
@@ -23,7 +24,7 @@ theorem uniswapMintUpdateCallReturns_conditionFalse_packed_with
         (resumeAfterInternalCall { contract := contract, locals := locals }
           "_updateResult" none)
         (syncUpdatePackedReserveState evm balance0 balance1)) := by
-  exact uniswapUpdateCallReturnsConditionFalse evm balance0 balance1 reserve0 reserve1
+  exact uniswapUpdateCallReturnsConditionFalse (hperm := by assumption) evm balance0 balance1 reserve0 reserve1
     (evalExprs_mint_updateCallArgsWith_of_get evm balance0 balance1 reserve0 reserve1
       hbalance0 hbalance1 hreserve0 hreserve1) hbound0 hbound1 hskip
 

@@ -7,11 +7,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_021
 # CometWithExtendedAssetList `extensionDelegate()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1150; reach lemma `cometWithExtendedAssetListReachExtensionDelegateBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -63,7 +63,7 @@ theorem cometWithExtendedAssetListExtensionDelegateBody {σ σ₀ A I} {g : UInt
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 26) rfl hsel
-  exact immutableGetter_refines (t := extensionDelegateTransition) hcode hsz
+  exact immutableGetter_refines (t := extensionDelegateTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨26, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_extensionDelegate v) (getterAddressEncoding v.extensionDelegate)
     (extensionDelegateX v hcode hsz hsize hsel)

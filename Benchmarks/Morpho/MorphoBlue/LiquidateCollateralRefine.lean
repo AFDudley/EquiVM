@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.LiquidateCollateralReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -38,7 +38,7 @@ theorem morphoLiquidateCollateralRefine {v : MorphoImmutables} {ee : ExecutionEn
   have hs1 : SourceState s0 ee σ1 e1 := storeMarketField_bridge hs p.id ⟨2, by decide⟩ debt
   have hass0 : ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
       liquidateTransition.body[25]! (.ok { contract := contract, locals := locals, immutables := imms } e1) := by
-    apply ExecStmt.assign (show evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
+    apply ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs.env).trans hperm)) (show evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.var "__c14") = .ok (.int (Int.ofNat debt.toNat)) from by simp only [evalExpr?, hget, EvalResult.ofOption])
     exact assignMarketField evm locals imms (.var "id") p.id ⟨2, by decide⟩ debt hd hl.market (hl.evalId imms evm)
   have ab0 : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
@@ -80,7 +80,7 @@ theorem morphoLiquidateCollateralRefine {v : MorphoImmutables} {ee : ExecutionEn
       (.ok { contract := contract, locals := l1, immutables := imms }
         (storePositionPacked e1 p.id account true
           (UInt256.sub (positionFieldWord e1.accountMap e1.executionEnv p.id account 2) seized))) :=
-    ExecStmt.assign (evalCheckedUint128SubOk (hl1.evalPosition imms e1 ⟨2, by decide⟩ ha) he5 hb' hf')
+    ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hs1.env).trans hperm)) (evalCheckedUint128SubOk (hl1.evalPosition imms e1 ⟨2, by decide⟩ ha) he5 hb' hf')
       (assignPositionPacked e1 l1 imms _ _ p.id account true _ (by
           change (UInt256.sub (positionFieldWord e1.accountMap e1.executionEnv p.id account 2) seized).toNat < 2 ^ 128
           rw [usub_toNat hf']; omega)

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.AfterSwapBranchSource
 import Benchmarks.UniswapV4PoolManager.BalanceDeltaCombineSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -33,7 +33,7 @@ theorem afterSwapPackPairSource {f : Frame} {evm : State} {e0 e1 : Expr} {a b : 
       (.ok (valueLocal (valueLocal f "packed" (.int (EVM.signed (balanceDeltaWord a b))))
         "hookDelta" (.int (EVM.signed (balanceDeltaWord a b)))) evm) := by
   exact ExecBlock.consNormal (balanceDeltaCall hf h0 h1 "packed") (execBlock_singleton
-    (ExecStmt.assign (evalLocalValue (store_get_self _ _ _))
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _))
       (assignLocalValue ((store_get_ne _ _ (by decide : ("packed" == "hookDelta") = false)).trans hh))))
 
 theorem afterSwapPackBranchSource {f : Frame} {evm : State} {specified unspecified : Int} {old : Value}

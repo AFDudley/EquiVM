@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.SupplyMathRefine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -104,10 +104,10 @@ theorem morphoSupplyPositionRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g
     simpa only [hs.env, ← hs.accounts] using hf
   have hass : ExecStmt config { contract := contract, locals := locals, immutables := imms }
       evm supplyTransition.body[12]!
-      (.ok { contract := contract, locals := locals, immutables := imms }
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms }
         (storePositionSupplyShares evm p.id account
-          (solcSlotWordAt (positionSlot p.id account) evm.accountMap evm.executionEnv + shares))) :=
-    ExecStmt.assign (checkedAddSourceOk hp hsh hf')
+          (solcSlotWordAt (positionSlot p.id account) evm.accountMap evm.executionEnv + shares)) else .staticViolation) :=
+    execStmt_assign_storage (checkedAddSourceOk hp hsh hf')
       (assignPositionSupplyShares evm locals imms _ _ p.id account _ hc hl.position (hl.evalId imms evm) (hl.evalAccount imms evm))
   by_cases hperm : ee.perm = true
   · obtain ⟨k3, C3, rd3⟩ := morphoBlocks.morpho_block_4017 (immWords := wordsOf (immStore v))
@@ -115,7 +115,7 @@ theorem morphoSupplyPositionRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g
       (by rw [morphoPatchedValidJumpsRuntime v]; jump_dest) rd2
     have hs' := storePositionSupplyShares_bridge hs p.id account
       (solcSlotWordAt (positionSlot p.id account) evm.accountMap evm.executionEnv + shares)
-    exact .ok (StateBlock.start.step hass) (by simpa only [hs.env, ← hs.accounts] using hs') hperm rd3
+    exact .ok (StateBlock.start.step (by simpa only [hs.env, hperm, if_true] using hass)) (by simpa only [hs.env, ← hs.accounts] using hs') hperm rd3
   · exact .static (ExecBlock.consStatic (execStmt_assign_static hass (by rw [hs.env]; exact Bool.eq_false_iff.mpr hperm)))
       (morphoSupplyPositionStatic (v := v) (by change R.length + 11 + 3 ≤ 1024; omega) (Bool.eq_false_iff.mpr hperm) rd2)
 

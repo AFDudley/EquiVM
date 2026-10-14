@@ -2,7 +2,7 @@ import Reasoning.PackedStorage
 import Reasoning.WordArithmetic
 import Examples.BlindAuction.Reveal.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 800000
@@ -13,15 +13,15 @@ def scratch_placeBidStore (bidder : AccountAddress) (value : UInt256) : Store :=
 
 def scratch_placeBidAfterPending (evm : EVM.State) (oldAddr : AccountAddress)
     (sum : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (pendingReturnsSlot (.address oldAddr)) sum
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (pendingReturnsSlot (.address oldAddr)) sum
 
 def scratch_placeBidAfterHigh (evm : EVM.State) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value
 
 def scratch_placeBidAfterBidder (evm : EVM.State) (bidder : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
     (Reasoning.Theory.setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (UInt256.ofNat bidder.val))
 
 
@@ -63,20 +63,20 @@ theorem scratch_blindAuctionStorageLocStore_address_offset0 (evm : EVM.State)
     (slot addr : UInt256) (hcanon : addr.toNat < EVM.addressModulus) :
     storageLocStore evm (blindAuctionAddrLoc slot)
         (.address (AccountAddress.ofNat addr.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (Reasoning.Theory.setAddressOffset0Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) addr)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) addr)) := by
   simpa [blindAuctionAddrLoc, SimpleAuction.simpleAuctionAddrLoc] using
     Reasoning.Theory.storageLocStore_address_offset0 evm slot addr hcanon
 
 theorem scratch_eval_placeBid_highestBid
     (evm : EVM.State) (bidder : AccountAddress) (value high : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high) :
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
       (.storage highestBidRef) = .ok (.int (Int.ofNat high.toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
     (slot := highestBidRef)
     (er := { base := "highestBid", steps := [] })
@@ -90,7 +90,7 @@ theorem scratch_eval_placeBid_highestBid
 
 theorem scratch_eval_placeBid_value_le_highestBid_true
     (evm : EVM.State) (bidder : AccountAddress) (value high : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
     (hle : value.toNat ≤ high.toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
@@ -104,7 +104,7 @@ theorem scratch_eval_placeBid_value_le_highestBid_true
 
 theorem scratch_eval_placeBid_value_le_highestBid_false
     (evm : EVM.State) (bidder : AccountAddress) (value high : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
     (hlt : high.toNat < value.toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
@@ -120,13 +120,13 @@ theorem scratch_eval_placeBid_value_le_highestBid_false
 
 theorem scratch_eval_placeBid_highestBidder
     (evm : EVM.State) (bidder : AccountAddress) (value old : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old) :
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
       (.storage highestBidderRef) =
         .ok (.address (AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
     (slot := highestBidderRef)
     (er := { base := "highestBidder", steps := [] })
@@ -140,7 +140,7 @@ theorem scratch_eval_placeBid_highestBidder
 
 theorem scratch_eval_placeBid_highestBidder_ne_zero_false
     (evm : EVM.State) (bidder : AccountAddress) (value old : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hzero : UInt256.land old solcAddrMask = ⟨0⟩) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
@@ -154,7 +154,7 @@ theorem scratch_eval_placeBid_highestBidder_ne_zero_false
 
 theorem scratch_eval_placeBid_highestBidder_ne_zero_true
     (evm : EVM.State) (bidder : AccountAddress) (value old : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hnonzero : UInt256.land old solcAddrMask ≠ ⟨0⟩) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
@@ -198,7 +198,7 @@ theorem scratch_eval_placeBid_highestBidder_ne_zero_true
 
 theorem scratch_evalStorageRef_placeBid_pendingReturns
     (evm : EVM.State) (bidder oldAddr : AccountAddress) (value old : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat) :
     evalStorageRef blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
@@ -211,16 +211,16 @@ theorem scratch_evalStorageRef_placeBid_pendingReturns
 
 theorem scratch_eval_placeBid_pendingReturns
     (evm : EVM.State) (bidder oldAddr : AccountAddress) (value old pending : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
-    (hpending : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hpending : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value } evm
       (.storage (pendingReturnsRef (.storage highestBidderRef))) =
         .ok (.int (Int.ofNat pending.toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
     (slot := pendingReturnsRef (.storage highestBidderRef))
     (er := { base := "pendingReturns", steps := [.mindex (.address oldAddr)] })
@@ -235,10 +235,10 @@ theorem scratch_eval_placeBid_pendingReturns
 
 theorem scratch_eval_placeBid_pending_add
     (evm : EVM.State) (bidder oldAddr : AccountAddress) (value old high pending : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
-    (hpending : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hpending : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hsum : pending.toNat + high.toNat < UInt256.size) :
     evalExpr? blindAuctionConfig
@@ -275,10 +275,10 @@ theorem scratch_eval_placeBid_pending_add
 
 theorem scratch_eval_placeBid_pending_add_revert
     (evm : EVM.State) (bidder oldAddr : AccountAddress) (value old high pending : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
-    (hpending : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hpending : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hover : UInt256.size ≤ pending.toNat + high.toNat) :
     evalExpr? blindAuctionConfig
@@ -311,7 +311,7 @@ theorem scratch_eval_placeBid_pending_add_revert
 theorem scratch_assign_placeBid_pendingReturns
     (evm : EVM.State) (bidder oldAddr : AccountAddress)
     (value old pending high : UInt256)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
     (hsum : pending.toNat + high.toNat < UInt256.size) :
     assignStorageRef? blindAuctionConfig
@@ -325,9 +325,9 @@ theorem scratch_assign_placeBid_pendingReturns
       pending.toNat + high.toNat := UInt256.toNat_ofNat_of_lt hsum
   exact assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩)
     (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
-    (evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+    (evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (pendingReturnsSlot (.address oldAddr)) (UInt256.ofNat (pending.toNat + high.toNat)))
     (slot := pendingReturnsRef (.storage highestBidderRef))
     (er := { base := "pendingReturns", steps := [.mindex (.address oldAddr)] })
@@ -354,9 +354,9 @@ theorem scratch_assign_placeBid_highestBid
   unfold scratch_placeBidAfterHigh
   exact assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩)
     (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
-    (evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value)
+    (evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩ value)
     (slot := highestBidRef)
     (er := { base := "highestBid", steps := [] })
     (ty := uint256St)
@@ -383,20 +383,20 @@ theorem scratch_assign_placeBid_highestBidder
     simp [AccountAddress.ofNat, Nat.mod_eq_of_lt bidder.isLt]
   have hstore :
       storageLocStore evm (blindAuctionAddrLoc ⟨5⟩) (.address bidder) =
-        some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+        some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
           (Reasoning.Theory.setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
             (UInt256.ofNat bidder.val))) := by
     simpa [haddrOfNat] using
       scratch_blindAuctionStorageLocStore_address_offset0 evm ⟨5⟩ (UInt256.ofNat bidder.val)
         (addressWord_canonical bidder)
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩)
     (cfg := blindAuctionConfig)
-    (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm := evm)
-    (evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
       (Reasoning.Theory.setAddressOffset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) (UInt256.ofNat bidder.val)))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩) (UInt256.ofNat bidder.val)))
     (slot := highestBidderRef)
     (er := { base := "highestBidder", steps := [] })
     (ty := addrSt)
@@ -410,7 +410,7 @@ theorem scratch_assign_placeBid_highestBidder
 
 theorem scratch_blindAuctionPlaceBidBodyReturns_false
     (evm : EVM.State) (bidder : AccountAddress) (value high : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
     (hle : value.toNat ≤ high.toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm
       (scratch_placeBidStore bidder value) placeBidFn.body
@@ -425,10 +425,11 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_false
 
 theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
     (evm : EVM.State) (bidder : AccountAddress) (value high old : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hlt : high.toNat < value.toNat)
-    (hzero : UInt256.land old solcAddrMask = ⟨0⟩) :
+    (hzero : UInt256.land old solcAddrMask = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm
       (scratch_placeBidStore bidder value) placeBidFn.body
       (.returned { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value }
@@ -452,28 +453,30 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
       (scratch_placeBidAfterBidder (scratch_placeBidAfterHigh evm value) bidder)
       (some [(.bool true)]))
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_value_le_highestBid_false evm bidder value high hhigh hlt)
       ExecBlock.nil
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_highestBidder_ne_zero_false evm bidder value old hold hzero)
       ExecBlock.nil
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterHigh evm value) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_int evm (scratch_placeBidStore bidder value) "value"
         (Int.ofNat value.toNat) (scratch_placeBidStore_value bidder value))
       (scratch_assign_placeBid_highestBid evm bidder value)
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterBidder (scratch_placeBidAfterHigh evm value) bidder) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_value (scratch_placeBidAfterHigh evm value)
         (scratch_placeBidStore bidder value) "bidder" (.address bidder)
         (scratch_placeBidStore_bidder bidder value))
@@ -483,14 +486,15 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_zero
 theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
     (evm : EVM.State) (bidder oldAddr : AccountAddress)
     (value high old pending : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
-    (hpending : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hpending : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hlt : high.toNat < value.toNat)
     (hnonzero : UInt256.land old solcAddrMask ≠ ⟨0⟩)
-    (hsum : pending.toNat + high.toNat < UInt256.size) :
+    (hsum : pending.toNat + high.toNat < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm
       (scratch_placeBidStore bidder value) placeBidFn.body
       (.returned { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value }
@@ -520,36 +524,38 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
             (UInt256.ofNat (pending.toNat + high.toNat))) value) bidder)
       (some [(.bool true)]))
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_value_le_highestBid_false evm bidder value high hhigh hlt)
       ExecBlock.nil
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterPending evm oldAddr
       (UInt256.ofNat (pending.toNat + high.toNat))) ?_ ?_
   · refine ExecStmt.iteTrue
       (scratch_eval_placeBid_highestBidder_ne_zero_true evm bidder value old hold hnonzero) ?_
     refine ExecBlock.consNormal
-      (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+      (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
       (evm' := scratch_placeBidAfterPending evm oldAddr
         (UInt256.ofNat (pending.toNat + high.toNat))) ?_
       (ExecBlock.nil (cfg := blindAuctionConfig)
-        (solm := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+        (stele := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
         (evm := scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat))))
     exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (scratch_eval_placeBid_pending_add evm bidder oldAddr value old high pending hhigh hold
         holdAddr hpending hsum)
       (scratch_assign_placeBid_pendingReturns evm bidder oldAddr value old pending high hold
         holdAddr hsum)
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterHigh
       (scratch_placeBidAfterPending evm oldAddr
         (UInt256.ofNat (pending.toNat + high.toNat))) value) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_int (scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat)))
         (scratch_placeBidStore bidder value) "value" (Int.ofNat value.toNat)
@@ -558,12 +564,13 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
         (scratch_placeBidAfterPending evm oldAddr (UInt256.ofNat (pending.toNat + high.toNat)))
         bidder value)
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := scratch_placeBidAfterBidder
       (scratch_placeBidAfterHigh
         (scratch_placeBidAfterPending evm oldAddr
           (UInt256.ofNat (pending.toNat + high.toNat))) value) bidder) ?_ ?_
   · exact ExecStmt.assign
+      (hperm := Or.inr (by simpa [scratch_placeBidAfterHigh, scratch_placeBidAfterPending] using hperm))
       (evalExpr_reveal_var_value
         (scratch_placeBidAfterHigh
           (scratch_placeBidAfterPending evm oldAddr
@@ -579,8 +586,8 @@ theorem scratch_blindAuctionPlaceBidBodyReturns_true_nonzero
 
 theorem scratch_blindAuctionPlaceBidBodyStatic_true_zero
     (evm : EVM.State) (bidder : AccountAddress) (value high old : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hlt : high.toNat < value.toNat)
     (hzero : UInt256.land old solcAddrMask = ⟨0⟩)
     (hperm : evm.executionEnv.perm = false) :
@@ -602,13 +609,13 @@ theorem scratch_blindAuctionPlaceBidBodyStatic_true_zero
       .return [(.boolLit true)] ]
     .staticViolation
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_value_le_highestBid_false evm bidder value high hhigh hlt)
       ExecBlock.nil
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_highestBidder_ne_zero_false evm bidder value old hold hzero)
@@ -622,10 +629,10 @@ theorem scratch_blindAuctionPlaceBidBodyStatic_true_zero
 theorem scratch_blindAuctionPlaceBidBodyStatic_true_nonzero
     (evm : EVM.State) (bidder oldAddr : AccountAddress)
     (value high old pending : UInt256)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
-    (hpending : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hpending : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hlt : high.toNat < value.toNat)
     (hnonzero : UInt256.land old solcAddrMask ≠ ⟨0⟩)
@@ -649,7 +656,7 @@ theorem scratch_blindAuctionPlaceBidBodyStatic_true_nonzero
       .return [(.boolLit true)] ]
     .staticViolation
   refine ExecBlock.consNormal
-    (solm' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
+    (stele' := { contract := blindAuctionContract, locals := scratch_placeBidStore bidder value })
     (evm' := evm) ?_ ?_
   · exact ExecStmt.iteFalse
       (scratch_eval_placeBid_value_le_highestBid_false evm bidder value high hhigh hlt)

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.ModifyPositionGuards
 import Benchmarks.UniswapV3.Pool.SignedAmountDeltaInternal
 import Benchmarks.UniswapV3.Pool.TickSqrtInternal
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -99,7 +99,7 @@ theorem modifyPositionOutsideAssignSource (imms : Store) (a : ModifyPositionArgs
       (.assign .localVar ⟨if second then "amount1" else "amount0", []⟩
         (.var (modifyPositionOutsideAmountName second)))
       (.ok (modifyPositionOutsideFinalFrame imms a evm second) evm') := by
-  exact ExecStmt.assign (evalExpr_var_get (by cases second <;> modify_position_outside_get))
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by cases second <;> modify_position_outside_get))
     (assignLocalVarBase_frame (old := .int 0) (by cases second <;> modify_position_outside_get))
 
 end Benchmarks.UniswapV3.Pool

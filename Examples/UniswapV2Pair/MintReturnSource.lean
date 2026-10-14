@@ -1,26 +1,26 @@
 import Examples.UniswapV2Pair.MintLiquidityUpdateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace UniswapV2Pair
 
 theorem evalExpr_mint_feeOn_false
-    {solm : Frame} (evm : EVM.State)
-    (hfeeOn : solm.locals.get? "feeOn" = some (.bool false)) :
-    evalExpr? config solm evm (.var "feeOn") = .ok (.bool false) := by
+    {stele : Frame} (evm : EVM.State)
+    (hfeeOn : stele.locals.get? "feeOn" = some (.bool false)) :
+    evalExpr? config stele evm (.var "feeOn") = .ok (.bool false) := by
   simp only [evalExpr?, EvalResult.ofOption, hfeeOn]
 
 theorem evalExpr_mint_feeOn_true
-    {solm : Frame} (evm : EVM.State)
-    (hfeeOn : solm.locals.get? "feeOn" = some (.bool true)) :
-    evalExpr? config solm evm (.var "feeOn") = .ok (.bool true) := by
+    {stele : Frame} (evm : EVM.State)
+    (hfeeOn : stele.locals.get? "feeOn" = some (.bool true)) :
+    evalExpr? config stele evm (.var "feeOn") = .ok (.bool true) := by
   simp only [evalExpr?, EvalResult.ofOption, hfeeOn]
 
 theorem evalExpr_mint_liquidity_of_get
-    {solm : Frame} (evm : EVM.State) (liquidity : UInt256)
-    (hliq : solm.locals.get? "liquidity" = some (uniswapUint256Value liquidity)) :
-    evalExpr? config solm evm (.var "liquidity") =
+    {stele : Frame} (evm : EVM.State) (liquidity : UInt256)
+    (hliq : stele.locals.get? "liquidity" = some (uniswapUint256Value liquidity)) :
+    evalExpr? config stele evm (.var "liquidity") =
       .ok (uniswapUint256Value liquidity) := by
   simp only [evalExpr?, EvalResult.ofOption, hliq]
 
@@ -28,7 +28,7 @@ abbrev mintKLastProductValue (evm : EVM.State) : Value :=
   mintFeeReserveProductValue (uniswapReserve0Word evm) (uniswapReserve1Word evm)
 
 abbrev mintKLastUpdatedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩
     (mintFeeReserveProductWord (uniswapReserve0Word evm) (uniswapReserve1Word evm))
 
 theorem evalExpr_mint_kLastReserveProduct_of_storage
@@ -99,7 +99,8 @@ theorem uniswapMintAfterUpdateFeeOffReturn
     {locals : Store} (evm : EVM.State) (liquidity : UInt256)
     (hfeeOn : locals.get? "feeOn" = some (.bool false))
     (hliq : locals.get? "liquidity" = some (uniswapUint256Value liquidity))
-    (hunlockedBase : locals.get? "unlocked" = none) :
+    (hunlockedBase : locals.get? "unlocked" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       ([ .ite (.var "feeOn")
           [ .assign .storage kLastRef
@@ -112,7 +113,7 @@ theorem uniswapMintAfterUpdateFeeOffReturn
   have hfee :
       evalExpr? config { contract := contract, locals := locals } evm (.var "feeOn") =
         .ok (.bool false) :=
-    evalExpr_mint_feeOn_false (solm := { contract := contract, locals := locals }) evm hfeeOn
+    evalExpr_mint_feeOn_false (stele := { contract := contract, locals := locals }) evm hfeeOn
   have hiteStmt :
       ExecStmt config { contract := contract, locals := locals } evm
         (.ite (.var "feeOn")
@@ -129,7 +130,7 @@ theorem uniswapMintAfterUpdateFeeOffReturn
             [] ]
         (.ok { contract := contract, locals := locals } evm) :=
     ExecBlock.consNormal hiteStmt ExecBlock.nil
-  have hlock := uniswapLockExitSuffix evm locals hunlockedBase
+  have hlock := uniswapLockExitSuffix (hperm := by assumption) evm locals hunlockedBase
   have hret :
       ExecBlock config { contract := contract, locals := locals } (uniswapLockExitedState evm)
         [ .return [.var "liquidity"] ]
@@ -138,7 +139,7 @@ theorem uniswapMintAfterUpdateFeeOffReturn
     ExecBlock.consReturn
       (ExecStmt.return
         (evalExprs?_singleton (evalExpr_mint_liquidity_of_get
-          (solm := { contract := contract, locals := locals })
+          (stele := { contract := contract, locals := locals })
           (uniswapLockExitedState evm) liquidity hliq)))
   have htail := execBlock_append hlock hret
   simpa [List.append_assoc] using execBlock_append hite htail
@@ -153,7 +154,8 @@ theorem uniswapMintAfterUpdateFeeOnReturn
     (hunlockedBase : locals.get? "unlocked" = none)
     (hfit :
       mintFeeReserveProductNat (uniswapReserve0Word evm) (uniswapReserve1Word evm) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       ([ .ite (.var "feeOn")
           [ .assign .storage kLastRef
@@ -167,13 +169,14 @@ theorem uniswapMintAfterUpdateFeeOnReturn
   have hfee :
       evalExpr? config { contract := contract, locals := locals } evm (.var "feeOn") =
         .ok (.bool true) :=
-    evalExpr_mint_feeOn_true (solm := { contract := contract, locals := locals }) evm hfeeOn
+    evalExpr_mint_feeOn_true (stele := { contract := contract, locals := locals }) evm hfeeOn
   have hassignStmt :
       ExecStmt config { contract := contract, locals := locals } evm
         (.assign .storage kLastRef
           (u256 (.binary .mul (.storage reserve0Ref) (.storage reserve1Ref))))
         (.ok { contract := contract, locals := locals } (mintKLastUpdatedState evm)) :=
     ExecStmt.assign
+      (hperm := Or.inr hperm)
       (evalExpr_mint_kLastReserveProduct_of_storage evm hreserve0Base hreserve1Base hfit)
       (mintAssignKLastProduct evm hkLastBase)
   have htrueBranch :
@@ -198,7 +201,8 @@ theorem uniswapMintAfterUpdateFeeOnReturn
             [] ]
         (.ok { contract := contract, locals := locals } (mintKLastUpdatedState evm)) :=
     ExecBlock.consNormal hiteStmt ExecBlock.nil
-  have hlock := uniswapLockExitSuffix (mintKLastUpdatedState evm) locals hunlockedBase
+  have hlock := uniswapLockExitSuffix (hperm := by simpa [mintKLastUpdatedState] using hperm)
+    (mintKLastUpdatedState evm) locals hunlockedBase
   have hret :
       ExecBlock config { contract := contract, locals := locals }
         (uniswapLockExitedState (mintKLastUpdatedState evm))
@@ -209,7 +213,7 @@ theorem uniswapMintAfterUpdateFeeOnReturn
     ExecBlock.consReturn
       (ExecStmt.return
         (evalExprs?_singleton (evalExpr_mint_liquidity_of_get
-          (solm := { contract := contract, locals := locals })
+          (stele := { contract := contract, locals := locals })
           (uniswapLockExitedState (mintKLastUpdatedState evm)) liquidity hliq)))
   have htail := execBlock_append hlock hret
   simpa [List.append_assoc] using execBlock_append hite htail
@@ -233,7 +237,8 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
     (hbound0 : Int.ofNat balance0.toNat ≤ maxUint112)
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed :
-      syncTimeElapsedInt (mintFunctionPostState evm recipient liquidity) = 0) :
+      syncTimeElapsedInt (mintFunctionPostState evm recipient liquidity) = 0)
+    (hperm : evm.executionEnv.perm = true) :
     let afterMint :=
       resumeAfterInternalCall { contract := contract, locals := locals } "_mintResult" none
     let afterUpdate := resumeAfterInternalCall afterMint "_updateResult" none
@@ -255,7 +260,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
         (some [uniswapUint256Value liquidity])) := by
   intro afterMint afterUpdate
   have hprefix :=
-    uniswapMintLiquidityMintUpdateElapsedZeroPrefix (locals := locals) evm recipient
+    uniswapMintLiquidityMintUpdateElapsedZeroPrefix (hperm := by assumption) (locals := locals) evm recipient
       balance0 balance1 reserve0 reserve1 liquidity hto hliq hbalance0 hbalance1
       hreserve0 hreserve1 hreserve0Base hreserve1Base hliqNonzero hfitSupply hfitBalance
       hbound0 hbound1 helapsed
@@ -290,7 +295,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
               balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOffReturn (locals := afterUpdate.locals)
+      uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
           balance0 balance1)
         liquidity hfeeAfter hliqAfter hunlockedAfter
@@ -324,7 +329,8 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
               balance0 balance1))
           (uniswapReserve1Word
             (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let afterMint :=
       resumeAfterInternalCall { contract := contract, locals := locals } "_mintResult" none
     let afterUpdate := resumeAfterInternalCall afterMint "_updateResult" none
@@ -347,7 +353,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
         (some [uniswapUint256Value liquidity])) := by
   intro afterMint afterUpdate
   have hprefix :=
-    uniswapMintLiquidityMintUpdateElapsedZeroPrefix (locals := locals) evm recipient
+    uniswapMintLiquidityMintUpdateElapsedZeroPrefix (hperm := by assumption) (locals := locals) evm recipient
       balance0 balance1 reserve0 reserve1 liquidity hto hliq hbalance0 hbalance1
       hreserve0 hreserve1 hreserve0Base hreserve1Base hliqNonzero hfitSupply hfitBalance
       hbound0 hbound1 helapsed
@@ -398,7 +404,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOnReturn (locals := afterUpdate.locals)
+      uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
           balance0 balance1)
         liquidity hfeeAfter hliqAfter hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter
@@ -426,7 +432,8 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn
     (helapsed :
       0 < syncTimeElapsedInt (mintFunctionPostState evm recipient liquidity))
     (hreserve0Ne : Int.ofNat reserve0.toNat ≠ 0)
-    (hreserve1Ne : Int.ofNat reserve1.toNat ≠ 0) :
+    (hreserve1Ne : Int.ofNat reserve1.toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     let afterMint :=
       resumeAfterInternalCall { contract := contract, locals := locals } "_mintResult" none
     let afterUpdate := resumeAfterInternalCall afterMint "_updateResult" none
@@ -449,7 +456,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn
         (some [uniswapUint256Value liquidity])) := by
   intro afterMint afterUpdate
   have hprefix :=
-    uniswapMintLiquidityMintUpdateCumulativePrefix (locals := locals) evm recipient
+    uniswapMintLiquidityMintUpdateCumulativePrefix (hperm := by assumption) (locals := locals) evm recipient
       balance0 balance1 reserve0 reserve1 liquidity hto hliq hbalance0 hbalance1
       hreserve0 hreserve1 hreserve0Base hreserve1Base hliqNonzero hfitSupply hfitBalance
       hbound0 hbound1 helapsed hreserve0Ne hreserve1Ne
@@ -485,7 +492,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn
               reserve1))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOffReturn (locals := afterUpdate.locals)
+      uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdateCumulativePackedReserveStateWith
           (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0 reserve1)
         liquidity hfeeAfter hliqAfter hunlockedAfter
@@ -524,7 +531,8 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn
             (syncUpdateCumulativePackedReserveStateWith
               (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
               reserve1)) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let afterMint :=
       resumeAfterInternalCall { contract := contract, locals := locals } "_mintResult" none
     let afterUpdate := resumeAfterInternalCall afterMint "_updateResult" none
@@ -548,7 +556,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn
         (some [uniswapUint256Value liquidity])) := by
   intro afterMint afterUpdate
   have hprefix :=
-    uniswapMintLiquidityMintUpdateCumulativePrefix (locals := locals) evm recipient
+    uniswapMintLiquidityMintUpdateCumulativePrefix (hperm := by assumption) (locals := locals) evm recipient
       balance0 balance1 reserve0 reserve1 liquidity hto hliq hbalance0 hbalance1
       hreserve0 hreserve1 hreserve0Base hreserve1Base hliqNonzero hfitSupply hfitBalance
       hbound0 hbound1 helapsed hreserve0Ne hreserve1Ne
@@ -600,7 +608,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn
                 reserve1)))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOnReturn (locals := afterUpdate.locals)
+      uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdateCumulativePackedReserveStateWith
           (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0 reserve1)
         liquidity hfeeAfter hliqAfter hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter
@@ -637,7 +645,8 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOffReturn
     (hbound0 : Int.ofNat balance0.toNat ≤ maxUint112)
     (hbound1 : Int.ofNat balance1.toNat ≤ maxUint112)
     (helapsed :
-      syncTimeElapsedInt (mintFunctionPostState evm recipient liquidity) = 0) :
+      syncTimeElapsedInt (mintFunctionPostState evm recipient liquidity) = 0)
+    (hperm : evm.executionEnv.perm = true) :
     let liquidity0 := mintProportionalLiquidityWord amount0 totalSupply reserve0
     let liquidity1 := mintProportionalLiquidityWord amount1 totalSupply reserve1
     let afterBranch :=
@@ -784,7 +793,7 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOffReturn
               balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
+      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -825,7 +834,8 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOffReturn
     (hreserve0Post :
       Int.ofNat reserve0.toNat ≠ 0)
     (hreserve1Post :
-      Int.ofNat reserve1.toNat ≠ 0) :
+      Int.ofNat reserve1.toNat ≠ 0)
+    (hperm : evm.executionEnv.perm = true) :
     let liquidity0 := mintProportionalLiquidityWord amount0 totalSupply reserve0
     let liquidity1 := mintProportionalLiquidityWord amount1 totalSupply reserve1
     let afterBranch :=
@@ -974,7 +984,7 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOffReturn
               reserve1))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn
+      uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -1021,7 +1031,8 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOnReturn
               balance0 balance1))
           (uniswapReserve1Word
             (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let liquidity0 := mintProportionalLiquidityWord amount0 totalSupply reserve0
     let liquidity1 := mintProportionalLiquidityWord amount1 totalSupply reserve1
     let afterBranch :=
@@ -1178,7 +1189,7 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOnReturn
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
+      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -1232,7 +1243,8 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOnReturn
             (syncUpdateCumulativePackedReserveStateWith
               (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
               reserve1)) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let liquidity0 := mintProportionalLiquidityWord amount0 totalSupply reserve0
     let liquidity1 := mintProportionalLiquidityWord amount1 totalSupply reserve1
     let afterBranch :=
@@ -1391,7 +1403,7 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOnReturn
                 reserve1)))
           (some [uniswapUint256Value liquidity])) := by
     simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn
+      uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter

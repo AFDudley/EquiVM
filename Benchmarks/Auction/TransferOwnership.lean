@@ -3,7 +3,7 @@ import Benchmarks.Auction.AddressDecoder
 import Benchmarks.Auction.AddressSource
 import Benchmarks.Auction.ErrorMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -13,15 +13,15 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
     (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩) :
-    (ExecTransitionBody auctionConfig auctionContract evm
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none)) ∧
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none)) ∧
       (evm.executionEnv.perm = false → ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body .staticViolation) := by
@@ -42,7 +42,8 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
       (fun h ↦ hz ((canonicalAddress_eq_zero_iff value hc).mp h))))
     exact htail
   constructor
-  · exact ExecFuncBody.execBlockOK (hprefix (assignStorageBlock hvalue hassign))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hprefix (assignStorageBlock hvalue hassign hperm))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm)))
@@ -50,17 +51,18 @@ theorem transferOwnershipBodySplit (evm : EVM.State) (value : UInt256)
 theorem transferOwnershipBody (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
-    (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩) :
+    (hc : value.toNat < EVM.addressModulus) (hz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm
       ((∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)))
       transferOwnershipTransition.body
       (.returned
         { contract := auctionContract
           locals := (∅ : Store).insert "newOwner" (.address (AccountAddress.ofNat value.toNat)) }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none) :=
-  (transferOwnershipBodySplit evm value hwv ho hc hz).1
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) value)) none) :=
+  (transferOwnershipBodySplit evm value hwv ho hc hz).1 hperm
 
 theorem transferOwnershipZeroBodyReverts (evm : EVM.State) (value : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -170,7 +172,7 @@ theorem transferOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
     by_cases hlen : 36 ≤ I.calldata.size
     · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
       · by_cases hc : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-        · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+        · have hdec : auctionConfig.externalABI.decodeCalldata?
               (transferOwnershipTransition.params.map Param.name)
               (transitionSignature transferOwnershipTransition).paramTypes I.calldata =
                 some ((∅ : Store).insert "newOwner"
@@ -195,7 +197,7 @@ theorem transferOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
                   ((transferOwnershipBodySplit
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                     (calldataWord I.calldata 4) hwv ho hc hz).2 hperm)
-              have hbody := transferOwnershipBody
+              have hbody := transferOwnershipBody (hperm := _hperm)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (calldataWord I.calldata 4) hwv ho hc hz
               exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen
@@ -213,20 +215,20 @@ theorem transferOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
               · simp
             exact (ownerDenied 6 rd2698 ho (by evm_ov)).reEquivExecutionRevert
               hcode hd hdec hbody
-        · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+        · have hdec : auctionConfig.externalABI.decodeCalldata?
               (transferOwnershipTransition.params.map Param.name)
               (transitionSignature transferOwnershipTransition).paramTypes I.calldata = none :=
             decodeCalldata_address_none_noncanon hlen hhi hc
           exact (decodeAddressFailNoncanonical rd5495 hlen hhi hsize hc
             (by evm_ov)).reEquivDecodingFailed hcode hd hdec
-      · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+      · have hdec : auctionConfig.externalABI.decodeCalldata?
             (transferOwnershipTransition.params.map Param.name)
             (transitionSignature transferOwnershipTransition).paramTypes I.calldata = none :=
           decodeCalldata_address_none_huge (by omega)
         exact (calldataHeadFail rd5495 addressHeadWf
           (solcDecodeLenCheckHuge_4_32 (by omega) hsize) (by evm_ov)).reEquivDecodingFailed
           hcode hd hdec
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (transferOwnershipTransition.params.map Param.name)
           (transitionSignature transferOwnershipTransition).paramTypes I.calldata = none :=
         decodeCalldata_address_none_short hsz (by omega)

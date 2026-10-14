@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Dai.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -25,9 +25,9 @@ theorem daiLookupTransferFromForPull :
 
 theorem daiDecode_pull_ok {I : ExecutionEnv}
     (hsel : selIs I (daiSelBytes 13)) (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (pullTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pullTransition.params.map Param.name)
       (transitionSignature pullTransition).paramTypes I.calldata = some (pullStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   unfold pullStore transferFromSrcValue transferFromWadValue
   rw [transferFromSrcWord_of_pull I hsel, transferFromWadWord_of_pull I hsel]
@@ -41,9 +41,9 @@ theorem daiDecode_pull_ok {I : ExecutionEnv}
 
 theorem daiDecode_pull_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (pullTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (pullTransition.params.map Param.name)
       (transitionSignature pullTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -83,7 +83,7 @@ theorem daiPullBodyReturns_from_transferFrom (evm evmPost : EVM.State) (I : Exec
         (retVar := "_ok")
         (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
         (callee := transferFromTransition) (locals := transferFromCallStore I)
-        (calleeSolm := { contract := contract, locals := transferFromCallStore I })
+        (calleeStele := { contract := contract, locals := transferFromCallStore I })
         (value := .bool true)
         (evalExprs_pull_internalCall evm I hsel hsrc)
         daiLookupTransferFromForPull
@@ -132,7 +132,7 @@ theorem daiPullBodyStatic_from_transferFrom (evm : EVM.State) (I : ExecutionEnv)
   have hcall : ExecStmt config caller evm
       (.internalCall "transferFrom" [.var "usr", sender, .var "wad"] "_ok") .staticViolation := by
     exact ExecStmt.internalCallStatic (cfg := config)
-      (solm := caller) (evm := evm)
+      (stele := caller) (evm := evm)
       (name := "transferFrom") (args := [.var "usr", sender, .var "wad"])
       (retVar := "_ok")
       (argVals := [transferFromSrcValue I, transferFromDstValue I, transferFromWadValue I])
@@ -227,7 +227,7 @@ theorem daiPullBodyCoreDecodeFailed_short
   exact (daiPullX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `pull(address,uint256)` body refines its Solm transition. -/
+/-- `pull(address,uint256)` body refines its Stele transition. -/
 theorem daiPullBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

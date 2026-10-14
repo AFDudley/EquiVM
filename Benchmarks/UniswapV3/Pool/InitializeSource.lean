@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.InitializeOracleSource
 import Benchmarks.UniswapV3.Pool.InitializeSlot0Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -38,7 +38,8 @@ theorem evalInitializeSlot0Value (v : UniswapV3PoolImmutables) (evm : EVM.State)
 theorem initializeReturns (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (price : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hzero : slot0FieldWord 0 20 evm.accountMap evm.executionEnv = ⟨0⟩)
-    (hp : price.toNat < 2 ^ 160) (hv : tickLogValid price) (hs : tickLogSafe (tickLogResult price)) :
+    (hp : price.toNat < 2 ^ 160) (hv : tickLogValid price) (hs : tickLogSafe (tickLogResult price))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (initializeLocals price) initializeTransition.body
       (.returned (initializeReadyFrame v price (tickLogChoice (tickLogResult price) price)
         evm.executionEnv)
@@ -46,12 +47,12 @@ theorem initializeReturns (v : UniswapV3PoolImmutables) (evm : EVM.State)
           price (tickLogChoice (tickLogResult price) price)) none) (immStore v) := by
   apply ExecFuncBody.execBlockOK
   rw [← List.take_append_drop 7 initializeTransition.body]
-  apply execBlock_append_ok (initializeReadySource v evm price hwv hzero hp hv hs)
+  apply execBlock_append_ok (initializeReadySource (hperm := hperm) v evm price hwv hzero hp hv hs)
   have hlookup := initializeReadyLookup v price (tickLogChoice (tickLogResult price) price)
     evm.executionEnv
-  refine ExecBlock.consNormal (ExecStmt.assign (evalInitializeSlot0Value v _ price _ _)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [oracleInitializeState, storageStore_executionEnv] using hperm)) (evalInitializeSlot0Value v _ price _ _)
     (assignInitializeSlot0 _ _ _ price _ hlookup.2.2.2.2 hp)) ?_
-  refine ExecBlock.consNormal (ExecStmt.emit
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [initializeSlot0State, oracleInitializeState, storageStore_executionEnv] using hperm)
     (vals := [.int (Int.ofNat price.toNat), .int (tickLogChoice (tickLogResult price) price)]) ?_)
     ExecBlock.nil
   change evalExprs? config

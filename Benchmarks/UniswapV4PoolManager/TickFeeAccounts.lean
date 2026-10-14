@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolUpdateTickFees
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem tickFeeWrites_accounts {evm : EVM.State} {I : ExecutionEnv} (hI : evm.executionEnv = I)

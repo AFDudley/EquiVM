@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt0Model
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -67,9 +67,9 @@ theorem nextSqrt0ProductSource (imms : Store) (evm : EVM.State) (a : NextSqrtArg
     evalExpr_var_get (by next_sqrt_0_product_get; rfl)
   cases ha : a.add
   all_goals
-    exact ExecBlock.consNormal (solm' := nextSqrt0ProductZeroFrame imms a)
+    exact ExecBlock.consNormal (stele' := nextSqrt0ProductZeroFrame imms a)
       (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-      (ExecBlock.consNormal (ExecStmt.assign (evalExpr_word_mul hm hp)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_word_mul hm hp)
         (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil)
 
 theorem nextSqrt0ProductGet (imms : Store) (a : NextSqrtArgs) :

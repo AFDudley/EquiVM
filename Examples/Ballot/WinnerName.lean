@@ -1,7 +1,7 @@
 import Examples.Ballot.WinningProposal
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -24,7 +24,7 @@ def winnerNameStoreAfterWinningProposal (w : UInt256) : Store :=
   (∅ : Store).insert "w" (.int (Int.ofNat w.toNat))
 
 def winnerNameNameCurrent (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (winnerNameNameSlot (winningProposalResultCurrent evm))
 
 def winnerNameNameWord (sigma : AccountMap) (I : ExecutionEnv) : UInt256 :=
@@ -57,10 +57,10 @@ theorem winnerNameArrayIndexInBounds_revert (evm : EVM.State) (w : UInt256)
       (.int (Int.ofNat w.toNat)) = .revert := by
   have hboundStorage :
       ¬ w.toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) := by
     simpa [winningProposalLengthCurrent] using hbound
   have hleStorage :
-      UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤ w.toNat :=
+      UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩) ≤ w.toNat :=
     Nat.le_of_not_gt hboundStorage
   simp [arrayIndexInBounds?, storageTypeAt?, ballotContract, ballotStorageDecls]
   rw [ballotProposalsLength]
@@ -74,7 +74,7 @@ theorem winnerNameEvalName (evm : EVM.State) (locals : Store) (w : UInt256)
       (.storage (proposalF (.var "w") "name")) =
         .ok (.fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (winnerNameNameSlot w)))) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (winnerNameNameSlot w)))) := by
   have hbase : locals.get? (proposalF (.var "w") "name").base = none := by
     simpa [proposalF] using hbaseProposals
   have hwEval :
@@ -107,7 +107,7 @@ theorem winnerNameEvalName (evm : EVM.State) (locals : Store) (w : UInt256)
       storageLocLoad evm (winnerNameNameLoc w) =
         .fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (winnerNameNameSlot w))) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (winnerNameNameSlot w))) := by
     simpa [winnerNameNameLoc] using (storageLocLoad_bytes32 evm (winnerNameNameSlot w))
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .bytes ⟨31, by decide⟩) (hbase := hbase)
     (her := her) (hty := hty) (hloc := hloc)]
@@ -165,7 +165,7 @@ theorem ballotWinnerNameBodyReturns (evm : EVM.State)
         (caller := { contract := ballotContract, locals := ∅ }) (evm := evm)
         (calleeEvm := evm) (name := "winningProposal") (args := []) (retVar := "w")
         (argVals := []) (callee := winningProposalTransition) (locals := ∅)
-        (calleeSolm := { contract := ballotContract, locals := calleeLocals })
+        (calleeStele := { contract := ballotContract, locals := calleeLocals })
         (value := .int (Int.ofNat (winningProposalResultCurrent evm).toNat))
         (by rfl) ballotWinningProposal_lookup ballotWinningProposal_bind hcallee
   have hbase : Lw.get? "proposals" = none := by
@@ -199,7 +199,7 @@ theorem ballotWinnerNameBodyReverts_oob (evm : EVM.State)
         (caller := { contract := ballotContract, locals := ∅ }) (evm := evm)
         (calleeEvm := evm) (name := "winningProposal") (args := []) (retVar := "w")
         (argVals := []) (callee := winningProposalTransition) (locals := ∅)
-        (calleeSolm := { contract := ballotContract, locals := calleeLocals })
+        (calleeStele := { contract := ballotContract, locals := calleeLocals })
         (value := .int (Int.ofNat (winningProposalResultCurrent evm).toNat))
         (by rfl) ballotWinningProposal_lookup ballotWinningProposal_bind hcallee
   have hbase : Lw.get? "proposals" = none := by

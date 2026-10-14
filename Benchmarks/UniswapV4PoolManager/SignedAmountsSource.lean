@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SignedAmount0Source
 import Benchmarks.UniswapV4PoolManager.SignedAmount1Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def signedAmountName (one : Bool) : Ident :=

@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.LPFeeTrace
 # PoolManager `setProtocolFee((address,address,uint24,int24,address),uint24)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 3673; reach lemma `poolManagerReachSetProtocolFeeBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -49,7 +49,7 @@ theorem poolManagerSetProtocolFeeBody {σ σ₀ A I} {g : UInt256} (v : PoolMana
         let key := poolKeyOfCalldata I.calldata
         let fee := calldataWord I.calldata 164
         let args := poolKeyFeeArgs "key" "newProtocolFee" key fee
-        have hdecAll : decodeCalldataWithMode config.abiDecodeMode
+        have hdecAll : config.externalABI.decodeCalldata?
             (setProtocolFeeTransition.params.map Param.name)
             (transitionSignature setProtocolFeeTransition).paramTypes I.calldata =
             if PoolKeyCanonical key ∧ fee.toNat < 2^24 then some args else none :=

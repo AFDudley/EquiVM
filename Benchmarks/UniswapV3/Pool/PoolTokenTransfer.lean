@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SafeTransferSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -74,7 +74,7 @@ theorem poolTransferReturns (v : UniswapV3PoolImmutables) (locals : Store)
              locals := locals.insert (poolTransferCallName second) .unit
              immutables := immStore v } evm') := by
   exact internalCallFunctionReturn (callee := safeTransferFunction) (value := none)
-    (calleeSolm := calleeFrame) (locals := safeTransferLocals (poolToken v second) recipient amount)
+    (calleeStele := calleeFrame) (locals := safeTransferLocals (poolToken v second) recipient amount)
     (poolTransferEval v locals evm second recipient amount hrecipient hget)
     safeTransferLookup rfl hcall
 

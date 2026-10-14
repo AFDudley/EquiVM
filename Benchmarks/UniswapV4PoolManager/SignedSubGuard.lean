@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SignedWordBounds
 import Benchmarks.UniswapV4PoolManager.WordSignedRepresentation
 import Benchmarks.UniswapV4PoolManager.SignedComparison
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: subtracting a nonnegative signed word overflows exactly when its result increases.

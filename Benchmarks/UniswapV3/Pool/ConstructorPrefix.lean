@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.Calls
 import Benchmarks.UniswapV3.Pool.FactoryOwner
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -59,7 +59,7 @@ theorem constructorCallSource (evm evm' : EVM.State) (ok : Bool) (out : ByteArra
       (ok, evm', out) false) :
     ExecStmt config (constructorReadyFrame evm.executionEnv.codeOwner) evm (contract.ctor.body[4]!)
       (.ok (constructorCallFrame evm.executionEnv.codeOwner ok out) evm') :=
-  lowLevelCallWithPermSource (by simp only [evalExpr?, envValue, pure])
+  lowLevelCallWithPermSource (hperm := Or.inl rfl) (by simp only [evalExpr?, envValue, pure])
     (by simp only [evalExpr?, pure])
     (by simp only [evalExpr?, pure, constructorParameterCalldata]) hcall
 

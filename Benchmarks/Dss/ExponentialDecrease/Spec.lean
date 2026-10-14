@@ -1,15 +1,15 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # MakerDAO/Sky DSS ExponentialDecrease benchmark spec
 
-Faithful Solm benchmark scaffold for upstream `dss/src/abaci.sol` contract `ExponentialDecrease`.
+Faithful Stele benchmark scaffold for upstream `dss/src/abaci.sol` contract `ExponentialDecrease`.
 Events are omitted, matching the existing event-bearing DSS benchmarks.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Dss.ExponentialDecrease
 
@@ -209,8 +209,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Dss.ExponentialDecrease

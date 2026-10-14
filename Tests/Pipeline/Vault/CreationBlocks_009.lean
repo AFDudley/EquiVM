@@ -2,7 +2,7 @@ import Reasoning.Reach
 import Reasoning.Initcode
 import Tests.Pipeline.Vault.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
 namespace vaultCreationBlocks

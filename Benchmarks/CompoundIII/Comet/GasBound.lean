@@ -1,6 +1,6 @@
-import Solm.Refine
+import Stele.Refine
 
-open Solm Ethereum
+open Stele Ethereum
 
 namespace Benchmarks.CompoundIII.Comet
 

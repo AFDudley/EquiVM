@@ -1,8 +1,8 @@
 import Tests.Pipeline.Vault.SpecSyntax
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
-import Solm.Refine
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
+import Stele.Refine
 
 import Tests.Pipeline.Vault.Immutables
 /-!
@@ -13,7 +13,7 @@ handles the proof files unfold, the storage backend (solc's standard layout, fro
 declarations), the external-call ABI, and the `Config`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Tests.Pipeline.Vault
 

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.FullMathWords
 import Benchmarks.UniswapV4PoolManager.WordLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -42,7 +42,7 @@ theorem fullMathPrelude {f : Frame} {evm : EVM.State} {a b : UInt256}
   have he := evalWordSubSub (evalLocalValue (cfg := config) (f := f4) (evm := evm) hmm)
     (evalLocalValue hp0) (evalBoolWord (evalWordLt (evalLocalValue hmm) (evalLocalValue hp0)))
   have h4 : ExecStmt config f4 evm fullMathFunction.body[4]! (.ok (fullMathPreludeFrame f a b) evm) :=
-    ExecStmt.assign he (assignLocalValue hp1)
+    ExecStmt.assign (hperm := Or.inl rfl) he (assignLocalValue hp1)
   exact ExecBlock.consNormal h0 (ExecBlock.consNormal h1 (ExecBlock.consNormal h2
     (ExecBlock.consNormal h3 (execBlock_singleton h4))))
 

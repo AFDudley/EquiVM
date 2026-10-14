@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.BlockCorrectComposition
 # PoolManager `donate((address,address,uint24,int24,address),uint256,uint256,bytes)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9980; reach lemma `poolManagerReachDonateBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -38,7 +38,7 @@ theorem poolManagerDonateBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmut
     entryMemory ⟨3⟩ .empty σ k C at rdEntry
   have hjump : (D_J (deployedRuntime v) 0).contains (UInt256.ofNat 816) = true := by
     rw [deployedRuntime_jumps]; jump_dest
-  have hdec : decodeCalldataWithMode config.abiDecodeMode (donateTransition.params.map Param.name)
+  have hdec : config.externalABI.decodeCalldata? (donateTransition.params.map Param.name)
       (transitionSignature donateTransition).paramTypes I.calldata =
       if DonateCalldataBounds I.calldata then some (donateArgs I.calldata) else none :=
     decodeCalldata_donate I.calldata

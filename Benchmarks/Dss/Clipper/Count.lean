@@ -1,7 +1,7 @@
 import Reasoning.SolcRoutines
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -47,16 +47,16 @@ theorem clipperDispatch_count {I : ExecutionEnv}
 
 theorem clipperDecode_count {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (countTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (countTransition.params.map Param.name)
       (transitionSignature countTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalActiveLength (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "active" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.arrayLength .storage activeRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat)) := by
   let er : EvaledStorageRef := { base := "active", steps := [] }
   have her : evalStorageRef config
       { contract := contract, locals := locals, immutables := immStore v } evm activeRef = .ok er := by
@@ -75,10 +75,10 @@ theorem clipperEvalActiveLength (v : ClipperImmutables) (evm : EVM.State) (local
   change (do
     let len ← config.storageBackend.length er (.dynamicArray uint256St) evm
     pure (Value.int (Int.ofNat len))) =
-    .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))
+    .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))
   have hlength : solidityStorageLength? storageLayoutRaw { base := "active" }
       (.dynamicArray uint256St) evm =
-        .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat :=
+        .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat :=
     clipperActiveLength evm
   simp [config, solidityStorageBackend, storageLayout, er, hlength]
   simp only [EvalResult.bind, bind, pure]
@@ -88,7 +88,7 @@ theorem clipperCountBodyReturns (v : ClipperImmutables) (evm : EVM.State) (local
     ExecTransitionBody config contract evm locals countTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩).toNat))])) (immStore v) := by
   simpa [countTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
       (clipperEvalActiveLength v evm locals hbase)
@@ -269,7 +269,7 @@ theorem clipperCountBody (v : ClipperImmutables) {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWord σ I ⟨11⟩).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperCountBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

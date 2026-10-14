@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapCrossFlags
 import Benchmarks.UniswapV3.Pool.SourceTuples
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -72,7 +72,7 @@ theorem swapObservationStoresSource {frame : Frame} {evm : EVM.State}
     Std.HashMap.getElem?_insert_self
   have h1 : ExecStmt config (swapObservationCallFrame frame tick seconds) evm
       swapObservationBody[1]! (.ok (swapObservationTickFrame frame c tick seconds) evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr) rfl)
       (assignLocalField_frame hc0 rfl rfl)
   have hr1 : (swapObservationTickFrame frame c tick seconds).locals.get? "__c12" =
       some (.tuple [.int tick, .int (Int.ofNat seconds.toNat)]) := by
@@ -80,11 +80,11 @@ theorem swapObservationStoresSource {frame : Frame} {evm : EVM.State}
       Std.HashMap.getElem?_insert] using hr
   have h2 : ExecStmt config (swapObservationTickFrame frame c tick seconds) evm
       swapObservationBody[2]! (.ok (swapObservationSecondsFrame frame c tick seconds) evm) :=
-    ExecStmt.assign (evalExpr_tupleGet (evalExpr_var_get hr1) rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_tupleGet (evalExpr_var_get hr1) rfl)
       (assignLocalField_frame Std.HashMap.getElem?_insert_self rfl rfl)
   have h3 : ExecStmt config (swapObservationSecondsFrame frame c tick seconds) evm
       swapObservationBody[3]! (.ok (swapObservationFrame frame c tick seconds) evm) :=
-    ExecStmt.assign (by simp only [evalExpr?, pure]; rfl)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, pure]; rfl)
       (assignLocalField_frame Std.HashMap.getElem?_insert_self rfl rfl)
   exact ExecBlock.consNormal h1 (ExecBlock.consNormal h2 (ExecBlock.consNormal h3 .nil))
 

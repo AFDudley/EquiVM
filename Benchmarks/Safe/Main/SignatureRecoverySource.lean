@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.SignatureBranchSource
 import Benchmarks.Safe.Main.EcrecoverSource
 import Benchmarks.Safe.Main.InternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -49,7 +49,7 @@ theorem signatureRecoverSource {p : SignatureInput} {f : Frame} {evm evm' : EVM.
     ExecBlock config f evm (signatureRecoverBody digest v)
       (.ok (signatureRecoveredFrame f owner) evm') := by
   have hcall := safeInternalEcrecover hc hd hv hr hs hbody
-  exact .consNormal hcall (.consNormal (.assign
+  exact .consNormal hcall (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalLocalValue (by simp [resumeAfterInternalCall, collapseReturns,
       Std.HashMap.getElem?_insert])) (assignLocalValue (old := old) _ (by
         simp [resumeAfterInternalCall, Std.HashMap.getElem?_insert, ho]))) .nil)

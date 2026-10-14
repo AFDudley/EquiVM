@@ -6,7 +6,7 @@ import Benchmarks.Dss.Clipper.GetStatusReverts
 import Benchmarks.Dss.Clipper.Guards
 import Benchmarks.Dss.Clipper.Sales
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -44,7 +44,7 @@ abbrev clipperRedoStore (I : ExecutionEnv) : Store :=
   ((∅ : Store).insert "id" (clipperRedoIdValue I)).insert "kpr" (clipperRedoKprValue I)
 
 def clipperRedoLockedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
 
 abbrev clipperRedoSalesBaseSlot (I : ExecutionEnv) : UInt256 :=
   salesBase (clipperRedoIdKey I)
@@ -83,18 +83,18 @@ abbrev clipperRedoSalesTopRef (I : ExecutionEnv) : EvaledStorageRef :=
 
 abbrev clipperRedoSalesUsrEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesPackedSlot I))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesPackedSlot I))
     solcAddrMask
 
 abbrev clipperRedoSalesTicEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land
     (UInt256.div
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesPackedSlot I))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesPackedSlot I))
       (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩))
     (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨96⟩) ⟨1⟩)
 
 abbrev clipperRedoSalesTopEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesTopSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperRedoSalesTopSlot I)
 
 abbrev clipperRedoLocalsUsr (evm : EVM.State) (I : ExecutionEnv) : Store :=
   (clipperRedoStore I).insert "usr"
@@ -179,10 +179,10 @@ theorem clipperDispatch_redo {I : ExecutionEnv}
 
 theorem clipperDecode_redo_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (redoTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (redoTransition.params.map Param.name)
       (transitionSignature redoTransition).paramTypes I.calldata =
         some (clipperRedoStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id", "kpr"]
+  show config.externalABI.decodeCalldata? ["id", "kpr"]
     [uint256, addr] I.calldata = _
   simpa [config, clipperRedoStore, clipperRedoIdValue, clipperRedoKprValue,
     clipperRedoIdWord, clipperRedoKprWord] using
@@ -191,9 +191,9 @@ theorem clipperDecode_redo_ok {I : ExecutionEnv}
 
 theorem clipperDecode_redo_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (redoTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (redoTransition.params.map Param.name)
       (transitionSignature redoTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["id", "kpr"]
+  show config.externalABI.decodeCalldata? ["id", "kpr"]
     [uint256, addr] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUint256_address_none_short
@@ -601,7 +601,7 @@ theorem clipperRedoLockedSourceReverts {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool false) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_clipperLocked_zero_false v evm0 locals (by simp [locals]) hlocked
   have hblock :
       ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm0
@@ -621,17 +621,17 @@ theorem evalStorageRef_clipperRedoStopped (v : ClipperImmutables) (evm : EVM.Sta
 
 theorem evalExpr_clipperRedoStopped_lt_two_false (v : ClipperImmutables)
     (evm : EVM.State) (locals : Store) (hbase : locals.get? "stopped" = none)
-    (hload : 2 ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat) :
+    (hload : 2 ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.binary .lt (.storage stoppedRef) (.intLit 2)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
         (.storage stoppedRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := locals, immutables := immStore v })
+      (stele := { contract := contract, locals := locals, immutables := immStore v })
       (slot := stoppedRef)
       (er := { base := "stopped", steps := [] })
       (t := .int uint256Int)
@@ -644,24 +644,24 @@ theorem evalExpr_clipperRedoStopped_lt_two_false (v : ClipperImmutables)
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.lt
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))
       (Value.int 2) = .ok (.bool false)
   simp [evalBinaryOp?]
   omega
 
 theorem evalExpr_clipperRedoStopped_lt_two_true (v : ClipperImmutables)
     (evm : EVM.State) (locals : Store) (hbase : locals.get? "stopped" = none)
-    (hload : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat < 2) :
+    (hload : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat < 2) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.binary .lt (.storage stoppedRef) (.intLit 2)) = .ok (.bool true) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
         (.storage stoppedRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := locals, immutables := immStore v })
+      (stele := { contract := contract, locals := locals, immutables := immStore v })
       (slot := stoppedRef)
       (er := { base := "stopped", steps := [] })
       (t := .int uint256Int)
@@ -674,7 +674,7 @@ theorem evalExpr_clipperRedoStopped_lt_two_true (v : ClipperImmutables)
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.lt
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))
       (Value.int 2) = .ok (.bool true)
   simp [evalBinaryOp?]
   omega
@@ -695,7 +695,7 @@ theorem clipperEvalRedoSalesUsr (v : ClipperImmutables) (evm : EVM.State)
       .ok (.address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperRedoStore I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "usr") (er := clipperRedoSalesUsrRef I)
     (t := .address) (loc := addrLoc (clipperRedoSalesPackedSlot I))
     (value := .address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evm I).toNat))
@@ -730,7 +730,7 @@ theorem clipperEvalRedoSalesTicAfterUsr (v : ClipperImmutables)
       .ok (.int (Int.ofNat (clipperRedoSalesTicEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperRedoLocalsUsr evm I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "tic") (er := clipperRedoSalesTicRef I)
     (t := .int uint96Int)
     (loc := uint96Loc (clipperRedoSalesPackedSlot I) ⟨20, by decide⟩ (by decide))
@@ -767,7 +767,7 @@ theorem clipperEvalRedoSalesTopAfterTic (v : ClipperImmutables)
       .ok (.int (Int.ofNat (clipperRedoSalesTopEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperRedoLocalsTic evm I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "top") (er := clipperRedoSalesTopRef I)
     (t := .int uint256Int) (loc := wordLoc (clipperRedoSalesTopSlot I))
     (value := .int (Int.ofNat (clipperRedoSalesTopEVMWord evm I).toNat))
@@ -828,7 +828,7 @@ theorem clipperEvalRedoUsrNeZeroAfterTop_true (v : ClipperImmutables)
       AccountAddress.ofNat 0 := by
     simpa [clipperRedoSalesUsrEVMWord] using
       maskedAddress_ne_zero_of_mask_ne_zero
-        (w := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (w := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperRedoSalesPackedSlot I))
         (by simpa [clipperRedoSalesUsrEVMWord] using husr)
   simp [evalBinaryOp?, haddr]
@@ -893,7 +893,8 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
     (hstopped :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 2)
     (husr :
-      clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩) :
+      clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -906,7 +907,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config startFrame evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [startFrame, locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [startFrame, locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperLocked_zero_true v evm0 locals (by simp [locals]) hlocked
   have hlockRhs :
@@ -923,11 +924,11 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
     apply evalExpr_clipperRedoStopped_lt_two_true
     · simp [locals]
     · simpa [evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+        Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
         storageStore_executionEnv] using hstopped
   have husrLoad : clipperRedoSalesUsrEVMWord evmLock I = ⟨0⟩ := by
     simpa [clipperRedoSalesUsrEVMWord, clipperRedoSalesUsrWord, evmLock,
-      clipperRedoLockedState, evm0, initState, solcSlotWord, Solm.EVM.storageLoad,
+      clipperRedoLockedState, evm0, initState, solcSlotWord, Stele.EVM.storageLoad,
       State.lookupAccount, storageStore_accountMap, storageStore_executionEnv] using husr
   have hletUsr :
       ExecStmt config startFrame evmLock
@@ -935,7 +936,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok usrFrame evmLock) := by
     simpa [startFrame, usrFrame, locals, clipperRedoLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmLock) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evmLock) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evmLock I).toNat))
         (by simpa [startFrame, locals] using clipperEvalRedoSalesUsr v evmLock I))
@@ -945,7 +946,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok ticFrame evmLock) := by
     simpa [usrFrame, ticFrame, clipperRedoLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evmLock) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evmLock) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperRedoSalesTicEVMWord evmLock I).toNat))
         (by simpa [usrFrame] using clipperEvalRedoSalesTicAfterUsr v evmLock I))
@@ -955,7 +956,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok topFrame evmLock) := by
     simpa [ticFrame, topFrame, clipperRedoLocalsTop] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := ticFrame) (evm := evmLock) (name := "top")
+        (cfg := config) (stele := ticFrame) (evm := evmLock) (name := "top")
         (ty := some uint256) (expr := .storage (salesF (.var "id") "top"))
         (value := .int (Int.ofNat (clipperRedoSalesTopEVMWord evmLock I).toNat))
         (by simpa [ticFrame] using clipperEvalRedoSalesTopAfterTic v evmLock I))
@@ -970,7 +971,7 @@ theorem clipperRedoInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -988,7 +989,8 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
       clipperRedoSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
     (hlt :
       (UInt256.ofNat I.header.timestamp).toNat <
-        (clipperRedoSalesTicWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I).toNat) :
+        (clipperRedoSalesTicWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I).toNat)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -1001,7 +1003,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config startFrame evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [startFrame, locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [startFrame, locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperLocked_zero_true v evm0 locals (by simp [locals]) hlocked
   have hlockRhs :
@@ -1018,17 +1020,17 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
     apply evalExpr_clipperRedoStopped_lt_two_true
     · simp [locals]
     · simpa [evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+        Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
         storageStore_executionEnv] using hstopped
   have husrLoad : clipperRedoSalesUsrEVMWord evmLock I ≠ ⟨0⟩ := by
     simpa [clipperRedoSalesUsrEVMWord, clipperRedoSalesUsrWord, evmLock,
-      clipperRedoLockedState, evm0, initState, solcSlotWord, Solm.EVM.storageLoad,
+      clipperRedoLockedState, evm0, initState, solcSlotWord, Stele.EVM.storageLoad,
       State.lookupAccount, storageStore_accountMap, storageStore_executionEnv] using husr
   have hltLoad :
       (clipperTimestampWord evmLock).toNat < (clipperRedoSalesTicEVMWord evmLock I).toNat := by
     simpa [clipperTimestampWord, clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord,
       evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-      Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+      Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
       storageStore_executionEnv] using hlt
   have hletUsr :
       ExecStmt config startFrame evmLock
@@ -1036,7 +1038,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok usrFrame evmLock) := by
     simpa [startFrame, usrFrame, locals, clipperRedoLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmLock) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evmLock) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evmLock I).toNat))
         (by simpa [startFrame, locals] using clipperEvalRedoSalesUsr v evmLock I))
@@ -1046,7 +1048,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok ticFrame evmLock) := by
     simpa [usrFrame, ticFrame, clipperRedoLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evmLock) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evmLock) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperRedoSalesTicEVMWord evmLock I).toNat))
         (by simpa [usrFrame] using clipperEvalRedoSalesTicAfterUsr v evmLock I))
@@ -1056,7 +1058,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok topFrame evmLock) := by
     simpa [ticFrame, topFrame, clipperRedoLocalsTop] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := ticFrame) (evm := evmLock) (name := "top")
+        (cfg := config) (stele := ticFrame) (evm := evmLock) (name := "top")
         (ty := some uint256) (expr := .storage (salesF (.var "id") "top"))
         (value := .int (Int.ofNat (clipperRedoSalesTopEVMWord evmLock I).toNat))
         (by simpa [ticFrame] using clipperEvalRedoSalesTopAfterTic v evmLock I))
@@ -1075,7 +1077,7 @@ theorem clipperRedoStatusAgeForPriceSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -1090,7 +1092,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    (2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
+    (I.perm = true → 2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals
@@ -1100,7 +1102,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_clipperLocked_zero_true v evm0 locals (by simp [locals]) hlocked
   have hlockRhs :
       evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm0 (.intLit 1) =
@@ -1122,14 +1124,14 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
     exact hrest
   constructor
-  · intro hstopped
+  · intro hperm hstopped
     have hstoppedEval :
         evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evmLock
           (.binary .lt (.storage stoppedRef) (.intLit 2)) = .ok (.bool false) := by
       apply evalExpr_clipperRedoStopped_lt_two_false
       · simp [locals]
       · simpa [evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-          Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+          Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
           storageStore_executionEnv] using hstopped
     have hblock :
         ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evm0
@@ -1137,7 +1139,7 @@ theorem clipperRedoStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
       apply hprefix
       simpa [redoTransition, nonpayable, lockPrefix, isStopped] using
         (by
-          refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+          refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
           exact ExecBlock.consRevert (ExecStmt.requireFalse hstoppedEval))
     simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert hblock
   · intro hperm
@@ -1149,11 +1151,12 @@ theorem clipperRedoStoppedSourceReverts {σ σ₀ A I} {g : UInt256}
     (v : ClipperImmutables) (hwv : I.weiValue = ⟨0⟩)
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
     (hstopped :
-      2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat) :
+      2 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) :=
-  (clipperRedoStoppedSourceRevertsSplit v hwv hlocked).1 hstopped
+  (clipperRedoStoppedSourceRevertsSplit v hwv hlocked).1 hperm hstopped
 
 theorem clipperRedoLockRevertTailWf (v : ClipperImmutables) {code : ByteArray}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code) :

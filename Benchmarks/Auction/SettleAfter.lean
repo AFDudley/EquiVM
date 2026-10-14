@@ -1,6 +1,6 @@
 import Benchmarks.Auction.SettleEvent
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -31,7 +31,7 @@ theorem settleAfter {I g s0 s snap ret R mem aw ptr rdata σ k C evm locals}
     (ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       settleAfterStmts .reverted ∧ RDrev auctionBytecode g s0) := by
   obtain ⟨_, _, rd4434⟩ := settleStorePrefix h hsm hperm (by omega)
-  have hstore := settleStoreSource (evm := evm) hv.auction
+  have hstore := settleStoreSource (hperm := by rw [hs.env]; exact hperm) (evm := evm) hv.auction
   rcases settleNounRoutine rd4434 (SourceState.settled hs) hperm hm (by omega) hsm hsep hv
     (by omega) with
     ⟨evm1, σ1, locals1, mem1, aw1, out1, _, _, hsrc1, hv1, hs1, rd4647, hm1,

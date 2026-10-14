@@ -3,13 +3,13 @@ import Benchmarks.UniswapV4PoolManager.TransientSource
 import Benchmarks.UniswapV4PoolManager.NoDelegateCall
 import Benchmarks.UniswapV4PoolManager.PoolProtocolFeeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def modifyLiquidityCheckAlias : Ident :=
-  "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.24"
+  "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.24"
 
 def modifyLiquidityValidationFrame (f : Frame) (key : PoolKeyWords) : Frame :=
   let locals := f.locals.insert "__c0" (.bool true)

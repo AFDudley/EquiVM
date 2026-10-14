@@ -3,8 +3,8 @@ import Benchmarks.Safe.Main.WordPairDecoder
 import Benchmarks.Safe.Main.StorageAtLoop
 import Benchmarks.Safe.Main.StorageAtReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -33,7 +33,7 @@ theorem safeGetstorageatBodyCore
         let evm := initState σ σ₀ (.ofUInt256 g) A I
         let offset := calldataWord I.calldata 4
         let len := calldataWord I.calldata 36
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (getstorageatTransition.params.map Param.name)
             (transitionSignature getstorageatTransition).paramTypes I.calldata =
             some (storageAtArgs offset len) := decodeWordPair hlen hbig

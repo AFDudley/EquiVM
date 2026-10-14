@@ -1,6 +1,6 @@
 import Benchmarks.Dss.DaiJoin.Join
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -89,7 +89,7 @@ theorem evalExpr_daiJoinLiveStorage {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage liveRef) =
       .ok (.int (Int.ofNat (exitLiveWord evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := liveRef) (er := ({ base := "live", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨3⟩)
     (value := .int (Int.ofNat (exitLiveWord evm.accountMap evm.executionEnv).toNat))
@@ -192,7 +192,7 @@ theorem daiJoinExitInternalMulReturns (evm : EVM.State) (I : ExecutionEnv)
       (argVals := [.int (Int.ofNat daiJoinONEWord.toNat), exitWadValue I])
       (callee := mulFunction)
       (locals := uintBinaryLocals daiJoinONEWord (exitWadWord I))
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := uintBinaryLocalsZ daiJoinONEWord (exitWadWord I)
             (daiJoinRadWord (exitWadWord I)) })
@@ -1545,7 +1545,7 @@ theorem daiJoinExitDaiMintSuccessTailSplit
   simpa using RD.stop rd232' (by native_decide) (by evm_ov)
 
 theorem daiJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I) := by
   simpa [config, exitTransition, exitStore, exitUsrValue, exitWadValue, exitUsrWord,
     exitWadWord, calldataWord] using
@@ -1554,7 +1554,7 @@ theorem daiJoinDecode_exit_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size
 
 theorem daiJoinDecode_exit_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
       (transitionSignature exitTransition).paramTypes I.calldata = none := by
   simpa [config, exitTransition] using
     decodeCalldata_legacyAddress_uint256_none_short (cd := I.calldata)

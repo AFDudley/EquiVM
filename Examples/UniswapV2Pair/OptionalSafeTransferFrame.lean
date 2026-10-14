@@ -1,5 +1,5 @@
-import Reasoning.SolmBody
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+import Reasoning.SteleBody
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace UniswapV2Pair
 
 abbrev optionalSafeTransferFrame (caller : Frame) (retVar : Ident) (value : UInt256) : Frame :=

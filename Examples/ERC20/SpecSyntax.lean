@@ -1,8 +1,8 @@
 import Examples.ERC20.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# ERC20 — the Solidity source expressed in Solm
+# ERC20 — the Solidity source expressed in Stele
 
 The constructor and mutating functions follow `ERC20.sol` in declaration and statement order.
 The public storage getters are written explicitly at the end, using the existing frontend.
@@ -14,7 +14,7 @@ messages are accepted, but logs and revert payloads are outside the refinement r
 The checked-in creation wrapper stores the initial balances without emitting a log.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace ERC20.Syntax
 

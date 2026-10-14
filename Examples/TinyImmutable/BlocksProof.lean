@@ -1,7 +1,7 @@
 import Examples.TinyImmutable.Common
 import Examples.TinyImmutable.BlocksAuto
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open TinyImmutable.Immutables
 open Reasoning.Immutables (wordsOf)
 

@@ -1,8 +1,8 @@
 import Benchmarks.Safe.Main.ExecuteSource
 import Benchmarks.Safe.Main.ExecuteRawTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -32,11 +32,11 @@ theorem safeExecuteTrace {I g s0 σ k C aw mem rdata}
       RD safeBytecode I g s0 ret ((if z then ⟨1⟩ else ⟨0⟩) :: R)
         mem aw' out σ' k' C' ∧ out.size < UInt256.size := by
   rcases safeExecuteRawTrace evm payload h hee hacc hworld hdata hop hov hret with
-    ⟨hr, ho, hp, hv⟩ | ⟨evm', σ', z, out, aw', k', C', hc, he, ha, hw, hr, hs, _⟩
+    ⟨hr, ho, hp, hv⟩ | ⟨evm', σ', z, out, aw', k', C', hc, hperm, he, ha, hw, hr, hs, _⟩
   · exact Or.inl ⟨hr, safeExecuteCallStaticSource ho hp hv⟩
   · refine Or.inr ⟨evm', σ', z, out, aw', k', C', ?_, he, ha, hw, hr, hs⟩
     rcases hc with ⟨ho, hc⟩ | ⟨ho, hc⟩
     · exact safeExecuteDelegateSource ho hc
-    · exact safeExecuteCallSource ho hc
+    · exact safeExecuteCallSource ho hc (hperm.resolve_left ho)
 
 end Benchmarks.Safe.Main

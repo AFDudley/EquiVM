@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.Amount1TailSource
 import Benchmarks.UniswapV4PoolManager.AbsDiffSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -51,7 +51,7 @@ theorem amount1Body {f : Frame} {evm : EVM.State} {a b liquidity : UInt256} {rou
     have ha4 : f4.locals.get? "amount1" = some (.int 0) := by
       simp only [f4, f3, f2, f1, f0, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte]; rfl
     have h5 : ExecStmt config f4 evm amount1Function.body[5]! (.ok f5 evm) :=
-      ExecStmt.assign wordLocal_eval (assignLocalValue ha4)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue ha4)
     have ht := amount1Tail (f := f5) (evm := evm) (a := a) (b := b) (liquidity := liquidity) (roundUp := roundUp)
       (by simp only [f5, f4, f3, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte])
       (by simp only [f5, f4, f3, f2, f1, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte])

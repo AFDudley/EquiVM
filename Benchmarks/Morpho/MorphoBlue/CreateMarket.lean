@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.CreateMarketStatic
 # Morpho `createMarket((address,address,address,address,uint256))`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 4600; reach lemma `morphoReachCreateMarketBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -55,7 +55,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
   by_cases hlen : 164 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hc : p.Canonical
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (createMarketTransition.params.map Param.name)
             (transitionSignature createMarketTransition).paramTypes I.calldata =
             some (createMarketArgs p) := decodeCalldata_marketParams_ok hlen hbound hc
@@ -77,7 +77,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
                 (SourceState.init (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := .ofUInt256 g)) p
               by_cases hi0 : p.irm = ⟨0⟩
               · have hx := morphoCreateMarketNoIrmReturns (v := v) p hc hp hi0 rd4
-                have hb := morphoCreateMarketSourceNoIrm p hc
+                have hb := morphoCreateMarketSourceNoIrm (hperm := by assumption) p hc
                   (initState σ σ₀ (.ofUInt256 g) A I) (immStore v) hcv hbound hi hl hn hi0
                 exact reEquivSelectorExecutionGen hcode hx hd hdec hb hs.accounts
                   (.fallthrough rfl rfl (by native_decide))
@@ -85,7 +85,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
                   morphoCreateMarketReachCall (v := v) p hc hp hi0 rd4
                 obtain ⟨evm', z, out, hcall, hs', hout, hx⟩ :=
                   morphoCreateMarketCall (v := v) p hc hs hp (by decide) hcd rd5
-                have hb := morphoCreateMarketSourceCall p hc
+                have hb := morphoCreateMarketSourceCall (hperm := by assumption) p hc
                   (initState σ σ₀ (.ofUInt256 g) A I) (immStore v) hcv hbound hi hl hn hi0
                   evm' z out (by simpa only [hs.env, ← hs.accounts] using hcall) hout
                 by_cases hgood : z = true ∧ 32 ≤ out.size
@@ -108,7 +108,7 @@ theorem morphoCreateMarketBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
         · exact reEquivSelectorRevert hcode
             (morphoCreateMarketXReverts v hcode hsize hsel (.inl hcv)) hd hdec
             (bodyReverts_nonPayable hcv)
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (createMarketTransition.params.map Param.name)
             (transitionSignature createMarketTransition).paramTypes I.calldata = none :=
           decodeCalldata_marketParams_noncanonical hlen hc

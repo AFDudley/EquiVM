@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.LocalBytes
 import Benchmarks.UniswapV4PoolManager.CallComposition
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -54,7 +54,7 @@ theorem hookCallBody {f : Frame} {evm evm' : EVM.State} {hook : AccountAddress} 
       (hookCallResult {f with locals := (f.locals.insert "success" (.bool z)).insert "result" (.bytes out)} evm' z data out) := by
   let f1 : Frame := {f with locals := (f.locals.insert "success" (.bool z)).insert "result" (.bytes out)}
   have hlow : ExecStmt config f evm hookCallFunction.body[0]! (.ok f1 evm') :=
-    lowLevelCallSource (evalLocalValue hs) (by simp only [evalExpr?, pure]) (evalLocalValue hd) hcall
+    lowLevelCallSource (cfg := config) (frame := f) (hperm := Or.inl rfl) (evalLocalValue hs) (by simp only [evalExpr?, pure]) (evalLocalValue hd) hcall
   have hrest := hookReplySource (f := f1) (evm := evm')
     ((store_get_ne _ _ (by decide : ("result" == "success") = false)).trans (store_get_self _ _ _))
     (store_get_self _ _ _)

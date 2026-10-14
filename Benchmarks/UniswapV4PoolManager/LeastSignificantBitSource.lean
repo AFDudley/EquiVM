@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.MostSignificantBitSource
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 import Benchmarks.UniswapV4PoolManager.WordWrappingSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -37,7 +37,7 @@ theorem leastSignificantBit_body {f : Frame} {evm : EVM.State} {x : UInt256}
     (evalWordSub (x := ⟨0⟩) (a := .intLit 0) (by simp only [evalExpr?, pure]; rfl) (evalLocalValue hx))
   rw [u256_land_comm] at hlow
   have h1 : ExecStmt config f evm leastSignificantBitFunction.body[1]! (.ok f1 evm) :=
-    ExecStmt.assign hlow (assignLocalValue hx)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlow (assignLocalValue hx)
   have hx1 : f1.locals.get? "x" = some (.int (Int.ofNat low.toNat)) := store_get_self _ _ _
   have hindex := evalWordShl (n := 2) (b := .intLit 2) (by decide)
     (evalWordShr (n := 250) (b := .intLit 250) (by decide)

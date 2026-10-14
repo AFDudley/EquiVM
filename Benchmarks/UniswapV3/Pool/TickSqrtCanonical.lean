@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickSqrtBounds
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem tickSqrtInvert_lt192 (tick : Int) (ht : tick.natAbs ≤ 887272) :

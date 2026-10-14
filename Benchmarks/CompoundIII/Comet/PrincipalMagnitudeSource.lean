@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.PrincipalMagnitudeModel
 import Benchmarks.CompoundIII.Comet.CheckedAddSubSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -126,7 +126,7 @@ theorem principalMagnitude_call (borrow : Bool) (frame : Frame) (evm : EVM.State
   · rw [if_pos hn] at hb
     obtain ⟨final, hb⟩ := hb
     exact ExecStmt.internalCallReturn (callee := principalMagnitudeCallable borrow)
-      (cfg := config) (solm := frame) (evm := evm) (args := [indexExpr, presentExpr])
+      (cfg := config) (stele := frame) (evm := evm) (args := [indexExpr, presentExpr])
       (locals := (principalMagnitudeEntry frame.immutables borrow index present).locals)
       (argVals := [.int index.toNat, .int present.toNat])
       (by simp only [evalExprs?, hi, hp, pure, bind, EvalResult.bind])
@@ -134,7 +134,7 @@ theorem principalMagnitude_call (borrow : Bool) (frame : Frame) (evm : EVM.State
       (by simpa only [hc] using hb)
   · rw [if_neg hn] at hb
     exact ExecStmt.internalCallRevert (callee := principalMagnitudeCallable borrow)
-      (cfg := config) (solm := frame) (evm := evm) (args := [indexExpr, presentExpr])
+      (cfg := config) (stele := frame) (evm := evm) (args := [indexExpr, presentExpr])
       (locals := (principalMagnitudeEntry frame.immutables borrow index present).locals)
       (argVals := [.int index.toNat, .int present.toNat])
       (by simp only [evalExprs?, hi, hp, pure, bind, EvalResult.bind])

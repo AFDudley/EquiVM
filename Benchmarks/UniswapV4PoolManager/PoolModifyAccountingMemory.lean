@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolModifyFeesPreludeTrace
 import Benchmarks.UniswapV4PoolManager.PoolModifyClearsTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem poolModifyFeesMemory_size (mem : ByteArray) (free id : UInt256) (p : PoolModifyParams)

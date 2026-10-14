@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 import Benchmarks.UniswapV4PoolManager.Slot0InitializeSource
 import Benchmarks.UniswapV4PoolManager.TickPriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -13,7 +13,7 @@ theorem poolInitialize_lookup : lookupCallable? contract "Pool_initialize" =
 def poolInitializeWord (price tick fee : UInt256) : UInt256 :=
   slot0LPFeeWord (slot0SetTickWord (slot0SetSqrtWord ⟨0⟩ price) tick) fee
 def poolInitializePost (evm : EVM.State) (id price tick fee : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (poolInitializeWord price tick fee)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (poolSlot id) (poolInitializeWord price tick fee)
 def poolInitializeTailResult (f : Frame) (evm : EVM.State) (id price tick fee : UInt256) : ExecResult :=
   if evm.executionEnv.perm = false then .staticViolation else
     .returned f (poolInitializePost evm id price tick fee) (some [.int (EVM.signed tick)])
@@ -51,7 +51,7 @@ theorem poolInitializeTail {f : Frame} {evm : EVM.State} {id price tick fee : UI
       (by decide : ("__c2" == "lpFee") = false) (by decide : ("__c3" == "lpFee") = false)
       (by decide : ("__c4" == "lpFee") = false)).trans he
   have hpre : ExecBlock config f evm ((poolInitializeFunction.body.drop 4).take 5) (.ok f5 evm) :=
-    ExecBlock.consNormal (ExecStmt.assign (evalLocalValue ht) (assignLocalValue ho))
+    ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (evalLocalValue ht) (assignLocalValue ho))
       (ExecBlock.consNormal (ExecStmt.letDecl hzero)
       (ExecBlock.consNormal (slot0SetSqrtCall (f := f2) hf hpc (evalLocalValue (store_get_self _ _ _)) (evalLocalValue hp2) "__c3")
       (ExecBlock.consNormal (slot0SetTickCall (f := f3) hf (evalLocalValue (store_get_self _ _ _)) (evalLocalValue ht3) "__c4")
@@ -72,7 +72,7 @@ theorem poolInitializeTail {f : Frame} {evm : EVM.State} {id price tick fee : UI
   · simp only [if_pos hperm]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignStatic hval hwrite hperm))
   · simp only [if_neg hperm]
-    exact .execBlockRet (ExecBlock.consNormal (ExecStmt.assign hval hwrite)
+    exact .execBlockRet (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) hval hwrite)
       (ABlock.start.returns (evalLocalValue ht5)))
 
 theorem poolInitializeBody {f : Frame} {evm : EVM.State} {id price fee : UInt256}

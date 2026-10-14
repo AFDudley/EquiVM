@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -63,7 +63,7 @@ theorem uniswapTransferFromBodyCoreRevert_allowance
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -203,7 +203,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_maxAllowance
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -288,7 +288,7 @@ theorem uniswapTransferFromX_overflowMaxAllowance {σ σ₀ A I} {g : Sat256}
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hoverWord :
       UInt256.size ≤
@@ -360,7 +360,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_maxAllowance
       transferFromNewToNatMax (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -378,7 +378,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_maxAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_maxAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_maxAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hmaxS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowMaxAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hmax hbalance hover hreach)
@@ -457,7 +457,7 @@ theorem uniswapTransferFromX_balanceFiniteAllowance {σ σ₀ A I} {g : Sat256}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hltWord :
@@ -536,7 +536,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -556,7 +556,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_balance_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_balance_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hltS
   exact (uniswapTransferFromX_balanceFiniteAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hnotMax hallowance hlt hreach)
@@ -647,7 +647,7 @@ theorem uniswapTransferFromX_overflowFiniteAllowance {σ σ₀ A I} {g : Sat256}
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [show (initState σ σ₀ g A I).executionEnv.codeOwner = I.codeOwner from rfl]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]
@@ -731,7 +731,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance
       transferFromNewToNat (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -753,7 +753,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowFiniteAllowance (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hcanonFrom hcanonTo hnotMax hallowance hbalance hover hreach)

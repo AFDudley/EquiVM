@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Slot0Source
 import Benchmarks.UniswapV4PoolManager.Values
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -75,7 +75,7 @@ theorem lpFeeOverrideValidateBody {f : Frame} {evm : State} {fee : UInt256}
   have hremove := lpFeeRemoveOverrideCall (f := f1) (evm := evm) hf hc (evalLocalValue hself1) "__c0"
   have hpre : ExecBlock config f evm (lpFeeOverrideValidateFunction.body.take 3) (.ok f3 evm) :=
     ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-      (ExecBlock.consNormal hremove (execBlock_singleton (ExecStmt.assign
+      (ExecBlock.consNormal hremove (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue (store_get_self _ _ _)) (assignLocalValue
           ((store_get_ne _ _ (by decide : ("__c0" == "fee") = false)).trans (store_get_self _ _ _))))))
   have hvalidate := lpFeeValidateCall (f := f3) (evm := evm) hf

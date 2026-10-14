@@ -1,7 +1,7 @@
 import Examples.BlindAuction.Reveal.PostLoopBranches
 import Lean.Elab.Tactic.AsAuxLemma
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -22,23 +22,23 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
       callargs =
         (((∅ : Store).insert "values" (.array values)).insert "fakes" (.array fakes)).insert
           "secrets" (.array secrets))
-    (evmSolm : EVM.State)
-    (hevmSolm : evmSolm = initState σ σ₀ (Sat256.ofUInt256 g) A I)
-    (hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩)
+    (evmStele : EVM.State)
+    (hevmStele : evmStele = initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    (hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩)
     (hafterBody :
-      (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat)
+      (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat)
     (hbeforeBody :
-      (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat)
+      (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+        (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat)
     (hbiddingAbsent : callargs.get? biddingEndRef.base = none)
     (hrevealAbsent : callargs.get? revealEndRef.base = none)
     (hvaluesGet : callargs.get? "values" = some (.array values))
     (hfakesGet : callargs.get? "fakes" = some (.array fakes))
     (hsecretsGet : callargs.get? "secrets" = some (.array secrets))
     (hlenBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) = revealScratchBidsLengthWord σ I)
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) = revealScratchBidsLengthWord σ I)
     (hloopLen : loopLen = revealScratchBidsLengthWord σ I)
     (hvaluesEq : loopLen = valuesLenWord)
     (hfakesEq : loopLen = fakesLenWord)
@@ -49,7 +49,7 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
     (hloop :
       ExecForLoop blindAuctionConfig
         { contract := blindAuctionContract,
-          locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmSolm
+          locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmStele
         (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
         scratch_revealLoopBodyStmts
         (.ok { contract := blindAuctionContract, locals := LDone } evmDone))
@@ -72,8 +72,8 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
       _hfakesDone, _hsecretsDone, _hvariantDone, _hidxLeDone,
       henvDone, hσ0Done, hsubDone, haccountsDone⟩
   have hlenBodyLoop :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) = loopLen := by
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) = loopLen := by
     rw [hlenBody, ← hloopLen]
   have hvaluesLenLoop : values.length = loopLen.toNat := by
     rw [hvaluesListLen, ← hvaluesEq]
@@ -114,10 +114,10 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
       RD.callValueStatic rd1349 hpf hval (by decide) (by simp)
     exact hst.reEquivStaticHalt hcode hd hdec (by
-      rw [← hevmSolm]
+      rw [← hevmStele]
       exact scratch_blindAuctionRevealBodyStatic_callValue_fromLoopOfLocals
-        evmSolm evmDone callargs LDone values fakes secrets loopLen aDone.refund
-        hwvSolm hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
+        evmStele evmDone callargs LDone values fakes secrets loopLen aDone.refund
+        hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
         (by rw [hstore]; simp) hvaluesGet hfakesGet hsecretsGet
         hlenBodyLoop hvaluesLenLoop hfakesLenLoop hsecretsLenLoop
         hrefundDone hloop hval (by rw [henvDone]; exact hpf))
@@ -129,9 +129,9 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
       (callargs := callargs) (values := values) (fakes := fakes) (secrets := secrets)
       (loopLen := loopLen) (secretsLenWord := secretsLenWord)
       (fakesLenWord := fakesLenWord) (valuesLenWord := valuesLenWord)
-      (aDone := aDone) (LDone := LDone) (evmSolm := evmSolm) (evmDone := evmDone)
+      (aDone := aDone) (LDone := LDone) (evmStele := evmStele) (evmDone := evmDone)
       (gasArg := gasArg) (k1349 := k1349) (C1349 := C1349)
-      hcode hd hdec hstore hpv hevmSolm hwvSolm hafterBody hbeforeBody
+      hcode hd hdec hstore hpv hevmStele hwvStele hafterBody hbeforeBody
       hbiddingAbsent hrevealAbsent hvaluesGet hfakesGet hsecretsGet hlenBodyLoop
       hvaluesLenLoop hfakesLenLoop hsecretsLenLoop hrefundDone henvDone hloop rd1349
       hawCall hdepthEq
@@ -151,9 +151,9 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
         (callargs := callargs) (values := values) (fakes := fakes) (secrets := secrets)
         (loopLen := loopLen) (secretsLenWord := secretsLenWord)
         (fakesLenWord := fakesLenWord) (valuesLenWord := valuesLenWord)
-        (aDone := aDone) (LDone := LDone) (evmSolm := evmSolm) (evmDone := evmDone)
+        (aDone := aDone) (LDone := LDone) (evmStele := evmStele) (evmDone := evmDone)
         (gasArg := gasArg) (k1349 := k1349) (C1349 := C1349)
-        hcode hd hdec hstore hpv hevmSolm hwvSolm hafterBody hbeforeBody
+        hcode hd hdec hstore hpv hevmStele hwvStele hafterBody hbeforeBody
         hbiddingAbsent hrevealAbsent hvaluesGet hfakesGet hsecretsGet hlenBodyLoop
         hvaluesLenLoop hfakesLenLoop hsecretsLenLoop hrefundDone henvDone hloop rd1349
         hawCall hσ0Done hsubDone haccountsDone hdepthLt
@@ -165,9 +165,9 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
         (callargs := callargs) (values := values) (fakes := fakes) (secrets := secrets)
         (loopLen := loopLen) (secretsLenWord := secretsLenWord)
         (fakesLenWord := fakesLenWord) (valuesLenWord := valuesLenWord)
-        (aDone := aDone) (LDone := LDone) (evmSolm := evmSolm) (evmDone := evmDone)
+        (aDone := aDone) (LDone := LDone) (evmStele := evmStele) (evmDone := evmDone)
         (gasArg := gasArg) (k1349 := k1349) (C1349 := C1349)
-        hcode hd hdec hstore hpv hevmSolm hwvSolm hafterBody hbeforeBody
+        hcode hd hdec hstore hpv hevmStele hwvStele hafterBody hbeforeBody
         hbiddingAbsent hrevealAbsent hvaluesGet hfakesGet hsecretsGet hlenBodyLoop
         hvaluesLenLoop hfakesLenLoop hsecretsLenLoop hrefundDone henvDone hloop rd1349
         hawCall hσ0Done hsubDone haccountsDone hdepthLt

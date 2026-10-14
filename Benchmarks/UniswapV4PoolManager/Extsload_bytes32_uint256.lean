@@ -6,11 +6,11 @@ import Benchmarks.UniswapV4PoolManager.WordRangeTrace
 # PoolManager `extsload(bytes32,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9693; reach lemma `poolManagerReachExtsload_bytes32_uint256Body`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -46,7 +46,7 @@ theorem poolManagerExtsload_bytes32_uint256Body {σ σ₀ A I} {g : UInt256} (v 
         have hfit : 224+32*(calldataWord I.calldata 36).toNat < UInt256.size :=
           hWF ⟨(byteArray_eq_of_beq hsel).symm, hwv, hlen, hhi⟩
         have htrace := wordRangeTrace v (by simp) hfit rdBody
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (extsload_bytes32_uint256Transition.params.map Param.name)
             (transitionSignature extsload_bytes32_uint256Transition).paramTypes I.calldata =
             some (wordRangeArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36).toNat) :=

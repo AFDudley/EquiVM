@@ -3,7 +3,7 @@ import Benchmarks.Dss.Clipper.YankEVM
 import Benchmarks.Dss.Clipper.Invalid
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -826,9 +826,9 @@ theorem clipperYankMoveAccountMap_state_accounts_eq
     (hevm : evm.accountMap = τ)
     (howner : evm.executionEnv.codeOwner = I.codeOwner) :
     Eq (clipperYankMoveAccountMap σ I idx move)
-      (let evmIndex := Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+      (let evmIndex := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
         (clipperYankActiveSlot idx) move
-       let evmMovePos := Solm.EVM.storageStore evmIndex evmIndex.executionEnv.codeOwner
+       let evmMovePos := Stele.EVM.storageStore evmIndex evmIndex.executionEnv.codeOwner
         (clipperYankSalesMovePosSlot move) idx
        evmMovePos.accountMap) := by
   subst τ
@@ -1415,7 +1415,7 @@ theorem clipperYankDeleteSaleState_accounts_eq
   have hupdate := sstoreAccountMap_self_update σ2 I.codeOwner slot3 masked ⟨0⟩
   simp [-Std.ExtTreeMap.get?_eq_getElem?, clipperYankDeleteSaleAccountMap, clipperYankDeleteSaleState,
     storageStore_accountMap, storageStore_executionEnv, howner,
-    Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
+    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord]
   rw [hupdate]
 
 set_option maxHeartbeats 1000000 in
@@ -1427,7 +1427,7 @@ theorem clipperYankSuccessAccountMap_state_accounts_eq
     Eq (clipperYankSuccessAccountMap σ I lastIndex)
       (let evmPop := clipperYankRemovePopState evm lastIndex
        let evmRemove := clipperYankDeleteSaleState evmPop I
-       (Solm.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩).accountMap) := by
+       (Stele.EVM.storageStore evmRemove evmRemove.executionEnv.codeOwner ⟨13⟩ ⟨0⟩).accountMap) := by
   have hpop :
       Eq (clipperYankPopAccountMap σ I lastIndex)
         (clipperYankRemovePopState evm lastIndex).accountMap := by

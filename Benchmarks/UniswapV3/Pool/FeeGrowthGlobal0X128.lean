@@ -6,11 +6,11 @@ import Benchmarks.UniswapV3.Pool.Storage
 # UniswapV3Pool `feeGrowthGlobal0X128()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2080; reach lemma `uniswapV3PoolReachFeeGrowthGlobal0X128Body`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -56,10 +56,12 @@ theorem uniswapV3PoolFeeGrowthGlobal0X128Body {σ σ₀ A I} {g : UInt256} (v : 
   have hd : dispatchMsg contract I.calldata = some feeGrowthGlobal0X128Transition := by
     apply uniswapV3PoolDispatch_feeGrowthGlobal0X128 <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (feeGrowthGlobal0X128Transition.params.map Param.name)
       (transitionSignature feeGrowthGlobal0X128Transition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolFeeGrowthGlobal0X128X (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolFeeGrowthGlobal0X128Returns v _ ∅ hwv (by simp))
       (returnEquiv_of_encode (uint256ReturnEncoding (solcSlotWordAt ⟨1⟩ σ I)))

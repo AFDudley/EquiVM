@@ -11,8 +11,8 @@ import Examples.BlindAuction.RevealEnd
 import Examples.BlindAuction.HighestBidder
 import Examples.BlindAuction.HighestBid
 import Reasoning.Initcode
-import Reasoning.SolmArithmetic
-import Solm.Refine
+import Reasoning.SteleArithmetic
+import Stele.Refine
 
 /-!
 # BlindAuction — top-level correctness proof
@@ -24,14 +24,14 @@ dispatcher: calldata size and selector routing happen before any callvalue check
 guards are proved inside the individual body files.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
 
 namespace BlindAuction
 
-/-- The deployed BlindAuction runtime bytecode refines the Solm specification. -/
+/-- The deployed BlindAuction runtime bytecode refines the Stele specification. -/
 theorem blindAuctionCorrect :
     runtimeRefinement blindAuctionConfig blindAuctionBytecode blindAuctionContract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩
@@ -1028,20 +1028,20 @@ theorem blindAuctionCtorLocals_get_beneficiaryAddress (biddingTime revealTime : 
 
 def blindAuctionCtorAfterBeneficiaryState
     (evm : EVM.State) (beneficiaryAddress : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
     (blindAuctionSetAddressWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       (EVM.word beneficiaryAddress))
 
-def blindAuctionCtorBiddingEndSolmWord (evm : EVM.State) (biddingTime : Int) : UInt256 :=
+def blindAuctionCtorBiddingEndSteleWord (evm : EVM.State) (biddingTime : Int) : UInt256 :=
   EVM.word ((UInt256.ofNat evm.executionEnv.header.timestamp).toNat + biddingTime.toNat)
 
 def blindAuctionCtorAfterBiddingEndState
     (evm : EVM.State) (biddingTime : Int) (beneficiaryAddress : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore
+  Stele.EVM.storageStore
     (blindAuctionCtorAfterBeneficiaryState evm beneficiaryAddress)
     evm.executionEnv.codeOwner ⟨1⟩
-    (blindAuctionCtorBiddingEndSolmWord evm biddingTime)
+    (blindAuctionCtorBiddingEndSteleWord evm biddingTime)
 
 theorem blindAuctionCtorAfterBiddingEndState_executionEnv
     (evm : EVM.State) (biddingTime : Int) (beneficiaryAddress : AccountAddress) :
@@ -1053,9 +1053,9 @@ theorem blindAuctionCtorAfterBiddingEndState_executionEnv
 def blindAuctionCtorRevealBaseWord
     (evm : EVM.State) (biddingTime : Int) (beneficiaryAddress : AccountAddress) : UInt256 :=
   let evm' := blindAuctionCtorAfterBiddingEndState evm biddingTime beneficiaryAddress
-  Solm.EVM.storageLoad evm' evm'.executionEnv.codeOwner ⟨1⟩
+  Stele.EVM.storageLoad evm' evm'.executionEnv.codeOwner ⟨1⟩
 
-def blindAuctionCtorRevealEndSolmWord
+def blindAuctionCtorRevealEndSteleWord
     (evm : EVM.State) (biddingTime revealTime : Int)
     (beneficiaryAddress : AccountAddress) : UInt256 :=
   EVM.word ((blindAuctionCtorRevealBaseWord evm biddingTime beneficiaryAddress).toNat +
@@ -1064,10 +1064,10 @@ def blindAuctionCtorRevealEndSolmWord
 def blindAuctionCtorPostState
     (evm : EVM.State) (biddingTime revealTime : Int)
     (beneficiaryAddress : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore
+  Stele.EVM.storageStore
     (blindAuctionCtorAfterBiddingEndState evm biddingTime beneficiaryAddress)
     evm.executionEnv.codeOwner ⟨2⟩
-    (blindAuctionCtorRevealEndSolmWord evm biddingTime revealTime beneficiaryAddress)
+    (blindAuctionCtorRevealEndSteleWord evm biddingTime revealTime beneficiaryAddress)
 
 theorem blindAuctionCtorAssignBeneficiary (evm : EVM.State) (biddingTime revealTime : Int)
     (beneficiaryAddress : AccountAddress) :
@@ -1137,7 +1137,7 @@ theorem blindAuctionCtorBiddingEndExprOK
         locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
       evm (u256 (.binary .add now (.var "biddingTime"))) =
         .ok (.int (Int.ofNat
-          (blindAuctionCtorBiddingEndSolmWord evm biddingTime).toNat)) := by
+          (blindAuctionCtorBiddingEndSteleWord evm biddingTime).toNat)) := by
   have hword := uint256Word_of_nonneg_int_toNat biddingTime h0 hlt
   have hsumlt :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat + biddingTime.toNat <
@@ -1162,7 +1162,7 @@ theorem blindAuctionCtorBiddingEndExprOK
   simp only [evalBinaryOp?, uint256Int]
   rw [hInt]
   rw [if_neg]
-  · rw [blindAuctionCtorBiddingEndSolmWord, hsumWord]
+  · rw [blindAuctionCtorBiddingEndSteleWord, hsumWord]
   · simp only [Bool.or_eq_true, decide_eq_true_eq, not_or]
     constructor
     · exact Int.not_lt_of_ge (Int.natCast_nonneg _)
@@ -1183,11 +1183,11 @@ theorem blindAuctionCtorAssignBiddingEnd (evm : EVM.State) (biddingTime revealTi
       { contract := blindAuctionContract,
         locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
       evm .storage biddingEndRef
-      (.int (Int.ofNat (blindAuctionCtorBiddingEndSolmWord evm biddingTime).toNat)) =
+      (.int (Int.ofNat (blindAuctionCtorBiddingEndSteleWord evm biddingTime).toNat)) =
         .ok ({ contract := blindAuctionContract,
                locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress },
-             Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-               (blindAuctionCtorBiddingEndSolmWord evm biddingTime)) := by
+             Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+               (blindAuctionCtorBiddingEndSteleWord evm biddingTime)) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256St)
       (hbase := by
         unfold blindAuctionCtorLocals
@@ -1208,14 +1208,14 @@ theorem blindAuctionCtorAssignBiddingEnd (evm : EVM.State) (biddingTime revealTi
         simp [storageTypeAt?, blindAuctionContract, storageDecls, uint256St])
       (hloc := blindAuctionConfig_storage_biddingEnd)
   exact storageLocStore_uint256 evm ⟨1⟩
-    (blindAuctionCtorBiddingEndSolmWord evm biddingTime)
+    (blindAuctionCtorBiddingEndSteleWord evm biddingTime)
 
 theorem blindAuctionCtorRevealEndExprReverts
     (evm : EVM.State) (biddingTime revealTime : Int) (beneficiaryAddress : AccountAddress)
     (h0 : 0 ≤ revealTime)
     (hlt : revealTime < Int.ofNat (EVM.twoPow 256))
     (hover : UInt256.size ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
         (EVM.word revealTime.toNat).toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract,
@@ -1228,7 +1228,7 @@ theorem blindAuctionCtorRevealEndExprReverts
           locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
         evm (.storage biddingEndRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
     have her : evalStorageRef blindAuctionConfig
         { contract := blindAuctionContract,
           locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
@@ -1244,7 +1244,7 @@ theorem blindAuctionCtorRevealEndExprReverts
       (her := her) (hty := hty) (hloc := blindAuctionConfig_storage_biddingEnd)]
     erw [storageLocLoad_uint256]
   have hge :
-      Int.ofNat ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      Int.ofNat ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
           revealTime.toNat) ≥ (2 : Int) ^ 256 := by
     rw [hword] at hover
     have hpow : (2 : Int) ^ 256 = Int.ofNat UInt256.size := by
@@ -1252,8 +1252,8 @@ theorem blindAuctionCtorRevealEndExprReverts
     rw [hpow]
     exact Int.ofNat_le.mpr hover
   have hInt :
-      Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime =
-        Int.ofNat ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime =
+        Int.ofNat ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
           revealTime.toNat) := by
     have hb : revealTime = Int.ofNat revealTime.toNat := by
       exact (Int.toNat_of_nonneg h0).symm
@@ -1272,14 +1272,14 @@ theorem blindAuctionCtorRevealEndExprOK
     (h0 : 0 ≤ revealTime)
     (hlt : revealTime < Int.ofNat (EVM.twoPow 256))
     (hno : ¬ UInt256.size ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
         (EVM.word revealTime.toNat).toNat) :
     evalExpr? blindAuctionConfig
       { contract := blindAuctionContract,
         locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
       evm (u256 (.binary .add (.storage biddingEndRef) (.var "revealTime"))) =
         .ok (.int (Int.ofNat
-          (EVM.word ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+          (EVM.word ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
             revealTime.toNat)).toNat)) := by
   have hword := uint256Word_of_nonneg_int_toNat' revealTime h0 hlt
   have hstorage :
@@ -1288,7 +1288,7 @@ theorem blindAuctionCtorRevealEndExprOK
           locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
         evm (.storage biddingEndRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
     have her : evalStorageRef blindAuctionConfig
         { contract := blindAuctionContract,
           locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
@@ -1304,23 +1304,23 @@ theorem blindAuctionCtorRevealEndExprOK
       (her := her) (hty := hty) (hloc := blindAuctionConfig_storage_biddingEnd)]
     erw [storageLocLoad_uint256]
   have hsumlt :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime.toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime.toNat <
         UInt256.size := by
     have hno' := hno
     rw [hword] at hno'
     exact Nat.lt_of_not_ge hno'
   have hInt :
-      Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime =
-        Int.ofNat ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat + revealTime =
+        Int.ofNat ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
           revealTime.toNat) := by
     have hb : revealTime = Int.ofNat revealTime.toNat := by
       exact (Int.toNat_of_nonneg h0).symm
     rw [hb]
     exact (Int.natCast_add _ _).symm
   have hsumWord :
-      (EVM.word ((Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+      (EVM.word ((Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
           revealTime.toNat)).toNat =
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat +
           revealTime.toNat := by
     exact ulit_toNat' _ hsumlt
   simp only [u256, evalExpr?, hstorage, blindAuctionCtorLocals_get_revealTime,
@@ -1347,7 +1347,7 @@ theorem blindAuctionCtorAssignRevealEnd (evm : EVM.State) (biddingTime revealTim
       (.int (Int.ofNat val.toNat)) =
         .ok ({ contract := blindAuctionContract,
                locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress },
-             Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ val) := by
+             Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ val) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256St)
       (hbase := by
         unfold blindAuctionCtorLocals
@@ -1369,7 +1369,7 @@ theorem blindAuctionCtorAssignRevealEnd (evm : EVM.State) (biddingTime revealTim
       (hloc := blindAuctionConfig_storage_revealEnd)
   exact storageLocStore_uint256 evm ⟨2⟩ val
 
-theorem blindAuctionSolmCtorExecReverts_nonpayable
+theorem blindAuctionSteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1378,10 +1378,10 @@ theorem blindAuctionSolmCtorExecReverts_nonpayable
     (biddingTime revealTime : Int)
     (beneficiaryAddress : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec blindAuctionConfig blindAuctionContract
+    steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -1391,7 +1391,7 @@ theorem blindAuctionSolmCtorExecReverts_nonpayable
       (locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress)
       hwv
 
-theorem blindAuctionSolmCtorExecReverts_biddingOverflow
+theorem blindAuctionSteleCtorExecReverts_biddingOverflow
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1403,11 +1403,12 @@ theorem blindAuctionSolmCtorExecReverts_biddingOverflow
     (hltBid : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hoverBid : UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
-    solmCtorExec blindAuctionConfig blindAuctionContract
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
+    steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -1419,13 +1420,15 @@ theorem blindAuctionSolmCtorExecReverts_biddingOverflow
         locals := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress }
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := blindAuctionCtorAfterBeneficiaryState evm0 beneficiaryAddress
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := blindAuctionConfig)
-        (solm := frame)
+        (stele := frame)
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1445,7 +1448,7 @@ theorem blindAuctionSolmCtorExecReverts_biddingOverflow
               simpa [blindAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
                 using hoverBid)))
 
-theorem blindAuctionSolmCtorExecReverts_revealOverflow
+theorem blindAuctionSteleCtorExecReverts_revealOverflow
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1463,11 +1466,12 @@ theorem blindAuctionSolmCtorExecReverts_revealOverflow
     (hoverReveal : UInt256.size ≤
       (blindAuctionCtorRevealBaseWord
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat) :
-    solmCtorExec blindAuctionConfig blindAuctionContract
+        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat)
+    (hperm : I.perm = true) :
+    steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -1480,14 +1484,16 @@ theorem blindAuctionSolmCtorExecReverts_revealOverflow
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := blindAuctionCtorAfterBeneficiaryState evm0 beneficiaryAddress
     let evm2 := blindAuctionCtorAfterBiddingEndState evm0 biddingTime beneficiaryAddress
-    let biddingEndWord := blindAuctionCtorBiddingEndSolmWord evm0 biddingTime
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    let biddingEndWord := blindAuctionCtorBiddingEndSteleWord evm0 biddingTime
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := blindAuctionConfig)
-        (solm := frame)
+        (stele := frame)
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1499,11 +1505,13 @@ theorem blindAuctionSolmCtorExecReverts_revealOverflow
           exact blindAuctionCtorAssignBeneficiary
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime revealTime beneficiaryAddress)
-    · refine ExecBlock.consNormal (solm' := frame) (evm' := evm2) ?_ ?_
-      · exact ExecStmt.assign (value := .int (Int.ofNat biddingEndWord.toNat))
+    · refine ExecBlock.consNormal (stele' := frame) (evm' := evm2) ?_ ?_
+      · exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm1, evm0, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat biddingEndWord.toNat))
           (by
             unfold biddingEndWord evm1 evm0 frame
-            simpa [blindAuctionCtorBiddingEndSolmWord, blindAuctionCtorAfterBeneficiaryState,
+            simpa [blindAuctionCtorBiddingEndSteleWord, blindAuctionCtorAfterBeneficiaryState,
               storageStore_executionEnv, initState]
               using blindAuctionCtorBiddingEndExprOK
                 (blindAuctionCtorAfterBeneficiaryState
@@ -1515,7 +1523,7 @@ theorem blindAuctionSolmCtorExecReverts_revealOverflow
                     initState] using hnoBid))
           (by
             unfold biddingEndWord evm2 evm1 evm0 frame
-            simpa [blindAuctionCtorAfterBiddingEndState, blindAuctionCtorBiddingEndSolmWord,
+            simpa [blindAuctionCtorAfterBiddingEndState, blindAuctionCtorBiddingEndSteleWord,
               blindAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
               using blindAuctionCtorAssignBiddingEnd
                 (blindAuctionCtorAfterBeneficiaryState
@@ -1533,7 +1541,7 @@ theorem blindAuctionSolmCtorExecReverts_revealOverflow
                   blindAuctionCtorAfterBiddingEndState_executionEnv, initState]
                   using hoverReveal)))
 
-theorem blindAuctionSolmCtorExecSuccess
+theorem blindAuctionSteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1551,8 +1559,9 @@ theorem blindAuctionSolmCtorExecSuccess
     (hnoReveal : ¬ UInt256.size ≤
       (blindAuctionCtorRevealBaseWord
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
-        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat) :
-    solmCtorExec blindAuctionConfig blindAuctionContract
+        biddingTime beneficiaryAddress).toNat + (EVM.word revealTime.toNat).toNat)
+    (hperm : I.perm = true) :
+    steleCtorExec blindAuctionConfig blindAuctionContract
       [.int biddingTime, .int revealTime, .address beneficiaryAddress]
       σ σ₀ g A I
       (.returned
@@ -1562,7 +1571,7 @@ theorem blindAuctionSolmCtorExecSuccess
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           biddingTime revealTime beneficiaryAddress)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := blindAuctionCtorLocals biddingTime revealTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -1576,15 +1585,17 @@ theorem blindAuctionSolmCtorExecSuccess
     let evm1 := blindAuctionCtorAfterBeneficiaryState evm0 beneficiaryAddress
     let evm2 := blindAuctionCtorAfterBiddingEndState evm0 biddingTime beneficiaryAddress
     let evm3 := blindAuctionCtorPostState evm0 biddingTime revealTime beneficiaryAddress
-    let biddingEndWord := blindAuctionCtorBiddingEndSolmWord evm0 biddingTime
-    let revealEndWord := blindAuctionCtorRevealEndSolmWord evm0 biddingTime revealTime beneficiaryAddress
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    let biddingEndWord := blindAuctionCtorBiddingEndSteleWord evm0 biddingTime
+    let revealEndWord := blindAuctionCtorRevealEndSteleWord evm0 biddingTime revealTime beneficiaryAddress
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := blindAuctionConfig)
-        (solm := frame)
+        (stele := frame)
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? blindAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -1596,11 +1607,13 @@ theorem blindAuctionSolmCtorExecSuccess
           exact blindAuctionCtorAssignBeneficiary
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime revealTime beneficiaryAddress)
-    · refine ExecBlock.consNormal (solm' := frame) (evm' := evm2) ?_ ?_
-      · exact ExecStmt.assign (value := .int (Int.ofNat biddingEndWord.toNat))
+    · refine ExecBlock.consNormal (stele' := frame) (evm' := evm2) ?_ ?_
+      · exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm1, evm0, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat biddingEndWord.toNat))
           (by
             unfold biddingEndWord evm1 evm0 frame
-            simpa [blindAuctionCtorBiddingEndSolmWord, blindAuctionCtorAfterBeneficiaryState,
+            simpa [blindAuctionCtorBiddingEndSteleWord, blindAuctionCtorAfterBeneficiaryState,
               storageStore_executionEnv, initState]
               using blindAuctionCtorBiddingEndExprOK
                 (blindAuctionCtorAfterBeneficiaryState
@@ -1612,7 +1625,7 @@ theorem blindAuctionSolmCtorExecSuccess
                     initState] using hnoBid))
           (by
             unfold biddingEndWord evm2 evm1 evm0 frame
-            simpa [blindAuctionCtorAfterBiddingEndState, blindAuctionCtorBiddingEndSolmWord,
+            simpa [blindAuctionCtorAfterBiddingEndState, blindAuctionCtorBiddingEndSteleWord,
               blindAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
               using blindAuctionCtorAssignBiddingEnd
                 (blindAuctionCtorAfterBeneficiaryState
@@ -1623,9 +1636,11 @@ theorem blindAuctionSolmCtorExecSuccess
                   simpa [blindAuctionCtorAfterBeneficiaryState, storageStore_executionEnv,
                     initState] using hnoBid))
       · refine ExecBlock.consNormal ?_ ExecBlock.nil
-        exact ExecStmt.assign (value := .int (Int.ofNat revealEndWord.toNat))
+        exact ExecStmt.assign
+          (hperm := Or.inr (by simpa [evm2, evm0, blindAuctionCtorAfterBiddingEndState, blindAuctionCtorAfterBeneficiaryState, initState] using hperm))
+          (value := .int (Int.ofNat revealEndWord.toNat))
           (by
-            unfold revealEndWord evm2 evm0 frame blindAuctionCtorRevealEndSolmWord
+            unfold revealEndWord evm2 evm0 frame blindAuctionCtorRevealEndSteleWord
             simpa [blindAuctionCtorRevealBaseWord, storageStore_executionEnv]
               using blindAuctionCtorRevealEndExprOK
                 (blindAuctionCtorAfterBiddingEndState
@@ -1638,7 +1653,7 @@ theorem blindAuctionSolmCtorExecSuccess
                     using hnoReveal))
           (by
             unfold revealEndWord evm2 evm0 frame blindAuctionCtorPostState
-            simpa [blindAuctionCtorRevealEndSolmWord, blindAuctionCtorRevealBaseWord,
+            simpa [blindAuctionCtorRevealEndSteleWord, blindAuctionCtorRevealBaseWord,
               blindAuctionCtorAfterBiddingEndState_executionEnv, storageStore_executionEnv]
               using blindAuctionCtorAssignRevealEnd
                 (blindAuctionCtorAfterBiddingEndState
@@ -1646,12 +1661,12 @@ theorem blindAuctionSolmCtorExecSuccess
                     (Sat256.ofUInt256 g) A I)
                   biddingTime beneficiaryAddress)
                 biddingTime revealTime beneficiaryAddress
-                (blindAuctionCtorRevealEndSolmWord
+                (blindAuctionCtorRevealEndSteleWord
                   (initState σ σ₀
                     (Sat256.ofUInt256 g) A I)
                   biddingTime revealTime beneficiaryAddress))
 
-/-- The Solm constructor's post-bidding `biddingEnd` load matches the EVM initcode's slot-1 load. -/
+/-- The Stele constructor's post-bidding `biddingEnd` load matches the EVM initcode's slot-1 load. -/
 theorem blindAuctionCtorRevealBaseWord_equiv
     {σ σ₀ : AccountMap}
     {g : UInt256}
@@ -1670,39 +1685,39 @@ theorem blindAuctionCtorRevealBaseWord_equiv
         biddingTime beneficiaryAddress := by
   let oldSlotEvm : UInt256 :=
     (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))
-  let oldSlotSolm : UInt256 :=
+  let oldSlotStele : UInt256 :=
     (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))
   let beneficiaryStoreWordEvm : UInt256 :=
     blindAuctionSetAddressWord oldSlotEvm (EVM.word beneficiaryAddress)
-  let beneficiaryStoreWordSolm : UInt256 :=
-    blindAuctionSetAddressWord oldSlotSolm (EVM.word beneficiaryAddress)
+  let beneficiaryStoreWordStele : UInt256 :=
+    blindAuctionSetAddressWord oldSlotStele (EVM.word beneficiaryAddress)
   let biddingEndWordEvm : UInt256 :=
     UInt256.ofNat I.header.timestamp + EVM.word biddingTime.toNat
-  let biddingEndWordSolm : UInt256 :=
-    blindAuctionCtorBiddingEndSolmWord
+  let biddingEndWordStele : UInt256 :=
+    blindAuctionCtorBiddingEndSteleWord
       (initState σ σ₀
         (Sat256.ofUInt256 g) A I)
       biddingTime
-  have hOldSlot : oldSlotEvm = oldSlotSolm := rfl
-  have hBeneficiaryStoreWord : beneficiaryStoreWordEvm = beneficiaryStoreWordSolm := by
-    simp [beneficiaryStoreWordEvm, beneficiaryStoreWordSolm, oldSlotEvm, oldSlotSolm, hOldSlot]
-  have hBiddingEndWord : biddingEndWordEvm = biddingEndWordSolm := by
-    simpa [biddingEndWordEvm, biddingEndWordSolm, blindAuctionCtorBiddingEndSolmWord,
+  have hOldSlot : oldSlotEvm = oldSlotStele := rfl
+  have hBeneficiaryStoreWord : beneficiaryStoreWordEvm = beneficiaryStoreWordStele := by
+    simp [beneficiaryStoreWordEvm, beneficiaryStoreWordStele, oldSlotEvm, oldSlotStele, hOldSlot]
+  have hBiddingEndWord : biddingEndWordEvm = biddingEndWordStele := by
+    simpa [biddingEndWordEvm, biddingEndWordStele, blindAuctionCtorBiddingEndSteleWord,
       initState] using (timestamp_add_duration_word_eq_left
       (initState σ σ₀
         (Sat256.ofUInt256 g) A I)
       biddingTime h0Bid hltBid (by simpa [initState] using hnoBid)).symm
   have hmap0 :
         (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordEvm) =
-        (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordSolm) := by
+        (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordStele) := by
     rw [hBeneficiaryStoreWord]
   have hmap1 :
         (sstoreAccountMap I.codeOwner
           (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordEvm)
           ⟨1⟩ biddingEndWordEvm) =
         (sstoreAccountMap I.codeOwner
-          (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordSolm)
-          ⟨1⟩ biddingEndWordSolm) := by
+          (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordStele)
+          ⟨1⟩ biddingEndWordStele) := by
     rw [hmap0, hBiddingEndWord]
   have hslot := congrArg
     (fun m : AccountMap =>
@@ -1710,13 +1725,13 @@ theorem blindAuctionCtorRevealBaseWord_equiv
   simpa [blindAuctionCtorBiddingEndWord, blindAuctionCtorAfterBiddingEndMap,
     blindAuctionCtorBeneficiaryStoreWord, blindAuctionCtorOldBeneficiarySlot,
     blindAuctionCtorRevealBaseWord, blindAuctionCtorAfterBiddingEndState,
-    blindAuctionCtorAfterBeneficiaryState, blindAuctionCtorBiddingEndSolmWord,
-    oldSlotEvm, oldSlotSolm, beneficiaryStoreWordEvm, beneficiaryStoreWordSolm,
-    biddingEndWordEvm, biddingEndWordSolm, hOldSlot, hBiddingEndWord, storageStore_accountMap,
-    storageStore_executionEnv, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    blindAuctionCtorAfterBeneficiaryState, blindAuctionCtorBiddingEndSteleWord,
+    oldSlotEvm, oldSlotStele, beneficiaryStoreWordEvm, beneficiaryStoreWordStele,
+    biddingEndWordEvm, biddingEndWordStele, hOldSlot, hBiddingEndWord, storageStore_accountMap,
+    storageStore_executionEnv, initState, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage] using hslot
 
-/-- The creation/initcode bytecode refines the BlindAuction Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the BlindAuction Stele constructor specification. -/
 theorem blindAuctionConstructorCorrect :
     typedConstructorRefinement blindAuctionConfig blindAuctionInitcode blindAuctionContract
       (fun _ => blindAuctionBytecode) := by
@@ -1742,7 +1757,7 @@ theorem blindAuctionConstructorCorrect :
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
       · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
       · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-          (blindAuctionSolmCtorExecReverts_biddingOverflow
+          (blindAuctionSteleCtorExecReverts_biddingOverflow (hperm := by assumption)
             (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             biddingTime revealTime beneficiaryAddress h0Bid hltBid hwv (by
               simpa [bidWord] using hoverBid)) ?_
@@ -1762,7 +1777,7 @@ theorem blindAuctionConstructorCorrect :
         rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
         · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
         · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-            (blindAuctionSolmCtorExecReverts_revealOverflow
+            (blindAuctionSteleCtorExecReverts_revealOverflow (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
               biddingTime revealTime beneficiaryAddress h0Bid hltBid h0Reveal hltReveal hwv
               (by simpa [bidWord] using hoverBid)
@@ -1784,23 +1799,23 @@ theorem blindAuctionConstructorCorrect :
             simpa [Sat256.ofUInt256] using hX)
           let oldSlotEvm : UInt256 :=
             (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))
-          let oldSlotSolm : UInt256 :=
+          let oldSlotStele : UInt256 :=
             (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))
           let beneficiaryStoreWordEvm : UInt256 :=
             blindAuctionSetAddressWord oldSlotEvm (EVM.word beneficiaryAddress)
-          let beneficiaryStoreWordSolm : UInt256 :=
-            blindAuctionSetAddressWord oldSlotSolm (EVM.word beneficiaryAddress)
+          let beneficiaryStoreWordStele : UInt256 :=
+            blindAuctionSetAddressWord oldSlotStele (EVM.word beneficiaryAddress)
           let biddingEndWordEvm : UInt256 :=
             UInt256.ofNat I.header.timestamp + bidWord
-          let biddingEndWordSolm : UInt256 :=
-            blindAuctionCtorBiddingEndSolmWord
+          let biddingEndWordStele : UInt256 :=
+            blindAuctionCtorBiddingEndSteleWord
               (initState σ σ₀
                 (Sat256.ofUInt256 g) A I)
               biddingTime
           let revealEndWordEvm : UInt256 :=
             revealWord + blindAuctionCtorBiddingEndWord σ I bidWord beneficiaryAddress
-          let revealEndWordSolm : UInt256 :=
-            blindAuctionCtorRevealEndSolmWord
+          let revealEndWordStele : UInt256 :=
+            blindAuctionCtorRevealEndSteleWord
               (initState σ σ₀
                 (Sat256.ofUInt256 g) A I)
               biddingTime revealTime beneficiaryAddress
@@ -1814,7 +1829,7 @@ theorem blindAuctionConstructorCorrect :
               bidWord] using hacc
           rw [hσFinal] at hsuccess
           refine typedConstructorRefinementFor.execution hsuccess
-            (blindAuctionSolmCtorExecSuccess
+            (blindAuctionSteleCtorExecSuccess (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
               biddingTime revealTime beneficiaryAddress h0Bid hltBid h0Reveal hltReveal hwv
               (by simpa [bidWord] using hoverBid)
@@ -1822,20 +1837,20 @@ theorem blindAuctionConstructorCorrect :
                 rw [← hRevealBase]
                 simpa [revealWord] using hoverReveal)) ?_
           refine ctorResultEquiv.success rfl rfl ?_ rfl
-          · have hOldSlot : oldSlotEvm = oldSlotSolm := rfl
-            have hBeneficiaryStoreWord : beneficiaryStoreWordEvm = beneficiaryStoreWordSolm := by
-              simp [beneficiaryStoreWordEvm, beneficiaryStoreWordSolm, oldSlotEvm,
-                oldSlotSolm, hOldSlot]
-            have hBiddingEndWord : biddingEndWordEvm = biddingEndWordSolm := by
-              simpa [biddingEndWordEvm, biddingEndWordSolm, blindAuctionCtorBiddingEndSolmWord,
+          · have hOldSlot : oldSlotEvm = oldSlotStele := rfl
+            have hBeneficiaryStoreWord : beneficiaryStoreWordEvm = beneficiaryStoreWordStele := by
+              simp [beneficiaryStoreWordEvm, beneficiaryStoreWordStele, oldSlotEvm,
+                oldSlotStele, hOldSlot]
+            have hBiddingEndWord : biddingEndWordEvm = biddingEndWordStele := by
+              simpa [biddingEndWordEvm, biddingEndWordStele, blindAuctionCtorBiddingEndSteleWord,
                 bidWord, initState] using (timestamp_add_duration_word_eq_left
                 (initState σ σ₀
                   (Sat256.ofUInt256 g) A I)
                 biddingTime h0Bid hltBid (by simpa [initState, bidWord] using hoverBid)).symm
-            have hRevealEndWord : revealEndWordEvm = revealEndWordSolm := by
-              unfold revealEndWordEvm revealEndWordSolm
+            have hRevealEndWord : revealEndWordEvm = revealEndWordStele := by
+              unfold revealEndWordEvm revealEndWordStele
               rw [hRevealBase]
-              unfold blindAuctionCtorRevealEndSolmWord
+              unfold blindAuctionCtorRevealEndSteleWord
               rw [← uint256Word_of_nonneg_int_toNat' revealTime h0Reveal hltReveal]
               exact (constructorCheckedAddWord_eq
                 (blindAuctionCtorRevealBaseWord
@@ -1853,14 +1868,14 @@ theorem blindAuctionConstructorCorrect :
                   ⟨2⟩ revealEndWordEvm =
                 sstoreAccountMap I.codeOwner
                   (sstoreAccountMap I.codeOwner
-                    (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordSolm)
-                    ⟨1⟩ biddingEndWordSolm)
-                  ⟨2⟩ revealEndWordSolm := by
+                    (sstoreAccountMap I.codeOwner σ ⟨0⟩ beneficiaryStoreWordStele)
+                    ⟨1⟩ biddingEndWordStele)
+                  ⟨2⟩ revealEndWordStele := by
               rw [hBeneficiaryStoreWord, hBiddingEndWord, hRevealEndWord]
             simpa [blindAuctionCtorPostState, blindAuctionCtorAfterBiddingEndState,
               blindAuctionCtorAfterBeneficiaryState, storageStore_accountMap,
-              storageStore_executionEnv, initState, beneficiaryStoreWordSolm,
-              oldSlotSolm, biddingEndWordSolm, revealEndWordSolm] using hmap
+              storageStore_executionEnv, initState, beneficiaryStoreWordStele,
+              oldSlotStele, biddingEndWordStele, revealEndWordStele] using hmap
   · let bidWordBytes := (EVM.Word.toBytesBE bidWord).toByteArray
     let revealWordBytes := (EVM.Word.toBytesBE revealWord).toByteArray
     let beneficiaryWordBytes := (EVM.Word.toBytesBE (EVM.word beneficiaryAddress)).toByteArray
@@ -1875,7 +1890,7 @@ theorem blindAuctionConstructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (blindAuctionSolmCtorExecReverts_nonpayable
+        (blindAuctionSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           biddingTime revealTime beneficiaryAddress hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

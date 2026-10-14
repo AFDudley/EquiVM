@@ -5,19 +5,19 @@ import Proofs.ERC20.Invariant
 
 `Inv` is preserved by every call and established by the constructor:
 
-* `erc20_solmExec_preserves_inv`: whatever the Solm dispatcher (`solmExec`) returns for any
+* `erc20_steleExec_preserves_inv`: whatever the Stele dispatcher (`steleExec`) returns for any
   calldata, environment and state, the returned state satisfies `Inv` if the initial one did;
-* `erc20_solmCtorExec_establishes_inv` / `erc20_deployment_establishes_inv`: whatever the
+* `erc20_steleCtorExec_establishes_inv` / `erc20_deployment_establishes_inv`: whatever the
   constructor returns from a fresh (all-balances-zero) state satisfies `Inv`.
 
 Each public function's body is taken apart statement by statement with the `execBlock_*_cons`
-inversion lemmas of `Reasoning.SolmBody`, so the theorems cover *every* derivation of the
+inversion lemmas of `Reasoning.SteleBody`, so the theorems cover *every* derivation of the
 relational semantics.  On the success path the intermediate values are pinned by the evaluation
 lemmas of `Examples/ERC20`, so the returned state is the post-state whose invariant is proved in
 `Proofs.ERC20.Invariant`; every other path reverts and returns no state.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace ERC20
 
@@ -159,8 +159,8 @@ theorem approve_block_inv (hinj : InjectiveLayout erc20Config)
   exact ⟨approvePostState_executionEnv evm I, approve_preserves_inv evm I hinj hInv⟩
 
 /-- A view body (`require(msg.value == 0); return …`) returns its initial state. -/
-theorem view_block_inv {solm : Frame} {c : Expr} {es : List Expr}
-    (h : ExecBlock erc20Config solm evm [.require c, .return es] r)
+theorem view_block_inv {stele : Frame} {c : Expr} {es : List Expr}
+    (h : ExecBlock erc20Config stele evm [.require c, .return es] r)
     (hInv : Inv evm) (hr : resultState? r = some evm') :
     evm'.executionEnv = evm.executionEnv ∧ Inv evm' := by
   rcases execBlock_require_cons h with rfl | ⟨-, h⟩
@@ -267,7 +267,7 @@ section Decode
 variable {I : ExecutionEnv} {callargs : Store}
 
 theorem decode_approve_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode (approveTransition.params.map Param.name)
+    (h : erc20Config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some callargs) :
     callargs = approveStore I := by
   change decodeCalldata (approveTransition.params.map Param.name)
@@ -281,7 +281,7 @@ theorem decode_approve_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_approve_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_totalSupply_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata = some callargs) :
     callargs = ∅ := by
@@ -291,7 +291,7 @@ theorem decode_totalSupply_eq (hsz4 : 4 ≤ I.calldata.size)
   exact (Option.some.inj h).symm
 
 theorem decode_transferFrom_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some callargs) :
     callargs = transferFromStore I := by
@@ -309,7 +309,7 @@ theorem decode_transferFrom_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_transferFrom_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_balanceOf_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some callargs) :
     callargs = balanceOfStore I := by
@@ -324,7 +324,7 @@ theorem decode_balanceOf_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_balanceOf_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_transfer_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode (transferTransition.params.map Param.name)
+    (h : erc20Config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some callargs) :
     callargs = transferStore I := by
   change decodeCalldata (transferTransition.params.map Param.name)
@@ -338,7 +338,7 @@ theorem decode_transfer_eq (hsz4 : 4 ≤ I.calldata.size)
   · rw [erc20Decode_transfer_none_short hsz4 (by omega)] at h; cases h
 
 theorem decode_allowance_eq (hsz4 : 4 ≤ I.calldata.size)
-    (h : decodeCalldataWithMode erc20Config.abiDecodeMode
+    (h : erc20Config.externalABI.decodeCalldata?
       (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some callargs) :
     callargs = allowanceStore I := by
@@ -378,11 +378,11 @@ end Decode
 /-- **Every call preserves the supply invariant.**  Whatever the ERC20 spec returns for a call —
     any calldata, caller, value, and pre-state satisfying `Inv` — the returned state satisfies
     `Inv` (and belongs to the same contract: its environment is the call's). -/
-theorem erc20_solmExec_preserves_inv (hinj : InjectiveLayout erc20Config)
+theorem erc20_steleExec_preserves_inv (hinj : InjectiveLayout erc20Config)
     {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv} {rc : ReturnConvention}
     {fr : Frame} {evm' : EVM.State} {ret : Option (List Value)}
     (hInv : Inv (initState σ σ₀ (Sat256.ofUInt256 g) A I))
-    (hexec : solmExec erc20Config erc20Contract ∅ σ σ₀ g A I (.returned fr evm' ret) rc) :
+    (hexec : steleExec erc20Config erc20Contract ∅ σ σ₀ g A I (.returned fr evm' ret) rc) :
     evm'.executionEnv = I ∧ Inv evm' := by
   cases hexec with
   | intro hsel hsig hdec hst hbody =>
@@ -416,12 +416,12 @@ theorem erc20_solmExec_preserves_inv (hinj : InjectiveLayout erc20Config)
 /-- **The constructor establishes the supply invariant.**  Whatever the ERC20 constructor returns
     for a well-typed `initialSupply` from a state without balances, the returned state satisfies
     `Inv`. -/
-theorem erc20_solmCtorExec_establishes_inv (hinj : InjectiveLayout erc20Config)
+theorem erc20_steleCtorExec_establishes_inv (hinj : InjectiveLayout erc20Config)
     {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv} {i : Int}
     {fr : Frame} {evm' : EVM.State} {ret : Option (List Value)}
     (h0 : 0 ≤ i) (hlt : i < Int.ofNat (EVM.twoPow 256))
     (hzero : ∀ a, balOf (initState σ σ₀ (Sat256.ofUInt256 g) A I) a = 0)
-    (hexec : solmCtorExec erc20Config erc20Contract [.int i] σ σ₀ g A I (.returned fr evm' ret)) :
+    (hexec : steleCtorExec erc20Config erc20Contract [.int i] σ σ₀ g A I (.returned fr evm' ret)) :
     evm'.executionEnv = I ∧ Inv evm' := by
   cases hexec with
   | intro hst _ hargs hbody =>
@@ -439,9 +439,9 @@ theorem erc20_deployment_establishes_inv (hinj : InjectiveLayout erc20Config)
     {fr : Frame} {evm' : EVM.State} {ret : Option (List Value)}
     (hdeploy : erc20Config.selfDeployment erc20Initcode args = some code)
     (hzero : ∀ a, balOf (initState σ σ₀ (Sat256.ofUInt256 g) A I) a = 0)
-    (hexec : solmCtorExec erc20Config erc20Contract args σ σ₀ g A I (.returned fr evm' ret)) :
+    (hexec : steleCtorExec erc20Config erc20Contract args σ σ₀ g A I (.returned fr evm' ret)) :
     evm'.executionEnv = I ∧ Inv evm' := by
   obtain ⟨i, rfl, h0, hlt, -⟩ := erc20Deployment_shape hdeploy
-  exact erc20_solmCtorExec_establishes_inv hinj h0 hlt hzero hexec
+  exact erc20_steleCtorExec_establishes_inv hinj h0 hlt hzero hexec
 
 end ERC20

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.CreateAssetListPayload
 import Benchmarks.CompoundIII.Comet.Solc0815Decode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -66,10 +66,10 @@ theorem createAssetListLoop_step {factory : AccountAddress} {assets : List Const
     ExecBlock config frame evm createAssetListLoopBody
       (.ok (createAssetListNextFrame frame assets i hi) evm) := by
   refine .consNormal (.letDecl (h.entry evm hi)) ?_
-  refine .consNormal (solm' := { frame with locals :=
+  refine .consNormal (stele' := { frame with locals :=
     ((frame.locals.insert "entry" assets[i].value).insert "payload"
       (.bytes (createAssetListPayload assets (i + 1)))) }) (evm' := evm)
-    (.assign (value := .bytes (createAssetListPayload assets (i + 1))) ?_ ?_) ?_
+    (.assign (hperm := Or.inl rfl) (value := .bytes (createAssetListPayload assets (i + 1))) ?_ ?_) ?_
   · rw [createAssetListPayload_succ hi]
     apply createAssetListAppend_eval
     · simp only [evalExpr?, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,
@@ -85,7 +85,7 @@ theorem createAssetListLoop_step {factory : AccountAddress} {assets : List Const
     rw [h.payload]
     simp only [updateLocalPath?, pure, bind, EvalResult.bind]
   dsimp only
-  refine .consNormal (.assign (value := .int (Int.ofNat (i + 1))) ?_ ?_) .nil
+  refine .consNormal (.assign (hperm := Or.inl rfl) (value := .int (Int.ofNat (i + 1))) ?_ ?_) .nil
   · simp only [evalExpr?, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     change (show EvalResult Value from do
       let v ← EvalResult.ofOption .unboundVariable (frame.locals.get? "index")

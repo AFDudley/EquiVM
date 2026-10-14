@@ -1,8 +1,8 @@
 import Benchmarks.Safe.Main.EcrecoverPrepare
 import Benchmarks.Safe.Main.RawStaticCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

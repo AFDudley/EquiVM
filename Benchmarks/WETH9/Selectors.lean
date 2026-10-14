@@ -3,10 +3,10 @@ import Benchmarks.WETH9.Common
 /-!
 # WETH9 selector proofs
 
-The selector theorems connect Solm signatures to the runtime dispatcher constants.
+The selector theorems connect Stele signatures to the runtime dispatcher constants.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.WETH9
 

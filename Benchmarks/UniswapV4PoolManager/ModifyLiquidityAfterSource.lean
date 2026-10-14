@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.AfterLiquidityCall
 import Benchmarks.UniswapV4PoolManager.TupleLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def modifyLiquidityAfterCallFrame (f : Frame) (caller hookDelta : UInt256) : Frame :=

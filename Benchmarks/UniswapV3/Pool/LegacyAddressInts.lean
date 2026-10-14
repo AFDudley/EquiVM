@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Calldata
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- GENERALIZES Reasoning.ABIComposite.decodeCalldata_legacyAddress_uint256_uint256_ok.

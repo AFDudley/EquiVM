@@ -1,6 +1,6 @@
 import Reasoning.ABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: decode a static scalar tuple at any enclosing ABI base offset.

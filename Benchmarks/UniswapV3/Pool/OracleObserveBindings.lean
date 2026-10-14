@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveModel
 import Benchmarks.UniswapV3.Pool.OracleGrowSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 structure OracleObserveBindings (locals : Store) (time : UInt256) (secondsAgos : List UInt256)
@@ -58,6 +58,6 @@ theorem oracleObserveIncrement (imms : Store) (evm : EVM.State) (locals : Store)
   have he := evalExpr_uint_increment (cfg := config) (evm := evm)
     (frame := {contract := contract, locals := locals, immutables := imms})
     ⟨256, by decide⟩ i (evalExpr_var_get hi) hb
-  exact ExecBlock.consNormal (ExecStmt.assign he (assignLocalVarBase_frame hi)) ExecBlock.nil
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hi)) ExecBlock.nil
 
 end Benchmarks.UniswapV3.Pool

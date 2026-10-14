@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleStoresSource
 import Benchmarks.UniswapV3.Pool.ModifyPositionOutsideModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -127,7 +127,7 @@ theorem modifyPositionMiddleAssignAmountSource (v : UniswapV3PoolImmutables)
         (.var (modifyPositionMiddleAmountName second)))
       (.ok (modifyPositionMiddleAssignedFrame v a evm second) evm') := by
   cases second <;>
-    exact ExecStmt.assign (value := .int (signedAmountDeltaResult _ (modifyPositionMiddleAmountArgs a evm _)))
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (signedAmountDeltaResult _ (modifyPositionMiddleAmountArgs a evm _)))
       (evalExpr_var_get (by modify_position_middle_amount_get))
       (assignLocalVarBase_frame (old := .int 0) (by modify_position_middle_amount_get))
 

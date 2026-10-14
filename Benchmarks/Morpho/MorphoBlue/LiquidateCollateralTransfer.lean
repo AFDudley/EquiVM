@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.LiquidateEvent
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -54,7 +54,8 @@ theorem morphoLiquidateCollateralTransfer {v : MorphoImmutables} {ee : Execution
     LiquidateCollateralTransferRefines v ee g s0 p assets seized srcOff len locals imms evm R := by
   have hab : StateBlock config { contract := contract, locals := locals, immutables := imms }
       evm (liquidateTransition.body.drop 31) { contract := contract, locals := locals, immutables := imms }
-      evm (liquidateTransition.body.drop 32) := StateBlock.start.step (liquidateEmit p _ _ _ _ _ _ data locals imms evm hl)
+      evm (liquidateTransition.body.drop 32) := StateBlock.start.step (liquidateEmit p _ _ _ _ _ _ data locals imms evm hl
+        ((congrArg ExecutionEnv.perm hs.env).trans hperm))
   obtain ⟨a0, k0, C0, rd0⟩ := morphoLiquidateEvent (v := v) (by omega) hperm hm h
   obtain ⟨hm0, hp0⟩ := liquidateEvent_heap hm (by decide) assets shares seized badAssets badShares
   have ht0 := memoryPrefix_memLoad hp0 (UInt256.ofNat 160) (by decide) hptr hsize

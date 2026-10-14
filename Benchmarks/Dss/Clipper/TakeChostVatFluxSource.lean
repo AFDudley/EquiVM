@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.TakeChostSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -87,7 +87,7 @@ theorem clipperTakePostOweSubBlockOfEvals (v : ClipperImmutables)
         (.ok tabNewFrame evmRead) := by
     simpa [startFrame, tabNewFrame, clipperTakeLocalsPostTabNew] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmRead) (name := "tabNew")
+        (cfg := config) (stele := startFrame) (evm := evmRead) (name := "tabNew")
         (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
         (value := .int (Int.ofNat tabNew.toNat)) htabNew)
   have hletLotNew :
@@ -97,19 +97,19 @@ theorem clipperTakePostOweSubBlockOfEvals (v : ClipperImmutables)
         (.ok lotNewFrame evmRead) := by
     simpa [tabNewFrame, lotNewFrame, clipperTakeLocalsPostLotNew] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := tabNewFrame) (evm := evmRead) (name := "lotNew")
+        (cfg := config) (stele := tabNewFrame) (evm := evmRead) (name := "lotNew")
         (ty := some uint256) (expr := wrap256 (.binary .sub (.var "lot") (.var "slice")))
         (value := .int (Int.ofNat lotNew.toNat)) hlotNew)
   have hassignTab :
       ExecStmt config lotNewFrame evmRead
         (.assign .localVar (varRef "tab") (.var "tabNew"))
         (.ok tabFrame evmRead) := by
-    exact ExecStmt.assign htabNewVar (by simpa [lotNewFrame, tabFrame] using hassignTabOk)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) htabNewVar (by simpa [lotNewFrame, tabFrame] using hassignTabOk)
   have hassignLot :
       ExecStmt config tabFrame evmRead
         (.assign .localVar (varRef "lot") (.var "lotNew"))
         (.ok lotFrame evmRead) := by
-    exact ExecStmt.assign hlotNewVar (by simpa [tabFrame, lotFrame] using hassignLotOk)
+    exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hlotNewVar (by simpa [tabFrame, lotFrame] using hassignLotOk)
   simpa [wrappingSubInto, startFrame, lotFrame] using
     (ExecBlock.consNormal hletTabNew
       (ExecBlock.consNormal hletLotNew
@@ -166,7 +166,7 @@ theorem clipperTakeVatFluxBuyerCallFailureBlockOfLocals (v : ClipperImmutables)
   simpa [checkedExternalCallStmts] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead (clipperTakeLocalsPostLotAssigned locals tabNew lotNew))
           (by simp [evalExpr?, pure]) hargs hcallVat)))
 
@@ -201,7 +201,7 @@ theorem clipperTakeVatFluxBuyerCallSuccessBlockOfLocals (v : ClipperImmutables)
   simpa [checkedExternalCallStmts, clipperTakeLocalsPostFluxBuyerRet, collapseReturns] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead (clipperTakeLocalsPostLotAssigned locals tabNew lotNew))
           (by simp [evalExpr?, pure]) hargs hcallVat
           (clipperTakeDecodeFluxVoid outVat))

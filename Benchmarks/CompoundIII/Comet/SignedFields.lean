@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.PackedFields
 import Benchmarks.CompoundIII.Comet.StaticReturns
 import Std.Tactic.BVDecide
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -40,12 +40,12 @@ theorem packedSint_load (evm : EVM.State) (slot : UInt256)
     storageLocLoad evm
       { slot := slot, offset := offset, size := size, hbound := hbound, type := .int (.sint width) } =
       .int (normalizeInt (.sint width)
-        (packedUint (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (packedUint (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           offset.val size.val).toNat) := by
   unfold storageLocLoad wordToElem
   change Value.int (normalizeInt (.sint width) (Int.ofNat (fromBytes'
     ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.extract
         offset.val (offset.val + size.val))))) = _
   rw [List.extract_eq_take_drop, Nat.add_sub_cancel_left,
     fromBytes'_drop_take_wordLE_land_div_mask _ _ _ (by omega) (by omega)]

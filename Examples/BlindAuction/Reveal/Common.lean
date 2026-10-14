@@ -3,7 +3,7 @@ import Reasoning.WordArithmetic
 import Examples.BlindAuction.Reveal.Decode
 import Examples.BlindAuction.Bids
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 800000
@@ -1513,7 +1513,7 @@ theorem evalExpr_reveal_biddingEnd (evm : EVM.State) (locals : Store)
     (hbase : locals.get? biddingEndRef.base = none) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.storage biddingEndRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
   have her : evalStorageRef blindAuctionConfig
       { contract := blindAuctionContract, locals := locals } evm biddingEndRef =
       .ok { base := "biddingEnd", steps := [] } := by
@@ -1530,7 +1530,7 @@ theorem evalExpr_reveal_revealEnd (evm : EVM.State) (locals : Store)
     (hbase : locals.get? revealEndRef.base = none) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.storage revealEndRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) := by
   have her : evalStorageRef blindAuctionConfig
       { contract := blindAuctionContract, locals := locals } evm revealEndRef =
       .ok { base := "revealEnd", steps := [] } := by
@@ -1546,7 +1546,7 @@ theorem evalExpr_reveal_revealEnd (evm : EVM.State) (locals : Store)
 theorem evalExpr_reveal_afterBiddingEnd_true (evm : EVM.State) (locals : Store)
     (hbase : locals.get? biddingEndRef.base = none)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.binary .gt now (.storage biddingEndRef)) = .ok (.bool true) := by
@@ -1558,7 +1558,7 @@ theorem evalExpr_reveal_afterBiddingEnd_false (evm : EVM.State) (locals : Store)
     (hbase : locals.get? biddingEndRef.base = none)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.binary .gt now (.storage biddingEndRef)) = .ok (.bool false) := by
   simp only [evalExpr?, now, envValue, evalExpr_reveal_biddingEnd evm locals hbase, bind,
@@ -1569,7 +1569,7 @@ theorem evalExpr_reveal_beforeRevealEnd_true (evm : EVM.State) (locals : Store)
     (hbase : locals.get? revealEndRef.base = none)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.binary .lt now (.storage revealEndRef)) = .ok (.bool true) := by
   simp only [evalExpr?, now, envValue, evalExpr_reveal_revealEnd evm locals hbase, bind,
@@ -1579,7 +1579,7 @@ theorem evalExpr_reveal_beforeRevealEnd_true (evm : EVM.State) (locals : Store)
 theorem evalExpr_reveal_beforeRevealEnd_false (evm : EVM.State) (locals : Store)
     (hbase : locals.get? revealEndRef.base = none)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.binary .lt now (.storage revealEndRef)) = .ok (.bool false) := by
@@ -1592,7 +1592,7 @@ theorem blindAuctionRevealBodyReverts_tooEarly {evm : EVM.State} {locals : Store
     (hbidding : locals.get? biddingEndRef.base = none)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat ≤
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm locals
       revealTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1606,10 +1606,10 @@ theorem blindAuctionRevealBodyReverts_tooLate {evm : EVM.State} {locals : Store}
     (hbidding : locals.get? biddingEndRef.base = none)
     (hreveal : locals.get? revealEndRef.base = none)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm locals
       revealTransition.body .reverted := by
@@ -1859,7 +1859,7 @@ theorem evalExpr_reveal_success (evm : EVM.State) (refund i : UInt256) (success 
 theorem evalExpr_reveal_bids_length_zero (evm : EVM.State) (locals : Store)
     (hbids : locals.get? "bids" = none)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = ⟨0⟩) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.arrayLength .storage (bidsRef sender)) = .ok (.int 0) := by
@@ -1884,7 +1884,7 @@ theorem evalExpr_reveal_bids_length_zero (evm : EVM.State) (locals : Store)
 theorem evalExpr_reveal_bids_length_any (evm : EVM.State) (locals : Store) (len : UInt256)
     (hbids : locals.get? "bids" = none)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len) :
     evalExpr? blindAuctionConfig { contract := blindAuctionContract, locals := locals } evm
       (.arrayLength .storage (bidsRef sender)) = .ok (.int (Int.ofNat len.toNat)) := by
@@ -1910,13 +1910,13 @@ theorem blindAuctionRevealBodyReturns_empty_callSuccess
     (evm evm' : EVM.State) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = ⟨0⟩)
     (hcall :
       callViaEVM evm (EVM.address evm.executionEnv.source) 0 ByteArray.empty
@@ -2079,6 +2079,7 @@ theorem blindAuctionRevealBodyReturns_empty_callSuccess
   refine ExecBlock.consNormal hfor ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallSuccess
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_reveal_sender evm (revealLoopStore ⟨0⟩ ⟨0⟩))
       (evalExpr_reveal_refund evm (revealLoopStore ⟨0⟩ ⟨0⟩) ⟨0⟩ (by native_decide))
       (evalExpr_reveal_emptyBytes evm (revealLoopStore ⟨0⟩ ⟨0⟩))
@@ -2091,13 +2092,13 @@ theorem blindAuctionRevealBodyReverts_empty_callFailure
     (evm evm' : EVM.State) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = ⟨0⟩)
     (hcall :
       callViaEVM evm (EVM.address evm.executionEnv.source) 0 ByteArray.empty
@@ -2204,6 +2205,7 @@ theorem blindAuctionRevealBodyReverts_empty_callFailure
   refine ExecBlock.consNormal hfor ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallFailure
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
       (evalExpr_reveal_sender evm (revealLoopStore ⟨0⟩ ⟨0⟩))
       (evalExpr_reveal_refund evm (revealLoopStore ⟨0⟩ ⟨0⟩) ⟨0⟩ (by native_decide))
       (evalExpr_reveal_emptyBytes evm (revealLoopStore ⟨0⟩ ⟨0⟩))
@@ -2219,13 +2221,13 @@ theorem blindAuctionRevealBodyReverts_valuesLengthMismatch (evm : EVM.State)
     (hbids : callargs.get? "bids" = none)
     (hvalues : callargs.get? "values" = some (.array values))
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hne : values.length ≠ len.toNat) :
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm callargs
@@ -2266,13 +2268,13 @@ theorem blindAuctionRevealBodyReverts_fakesLengthMismatch (evm : EVM.State)
     (hvalues : callargs.get? "values" = some (.array values))
     (hfakes : callargs.get? "fakes" = some (.array fakes))
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hvaluesLen : values.length = len.toNat)
     (hfakesNe : fakes.length ≠ len.toNat) :
@@ -2324,13 +2326,13 @@ theorem blindAuctionRevealBodyReverts_secretsLengthMismatch (evm : EVM.State)
     (hfakes : callargs.get? "fakes" = some (.array fakes))
     (hsecrets : callargs.get? "secrets" = some (.array secrets))
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hvaluesLen : values.length = len.toNat)
     (hfakesLen : fakes.length = len.toNat)
@@ -2392,13 +2394,13 @@ theorem blindAuctionRevealBodyReverts_decoded_lengthMismatch
     (hsecrets : callargs.get? "secrets" = some (.array secrets))
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hmismatch :
       values.length ≠ len.toNat ∨ fakes.length ≠ len.toNat ∨

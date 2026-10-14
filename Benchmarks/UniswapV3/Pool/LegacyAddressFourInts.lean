@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.LegacyAddressInts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: a uniform short-calldata bound for every legacy scalar tuple.

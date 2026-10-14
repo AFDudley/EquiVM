@@ -3,9 +3,9 @@ import Examples.UniswapV2Pair.ConstructorEntry
 import Examples.UniswapV2Pair.ConstructorLiteralsRuntime
 import Examples.UniswapV2Pair.ConstructorCoupling
 import Examples.UniswapV2Pair.ConstructorStorageCoupling
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -19,14 +19,14 @@ theorem uniswapConstructorBodyCore
       (A := A) (g := Sat256.ofUInt256 g) hcode hperm with
     ⟨hwv, rdRev⟩ | ⟨hwv, _, _, rd23⟩
   · exact RDrev.constructorRefinementEmptyParams rdRev hcode rfl
-      (uniswapConstructorSourceReverts _ hwv)
+      (uniswapConstructorSourceReverts (hperm := by assumption) _ hwv)
   · obtain ⟨_, _, rd49⟩ := RD.uniswapConstructorTypeHash rd23 (by decide)
     obtain ⟨_, _, rd100⟩ := RD.uniswapConstructorLiterals rd49 (by decide)
     obtain ⟨_, _, rd200⟩ := RD.uniswapConstructorDomainData rd100 (by decide)
     obtain ⟨_, _, rd225⟩ := RD.uniswapConstructorDomainHash rd200 (by decide)
     have rdRet := RD.uniswapConstructorStoreAndReturn rd225 hperm (by decide)
     let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    have hbody := uniswapConstructorSourceReturns evmS hwv
+    have hbody := uniswapConstructorSourceReturns (hperm := by assumption) evmS hwv
     have haL : sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨1⟩ =
         (uniswapLockExitedState evmS).accountMap := by
       simp only [uniswapLockExitedState, uniswapUnlockedState, storageStore_accountMap,

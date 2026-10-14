@@ -3,8 +3,8 @@ import Benchmarks.Safe.Main.ExecTransactionDecoderEvidence
 import Benchmarks.Safe.Main.ExecTransactionBodyTrace
 import Benchmarks.Safe.Main.Blocks.Runtime_009
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -35,7 +35,7 @@ theorem safeExectransactionBodyCore
     obtain ⟨dataLen, sigLen, hb, rfl⟩ := decodeExecTransactionEvidence hlong hdec
     let p := execTransactionCalldataInput I.calldata dataLen sigLen
     have hlen : p.signatures.size = sigLen := execTransactionSignaturesSize hb
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (exectransactionTransition.params.map Param.name)
         (transitionSignature exectransactionTransition).paramTypes I.calldata = some p.args :=
       hdec

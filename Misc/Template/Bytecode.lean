@@ -17,7 +17,7 @@ Runtime bytecode: N bytes; creation bytecode: M bytes.  Large arrays are split i
 keep elaboration predictable.  `runtime.hex`/`creation.hex` hold the same bytes hex-encoded.
 -/
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 namespace Benchmarks.Xxx
 

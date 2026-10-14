@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.StateBlock
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 -- GENERALIZES ReturnBlockRefines to source suffixes returning raw bytes.

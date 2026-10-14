@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.NestedBounds
 import Benchmarks.EAS.Attester.Selectors
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Theory
 

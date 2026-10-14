@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TickStorage
 import Benchmarks.UniswapV4PoolManager.PoolFeeGrowthStorage
 import Benchmarks.UniswapV4PoolManager.Slot0TickSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -11,11 +11,11 @@ theorem poolUpdateTick_lookup : lookupCallable? contract "Pool_updateTick" =
     some poolUpdateTickFunction.toCallable := rfl
 
 def tickFeeWrite0 (evm : EVM.State) (id : UInt256) (tick : Int) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ((tickSlot id tick)+⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ((tickSlot id tick)+⟨1⟩)
     (poolFeeGrowthWord evm id false)
 def tickFeeWrites (evm : EVM.State) (id : UInt256) (tick : Int) : EVM.State :=
   let evm1 := tickFeeWrite0 evm id tick
-  Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner ((tickSlot id tick)+⟨2⟩)
+  Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner ((tickSlot id tick)+⟨2⟩)
     (poolFeeGrowthWord evm1 id true)
 
 def tickFeeWriteBody : List Stmt :=
@@ -35,8 +35,8 @@ theorem tickFeeWriteSource {f : Frame} {evm : EVM.State} {id : UInt256} {tick : 
   · rw [if_pos hp]
     exact ExecBlock.consStatic (ExecStmt.assignStatic h0 hw0 hp)
   · rw [if_neg hp]
-    exact ExecBlock.consNormal (ExecStmt.assign h0 hw0)
-      (ExecBlock.consNormal (ExecStmt.assign (poolFeeGrowth_read (evm := tickFeeWrite0 evm id tick) hs true)
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) h0 hw0)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [tickFeeWrite0, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (poolFeeGrowth_read (evm := tickFeeWrite0 evm id tick) hs true)
         (tickField_write hi .feeGrowthOutside1 (poolFeeGrowthWord (tickFeeWrite0 evm id tick) id true))) ExecBlock.nil)
 
 def tickFeeFrame (f : Frame) (evm : EVM.State) (id : UInt256) (gross : Int) : Frame :=

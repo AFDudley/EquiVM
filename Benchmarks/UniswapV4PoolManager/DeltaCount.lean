@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TransientSource
 import Benchmarks.UniswapV4PoolManager.SignedWords
 
 /-! The nonzero transient delta counter, including wrapping updates. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
@@ -25,7 +25,7 @@ def deltaCountNext (evm : EVM.State) (increment : Bool) : UInt256 :=
   else UInt256.sub (transientWord evm deltaCountSlot) ⟨1⟩
 
 def deltaCountPost (evm : EVM.State) (increment : Bool) : EVM.State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner deltaCountSlot (deltaCountNext evm increment)
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner deltaCountSlot (deltaCountNext evm increment)
 
 def deltaCountRhs (increment : Bool) : Expr :=
   .cast (.binary (if increment then .add else .sub)
@@ -67,7 +67,7 @@ theorem deltaCountBodyExec {f : Frame} {evm : EVM.State}
   · rw [if_pos hp]
     exact ExecFuncBody.execBlockStatic (ExecBlock.consStatic (ExecStmt.assignTransientStatic he hs hp))
   · rw [if_neg hp]
-    exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hs) ExecBlock.nil)
+    exact ExecFuncBody.execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hs) ExecBlock.nil)
 
 theorem deltaCountCall {f : Frame} {evm : EVM.State}
     (hf : f.contract = contract) (increment : Bool) (retVar : Ident) :

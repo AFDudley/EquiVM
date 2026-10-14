@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.SignedWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: source signed division in an arbitrary expression context.

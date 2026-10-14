@@ -5,11 +5,11 @@ import Benchmarks.CompoundIII.Comet.TotalReturn
 # CometWithExtendedAssetList `totalSupply()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1348; reach lemma `cometWithExtendedAssetListReachTotalSupplyBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open cometWithExtendedAssetListBlocks
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
@@ -72,7 +72,7 @@ theorem cometWithExtendedAssetListTotalSupplyBody {σ σ₀ A I} {g : UInt256} (
   let w := totalReadWord v (solcSlotWordAt ⟨0⟩ σ I) (solcSlotWordAt ⟨1⟩ σ I)
     (timestampWord I) false
   apply checkedGetter_refines (t := totalSupplyTransition) (values := [.int w.toNat])
-    hcode hsz (cometSelectorDispatch ⟨4, by decide⟩ hsel) rfl (totalTransition_body false)
+    hcode hsz (cometDecode_empty hsz) (cometSelectorDispatch ⟨4, by decide⟩ hsel) rfl (totalTransition_body false)
     (fun _ ↦ returnEquiv_of_encode (uint256ReturnEncoding w)) ?_ ?_
     (totalSupplyX v hcode hsz hsize hsel)
   · intro hv hhi hvalid

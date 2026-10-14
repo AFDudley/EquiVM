@@ -1,14 +1,14 @@
 import Reasoning.MemCascade
 import Reasoning.Reach
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 Immutable-aware runtime summaries execute the total runtime obtained by applying
 fixed-width word writes to a concrete template.
 -/
 
-open Solm Ethereum Ethereum.EVM Reasoning.Reach
+open Stele Ethereum Ethereum.EVM Reasoning.Reach
 
 namespace Reasoning.Immutables
 
@@ -797,10 +797,10 @@ theorem Layout.decodeSite {layout : Layout} {template : ByteArray}
   rw [Layout.readSiteWord off key before after hsplit hbefore hafter hsize hsize64 hbound]
   rw [word_from_bytes]
 
-/-! ## Immutable words from Solm immutables
+/-! ## Immutable words from Stele immutables
 
 Generated runtime summaries quantify the patched words as a `String → UInt256` map.  `wordsOf`
-supplies that map from a Solm immutables store, encoding each value with Solm's own `valueToWord`,
+supplies that map from a Stele immutables store, encoding each value with Stele's own `valueToWord`,
 and `Layout.deployed` is the runtime a constructor deploys for a store: the template with every
 layout site patched with its immutable's word.  `Layout.deployed` is contract-independent, so it
 serves directly as the `runtimeCodeOf` of `contractRefinement.of_runtime`.

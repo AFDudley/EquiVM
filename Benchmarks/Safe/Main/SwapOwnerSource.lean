@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.OwnerGuardTraces
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -29,7 +29,7 @@ theorem safeSwapOwnerCanAdd (evm : EVM.State) (prev old new : UInt256)
       (.ok (swapOwnerFrame₁ prev old new) evm) := by
   apply internalCallFunctionReturn (callee := requireCanAddOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat new.toNat)])
-    (locals := canAddOwnerArgs new) (calleeSolm := canAddOwnerFrame new)
+    (locals := canAddOwnerArgs new) (calleeStele := canAddOwnerFrame new)
   · simp [swapOwnerFrame, swapOwnerArgs, evalExprs?, evalExpr?, EvalResult.ofOption,
       EvalResult.bind, bind, pure]
   · rfl
@@ -45,7 +45,7 @@ theorem safeSwapOwnerCanRemove (evm : EVM.State) (prev old new : UInt256)
   apply internalCallFunctionReturn (callee := requireCanRemoveOwnerFunction)
     (argVals := [.address (AccountAddress.ofNat prev.toNat),
       .address (AccountAddress.ofNat old.toNat)])
-    (locals := canRemoveOwnerArgs prev old) (calleeSolm := canRemoveOwnerFrame prev old)
+    (locals := canRemoveOwnerArgs prev old) (calleeStele := canRemoveOwnerFrame prev old)
   · simp [swapOwnerFrame₁, swapOwnerFrame, swapOwnerArgs, resumeAfterInternalCall,
       evalExprs?, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,
       Std.HashMap.getElem_insert]
@@ -82,7 +82,8 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
     (hvn : validOwner evm.accountMap evm.executionEnv new) (he : ownerLink evm new = ⟨0⟩)
-    (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old) :
+    (hvo : validOwner evm.accountMap evm.executionEnv old) (hl : ownerLink evm prev = old)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (swapOwnerArgs prev old new) swapownerTransition.body
       (.returned (swapOwnerFrame₂ prev old new) (swapOwnerState evm prev old new) none) := by
   have hbase := safeSwapOwnerLocals prev old new
@@ -102,11 +103,11 @@ theorem safeSwapOwnerSource (evm : EVM.State) (prev old new : UInt256)
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
       (.consNormal (safeSwapOwnerCanAdd evm prev old new hn hvn he)
         (.consNormal (safeSwapOwnerCanRemove evm prev old new hp ho hvo hl)
-          (.consNormal (.assign hload hfirst)
-            (.consNormal (.assign (safeSwapOwnerEvalNew _ prev old new) hsecond)
-              (.consNormal (.assign (hz _) hthird)
-                (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalOld _ prev old new)))
-                  (.consNormal (.emit (evalExprs?_singleton (safeSwapOwnerEvalNew _ prev old new)))
+          (.consNormal (.assign (hperm := Or.inr hperm) hload hfirst)
+            (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (safeSwapOwnerEvalNew _ prev old new) hsecond)
+              (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (hz _) hthird)
+                (.consNormal (.emit (hperm := by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeSwapOwnerEvalOld _ prev old new)))
+                  (.consNormal (.emit (hperm := by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeSwapOwnerEvalNew _ prev old new)))
                     .nil)))))))))
 
 theorem safeSwapOwnerSourceStatic (evm : EVM.State) (prev old new : UInt256)

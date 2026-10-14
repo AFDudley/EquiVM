@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.Pausable.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -17,7 +17,7 @@ theorem pausablePausedBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals pausedTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(wordToElem .bool
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩))])) := by
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef config { contract := contract, locals := locals } evm pausedRef =
@@ -126,7 +126,7 @@ theorem pausablePausedBody {σ σ₀ A I}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(wordToElem .bool (pausedWord σ I))])) := by
-    simpa [pausedRawWord, pausedWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [pausedRawWord, pausedWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       pausablePausedBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

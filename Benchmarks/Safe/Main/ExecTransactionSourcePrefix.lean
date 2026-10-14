@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.OwnerStorage
 import Benchmarks.Safe.Main.Operation
 import Benchmarks.Safe.Main.ModuleCallerSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -56,7 +56,7 @@ theorem safeAssignExecNonce (evm : EVM.State) (locals : Store) (value : UInt256)
     (hn : locals["nonce"]? = none) :
     assignStorageRef? config { contract := contract, locals := locals } evm .storage nonceRef
       (uint256Value value) = .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "nonce" }) (loc := uint256Loc ⟨5⟩)
   · exact hn
   · simp [evalStorageRef, evalStorageRefSteps, nonceRef, EvalResult.bind, bind, pure]
@@ -98,12 +98,13 @@ theorem safeExecTransactionNoncePrefix (p : ExecTransactionInput) (evm : EVM.Sta
     {result : ExecResult} (hn : p.signatures.size ≤ 2 ^ 64 - 192)
     (ho : p.tx.operation.toNat < 2) (hno : (execNonce evm).toNat + 1 < UInt256.size)
     (ht : ExecBlock config (execNonceFrame p evm) (execNonceState evm)
-      (exectransactionTransition.body.drop 4) result) :
+      (exectransactionTransition.body.drop 4) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config p.frame evm exectransactionTransition.body result := by
   apply safeExecTransactionChecks p evm hn ho
   exact .consNormal (.letDecl (safeEvalExecNonce evm p.args
     (by simp [ExecTransactionInput.args, Std.HashMap.getElem_insert])))
-      (.consNormal (.assign
+      (.consNormal (.assign (hperm := Or.inr hperm)
         (checkedAddSourceOk (evalLocalValue (execNonceLocal p evm)) (b := ⟨1⟩)
           (by simp [evalExpr?]; rfl) hno)
         (safeAssignExecNonce evm (execNonceFrame p evm).locals _

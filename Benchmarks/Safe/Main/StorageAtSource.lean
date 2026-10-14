@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.LocalArrays
 import Benchmarks.Safe.Main.WordArrayMemory
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -50,7 +50,7 @@ theorem safeStorageAtCondition (evm : EVM.State) {locals offset len words}
   simp [EvalResult.bind, bind, pure, evalBinaryOp_lt_int_ok]
 
 def storageAtWord (evm : EVM.State) (offset : UInt256) (i : Nat) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (offset + UInt256.ofNat i)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (offset + UInt256.ofNat i)
 
 def storageAtNextLocals (locals : Store) (words : List UInt256) (value : UInt256) : Store :=
   (locals.insert "result" (.bytes (wordBytes (words ++ [value])))).insert
@@ -94,8 +94,8 @@ theorem safeStorageAtStep (evm : EVM.State) {locals offset len words}
   have hi' : (locals.insert "result" (.bytes (wordBytes (words ++ [value]))))["index"]? =
       some (.int (Int.ofNat words.length)) := by
     simpa [Std.HashMap.getElem?_insert] using hl.index
-  exact .consNormal (.assign henc (assignLocalVarBase_ok hl.result))
-    (.consNormal (.assign (evalNatIncrement (evalLocalValue hi') hi)
+  exact .consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) henc (assignLocalVarBase_ok hl.result))
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalNatIncrement (evalLocalValue hi') hi)
       (assignLocalVarBase_ok hi')) .nil)
 
 theorem safeStorageAtLengthGuard (evm : EVM.State) (offset len : UInt256) :

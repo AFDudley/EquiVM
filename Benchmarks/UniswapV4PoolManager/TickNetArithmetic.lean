@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TickLiquidityWords
 import Benchmarks.UniswapV4PoolManager.Signed128Range
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem tickNetWord_signextend (packed : UInt256) :

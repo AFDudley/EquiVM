@@ -8,11 +8,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_016
 # CometWithExtendedAssetList `borrowPerSecondInterestRateSlopeHigh()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1285; reach lemma `cometWithExtendedAssetListReachBorrowPerSecondInterestRateSlopeHighBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -60,7 +60,7 @@ theorem cometWithExtendedAssetListBorrowPerSecondInterestRateSlopeHighBody {σ �
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 11) rfl hsel
-  exact immutableGetter_refines (t := borrowPerSecondInterestRateSlopeHighTransition) hcode hsz
+  exact immutableGetter_refines (t := borrowPerSecondInterestRateSlopeHighTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨11, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_borrowPerSecondInterestRateSlopeHigh v) (uint256ReturnEncoding v.borrowPerSecondInterestRateSlopeHigh)
     (borrowPerSecondInterestRateSlopeHighX v hcode hsz hsize hsel)

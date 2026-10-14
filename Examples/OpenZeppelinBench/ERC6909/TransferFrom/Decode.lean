@@ -6,9 +6,9 @@ import Examples.OpenZeppelinBench.ERC6909.IsOperator
 import Examples.OpenZeppelinBench.ERC6909.Storage
 import Examples.OpenZeppelinBench.ERC6909.Transfer
 import Examples.OpenZeppelinBench.Pausable.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -252,14 +252,14 @@ theorem transferFromAllowanceSlot_init {σ σ₀ A I} {g : Sat256} :
 
 def transferFromOperatorWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromOperatorSlot evm I))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromOperatorSlot evm I))
     ⟨255⟩
 
 abbrev transferFromOperatorValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   wordToElem .bool (transferFromOperatorWord evm I)
 
 def transferFromCurrentAllowanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
 
 abbrev transferFromCurrentAllowanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromCurrentAllowanceWord evm I).toNat)
@@ -272,19 +272,19 @@ def transferFromAllowanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt25
     ((transferFromCurrentAllowanceWord evm I).toNat - (transferFromAmountWord I).toNat)
 
 def transferFromAfterAllowanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
     (transferFromAllowanceDebitWord evm I)
 
 theorem transferFromAfterAllowance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterAllowanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterAllowanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterAllowanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferFromSenderBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromSenderBalanceSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromSenderBalanceSlot I)
 
 abbrev transferFromSenderBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromSenderBalanceWord evm I).toNat)
@@ -299,13 +299,13 @@ def transferFromSenderDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :
       (transferFromAmountWord I).toNat)
 
 def transferFromAfterSenderBalanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
     (transferFromSenderBalanceSlot I) (transferFromSenderDebitWord evm I)
 
 theorem transferFromAfterSenderBalance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterSenderBalanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterSenderBalanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterSenderBalanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases (transferFromAfterAllowanceState evm I).accountMap.get? evm.executionEnv.codeOwner with
   | none => exact transferFromAfterAllowance_codeOwner evm I
   | some acc =>
@@ -313,7 +313,7 @@ theorem transferFromAfterSenderBalance_codeOwner (evm : EVM.State) (I : Executio
         transferFromAfterAllowance_codeOwner]
 
 def transferFromReceiverBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromAfterSenderBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferFromAfterSenderBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromReceiverBalanceSlot I)
 
 abbrev transferFromReceiverBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -332,7 +332,7 @@ abbrev transferFromReceiverCreditValue (evm : EVM.State) (I : ExecutionEnv) : Va
   .int (Int.ofNat (transferFromReceiverCreditNat evm I))
 
 def transferFromPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterSenderBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterSenderBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromReceiverBalanceSlot I) (transferFromReceiverCreditWord evm I)
 
 def transferFromTailStoreFromBalance (locals : Store) (evm : EVM.State)
@@ -345,21 +345,21 @@ def transferFromTailSenderDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt2
 
 def transferFromTailAfterSenderBalanceState (evm : EVM.State) (I : ExecutionEnv) :
     EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (transferFromSenderBalanceSlot I) (transferFromTailSenderDebitWord evm I)
 
 theorem transferFromTailAfterSenderBalance_codeOwner (evm : EVM.State)
     (I : ExecutionEnv) :
     (transferFromTailAfterSenderBalanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromTailAfterSenderBalanceState, Solm.EVM.storageStore,
+  simp only [transferFromTailAfterSenderBalanceState, Stele.EVM.storageStore,
     State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferFromTailReceiverBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromTailAfterSenderBalanceState evm I)
+  Stele.EVM.storageLoad (transferFromTailAfterSenderBalanceState evm I)
     evm.executionEnv.codeOwner (transferFromReceiverBalanceSlot I)
 
 abbrev transferFromTailReceiverBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -380,7 +380,7 @@ abbrev transferFromTailReceiverCreditValue (evm : EVM.State) (I : ExecutionEnv) 
   .int (Int.ofNat (transferFromTailReceiverCreditNat evm I))
 
 def transferFromTailPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromTailAfterSenderBalanceState evm I)
+  Stele.EVM.storageStore (transferFromTailAfterSenderBalanceState evm I)
     evm.executionEnv.codeOwner (transferFromReceiverBalanceSlot I)
     (transferFromTailReceiverCreditWord evm I)
 

@@ -6,7 +6,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 /-!
 # ERC20 contract invariant — `totalSupply = Σ balances`
 
-The classic ERC20 supply invariant `totalSupply = Σ_a balanceOf[a]`, stated on the Solm spec's
+The classic ERC20 supply invariant `totalSupply = Σ_a balanceOf[a]`, stated on the Stele spec's
 storage, and its preservation by the post-states the spec's mutating bodies produce:
 `transferPostState`, `transferFromPostState`, `approvePostState`, and the constructor's
 `erc20CtorPostState` (all from `Examples/ERC20`).  `Proofs.ERC20.API` lifts these to every
@@ -22,7 +22,7 @@ The preservation theorems need no hypothesis on the contract's account: if it is
 storage write is a no-op, and a self-transfer (`from = to`) writes the sender's balance back.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 open scoped BigOperators
 
 set_option maxHeartbeats 1000000
@@ -42,7 +42,7 @@ def Inv (evm : EVM.State) : Prop :=
 /-- A missing contract account stores nothing: `totalSupply` reads as `0`. -/
 theorem totalSupplyVal_of_missing (evm : EVM.State)
     (hmiss : evm.accountMap.get? evm.executionEnv.codeOwner = none) : totalSupplyVal evm = 0 := by
-  rw [totalSupplyVal, Solm.EVM.storageLoad, Ethereum.State.lookupAccount, hmiss]; rfl
+  rw [totalSupplyVal, Stele.EVM.storageLoad, Ethereum.State.lookupAccount, hmiss]; rfl
 
 /-! ## Generic two-point "transfer" sum lemma
 

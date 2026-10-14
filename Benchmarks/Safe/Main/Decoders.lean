@@ -5,8 +5,8 @@ import Benchmarks.Safe.Main.Blocks.Runtime_039
 import Benchmarks.Safe.Main.Blocks.Runtime_030
 import Benchmarks.Safe.Main.Blocks.Runtime_029
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -15,7 +15,7 @@ theorem safeAddressMask :
       solcAddrMask := by decide +kernel
 
 -- LIBRARY CANDIDATE: the bytes32 decoder expressed using the EVM's calldata word.
-theorem decodeCalldataBytes32Word {cd : ByteArray} {name : Solm.Ident}
+theorem decodeCalldataBytes32Word {cd : ByteArray} {name : Stele.Ident}
     (hlen : 36 ≤ cd.size) (hbig : cd.size < 2 ^ 255 + 4) :
     decodeCalldata [name] [abiBytes32] cd =
       some ((∅ : Store).insert name (wordBytes32Value (calldataWord cd 4))) := by

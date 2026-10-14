@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Flipper.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -39,7 +39,7 @@ theorem bidsBase_intOfNatWord (id : UInt256) :
 theorem flipperStorageLocLoad_uint48_offset20 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint48Loc slot ⟨20, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           uint48Divisor20) uint48Mask).toNat) := by
   have h := storageLocLoad_uint_offset (evm := evm) (slot := slot)
     (offset := ⟨20, by decide⟩) (size := (⟨6, by decide⟩ : Fin 33))
@@ -56,7 +56,7 @@ theorem flipperStorageLocLoad_uint48_offset20 (evm : EVM.State) (slot : UInt256)
 theorem flipperStorageLocLoad_uint48_offset26 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint48Loc slot ⟨26, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           uint48Divisor26) uint48Mask).toNat) := by
   have h := storageLocLoad_uint_offset (evm := evm) (slot := slot)
     (offset := ⟨26, by decide⟩) (size := (⟨6, by decide⟩ : Fin 33))
@@ -185,8 +185,8 @@ theorem flipperStorageLocStore_uint48_offset20 (evm : EVM.State) (slot val : UIn
     (hval : val.toNat < 2 ^ 48) :
     storageLocStore evm (uint48Loc slot ⟨20, by decide⟩ (by decide))
       (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint48Offset20Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint48Offset20Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           val)) := by
   unfold storageLocStore storageLocWriteWord uint48Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
@@ -195,21 +195,21 @@ theorem flipperStorageLocStore_uint48_offset20 (evm : EVM.State) (slot val : UIn
   show fromBytes'
       (List.take (20 : Fin 32).val _ ++ List.take (6 : Fin 33).val _
         ++ List.drop ((20 : Fin 32).val + (6 : Fin 33).val) _) =
-      (setUint48Offset20Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      (setUint48Offset20Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         val).toNat
   rw [show (20 : Fin 32).val = 20 from rfl, show (6 : Fin 33).val = 6 from rfl]
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_take_wordLE,
     fromBytes'_drop_wordLE]
   have hwordToNat :=
     setUint48Offset20Word_toNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
   rw [hwordToNat]
   rw [show 256 ^ 20 = (2 : Nat) ^ 160 by norm_num [Nat.pow_add]]
   rw [show 256 ^ 6 = (2 : Nat) ^ 48 by norm_num [Nat.pow_add]]
   rw [Nat.mod_eq_of_lt hval]
   rw [List.length_append]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof val).2]
   rw [show 256 ^ (20 + 6) = (2 : Nat) ^ 208 by norm_num [Nat.pow_add]]
   norm_num [UInt256.size, Nat.pow_add]
@@ -321,8 +321,8 @@ theorem flipperStorageLocStore_uint48_offset26 (evm : EVM.State) (slot val : UIn
     (hval : val.toNat < 2 ^ 48) :
     storageLocStore evm (uint48Loc slot ⟨26, by decide⟩ (by decide))
       (.int (Int.ofNat val.toNat)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (setUint48Offset26Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (setUint48Offset26Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           val)) := by
   unfold storageLocStore storageLocWriteWord uint48Loc
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
@@ -331,27 +331,27 @@ theorem flipperStorageLocStore_uint48_offset26 (evm : EVM.State) (slot val : UIn
   show fromBytes'
       (List.take (26 : Fin 32).val _ ++ List.take (6 : Fin 33).val _
         ++ List.drop ((26 : Fin 32).val + (6 : Fin 33).val) _) =
-      (setUint48Offset26Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      (setUint48Offset26Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         val).toNat
   rw [show (26 : Fin 32).val = 26 from rfl, show (6 : Fin 33).val = 6 from rfl]
   rw [fromBytes'_append, fromBytes'_append, fromBytes'_take_wordLE, fromBytes'_take_wordLE,
     fromBytes'_drop_wordLE]
   have hwordToNat :=
     setUint48Offset26Word_toNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val hval
   rw [hwordToNat]
   rw [show 256 ^ 26 = (2 : Nat) ^ 208 by norm_num [Nat.pow_add]]
   rw [show 256 ^ 6 = (2 : Nat) ^ 48 by norm_num [Nat.pow_add]]
   rw [Nat.mod_eq_of_lt hval]
   rw [List.length_append]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2]
   rw [List.length_take, (EVM.Word.toBytesLEWithSizeProof val).2]
   rw [show 256 ^ (26 + 6) = UInt256.size by norm_num [UInt256.size, Nat.pow_add]]
   have hdiv0 :
-      UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) /
+      UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) /
           UInt256.size = 0 :=
-    Nat.div_eq_of_lt (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
+    Nat.div_eq_of_lt (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt
   rw [hdiv0]
   norm_num [UInt256.size, Nat.pow_add]
   ring

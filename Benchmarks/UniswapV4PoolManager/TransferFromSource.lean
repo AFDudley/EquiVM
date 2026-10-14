@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.BalanceTransfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 2000000
 
@@ -36,7 +36,7 @@ def transferFromAllowedFrame (f : Frame) (allowed : UInt256) : Frame :=
   {f with locals := f.locals.insert "allowed" (.int (Int.ofNat allowed.toNat))}
 
 def transferFromAllowancePost (evm : EVM.State) (sender id amount : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (allowanceSlot sender (accountWord evm.executionEnv.source) id)
     (UInt256.sub (transferFromAllowed evm sender id) amount)
 
@@ -118,7 +118,7 @@ theorem transferFromAuthExec {f : Frame} {evm : EVM.State} {sender receiver id a
             (ExecBlock.consStatic (ExecStmt.assignStatic heval hwrite hperm)))
         · rw [if_neg hperm]
           exact ExecBlock.consNormal (ExecStmt.iteTrue hcondTrue
-            (ExecBlock.consNormal (ExecStmt.assign heval hwrite) ExecBlock.nil)) ExecBlock.nil
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hperm)) heval hwrite) ExecBlock.nil)) ExecBlock.nil
       · rw [if_neg hsub]
         exact ExecBlock.consRevert (ExecStmt.iteTrue hcondTrue
           (ExecBlock.consRevert (ExecStmt.assignExprRevert

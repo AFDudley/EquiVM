@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Values
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: length and prefix decoding for locally bound bytes.
@@ -48,7 +48,9 @@ theorem evalBytesPrefix {cfg f evm e} {bytes : ByteArray} {n : Nat}
     Int.toNat_zero, Nat.not_lt_zero, Bool.false_eq_true]
 
 theorem evalDecodeUint256Prefix {cfg : Config} {f evm e} {bytes : ByteArray}
-    (hmode : cfg.abiDecodeMode = .modern) (he : evalExpr? cfg f evm e = .ok (.bytes bytes))
+    (hdecode : ∀ data, cfg.externalABI.decodeValue? abiUInt256 data =
+      ABI.decodeReturnValue? abiUInt256 data)
+    (he : evalExpr? cfg f evm e = .ok (.bytes bytes))
     (hn : 32 ≤ bytes.size) :
     evalExpr? cfg f evm (.abiDecode abiUInt256 (.bytesSlice e (.intLit 0) (.intLit 32))) =
       .ok (.int (Int.ofNat (UInt256.ofNat (fromByteArrayBigEndian (bytes.extract 0 32))).toNat)) := by
@@ -60,7 +62,6 @@ theorem evalDecodeUint256Prefix {cfg : Config} {f evm e} {bytes : ByteArray}
   have hp : evalExpr? cfg f evm (.bytesSlice e (.intLit 0) (.intLit 32)) =
       .ok (.bytes (bytes.extract 0 32)) := evalBytesPrefix he hn
   rw [evalExpr?, hp]
-  simp only [bind, EvalResult.bind, hmode, ABI.decodeReturnValueWithMode?,
-    ABI.decodeReturnValue?, hd, hw, pure]
+  simp only [bind, EvalResult.bind, hdecode, ABI.decodeReturnValue?, hd, hw, pure]
 
 end Benchmarks.UniswapV4PoolManager

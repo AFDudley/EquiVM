@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.StaticCallBridge
 import Reasoning.ABIViews
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -63,7 +63,7 @@ theorem tokenBalance_source_ok {frame : Frame} {evm evm' : EVM.State}
       (.ok { frame with locals :=
         frame.locals.insert ret (.int (Int.ofNat (calldataWord out 0).toNat)) } evm') := by
   rw [← addressOfAddress asset] at hc
-  exact ExecStmt.externalCallSuccess he (by simp only [evalExpr?, pure])
+  exact ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (by simp only [evalExpr?, pure])
     (by simp only [evalExprs?, evalExpr?, envValue, bind, EvalResult.bind, pure])
     (tokenBalance_typed hc) (tokenBalance_decode_ok hlo hhi)
 
@@ -77,11 +77,11 @@ theorem tokenBalance_source_revert {frame : Frame} {evm evm' : EVM.State}
   rw [← addressOfAddress asset] at hc
   cases z with
   | false =>
-      exact ExecStmt.externalCallFailure he (by simp only [evalExpr?, pure])
+      exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (by simp only [evalExpr?, pure])
         (by simp only [evalExprs?, evalExpr?, envValue, bind, EvalResult.bind, pure])
         (tokenBalance_typed hc)
   | true =>
-      exact ExecStmt.externalCallReturnDecodeRevert he (by simp only [evalExpr?, pure])
+      exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (by simp only [evalExpr?, pure])
         (by simp only [evalExprs?, evalExpr?, envValue, bind, EvalResult.bind, pure])
         (tokenBalance_typed hc)
         (tokenBalance_decode_short (Nat.lt_of_not_ge (fun h ↦ hv ⟨rfl, h⟩)))

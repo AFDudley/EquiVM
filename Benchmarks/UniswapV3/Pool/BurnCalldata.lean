@@ -4,7 +4,7 @@ import Benchmarks.UniswapV3.Pool.BurnModel
 import Benchmarks.UniswapV3.Pool.ProtocolFeeStorage
 import Benchmarks.UniswapV3.Pool.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -20,7 +20,7 @@ theorem burnArgs_fits (cd : ByteArray) : (burnArgs cd).Fits := by
     normalizeSint_bounds ⟨24, by decide⟩ (Int.ofNat (calldataWord cd 36).toNat), uint128Word_lt _⟩
 
 theorem burnDecode {cd : ByteArray} (hlen : 100 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes cd = some (burnLocals (burnArgs cd)) := by
   have h := decodeCalldata_legacyThreeInts_ok
     (.sint ⟨24, by decide⟩) (.sint ⟨24, by decide⟩) (.uint ⟨128, by decide⟩)
@@ -30,7 +30,7 @@ theorem burnDecode {cd : ByteArray} (hlen : 100 ≤ cd.size) :
   simpa only [burnArgs, burnLocals, positionTick, uint128Word] using h
 
 theorem burnDecodeShort {cd : ByteArray} (hshort : cd.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (burnTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes cd = none :=
   decodeCalldata_legacyScalarWords_none_short rfl hshort
 

@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.VestingWallet.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# VestingWallet spec in the Solidity-faithful Solm frontend
+# VestingWallet spec in the Solidity-faithful Stele frontend
 
 The whole `VestingWalletBench` spec, written with `solidity%` and proven definitionally equal to
 the AST spec in `Benchmarks/OpenZeppelinBench/VestingWallet/Spec.lean`.
@@ -17,7 +17,7 @@ Notes mirroring the AST spec:
 * `end` is a Lean keyword, written `«end»`.  Transition order matches `contract.transitions`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.VestingWallet.Syntax
 

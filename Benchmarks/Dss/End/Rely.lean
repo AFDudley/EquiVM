@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -40,7 +40,7 @@ def endRelyAuthWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt (endRelyAuthStorageSlot I) σ I
 
 def endRelyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endRelyUsrStorageSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (endRelyUsrStorageSlot I) ⟨1⟩
 
 abbrev endRelyUsrEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "wards", steps := [.mindex (endRelyUsrKey I)] }
@@ -65,7 +65,7 @@ theorem endRelyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem endDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = some (endRelyStore I) := by
   simpa [config, relyTransition, endRelyStore, endRelyUsrValue, endRelyUsrWord,
     calldataWord] using
@@ -73,7 +73,7 @@ theorem endDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem endDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort
@@ -96,7 +96,7 @@ theorem evalStorageRef_endRely_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endRely_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endRelyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -105,7 +105,7 @@ theorem evalExpr_endRely_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endRelyStore I })
+      (stele := { contract := contract, locals := endRelyStore I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -123,7 +123,7 @@ theorem evalExpr_endRely_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endRely_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endRelyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -131,11 +131,11 @@ theorem evalExpr_endRely_auth_false (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? config { contract := contract, locals := endRelyStore I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endRelyStore I })
+      (stele := { contract := contract, locals := endRelyStore I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -147,7 +147,7 @@ theorem evalExpr_endRely_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (endRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -155,13 +155,13 @@ theorem evalExpr_endRely_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (endRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -185,9 +185,9 @@ theorem endRelyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
-    (ExecTransitionBody config contract evm (endRelyStore I) relyTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (endRelyStore I) relyTransition.body
       (.returned { contract := contract, locals := endRelyStore I }
         (endRelyPostState evm I) none)) ∧
       (evm.executionEnv.perm = false →
@@ -205,8 +205,9 @@ theorem endRelyBodyReturnsSplit (evm : EVM.State) (I : ExecutionEnv)
     refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) htail
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hval hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hval hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hval hassign hperm)))
@@ -215,14 +216,14 @@ theorem endRelyBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
         ⟨1⟩) :
     ExecTransitionBody config contract evm (endRelyStore I) relyTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [relyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := endRelyStore I })
+      (stele := { contract := contract, locals := endRelyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage (wardsRef (.var "usr")) (.intLit 1)])
@@ -710,33 +711,33 @@ theorem endRelyBodyCoreOk
     (hauth : endRelyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (endRelyStore I))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endRelyEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : endRelyAuthWord σ I = ⟨1⟩ := hauth
   have hbodySplit :
-      (ExecTransitionBody config contract evmSolm (endRelyStore I)
+      (I.perm = true → ExecTransitionBody config contract evmStele (endRelyStore I)
         relyTransition.body
         (.returned { contract := contract, locals := endRelyStore I }
-          (endRelyPostState evmSolm I) none)) ∧
-      (I.perm = false → ExecTransitionBody config contract evmSolm (endRelyStore I)
+          (endRelyPostState evmStele I) none)) ∧
+      (I.perm = false → ExecTransitionBody config contract evmStele (endRelyStore I)
         relyTransition.body .staticViolation) := by
-    simpa [evmSolm, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      endRelyBodyReturnsSplit evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      endRelyBodyReturnsSplit evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   rcases endX_rely_okSplit (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach with
-    ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+    ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
-      (by simp [endRelyPostState, evmSolm, initState, storageStore_accountMap])
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
+      (by simp [endRelyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [relyTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -751,22 +752,22 @@ theorem endRelyBodyCoreUnauthorized
     (hauth : endRelyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata = some (endRelyStore I))
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) endRelyEntryPc [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : endRelyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (endRelyStore I)
+      ExecTransitionBody config contract evmStele (endRelyStore I)
         relyTransition.body .reverted := by
-    simpa [evmSolm, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      endRelyBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      endRelyBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (endX_rely_unauthorized (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

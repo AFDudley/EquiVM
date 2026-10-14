@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.WordSignextend24
 import Benchmarks.UniswapV4PoolManager.SignedNormalizeRange
 import Benchmarks.UniswapV4PoolManager.WordNarrowCast
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickPositionWord (tick : UInt256) : UInt256 :=

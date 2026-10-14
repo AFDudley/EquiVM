@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.BlockTimestamp
 import Benchmarks.UniswapV3.Pool.PoolLiquidityStorage
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -68,7 +68,7 @@ theorem swapTimestampSource (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : 
   have hret := blockTimestampReturns (immStore v) (storeSlot0Unlocked evm false)
   rw [storeSlot0Unlocked_executionEnv] at hret
   exact internalCallFunctionReturn (callee := blockTimestampFunction) (argVals := []) (locals := ∅)
-    (calleeSolm := {contract := contract, locals := ∅, immutables := immStore v})
+    (calleeStele := {contract := contract, locals := ∅, immutables := immStore v})
     (value := some [.int (Int.ofNat (blockTimestampWord evm.executionEnv).toNat)])
     (by rfl) blockTimestampLookup rfl hret
 

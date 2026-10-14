@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.AssetSearchExternal
 # CometWithExtendedAssetList `getAssetInfoByAddress(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1204; reach lemma `cometWithExtendedAssetListReachGetAssetInfoByAddressBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListGetAssetInfoByAddressBody {σ σ₀ A I} {g : 
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 20) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some getAssetInfoByAddressTransition :=
     cometSelectorDispatch ⟨20, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (getAssetInfoByAddressTransition.params.map Param.name)
       (transitionSignature getAssetInfoByAddressTransition).paramTypes I.calldata =
       decodeCalldata ["asset"] [.elem .address] I.calldata := by

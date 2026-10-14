@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintSourcePrefixes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,7 +11,7 @@ theorem uniswapMintProportionalFeeOffReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -77,7 +77,8 @@ theorem uniswapMintProportionalFeeOffReturn_kLastZero
     (helapsed :
       syncTimeElapsedInt
         (mintFunctionPostState evmFee (AccountAddress.ofNat (mintToWord I).toNat)
-          liquidity) = 0) :
+          liquidity) = 0)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -113,7 +114,7 @@ theorem uniswapMintProportionalFeeOffReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -161,7 +162,7 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -227,7 +228,8 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastZero
     (helapsed :
       0 < syncTimeElapsedInt
         (mintFunctionPostState evmFee (AccountAddress.ofNat (mintToWord I).toNat)
-          liquidity)) :
+          liquidity))
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -264,7 +266,7 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -312,7 +314,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -390,7 +392,8 @@ theorem uniswapMintProportionalFeeOnReturn_kLastZero
             (syncUpdatePackedReserveState
               (mintFunctionPostState evmFee (AccountAddress.ofNat (mintToWord I).toNat)
                 liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -427,7 +430,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -478,7 +481,7 @@ theorem uniswapMintProportionalFeeOnCumulativeReturn_kLastZero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -561,7 +564,8 @@ theorem uniswapMintProportionalFeeOnCumulativeReturn_kLastZero
                 liquidity)
               balance0 balance1
               (uniswapReserve0Word (uniswapLockEnteredState evm))
-              (uniswapReserve1Word (uniswapLockEnteredState evm)))) < UInt256.size) :
+              (uniswapReserve1Word (uniswapLockEnteredState evm)))) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -599,7 +603,7 @@ theorem uniswapMintProportionalFeeOnCumulativeReturn_kLastZero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOnCumulativeReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOnCumulativeReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -650,7 +654,7 @@ theorem uniswapMintProportionalFeeOffReturn_kLastNonzero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -718,7 +722,8 @@ theorem uniswapMintProportionalFeeOffReturn_kLastNonzero
     (helapsed :
       syncTimeElapsedInt
         (mintFunctionPostState (mintFeeKLastClearedState evmFee)
-          (AccountAddress.ofNat (mintToWord I).toNat) liquidity) = 0) :
+          (AccountAddress.ofNat (mintToWord I).toNat) liquidity) = 0)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let evmAfter := mintFeeKLastClearedState evmFee
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
@@ -755,12 +760,12 @@ theorem uniswapMintProportionalFeeOffReturn_kLastNonzero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL evmAfter recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call (hpermAfter := by simpa [evmAfter, mintFeeKLastClearedState, typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmAfter I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
       simpa [nextFrame, evmL, evmAfter, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1 evmFee I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) evmL evm1 evmFee I balance0
           balance1 feeTo (by simpa [evmL] using hfeeGuard) hfeeCall hfeeDec hfeeTo
           hkLast)
     (by simpa [nextFrame, evmL] using
@@ -806,7 +811,7 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastNonzero
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -875,7 +880,8 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastNonzero
       0 <
         syncTimeElapsedInt
           (mintFunctionPostState (mintFeeKLastClearedState evmFee)
-            (AccountAddress.ofNat (mintToWord I).toNat) liquidity)) :
+            (AccountAddress.ofNat (mintToWord I).toNat) liquidity))
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let evmAfter := mintFeeKLastClearedState evmFee
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
@@ -913,12 +919,12 @@ theorem uniswapMintProportionalFeeOffCumulativeReturn_kLastNonzero
         (some [uniswapUint256Value liquidity])) := by
   intro evmL evmAfter recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call (hpermAfter := by simpa [evmAfter, mintFeeKLastClearedState, typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmAfter I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
       simpa [nextFrame, evmL, evmAfter, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1 evmFee I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) evmL evm1 evmFee I balance0
           balance1 feeTo (by simpa [evmL] using hfeeGuard) hfeeCall hfeeDec hfeeTo
           hkLast)
     (by simpa [nextFrame, evmL] using
@@ -964,7 +970,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1057,7 +1063,8 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint
             (syncUpdatePackedReserveState
               (mintFunctionPostState evmFee (AccountAddress.ofNat (mintToWord I).toNat)
                 liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -1094,7 +1101,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -1146,7 +1153,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1245,7 +1252,8 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
             (syncUpdatePackedReserveState
               (mintFunctionPostState evmFee (AccountAddress.ofNat (mintToWord I).toNat)
                 liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let evmL := uniswapLockEnteredState evm
     let recipient := AccountAddress.ofNat (mintToWord I).toNat
     let amount0 := mintAmount0Word evmL balance0
@@ -1282,7 +1290,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
         (some [uniswapUint256Value liquidity])) := by
   intro evmL recipient amount0 amount1 totalSupply reserve0 reserve1 nextFrame
     afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -1336,7 +1344,7 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
     {out0 out1 outFee : ByteArray} {balance0 balance1 liquidity : UInt256}
     (feeTo : AccountAddress) (rootK rootKLast : Int)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1460,7 +1468,8 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
               (mintFunctionPostState
                 (mintFunctionPostState evmFee feeTo (mintFeeLiquidityWord evmFee rootK rootKLast))
                 (AccountAddress.ofNat (mintToWord I).toNat) liquidity)
-              balance0 balance1)) < UInt256.size) :
+              balance0 balance1)) < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let feeLiquidity := mintFeeLiquidityWord evmFee rootK rootKLast
     let evmAfterFee := mintFunctionPostState evmFee feeTo feeLiquidity
     let evmL := uniswapLockEnteredState evm
@@ -1499,12 +1508,12 @@ theorem uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
         (some [uniswapUint256Value liquidity])) := by
   intro feeLiquidity evmAfterFee evmL recipient amount0 amount1 totalSupply reserve0 reserve1
     nextFrame afterTotalSupplyLocals liquidity0 liquidity1 afterBranch afterMint afterUpdate
-  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
+  exact uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call (hpermAfter := by simpa [evmAfterFee, mintFunctionPostState, mintFunctionAfterTotalSupplyState, typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) (hperm := by assumption)
     evm evm0 evm1 evmAfterFee I nextFrame.locals recipient hwv hunlocked hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
       simpa [nextFrame, evmL, evmAfterFee, feeLiquidity, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity evmL evm1
+        uniswapMintFeeCallFromMint_feeOn_kLastNonzero_positiveWithLiquidity (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) evmL evm1
           evmFee I balance0 balance1 feeTo rootK rootKLast
           (by simpa [evmL] using hfeeGuard) hfeeCall hfeeDec hfeeTo hkLast
           (by simpa [evmL] using hprefix) hroot hrootKNonneg hrootKSize
@@ -1555,7 +1564,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastZero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1597,7 +1606,8 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastZero
         (mintAmount1Word (uniswapLockEnteredState evm) balance1) < UInt256.size)
     (hsmall :
       (mintAmountProductWord (mintAmount0Word (uniswapLockEnteredState evm) balance0)
-        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3) :
+        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let evmL := uniswapLockEnteredState evm
@@ -1605,7 +1615,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastZero
     resumeAfterInternalCall
       { contract := contract, locals := mintAmountStore evmL I balance0 balance1 }
       "feeOn" (some [.bool false])
-  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call
+  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals hwv hunlocked hguard0 hguard1 hcall0
     hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -1624,7 +1634,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOn_kLastZero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1666,7 +1676,8 @@ theorem uniswapMintInitialSmallRootReverts_feeOn_kLastZero
         (mintAmount1Word (uniswapLockEnteredState evm) balance1) < UInt256.size)
     (hsmall :
       (mintAmountProductWord (mintAmount0Word (uniswapLockEnteredState evm) balance0)
-        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3) :
+        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let evmL := uniswapLockEnteredState evm
@@ -1674,7 +1685,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOn_kLastZero
     resumeAfterInternalCall
       { contract := contract, locals := mintAmountStore evmL I balance0 balance1 }
       "feeOn" (some [.bool true])
-  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call
+  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call (hperm := by assumption)
     evm evm0 evm1 evmFee I nextFrame.locals hwv hunlocked hguard0 hguard1 hcall0
     hdec0 hcall1 hdec1 henough0 henough1
     (by
@@ -1693,7 +1704,7 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
     (evm evm0 evm1 evmFee : EVM.State) (I : ExecutionEnv)
     {out0 out1 outFee : ByteArray} {balance0 balance1 : UInt256} (feeTo : AccountAddress)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -1735,7 +1746,8 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
         (mintAmount1Word (uniswapLockEnteredState evm) balance1) < UInt256.size)
     (hsmall :
       (mintAmountProductWord (mintAmount0Word (uniswapLockEnteredState evm) balance0)
-        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3) :
+        (mintAmount1Word (uniswapLockEnteredState evm) balance1)).toNat ≤ 3)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm
       mintTransition.body .reverted := by
   let evmL := uniswapLockEnteredState evm
@@ -1743,12 +1755,12 @@ theorem uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
     resumeAfterInternalCall
       { contract := contract, locals := mintAmountStore evmL I balance0 balance1 }
       "feeOn" (some [.bool false])
-  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call
+  exact uniswapMintAfterMintFeeInitialSmallRootReverts_of_call (hperm := by assumption)
     evm evm0 evm1 (mintFeeKLastClearedState evmFee) I nextFrame.locals hwv hunlocked
     hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 henough0 henough1
     (by
       simpa [nextFrame, evmL, resumeAfterInternalCall] using
-        uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1 evmFee I balance0
+        uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState] using hperm) evmL evm1 evmFee I balance0
           balance1 feeTo (by simpa [evmL] using hfeeGuard) hfeeCall hfeeDec hfeeTo
           hkLast)
     (by simpa [nextFrame, evmL] using

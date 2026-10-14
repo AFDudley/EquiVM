@@ -1,0 +1,2 @@
+wrote Benchmarks/CurveVault/Common.lean
+the runtime does not start with Vyper 0.4's jump-table dispatcher

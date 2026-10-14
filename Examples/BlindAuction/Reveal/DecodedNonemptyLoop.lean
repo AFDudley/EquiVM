@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.PostLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -19,23 +19,23 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
       callargs =
         (((∅ : Store).insert "values" (.array values)).insert "fakes" (.array fakes)).insert
           "secrets" (.array secrets))
-    (evmSolm : EVM.State)
-    (hevmSolm : evmSolm = initState σ σ₀ (Sat256.ofUInt256 g) A I)
-    (hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩)
+    (evmStele : EVM.State)
+    (hevmStele : evmStele = initState σ σ₀ (Sat256.ofUInt256 g) A I)
+    (hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩)
     (hafterBody :
-      (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat)
+      (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat)
     (hbeforeBody :
-      (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat)
+      (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+        (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat)
     (hbiddingAbsent : callargs.get? biddingEndRef.base = none)
     (hrevealAbsent : callargs.get? revealEndRef.base = none)
     (hvaluesGet : callargs.get? "values" = some (.array values))
     (hfakesGet : callargs.get? "fakes" = some (.array fakes))
     (hsecretsGet : callargs.get? "secrets" = some (.array secrets))
     (hlenBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) = revealScratchBidsLengthWord σ I)
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) = revealScratchBidsLengthWord σ I)
     (hloopLen : loopLen = revealScratchBidsLengthWord σ I)
     (hvaluesEq : loopLen = valuesLenWord)
     (hfakesEq : loopLen = fakesLenWord)
@@ -47,7 +47,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
       (∃ aDone LDone evmDone kDone CDone,
         ExecForLoop blindAuctionConfig
           { contract := blindAuctionContract,
-            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmSolm
+            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmStele
           (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
           scratch_revealLoopBodyStmts
           (.ok { contract := blindAuctionContract, locals := LDone } evmDone) ∧
@@ -65,7 +65,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
       ∨
       (ExecForLoop blindAuctionConfig
           { contract := blindAuctionContract,
-            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmSolm
+            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmStele
           (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
           scratch_revealLoopBodyStmts .reverted ∧
         RDrev blindAuctionBytecode (Sat256.ofUInt256 g)
@@ -73,7 +73,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
       ∨
       (ExecForLoop blindAuctionConfig
           { contract := blindAuctionContract,
-            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmSolm
+            locals := scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩ } evmStele
           (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
           scratch_revealLoopBodyStmts .staticViolation ∧
         RDstatic blindAuctionBytecode (Sat256.ofUInt256 g)
@@ -95,8 +95,8 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
         (valuesLenWord := valuesLenWord)
         (aDone := aDone) (LDone := LDone) (evmDone := evmDone)
         (kDone := kDone) (CDone := CDone)
-        hcode hd hdec hstore evmSolm hevmSolm
-        hwvSolm hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
+        hcode hd hdec hstore evmStele hevmStele
+        hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
         hvaluesGet hfakesGet hsecretsGet hlenBody
         hloopLen hvaluesEq hfakesEq hsecretsEq
         hvaluesListLen hfakesListLen hsecretsListLen
@@ -106,7 +106,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
           { contract := blindAuctionContract,
             locals :=
               scratch_revealLoopStore callargs (revealScratchBidsLengthWord σ I)
-                ⟨0⟩ ⟨0⟩ } evmSolm
+                ⟨0⟩ ⟨0⟩ } evmStele
           (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
           scratch_revealLoopBodyStmts .reverted := by
       rw [← hloopLen]
@@ -121,12 +121,12 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
         secrets.length = (revealScratchBidsLengthWord σ I).toNat := by
       rw [hsecretsListLen, ← hsecretsEq, hloopLen]
     have hbodyRev :
-        ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+        ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
           callargs revealTransition.body .reverted := by
       exact scratch_blindAuctionRevealBodyReverts_fromLoopRevertOfLocals
-        evmSolm callargs values fakes secrets
+        evmStele callargs values fakes secrets
         (revealScratchBidsLengthWord σ I)
-        hwvSolm hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
+        hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
         (by
           rw [hstore]
           simp)
@@ -136,7 +136,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
         ExecTransitionBody blindAuctionConfig blindAuctionContract
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           callargs revealTransition.body .reverted := by
-      rw [← hevmSolm]
+      rw [← hevmStele]
       exact hbodyRev
     exact hrevLoop.2.reEquivExecutionRevert hcode hd hdec hbodyRevInit
   · have hbodyLoop :
@@ -144,7 +144,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
           { contract := blindAuctionContract,
             locals :=
               scratch_revealLoopStore callargs (revealScratchBidsLengthWord σ I)
-                ⟨0⟩ ⟨0⟩ } evmSolm
+                ⟨0⟩ ⟨0⟩ } evmStele
           (.binary .lt (.var "i") (.var "length")) scratch_revealLoopPostStmts
           scratch_revealLoopBodyStmts .staticViolation := by
       rw [← hloopLen]
@@ -159,12 +159,12 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
         secrets.length = (revealScratchBidsLengthWord σ I).toNat := by
       rw [hsecretsListLen, ← hsecretsEq, hloopLen]
     have hbodySt :
-        ExecTransitionBody blindAuctionConfig blindAuctionContract evmSolm
+        ExecTransitionBody blindAuctionConfig blindAuctionContract evmStele
           callargs revealTransition.body .staticViolation := by
       exact scratch_blindAuctionRevealBodyStatic_fromLoopStaticOfLocals
-        evmSolm callargs values fakes secrets
+        evmStele callargs values fakes secrets
         (revealScratchBidsLengthWord σ I)
-        hwvSolm hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
+        hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
         (by
           rw [hstore]
           simp)
@@ -174,7 +174,7 @@ theorem scratch_blindAuctionReveal_nonempty_fromLoopResult
         ExecTransitionBody blindAuctionConfig blindAuctionContract
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           callargs revealTransition.body .staticViolation := by
-      rw [← hevmSolm]
+      rw [← hevmStele]
       exact hbodySt
     exact hstLoop.2.reEquivStaticHalt hcode hd hdec hbodyStInit
 

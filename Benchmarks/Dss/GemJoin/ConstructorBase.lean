@@ -3,18 +3,18 @@ import Reasoning.Memory
 import Benchmarks.Dss.GemJoin.Common
 import Reasoning.ExternalCall
 import Reasoning.Initcode
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS GemJoin constructor shared helpers
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -141,7 +141,7 @@ theorem gemJoinCtorDeployment_shape {args : List Value} {deployedInitcode : Byte
     ∃ (vat : AccountAddress) (ilk : UInt256) (gem : AccountAddress),
       args = [.address vat, .fixedBytes bytes32Width (EVM.Word.toBytesBE ilk), .address gem] ∧
         deployedInitcode = gemJoinCtorCode vat ilk gem := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil =>
       simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr, bytes32] at hdeploy
@@ -600,27 +600,27 @@ theorem gemJoinCtorGemTargetAddress_eq (σ : AccountMap) (I : ExecutionEnv)
   exact accountAddress_roundtrip gem
 
 abbrev gemJoinCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev gemJoinCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩ ⟨1⟩
 
 abbrev gemJoinCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       (EVM.word vat.val))
 
 abbrev gemJoinCtorAfterIlkState (evm : EVM.State) (ilk : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ ilk
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ ilk
 
 abbrev gemJoinCtorAfterGemState (evm : EVM.State) (gem : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)
       (EVM.word gem.val))
 
 abbrev gemJoinCtorAfterDecState (evm : EVM.State) (dec : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ dec
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ dec
 
 theorem gemJoinCtorCallerWardsSlot_eq (I : ExecutionEnv) :
     wardsSlot (.address I.source) = gemJoinCtorCallerWardsSlot I := by

@@ -1,14 +1,14 @@
 import Benchmarks.Auction.CreateStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def createdScalarState (evm : EVM.State) (noun start finish : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore
-      (Solm.EVM.storageStore
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨207⟩ noun)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore
+      (Stele.EVM.storageStore
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨207⟩ noun)
         evm.executionEnv.codeOwner ⟨208⟩ ⟨0⟩)
       evm.executionEnv.codeOwner ⟨209⟩ start)
     evm.executionEnv.codeOwner ⟨210⟩ finish

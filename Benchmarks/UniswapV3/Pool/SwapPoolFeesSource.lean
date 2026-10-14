@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.FlashProtocolTrace
 import Benchmarks.UniswapV3.Pool.FeeGrowthStorage
 import Benchmarks.UniswapV3.Pool.SourceFrame
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -38,7 +38,8 @@ theorem SourceState.swapPoolFees {s0 ee σ evm} (hsource : SourceState s0 ee σ 
 theorem swapPoolProtocolSource {frame : Frame} (evm : EVM.State) (second : Bool)
     (s : SwapStateData) (hf : frame.contract = contract)
     (hs : frame.locals.get? "state" = some s.value)
-    (hbase : frame.locals.get? "protocolFees" = none) (hfit : s.Fits) :
+    (hbase : frame.locals.get? "protocolFees" = none) (hfit : s.Fits)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm (swapPoolProtocolStmt second)
       (.ok frame (flashProtocolState evm second s.protocolFee)) := by
   have hp : evalExpr? config frame evm (.field (.var "state") "protocolFee") =
@@ -70,35 +71,37 @@ theorem swapPoolProtocolSource {frame : Frame} (evm : EVM.State) (second : Bool)
     have hass := assignProtocolFee evm frame.locals frame.immutables second
       (uint128Word (protocolFeesWord second evm.accountMap evm.executionEnv + s.protocolFee)) hbase
     rw [← frame_eq_of_parts hf rfl, storeProtocolFee_uint128Word] at hass
-    exact ExecStmt.assign hcast hass
+    exact ExecStmt.assign (hperm := Or.inr hperm) hcast hass
 
 theorem swapPoolFeesBranchSource {frame : Frame} (evm : EVM.State) (second : Bool)
     (s : SwapStateData) (hf : frame.contract = contract)
     (hs : frame.locals.get? "state" = some s.value)
     (hg : frame.locals.get? (feeGrowthName second) = none)
-    (hp : frame.locals.get? "protocolFees" = none) (hfit : s.Fits) :
+    (hp : frame.locals.get? "protocolFees" = none) (hfit : s.Fits)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config frame evm (swapPoolFeesBody second)
       (.ok frame (swapPoolFeesState evm second s)) := by
   have hass := assignFeeGrowth frame.locals frame.immutables evm second s.feeGrowth hg
   rw [← frame_eq_of_parts hf rfl] at hass
   exact ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr hperm)
       (evalExpr_structField (name := "feeGrowthGlobalX128") (evalExpr_var_get hs) rfl) hass)
     (ExecBlock.consNormal
-      (swapPoolProtocolSource (storeFeeGrowth evm second s.feeGrowth) second s hf hs hp hfit) .nil)
+      (swapPoolProtocolSource (hperm := by simpa only [storeFeeGrowth, storageStore_executionEnv] using hperm) (storeFeeGrowth evm second s.feeGrowth) second s hf hs hp hfit) .nil)
 
 theorem swapPoolFeesSource {frame : Frame} (evm : EVM.State) (zeroForOne : Bool)
     (s : SwapStateData) (hf : frame.contract = contract)
     (hz : frame.locals.get? "zeroForOne" = some (.bool zeroForOne))
     (hs : frame.locals.get? "state" = some s.value)
     (hg : ∀ second, frame.locals.get? (feeGrowthName second) = none)
-    (hp : frame.locals.get? "protocolFees" = none) (hfit : s.Fits) :
+    (hp : frame.locals.get? "protocolFees" = none) (hfit : s.Fits)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config frame evm swapTransition.body[16]!
       (.ok frame (swapPoolFeesState evm (!zeroForOne) s)) := by
   cases zeroForOne
   · exact ExecStmt.iteFalse (evalExpr_var_get hz)
-      (swapPoolFeesBranchSource evm true s hf hs (hg true) hp hfit)
+      (swapPoolFeesBranchSource (hperm := by assumption) evm true s hf hs (hg true) hp hfit)
   · exact ExecStmt.iteTrue (evalExpr_var_get hz)
-      (swapPoolFeesBranchSource evm false s hf hs (hg false) hp hfit)
+      (swapPoolFeesBranchSource (hperm := by assumption) evm false s hf hs (hg false) hp hfit)
 
 end Benchmarks.UniswapV3.Pool

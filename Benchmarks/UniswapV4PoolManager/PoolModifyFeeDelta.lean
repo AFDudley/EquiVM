@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyContext
 import Benchmarks.UniswapV4PoolManager.SafeCast
 import Benchmarks.UniswapV4PoolManager.BalanceDeltaSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -44,7 +44,7 @@ theorem poolModifyFeeDelta {f : Frame} {evm : State} {owed0 owed1 : UInt256} {ol
       have hpack := balanceDeltaCall (f := f1) (evm := evm) hf he0 he1 "__c11"
       have hassign : ExecStmt config f2 evm poolModifyFunction.body[22]!
           (.ok (poolModifyFeeDeltaFrame f owed0 owed1) evm) :=
-        ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) (assignLocalValue
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _)) (assignLocalValue
           ((store_get_ne3 _ _ _ _ (by decide : ("__c9" == "feeDelta") = false)
             (by decide : ("__c10" == "feeDelta") = false) (by decide : ("__c11" == "feeDelta") = false)).trans hfee))
       exact ExecBlock.consNormal hc0 (ExecBlock.consNormal hc1 (ExecBlock.consNormal hpack (execBlock_singleton hassign)))

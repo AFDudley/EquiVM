@@ -33,8 +33,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode, 2178 bytes.
 - `Spotter.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold with storage layout and full public ABI surface.
-- `SpecSyntax.lean`: Solm notation presentation for representative fragments, checked by `rfl`.
+- `Spec.lean`: Stele AST benchmark scaffold with storage layout and full public ABI surface.
+- `SpecSyntax.lean`: Stele notation presentation for representative fragments, checked by `rfl`.
 - `Constructor.lean`: top-level constructor-equivalence theorem.
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper.
 
@@ -65,5 +65,5 @@ Scaffold notes:
   matching the policy used by the other event-bearing benchmarks.
 - The conditional arithmetic in `poke` is short-circuited: if `has` is false, the nested
   `mul/rdiv/rdiv` path is not evaluated.
-- No known Solm syntax or semantics change is required to start proving this benchmark. The likely
+- No known Stele syntax or semantics change is required to start proving this benchmark. The likely
   proof hotspots are oracle return decoding, conditional arithmetic, and packed bytes32-to-uint casts.

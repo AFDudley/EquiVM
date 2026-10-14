@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.WordRangeSourceStep
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 
@@ -15,7 +15,7 @@ def wordRangeResultFrame (evm : EVM.State) (imms : Store) (start : UInt256) (n :
 def wordRangeFirstFrame (evm : EVM.State) (imms : Store) (start : UInt256) (n : Nat) : Frame :=
   let f := wordRangeResultFrame evm imms start n
   {f with locals := f.locals.insert "first" (.int (Int.ofNat
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner start).toNat))}
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner start).toNat))}
 
 theorem wordRangePrelude (evm : EVM.State) (imms : Store) (start : UInt256) (n : Nat)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hhi : evm.executionEnv.calldata.size < calldataLimit) :
@@ -98,7 +98,7 @@ theorem wordRangeSource (evm : EVM.State) (imms : Store) (start : UInt256) (n : 
         .ok (wordBytes32Value (wordRangeValue evm start 0)) := by
       rw [wordRangeValue_zero]
       exact evalCastValue (evalLocalValue (store_get_self _ _ _)) (castUint256ToBytes32 _)
-    have hassign := ExecStmt.assign hfirst
+    have hassign := ExecStmt.assign (hperm := Or.inl rfl) hfirst
       (assignLocalArrayAt hres (show evalExpr? config f evm (.intLit 0) = .ok (.int (Int.ofNat 0)) by
         simp only [evalExpr?, pure]; rfl)
         (by simp only [res, List.length_replicate]; omega))

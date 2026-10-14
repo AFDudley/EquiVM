@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.TotalsStorage
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -24,7 +24,7 @@ theorem evalLastAccrual (evm : EVM.State) (locals imms : Store)
     (hlocal : locals.get? "lastAccrualTime" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨"lastAccrualTime", []⟩) =
-      .ok (.int (lastAccrualWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)).toNat) := by
+      .ok (.int (lastAccrualWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)).toNat) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := { slot := ⟨1⟩, offset := 26, size := 5, hbound := by decide,
               type := .int (.uint ⟨40, by decide⟩) })
@@ -79,7 +79,7 @@ theorem now_call_ok (frame : Frame) (evm : EVM.State) (ret : Ident)
   dsimp only at hb
   rw [if_pos ht] at hb
   exact ExecStmt.internalCallReturn (callee := nowCallable) (locals := ∅)
-    (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := []) rfl
+    (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := []) rfl
     (by rw [hc]; exact nowCallable_lookup) rfl (by simpa only [hc] using hb)
 
 theorem now_call_revert (frame : Frame) (evm : EVM.State) (ret : Ident)
@@ -89,7 +89,7 @@ theorem now_call_revert (frame : Frame) (evm : EVM.State) (ret : Ident)
   dsimp only at hb
   rw [if_neg ht] at hb
   exact ExecStmt.internalCallRevert (callee := nowCallable) (locals := ∅)
-    (cfg := config) (solm := frame) (evm := evm) (args := []) (argVals := []) rfl
+    (cfg := config) (stele := frame) (evm := evm) (args := []) (argVals := []) rfl
     (by rw [hc]; exact nowCallable_lookup) rfl (by simpa only [hc] using hb)
 
 end Benchmarks.CompoundIII.Comet

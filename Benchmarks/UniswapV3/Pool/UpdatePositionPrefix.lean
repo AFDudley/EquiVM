@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.UpdatePositionModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -18,7 +18,7 @@ theorem updatePositionGetSource (imms : Store) (evm : EVM.State) (a : UpdatePosi
       .ok (.int a.upper) := evalExpr_var_get (by update_position_prefix_get)
   exact internalCallFunctionReturn (callee := positionGetFunction) (retVar := "__c0")
     (argVals := [.address a.owner, .int a.lower, .int a.upper])
-    (calleeSolm := positionGetFrame imms a.owner (EVM.wordOfInt a.lower) (EVM.wordOfInt a.upper))
+    (calleeStele := positionGetFrame imms a.owner (EVM.wordOfInt a.lower) (EVM.wordOfInt a.upper))
     (locals := positionGetLocals a.owner (EVM.wordOfInt a.lower) (EVM.wordOfInt a.upper))
     (value := some [updatePositionKeyValue a])
     (by simp only [evalExprs?, ho, el, eu, bind, EvalResult.bind, pure]) positionGetLookup
@@ -29,10 +29,10 @@ theorem updatePositionKeySource (imms : Store) (evm : EVM.State) (a : UpdatePosi
     (hfit : a.Fits) :
     ExecBlock config (updatePositionFrame imms a) evm (updatePositionFunction.body.take 3)
       (.ok (updatePositionKeyFrame imms a) evm) := by
-  refine ExecBlock.consNormal (solm' := updatePositionZeroFrame imms a) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := updatePositionZeroFrame imms a) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure]; rfl)) ?_
   refine ExecBlock.consNormal (updatePositionGetSource imms evm a hfit) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_var_get (by update_position_prefix_get))
     (assignLocalVarBase_frame (by update_position_prefix_get))) ExecBlock.nil
 
@@ -41,9 +41,9 @@ theorem updatePositionGlobalsSource (imms : Store) (evm : EVM.State) (a : Update
       [updatePositionFunction.body[3]!, updatePositionFunction.body[4]!,
         updatePositionFunction.body[5]!, updatePositionFunction.body[6]!]
       (.ok (updatePositionReadyFrame imms a evm) evm) := by
-  refine ExecBlock.consNormal (solm' := updatePositionGlobal0Frame imms a evm) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := updatePositionGlobal0Frame imms a evm) (evm' := evm)
     (ExecStmt.letDecl (evalFeeGrowthGlobal0X128 _ imms evm (by update_position_prefix_get))) ?_
-  refine ExecBlock.consNormal (solm' := updatePositionGlobal1Frame imms a evm) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := updatePositionGlobal1Frame imms a evm) (evm' := evm)
     (ExecStmt.letDecl (evalFeeGrowthGlobal1X128 _ imms evm (by update_position_prefix_get))) ?_
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
     (ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ExecBlock.nil)

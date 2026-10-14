@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextComputeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -64,7 +64,7 @@ theorem bitmapNextBranchSource (imms : Store) (evm : EVM.State)
   have ha : ExecStmt config (bitmapNextComputedFrame imms locals compressed spacing lte masked) evm
       (.assign .localVar ⟨"next", []⟩ (.var (bitmapNextCondName lte)))
       (.ok (bitmapNextReadyFrame imms evm tick spacing lte) evm) :=
-    ExecStmt.assign (evalExpr_var_get hcond) (assignLocalVarBase_frame (hnext.trans hn))
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get hcond) (assignLocalVarBase_frame (hnext.trans hn))
   cases lte <;> exact ExecBlock.consNormal hcompute (ExecBlock.consNormal ha ExecBlock.nil)
 
 theorem bitmapNextReadyGet (imms : Store) (evm : EVM.State) (tick spacing : Int) (lte : Bool) :

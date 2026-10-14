@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordArraySource
 import Benchmarks.UniswapV4PoolManager.WordRangeABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 
@@ -14,10 +14,10 @@ theorem normalizeUint256WordAddNat (word : UInt256) (i : Nat) :
 
 def wordRangeSlot (start : UInt256) (i : Nat) : UInt256 := start + UInt256.ofNat i
 def wordRangeValue (evm : EVM.State) (start : UInt256) (i : Nat) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (wordRangeSlot start i)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (wordRangeSlot start i)
 
 theorem wordRangeValue_zero (evm : EVM.State) (start : UInt256) :
-    wordRangeValue evm start 0 = Solm.EVM.storageLoad evm evm.executionEnv.codeOwner start := by
+    wordRangeValue evm start 0 = Stele.EVM.storageLoad evm evm.executionEnv.codeOwner start := by
   unfold wordRangeValue wordRangeSlot
   rw [show UInt256.ofNat 0 = (⟨0⟩ : UInt256) from rfl, uadd_zero_r]
 
@@ -55,8 +55,8 @@ theorem wordRangeLoopStep (evm : EVM.State) (imms locals : Store) (start : UInt2
   have hi1 : l1.get? "i" = some (.int (Int.ofNat i)) :=
     (store_get_ne _ _ (by decide)).trans hl.index_eq
   refine ⟨l2, ?_, ?_⟩
-  · refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq (by omega)))
-      (ExecBlock.consNormal (ExecStmt.assign
+  · refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalArrayIndex hl.result_eq hl.index_eq (by omega)))
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (naturalAddSource (evalLocalValue hi1) (by simp only [evalExpr?, pure]; rfl))
         (assignLocalValue hi1)) ExecBlock.nil)
     exact evalCastValue (rawSlots_read rfl hl.raw_eq (wordRangeSlot_eval hl.start_eq hl.index_eq))

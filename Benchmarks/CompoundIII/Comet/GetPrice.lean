@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.PriceExternal
 # CometWithExtendedAssetList `getPrice(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1195; reach lemma `cometWithExtendedAssetListReachGetPriceBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListGetPriceBody {σ σ₀ A I} {g : UInt256} (v :
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 21) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some getPriceTransition :=
     cometSelectorDispatch ⟨21, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (getPriceTransition.params.map Param.name)
       (transitionSignature getPriceTransition).paramTypes I.calldata =
       decodeCalldata ["priceFeed"] [.elem .address] I.calldata := by

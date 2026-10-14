@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -10,7 +10,7 @@ def pauseFlagsLoc : StorageLoc :=
 
 def pauseFlagsWord (evm : EVM.State) : UInt256 :=
   UInt256.land
-    (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+    (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       (UInt256.ofNat (256 ^ 31))) (UInt256.ofNat 255)
 
 theorem evalPauseFlags (evm : EVM.State) (locals imms : Store)
@@ -31,14 +31,14 @@ theorem pauseFlagsWord_lt (evm : EVM.State) : (pauseFlagsWord evm).toNat < 256 :
 
 theorem pauseFlagsWord_eq_shift (evm : EVM.State) :
     pauseFlagsWord evm =
-      UInt256.shiftRight (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) ⟨248⟩ := by
+      UInt256.shiftRight (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) ⟨248⟩ := by
   unfold pauseFlagsWord
-  have hq : (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  have hq : (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       (UInt256.ofNat (256 ^ 31))).toNat < 256 := by
-    change (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat / 256 ^ 31 < 256
-    exact Nat.div_lt_of_lt_mul (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).val.isLt
+    change (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat / 256 ^ 31 < 256
+    exact Nat.div_lt_of_lt_mul (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).val.isLt
   have hclean : UInt256.land
-      (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+      (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
         (UInt256.ofNat (256 ^ 31))) (UInt256.ofNat 255) = _ := lowByteClean hq
   rw [hclean]
   apply u256_inj
@@ -70,7 +70,7 @@ theorem evalIsAllowed (evm : EVM.State) (locals imms : Store)
     evalExpr? config { contract := contract, locals := locals, immutables := imms }
       evm (.storage ⟨"isAllowed", [.mindex (.var ownerName), .mindex (.var managerName)]⟩) =
       .ok (wordToElem .bool (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (isAllowedSlot owner manager)) ⟨255⟩)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (isAllowedSlot owner manager)) ⟨255⟩)) := by
   apply evalExpr_storage_scalar_value (hbackend := rfl)
     (loc := boolOffset0Loc (isAllowedSlot owner manager))
     (er := ⟨"isAllowed", [.mindex (.address owner), .mindex (.address manager)]⟩)

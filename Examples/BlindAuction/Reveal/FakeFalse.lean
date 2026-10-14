@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.Assemble
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -70,7 +70,7 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
     (hlenL : L.get? "length" = some (.int (Int.ofNat loopLen.toNat)))
     (hrefundL : L.get? "refund" = some (.int (Int.ofNat a.refund.toNat)))
     (hlenSrc :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundValues : a.idx.toNat < values.length)
     (hboundFakes : a.idx.toNat < fakes.length)
@@ -203,10 +203,10 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
         ((accOf a).get? I.codeOwner).option ⟨0⟩
           (fun ac => ac.storage.getD ((⟨0⟩ : UInt256) + slot) ⟨0⟩) = blinded := rfl
     have hblindedSrc :
-        Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (scratch_revealBidBlindedSlot evm (idx a)) = blinded := by
       dsimp [blinded]
-      simpa [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      simpa [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         scratch_revealBidBlindedSlot, slot, u256_zero_add, henv, haccounts, accOf]
     let hashWord : UInt256 :=
       uInt256OfByteArray
@@ -312,9 +312,9 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
             (fun ac => ac.storage.getD (slot + ⟨1⟩) ⟨0⟩) =
             deposit := rfl
       have hdepositSrc :
-          Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (scratch_revealBidDepositSlot evm (idx a)) = deposit := by
-        simpa [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        simpa [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           scratch_revealBidDepositSlot, scratch_revealBidBlindedSlot,
           slot, deposit, u256_zero_add, henv, haccounts, accOf] using hdepositEvm
       by_cases hfit :
@@ -395,9 +395,9 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
           let high : UInt256 :=
             scratch_placeBidHighestBidWord (accOf a) I
           have hhighSrc :
-              Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+              Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
                 ⟨6⟩ = high := by
-            simp [Solm.EVM.storageLoad, State.lookupAccount,
+            simp [Stele.EVM.storageLoad, State.lookupAccount,
               Account.lookupStorage, high, scratch_placeBidHighestBidWord,
               henv, haccounts, accOf]
           by_cases hplaceFalse : value.toNat ≤ high.toNat
@@ -480,9 +480,9 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
             let old : UInt256 :=
               scratch_placeBidHighestBidderWord (accOf a) I
             have holdSrc :
-                Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+                Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
                   ⟨5⟩ = old := by
-              simp [Solm.EVM.storageLoad, State.lookupAccount,
+              simp [Stele.EVM.storageLoad, State.lookupAccount,
                 Account.lookupStorage, old, scratch_placeBidHighestBidderWord,
                 henv, haccounts, accOf]
             by_cases hzero :
@@ -573,7 +573,7 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
                     AccountAddress.ofNat
                       (UInt256.land old solcAddrMask).toNat := rfl
               have hpendingSrc :
-                  Solm.EVM.storageLoad evm
+                  Stele.EVM.storageLoad evm
                       evm.executionEnv.codeOwner
                       (pendingReturnsSlot (.address oldAddr)) =
                     pending := by
@@ -582,7 +582,7 @@ theorem scratch_revealLoopBody_fakeFalse_fromLoopStart {I} {g : Sat256}
                       pendingReturnsSlot (.address oldAddr) := by
                   unfold scratch_placeBidPendingSlot
                   simp [old, oldAddr]
-                unfold Solm.EVM.storageLoad State.lookupAccount
+                unfold Stele.EVM.storageLoad State.lookupAccount
                 rw [henv, ← haccounts]
                 simp [Account.lookupStorage, pending, scratch_placeBidPendingWord,
                   hslotPending, accOf]

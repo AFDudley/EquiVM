@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.BalanceDeltaSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem balanceDeltaWord_zero_right (a : UInt256) :

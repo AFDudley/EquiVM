@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.BodyCommon
 import Benchmarks.Morpho.MorphoBlue.Storage
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -27,11 +27,11 @@ theorem addressAdminBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (hcanon : value.toNat < EVM.addressModulus)
     (ho : solcSourceWord evm.executionEnv = solcAddressSlotWord ⟨0⟩ evm.accountMap evm.executionEnv)
     (hne : value ≠ solcAddressSlotWord slot evm.accountMap evm.executionEnv) :
-    ExecTransitionBody config contract evm locals (addressAdminBody name arg event)
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm locals (addressAdminBody name arg event)
       (.returned (addressAdminFrame v locals evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value))
-        none) (immStore v) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value))
+        none) (immStore v)) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm locals (addressAdminBody name arg event)
         .staticViolation (immStore v)) := by
@@ -51,10 +51,11 @@ theorem addressAdminBodySplit (v : MorphoImmutables) (evm : EVM.State)
       (by simpa only [ne_eq, hne, not_false_eq_true, decide_true] using hnew)
   have hassign := assignMorphoAddress evm _ (immStore v) name slot value hbaseName hty hloc hcanon
   constructor
-  · apply ExecFuncBody.execBlockOK
+  · intro hperm
+    apply ExecFuncBody.execBlockOK
     apply hprefix.run
-    apply ExecBlock.consNormal (ExecStmt.assign (hargEval evm) hassign)
-    apply ExecBlock.consNormal (ExecStmt.emit (evalExprs?_singleton (hargEval _)))
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (hargEval evm) hassign)
+    apply ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (evalExprs?_singleton (hargEval _)))
     exact ExecBlock.nil
   · intro hperm
     exact ExecFuncBody.execBlockStatic

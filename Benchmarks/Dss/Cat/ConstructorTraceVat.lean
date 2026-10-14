@@ -8,7 +8,7 @@ slot-5 pack (`PUSH1 slot; DUP1; SLOAD; …mask…; SSTORE`), with the stray `1` 
 sitting at the bottom of the stack.  The store leaves `[⟨1⟩]` on the stack.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 

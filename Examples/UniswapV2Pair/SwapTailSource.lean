@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.SwapUpdateSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000
 
@@ -26,11 +26,12 @@ theorem uniswapSwapBodyReturns_afterUpdate (evm evmU evmR : EVM.State) (I : Exec
       (.internalCall "_update" [.var "balance0", .var "balance1", .var "_reserve0", .var "_reserve1"]
         "_updateResult")
       (.ok (resumeAfterInternalCall { contract := contract, locals := locals } "_updateResult" none) evmR))
-    (hu : locals.get? "unlocked" = none) :
+    (hu : locals.get? "unlocked" = none)
+    (hperm : evmR.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (swapStore I) swapTransition.body
       (.returned (resumeAfterInternalCall { contract := contract, locals := locals } "_updateResult" none)
         (uniswapLockExitedState evmR) none) := by
-  have htail := uniswapLockExitSuffix evmR (locals.insert "_updateResult" .unit)
+  have htail := uniswapLockExitSuffix (hperm := by assumption) evmR (locals.insert "_updateResult" .unit)
     (by rw [store_get_ne _ _ (by decide)]; exact hu)
   apply ExecFuncBody.execBlockOK
   simpa only [swapTransition, swapInvariantPrefix, swapAdjustmentPrefix, swapInputGuardPrefix,

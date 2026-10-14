@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.ERC721.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# ERC721 spec in the Solidity-faithful Solm frontend
+# ERC721 spec in the Solidity-faithful Stele frontend
 
 The whole ERC721 benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/ERC721/Spec.lean`.
@@ -15,7 +15,7 @@ Notes mirroring the AST spec:
 * Transition order matches `erc721Contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace ERC721.Syntax
 

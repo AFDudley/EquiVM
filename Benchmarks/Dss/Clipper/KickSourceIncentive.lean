@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickSourceTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -11,7 +11,7 @@ set_option linter.unusedTactic false
 abbrev clipperKickSourceChipCoinWord (evmTop : EVM.State)
     (I : ExecutionEnv) : UInt256 :=
   UInt256.div
-    (UInt256.mul (clipperKickTabWord I) (clipperRedoChipSolmWord evmTop))
+    (UInt256.mul (clipperKickTabWord I) (clipperRedoChipSteleWord evmTop))
     ⟨1000000000000000000⟩
 
 abbrev clipperKickLocalsChipCoin (evmLock evmTop : EVM.State)
@@ -21,7 +21,7 @@ abbrev clipperKickLocalsChipCoin (evmLock evmTop : EVM.State)
 
 abbrev clipperKickSourceCoinWord (evmTop : EVM.State)
     (I : ExecutionEnv) : UInt256 :=
-  clipperRedoTipSolmWord evmTop + clipperKickSourceChipCoinWord evmTop I
+  clipperRedoTipSteleWord evmTop + clipperKickSourceChipCoinWord evmTop I
 
 abbrev clipperKickLocalsCoinNew (evmLock evmTop : EVM.State)
     (I : ExecutionEnv) (feedPrice top : UInt256) : Store :=
@@ -35,7 +35,7 @@ abbrev clipperKickLocalsCoin (evmLock evmTop : EVM.State)
 
 abbrev clipperKickSourceVowAddress (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       solcAddrMask).toNat
 
 abbrev clipperKickLocalsSuckRet (evmLock evmTop : EVM.State)
@@ -50,7 +50,7 @@ theorem clipperEvalKickWmulArgs (v : ClipperImmutables)
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
       evm [.var "tab", .var "_chip"] =
       .ok [.int (Int.ofNat (clipperKickTabWord I).toNat),
-        .int (Int.ofNat (clipperRedoChipSolmWord evmTop).toNat)] := by
+        .int (Int.ofNat (clipperRedoChipSteleWord evmTop).toNat)] := by
   have htab : evalExpr? config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
@@ -69,25 +69,25 @@ theorem clipperEvalKickWmulArgs (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
       evm (.var "_chip") =
-      .ok (.int (Int.ofNat (clipperRedoChipSolmWord evmTop).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoChipSteleWord evmTop).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinZero]
     rw [store_get_ne _ _ (by decide), clipperKickLocalsChip, store_get_self]
     rfl
   exact clipperEvalExprsUintBinary v evm
     (clipperKickLocalsCoinZero evmLock evmTop I feedPrice top)
-    (clipperKickTabWord I) (clipperRedoChipSolmWord evmTop) htab hchip
+    (clipperKickTabWord I) (clipperRedoChipSteleWord evmTop) htab hchip
 
 theorem clipperKickWmulCallReturns (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
     (hmul : (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat < UInt256.size) :
+      (clipperRedoChipSteleWord evmTop).toNat < UInt256.size) :
     ExecStmt config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop (.internalCall "wmul" [.var "tab", .var "_chip"] "chipCoin")
       (.ok (Frame.mk contract (clipperKickLocalsChipCoin evmLock evmTop I feedPrice top) (immStore v)) evmTop) := by
   let tab := clipperKickTabWord I
-  let chip := clipperRedoChipSolmWord evmTop
+  let chip := clipperRedoChipSteleWord evmTop
   simpa [resumeAfterInternalCall, clipperKickLocalsChipCoin,
     clipperKickSourceChipCoinWord, tab, chip] using
     (internalCallFunctionReturn
@@ -98,7 +98,7 @@ theorem clipperKickWmulCallReturns (v : ClipperImmutables)
       (args := [.var "tab", .var "_chip"])
       (argVals := [.int (Int.ofNat tab.toNat), .int (Int.ofNat chip.toNat)])
       (callee := wmulFunction) (locals := clipperUintBinaryLocals tab chip)
-      (calleeSolm := Frame.mk contract (clipperWmulReturnLocals tab chip (UInt256.mul tab chip)) (immStore v))
+      (calleeStele := Frame.mk contract (clipperWmulReturnLocals tab chip (UInt256.mul tab chip)) (immStore v))
       (value := some [.int (Int.ofNat
         (UInt256.div (UInt256.mul tab chip) ⟨1000000000000000000⟩).toNat)])
       (by simpa [tab, chip] using
@@ -109,7 +109,7 @@ theorem clipperKickWmulCallReturns (v : ClipperImmutables)
 theorem clipperKickWmulCallReverts (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
     (hover : UInt256.size ≤ (clipperKickTabWord I).toNat *
-      (clipperRedoChipSolmWord evmTop).toNat) :
+      (clipperRedoChipSteleWord evmTop).toNat) :
     ExecStmt config
       { contract := contract,
         locals := clipperKickLocalsCoinZero evmLock evmTop I feedPrice top, immutables := immStore v }
@@ -121,15 +121,15 @@ theorem clipperKickWmulCallReverts (v : ClipperImmutables)
     (evm := evmTop) (name := "wmul") (retVar := "chipCoin")
     (args := [.var "tab", .var "_chip"])
     (argVals := [.int (Int.ofNat (clipperKickTabWord I).toNat),
-      .int (Int.ofNat (clipperRedoChipSolmWord evmTop).toNat)])
+      .int (Int.ofNat (clipperRedoChipSteleWord evmTop).toNat)])
     (callee := wmulFunction)
     (locals := clipperUintBinaryLocals (clipperKickTabWord I)
-      (clipperRedoChipSolmWord evmTop))
+      (clipperRedoChipSteleWord evmTop))
     (clipperEvalKickWmulArgs v evmLock evmTop evmTop I feedPrice top)
     (clipperLookupWmulFunction)
-    (clipperBindParamsWmul (clipperKickTabWord I) (clipperRedoChipSolmWord evmTop))
+    (clipperBindParamsWmul (clipperKickTabWord I) (clipperRedoChipSteleWord evmTop))
     (clipperWmulFunctionReverts v evmTop (clipperKickTabWord I)
-      (clipperRedoChipSolmWord evmTop) hover)
+      (clipperRedoChipSteleWord evmTop) hover)
 
 theorem clipperEvalKickTipAtChipCoin (v : ClipperImmutables)
     (evmLock evmTop evm : EVM.State) (I : ExecutionEnv)
@@ -138,7 +138,7 @@ theorem clipperEvalKickTipAtChipCoin (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsChipCoin evmLock evmTop I feedPrice top, immutables := immStore v }
       evm (.var "_tip") =
-      .ok (.int (Int.ofNat (clipperRedoTipSolmWord evmTop).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoTipSteleWord evmTop).toNat)) := by
   simp only [evalExpr?, clipperKickLocalsChipCoin, clipperKickLocalsCoinZero,
     clipperKickLocalsChip, clipperKickLocalsTip]
   rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
@@ -157,7 +157,7 @@ theorem clipperEvalKickChipCoin (v : ClipperImmutables)
 
 theorem clipperEvalKickCoinAddOk (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hfit : (clipperRedoTipSolmWord evmTop).toNat +
+    (hfit : (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat < UInt256.size) :
     evalExpr? config
       { contract := contract,
@@ -170,7 +170,7 @@ theorem clipperEvalKickCoinAddOk (v : ClipperImmutables)
 
 theorem clipperEvalKickCoinAddRevert (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hover : UInt256.size ≤ (clipperRedoTipSolmWord evmTop).toNat +
+    (hover : UInt256.size ≤ (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat) :
     evalExpr? config
       { contract := contract,
@@ -182,7 +182,7 @@ theorem clipperEvalKickCoinAddRevert (v : ClipperImmutables)
 
 theorem clipperKickCheckedAddCoin (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hfit : (clipperRedoTipSolmWord evmTop).toNat +
+    (hfit : (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat < UInt256.size) :
     ExecBlock config
       { contract := contract,
@@ -200,10 +200,10 @@ theorem clipperKickCheckedAddCoin (v : ClipperImmutables)
     ExecStmt.letDecl
       (clipperEvalKickCoinAddOk v evmLock evmTop I feedPrice top hfit)
   have hcoin : (clipperKickSourceCoinWord evmTop I).toNat =
-      (clipperRedoTipSolmWord evmTop).toNat +
+      (clipperRedoTipSteleWord evmTop).toNat +
         (clipperKickSourceChipCoinWord evmTop I).toNat := by
     rw [clipperKickSourceCoinWord, uadd_toNat, Nat.mod_eq_of_lt hfit]
-  have htipLe : (clipperRedoTipSolmWord evmTop).toNat ≤
+  have htipLe : (clipperRedoTipSteleWord evmTop).toNat ≤
       (clipperKickSourceCoinWord evmTop I).toNat := by omega
   have hcoinEval : evalExpr? config
       { contract := contract,
@@ -215,7 +215,7 @@ theorem clipperKickCheckedAddCoin (v : ClipperImmutables)
       { contract := contract,
         locals := clipperKickLocalsCoinNew evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop (.var "_tip") =
-      .ok (.int (Int.ofNat (clipperRedoTipSolmWord evmTop).toNat)) := by
+      .ok (.int (Int.ofNat (clipperRedoTipSteleWord evmTop).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinNew, clipperKickLocalsChipCoin,
       clipperKickLocalsCoinZero, clipperKickLocalsChip, clipperKickLocalsTip]
     rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide),
@@ -234,7 +234,7 @@ theorem clipperKickCheckedAddCoin (v : ClipperImmutables)
 
 theorem clipperKickCheckedAddCoinReverts (v : ClipperImmutables)
     (evmLock evmTop : EVM.State) (I : ExecutionEnv) (feedPrice top : UInt256)
-    (hover : UInt256.size ≤ (clipperRedoTipSolmWord evmTop).toNat +
+    (hover : UInt256.size ≤ (clipperRedoTipSteleWord evmTop).toNat +
       (clipperKickSourceChipCoinWord evmTop I).toNat) :
     ExecBlock config
       { contract := contract,
@@ -258,7 +258,7 @@ theorem clipperKickAssignCoin (v : ClipperImmutables)
       evmTop (.var "coinNew") =
       .ok (.int (Int.ofNat (clipperKickSourceCoinWord evmTop I).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinNew, store_get_self, EvalResult.ofOption]
-  apply ExecStmt.assign hrhs
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs
   simp [assignStorageRef?, updateLocalPath?, varRef, clipperKickLocalsCoin,
     pure, bind, EvalResult.bind]
 
@@ -336,7 +336,7 @@ theorem clipperKickSuckCallFailureSource (v : ClipperImmutables)
         locals := clipperKickLocalsCoin evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop (checkedExternalCallStmts vatExpr "suck" (.intLit 0)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet") .reverted := by
-  simpa [checkedExternalCallStmts] using checkedExternalCallFailure
+  simpa [checkedExternalCallStmts] using checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (clipperEvalRedoVatCodeGuardTrue v evmTop
       (clipperKickLocalsCoin evmLock evmTop I feedPrice top) hcode)
     (clipperEvalVat v evmTop
@@ -359,7 +359,7 @@ theorem clipperKickSuckCallSuccessSource (v : ClipperImmutables)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet")
       (.ok (Frame.mk contract (clipperKickLocalsSuckRet evmLock evmTop I feedPrice top) (immStore v)) evmAfter) := by
   simpa [checkedExternalCallStmts, clipperKickLocalsSuckRet] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (clipperEvalRedoVatCodeGuardTrue v evmTop
         (clipperKickLocalsCoin evmLock evmTop I feedPrice top) hcode)
       (clipperEvalVat v evmTop

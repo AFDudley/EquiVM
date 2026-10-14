@@ -1,12 +1,12 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 import Benchmarks.Scaffolds.Klima.StringLayout
 
 /-!
 # KlimaDAO KlimaToken benchmark spec
 
-Solm benchmark scaffold for KlimaDAO `src/protocol/tokens/regular/KlimaToken.sol` (solc 0.7.5), the
+Stele benchmark scaffold for KlimaDAO `src/protocol/tokens/regular/KlimaToken.sol` (solc 0.7.5), the
 full inherited contract: OpenZeppelin-style ERC20 with `SafeMath` checked arithmetic, EIP-2612
 `permit` (EIP-712 digest + `ecrecover` precompile), `Ownable`/`VaultOwned` access control, and a
 `TWAPOracleUpdater` layer whose `_beforeTokenTransfer` hook fires an external `twapOracle.updateTWAP`
@@ -27,7 +27,7 @@ Events are omitted (the equivalence observes neither logs nor revert data).  Mod
   decoded through the legacy coder (size-check only, matching the discarded runtime decode).
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Klima
 
@@ -582,8 +582,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := klimaStorageBackend storageLayout
-    externalABI := klimaExternalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (klimaExternalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Klima

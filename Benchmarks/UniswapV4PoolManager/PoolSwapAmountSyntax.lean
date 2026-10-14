@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapSyntax
 
-open Solm ABI
+open Stele ABI
 namespace Benchmarks.UniswapV4PoolManager
 
 def poolSwapInputAmountStmts : List Stmt :=

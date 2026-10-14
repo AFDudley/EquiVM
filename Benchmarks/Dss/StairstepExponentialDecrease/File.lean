@@ -1,7 +1,7 @@
 import Benchmarks.Dss.StairstepExponentialDecrease.Rely
 import Reasoning.ABIComposite
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -71,7 +71,7 @@ theorem fileWhatWord_ne_of_bytes_ne {I : ExecutionEnv} {bs : List UInt8}
 
 
 theorem stairstepDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata =
         some (fileLocals I) := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int,
@@ -81,7 +81,7 @@ theorem stairstepDecode_file_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.si
 
 theorem stairstepDecode_file_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileTransition.params.map Param.name)
       (transitionSignature fileTransition).paramTypes I.calldata = none := by
   simpa [config, fileTransition, bytes32, bytes32Width, uint256, uint256Int, abiBytes32,
     abiBytes32Width, abiUInt256] using
@@ -205,7 +205,7 @@ theorem evalStorageRef_file_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_file_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fileLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -213,7 +213,7 @@ theorem evalExpr_file_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := fileLocals I })
+      (stele := { contract := contract, locals := fileLocals I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -231,18 +231,18 @@ theorem evalExpr_file_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_file_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fileLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := fileLocals I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (relyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := fileLocals I })
+      (stele := { contract := contract, locals := fileLocals I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -254,7 +254,7 @@ theorem evalExpr_file_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (relyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -262,22 +262,22 @@ theorem evalExpr_file_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
 
 def fileCutPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (fileData I)
 
 def fileStepPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩ (fileData I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩ (fileData I)
 
 theorem assign_fileCutStorage (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := fileLocals I } evm
@@ -314,10 +314,10 @@ theorem stairstepFileSourceBodyCutSplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileCutPostState evm0 I
-    (((fileData I).toNat ≤ RAY →
+    ((I.perm = true → (fileData I).toNat ≤ RAY →
       ExecTransitionBody config contract evm0 locals fileTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
-      (RAY < (fileData I).toNat →
+      (I.perm = true → RAY < (fileData I).toNat →
         ExecTransitionBody config contract evm0 locals fileTransition.body .reverted)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileTransition.body .staticViolation) := by
@@ -325,7 +325,7 @@ theorem stairstepFileSourceBodyCutSplit {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_file_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hcond :
@@ -356,7 +356,7 @@ theorem stairstepFileSourceBodyCutSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond h)
   refine ⟨⟨?_, ?_⟩, ?_⟩
-  · intro hle
+  · intro hperm hle
     have hleEval :
         evalExpr? config { contract := contract, locals := locals } evm1
           (.binary .le (.var "data") (.intLit RAY)) = .ok (.bool true) := by
@@ -367,10 +367,10 @@ theorem stairstepFileSourceBodyCutSplit {σ σ₀ A I} {g : UInt256}
           [.assign .storage cutRef (.var "data"),
             .require (.binary .le (.var "data") (.intLit RAY))]
           (.ok { contract := contract, locals := locals } evm1) := by
-      refine ExecBlock.consNormal (ExecStmt.assign hdata hassign) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ?_
       exact ExecBlock.consNormal (ExecStmt.requireTrue hleEval) ExecBlock.nil
     exact ExecFuncBody.execBlockOK (hbody _ hthen)
-  · intro hgt
+  · intro hperm hgt
     have hleEval :
         evalExpr? config { contract := contract, locals := locals } evm1
           (.binary .le (.var "data") (.intLit RAY)) = .ok (.bool false) := by
@@ -381,7 +381,7 @@ theorem stairstepFileSourceBodyCutSplit {σ σ₀ A I} {g : UInt256}
           [.assign .storage cutRef (.var "data"),
             .require (.binary .le (.var "data") (.intLit RAY))]
           .reverted := by
-      refine ExecBlock.consNormal (ExecStmt.assign hdata hassign) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ?_
       exact ExecBlock.consRevert (ExecStmt.requireFalse hleEval)
     exact ExecFuncBody.execBlockRevert (hbody _ hthen)
   · intro hperm
@@ -392,23 +392,25 @@ theorem stairstepFileSourceBodyCutOk {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hwhat : fileWhat I = fileCutBytes)
-    (hle : (fileData I).toNat ≤ RAY) :
+    (hle : (fileData I).toNat ≤ RAY)
+    (hperm : I.perm = true) :
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileCutPostState evm0 I
     ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (stairstepFileSourceBodyCutSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1.1 hle
+  (stairstepFileSourceBodyCutSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1.1 hperm hle
 
 theorem stairstepFileSourceBodyCutGtReverts {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hwhat : fileWhat I = fileCutBytes)
-    (hgt : RAY < (fileData I).toNat) :
+    (hgt : RAY < (fileData I).toNat)
+    (hperm : I.perm = true) :
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals fileTransition.body .reverted :=
-  (stairstepFileSourceBodyCutSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1.2 hgt
+  (stairstepFileSourceBodyCutSplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1.2 hperm hgt
 
 theorem stairstepFileSourceBodyStepSplit {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -418,15 +420,15 @@ theorem stairstepFileSourceBodyStepSplit {σ σ₀ A I} {g : UInt256}
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileStepPostState evm0 I
-    ExecTransitionBody config contract evm0 locals fileTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileTransition.body .staticViolation) := by
   intro locals evm0 evm1
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_file_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hcut :
@@ -462,7 +464,8 @@ theorem stairstepFileSourceBodyStepSplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hcut
       (execBlock_singleton (ExecStmt.iteTrue hstep (execBlock_singleton h))))
   refine ⟨?_, fun hperm ↦ ?_⟩
-  · exact ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hdata hassign))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign))
   · exact ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hdata hassign (by simp [evm0, initState]; exact hperm)))
 
@@ -470,14 +473,15 @@ theorem stairstepFileSourceBodyStepOk {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
     (hnotCut : fileWhat I ≠ fileCutBytes)
-    (hwhat : fileWhat I = fileStepBytes) :
+    (hwhat : fileWhat I = fileStepBytes)
+    (hperm : I.perm = true) :
     let locals := fileLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := fileStepPostState evm0 I
     ExecTransitionBody config contract evm0 locals fileTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
   (stairstepFileSourceBodyStepSplit (σ₀ := σ₀) (A := A) (g := g)
-    hwv hauth hnotCut hwhat).1
+    hwv hauth hnotCut hwhat).1 hperm
 
 theorem stairstepFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -489,14 +493,14 @@ theorem stairstepFileSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_file_auth_false evm0 I (by simp [evm0, initState]) hauth
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := ([
@@ -522,7 +526,7 @@ theorem stairstepFileSourceBodyUnrecognizedReverts {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_file_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hcut :
@@ -1144,7 +1148,7 @@ theorem stairstepFileBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := stairstepDecode_file_ok (I := I) hsz68
     obtain ⟨_, _, rd350⟩ :=
       stairstepFileX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hauth : relyAuthWord σ I = ⟨1⟩
     · obtain ⟨_, _, rd428⟩ := stairstepFileX_authorized (I := I) hauth rd350
       have hsz36 : 36 ≤ I.calldata.size := by omega
@@ -1161,26 +1165,26 @@ theorem stairstepFileBody {σ σ₀ A I} {g : UInt256}
                 hwv hauth hcut).2 hpf)
         by_cases hle : (fileData I).toNat ≤ RAY
         · have hbody :
-            ExecTransitionBody config contract evmSolm (fileLocals I) fileTransition.body
+            ExecTransitionBody config contract evmStele (fileLocals I) fileTransition.body
               (.returned { contract := contract, locals := fileLocals I }
-                (fileCutPostState evmSolm I) none) := by
-            simpa [evmSolm] using
-              stairstepFileSourceBodyCutOk
+                (fileCutPostState evmStele I) none) := by
+            simpa [evmStele] using
+              stairstepFileSourceBodyCutOk (hperm := hperm)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hauth hcut hle
           exact (stairstepFileX_cut_ok hperm hcutWord hle rd428)
             |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-              (by simp [fileCutPostState, evmSolm, initState, storageStore_accountMap])
+              (by simp [fileCutPostState, evmStele, initState, storageStore_accountMap])
               (by
                 simpa [fileTransition] using
                   (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
                     (dvs := []) rfl (by native_decide) (by native_decide)))
         · have hgt : RAY < (fileData I).toNat := by omega
           have hbody :
-              ExecTransitionBody config contract evmSolm (fileLocals I)
+              ExecTransitionBody config contract evmStele (fileLocals I)
                 fileTransition.body .reverted := by
-            simpa [evmSolm] using
-              stairstepFileSourceBodyCutGtReverts
+            simpa [evmStele] using
+              stairstepFileSourceBodyCutGtReverts (hperm := hperm)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hauth hcut hgt
           exact (stairstepFileX_cut_gt hperm hcutWord hgt rd428)
@@ -1201,16 +1205,16 @@ theorem stairstepFileBody {σ σ₀ A I} {g : UInt256}
                 ((stairstepFileSourceBodyStepSplit (σ₀ := σ₀) (A := A) (g := g)
                   hwv hauth hcut hstep).2 hpf)
           have hbody :
-            ExecTransitionBody config contract evmSolm (fileLocals I) fileTransition.body
+            ExecTransitionBody config contract evmStele (fileLocals I) fileTransition.body
               (.returned { contract := contract, locals := fileLocals I }
-                (fileStepPostState evmSolm I) none) := by
-            simpa [evmSolm] using
-              stairstepFileSourceBodyStepOk
+                (fileStepPostState evmStele I) none) := by
+            simpa [evmStele] using
+              stairstepFileSourceBodyStepOk (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hauth hcut hstep
           exact (stairstepFileX_step_ok hperm hnotCutWord hstepWord rd428)
             |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-              (by simp [fileStepPostState, evmSolm, initState, storageStore_accountMap])
+              (by simp [fileStepPostState, evmStele, initState, storageStore_accountMap])
               (by
                 simpa [fileTransition] using
                   (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -1219,18 +1223,18 @@ theorem stairstepFileBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 ≠ ABI.bytesToWord fileStepBytes :=
             fileWhatWord_ne_of_bytes_ne hsz36 hstep fileStepBytes_length
           have hbody :
-              ExecTransitionBody config contract evmSolm (fileLocals I)
+              ExecTransitionBody config contract evmStele (fileLocals I)
                 fileTransition.body .reverted := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               stairstepFileSourceBodyUnrecognizedReverts
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g) hwv hauth hcut hstep
           exact (stairstepFileX_unrecognized hnotCutWord hnotStepWord rd428)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have hbody :
-          ExecTransitionBody config contract evmSolm (fileLocals I)
+          ExecTransitionBody config contract evmStele (fileLocals I)
             fileTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           stairstepFileSourceBodyAuthReverts
             (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := g) hwv hauth

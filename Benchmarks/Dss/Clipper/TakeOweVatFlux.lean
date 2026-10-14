@@ -8,13 +8,13 @@ import Reasoning.ExternalCall
 import Benchmarks.Dss.Clipper.TakePostDogSource
 import Benchmarks.Dss.Clipper.TakeNoAdjustPostDogSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -369,33 +369,33 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
-    {evmPriceSolm : EVM.State} {price : UInt256}
+    {evmPriceStele : EVM.State} {price : UInt256}
     (hrev :
       RDrev code (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hsrcMul :
-      (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceSolm I)
+      (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
         (clipperTakeAmtWord I)).toNat * price.toNat < UInt256.size)
     (hsrcGt :
-      (clipperTakeSalesTabEVMWord evmPriceSolm I).toNat <
+      (clipperTakeSalesTabEVMWord evmPriceStele I).toNat <
         (UInt256.mul
-          (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceSolm I)
+          (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
             (clipperTakeAmtWord I)) price).toNat)
     (hsrcSliceLot :
-      (UInt256.div (clipperTakeSalesTabEVMWord evmPriceSolm I) price).toNat ≤
-        (clipperTakeSalesLotEVMWord evmPriceSolm I).toNat)
-    (hnoVatCodeSolm :
-      (UInt256.ofNat ((evmPriceSolm.lookupAccount v.vat).option 0
+      (UInt256.div (clipperTakeSalesTabEVMWord evmPriceStele I) price).toNat ≤
+        (clipperTakeSalesLotEVMWord evmPriceStele I).toNat)
+    (hnoVatCodeStele :
+      (UInt256.ofNat ((evmPriceStele.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat = 0)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -404,17 +404,18 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hbody :
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     exact
-      clipperTakeOweGtTabVatFluxNoCodeSourceReverts
+      clipperTakeOweGtTabVatFluxNoCodeSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
-        (I := I) (g := g) v hwv hlockedSolm hstoppedSolmLt husrSolm price hmax
-        hsrcMul hsrcGt hsrcSliceLot hnoVatCodeSolm hstatus
+        (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele price hmax
+        hsrcMul hsrcGt hsrcSliceLot hnoVatCodeStele hstatus
   exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
 
 theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords
@@ -423,26 +424,26 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
-    {evmPriceSolm : EVM.State} {price tab lot : UInt256}
-    (htab : tab = clipperTakeSalesTabEVMWord evmPriceSolm I)
-    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceSolm I)
+    {evmPriceStele : EVM.State} {price tab lot : UInt256}
+    (htab : tab = clipperTakeSalesTabEVMWord evmPriceStele I)
+    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceStele I)
     (hrev :
       RDrev code (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hmul : price.toNat * (clipperMinWord (clipperTakeAmtWord I) lot).toNat < UInt256.size)
     (hgt : tab.toNat < (UInt256.mul price (clipperMinWord (clipperTakeAmtWord I) lot)).toNat)
-    (hnoVatCodeSolm :
-      (UInt256.ofNat ((evmPriceSolm.lookupAccount v.vat).option 0
+    (hnoVatCodeStele :
+      (UInt256.ofNat ((evmPriceStele.lookupAccount v.vat).option 0
         (fun acc => acc.code.size))).toNat = 0)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -451,34 +452,35 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   exact
-    clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore v hcode hwv hdispatch hdec
-      hlockedSolm hstoppedSolmLt husrSolm hrev hmax
+    clipperTakeOweGtTabVatFluxNoCodeRevertEquivCore (hperm := by assumption) v hcode hwv hdispatch hdec
+      hlockedStele hstoppedSteleLt husrStele hrev hmax
       (clipperTakeOweGtTabSourceMul_of_post_lot hlot hmul)
       (clipperTakeOweGtTabSourceGt_of_post_words htab hlot hgt)
       (clipperTakeOweGtTabSourceDivLeLot_of_post_words htab hlot hmul hgt)
-      hnoVatCodeSolm hstatus
+      hnoVatCodeStele hstatus
 
 theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
     (v : ClipperImmutables) {code : ByteArray}
     {σ σ₀ A I} {g : UInt256}
-    {σPost σPostSolm : AccountMap} {evmPriceSolm : EVM.State}
+    {σPost σPostStele : AccountMap} {evmPriceStele : EVM.State}
     {price slice tab lot tic packed stopped dataLen dataStart who max amt id : UInt256}
     {R : List UInt256} {mem rdata : ByteArray} {k C : ℕ}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
     (rd :
       RD code I (Sat256.ofUInt256 g)
@@ -486,10 +488,10 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
         (price :: slice :: ⟨4057⟩ :: slice :: ⟨0⟩ :: tab :: lot :: price :: tic ::
           packed :: stopped :: dataLen :: dataStart :: who :: max :: amt :: id :: R)
         mem (UInt256.ofNat 7) rdata σPost k C)
-    (hAccountsPost : Eq σPost σPostSolm)
-    (hevmPriceAccounts : evmPriceSolm.accountMap = σPostSolm)
-    (htab : tab = clipperTakeSalesTabEVMWord evmPriceSolm I)
-    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceSolm I)
+    (hAccountsPost : Eq σPost σPostStele)
+    (hevmPriceAccounts : evmPriceStele.accountMap = σPostStele)
+    (htab : tab = clipperTakeSalesTabEVMWord evmPriceStele I)
+    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceStele I)
     (hslice : slice = clipperMinWord (clipperTakeAmtWord I) lot)
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hmul : price.toNat * slice.toNat < UInt256.size)
@@ -506,30 +508,31 @@ theorem clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hrev :
       RDrev code (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.clipperTakeOweGtTabVatFluxNoCode (v := v) (hpatch := hpatch) rd hmul hgt
       hmem hread64 hnoVatCodeEvm hov
-  have hnoVatCodeSolm :
+  have hnoVatCodeStele :
       (UInt256.ofNat
-        ((evmPriceSolm.lookupAccount v.vat).option 0 (fun acc => acc.code.size))).toNat =
+        ((evmPriceStele.lookupAccount v.vat).option 0 (fun acc => acc.code.size))).toNat =
         0 := by
     have hnoCode :
-        Reasoning.Theory.extCodeSizeWord σPostSolm (clipperTakeVatTarget v) = ⟨0⟩ := by
+        Reasoning.Theory.extCodeSizeWord σPostStele (clipperTakeVatTarget v) = ⟨0⟩ := by
       simpa only [← hAccountsPost] using hnoVatCodeEvm
     simpa [State.lookupAccount, hevmPriceAccounts] using
       extCodeSizeWord_zero_lookup_code_zero
-        (σ := σPostSolm) (target := clipperTakeVatTarget v)
+        (σ := σPostStele) (target := clipperTakeVatTarget v)
         (addr := v.vat) (clipperTakeVatTargetAddress v).symm hnoCode
   exact
-    clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords v hcode hwv hdispatch
-      hdec hlockedSolm hstoppedSolmLt husrSolm htab hlot hrev hmax
+    clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostWords (hperm := by assumption) v hcode hwv hdispatch
+      hdec hlockedStele hstoppedSteleLt husrStele htab hlot hrev hmax
       (by simpa [hslice] using hmul)
       (by simpa [hslice] using hgt)
-      hnoVatCodeSolm hstatus
+      hnoVatCodeStele hstatus
 
 theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore
     (v : ClipperImmutables) {code : ByteArray}
@@ -537,43 +540,43 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
-    {evmPriceSolm evmVatSolm : EVM.State} {outVat : ByteArray} {price : UInt256}
+    {evmPriceStele evmVatStele : EVM.State} {outVat : ByteArray} {price : UInt256}
     (hrev :
       RDrev code (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hsrcMul :
-      (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceSolm I)
+      (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
         (clipperTakeAmtWord I)).toNat * price.toNat < UInt256.size)
     (hsrcGt :
-      (clipperTakeSalesTabEVMWord evmPriceSolm I).toNat <
+      (clipperTakeSalesTabEVMWord evmPriceStele I).toNat <
         (UInt256.mul
-          (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceSolm I)
+          (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
             (clipperTakeAmtWord I)) price).toNat)
     (hsrcSliceLot :
-      (UInt256.div (clipperTakeSalesTabEVMWord evmPriceSolm I) price).toNat ≤
-        (clipperTakeSalesLotEVMWord evmPriceSolm I).toNat)
-    (hvatCodeSolm :
+      (UInt256.div (clipperTakeSalesTabEVMWord evmPriceStele I) price).toNat ≤
+        (clipperTakeSalesLotEVMWord evmPriceStele I).toNat)
+    (hvatCodeStele :
       0 <
-        (UInt256.ofNat ((evmPriceSolm.lookupAccount v.vat).option 0
+        (UInt256.ofNat ((evmPriceStele.lookupAccount v.vat).option 0
           (fun acc => acc.code.size))).toNat)
-    (hcallVatSolm :
-      typedCallViaEVM config evmPriceSolm (EVM.address v.vat) "flux" 0
-        [v.ilk, .address evmPriceSolm.executionEnv.codeOwner,
+    (hcallVatStele :
+      typedCallViaEVM config evmPriceStele (EVM.address v.vat) "flux" 0
+        [v.ilk, .address evmPriceStele.executionEnv.codeOwner,
           .address (AccountAddress.ofNat
             (UInt256.land (clipperTakeWhoWord I) solcAddrMask).toNat),
           .int (Int.ofNat
-            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceSolm I) price).toNat)]
-        (false, evmVatSolm, outVat) true)
+            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceStele I) price).toNat)]
+        (false, evmVatStele, outVat) true)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evmLock := EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
@@ -581,17 +584,18 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hbody :
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
     exact
-      clipperTakeOweGtTabVatFluxCallFailureSourceReverts
+      clipperTakeOweGtTabVatFluxCallFailureSourceReverts (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (A := A)
-        (I := I) (g := g) v hwv hlockedSolm hstoppedSolmLt husrSolm price hmax
-        hsrcMul hsrcGt hsrcSliceLot hvatCodeSolm hcallVatSolm hstatus
+        (I := I) (g := g) v hwv hlockedStele hstoppedSteleLt husrStele price hmax
+        hsrcMul hsrcGt hsrcSliceLot hvatCodeStele hcallVatStele hstatus
   exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
 
 theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords
@@ -600,36 +604,36 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
-    {evmPriceSolm evmVatSolm : EVM.State} {outVat : ByteArray} {price tab lot : UInt256}
-    (htab : tab = clipperTakeSalesTabEVMWord evmPriceSolm I)
-    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceSolm I)
+    {evmPriceStele evmVatStele : EVM.State} {outVat : ByteArray} {price tab lot : UInt256}
+    (htab : tab = clipperTakeSalesTabEVMWord evmPriceStele I)
+    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceStele I)
     (hrev :
       RDrev code (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I))
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hmul : price.toNat * (clipperMinWord (clipperTakeAmtWord I) lot).toNat < UInt256.size)
     (hgt : tab.toNat < (UInt256.mul price (clipperMinWord (clipperTakeAmtWord I) lot)).toNat)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 <
-        (UInt256.ofNat ((evmPriceSolm.lookupAccount v.vat).option 0
+        (UInt256.ofNat ((evmPriceStele.lookupAccount v.vat).option 0
           (fun acc => acc.code.size))).toNat)
-    (hcallVatSolm :
-      typedCallViaEVM config evmPriceSolm (EVM.address v.vat) "flux" 0
-        [v.ilk, .address evmPriceSolm.executionEnv.codeOwner,
+    (hcallVatStele :
+      typedCallViaEVM config evmPriceStele (EVM.address v.vat) "flux" 0
+        [v.ilk, .address evmPriceStele.executionEnv.codeOwner,
           .address (AccountAddress.ofNat
             (UInt256.land (clipperTakeWhoWord I) solcAddrMask).toNat),
           .int (Int.ofNat
-            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceSolm I) price).toNat)]
-        (false, evmVatSolm, outVat) true)
+            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceStele I) price).toNat)]
+        (false, evmVatStele, outVat) true)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evmLock := EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
@@ -637,20 +641,21 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   exact
-    clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore v hcode hwv hdispatch hdec
-      hlockedSolm hstoppedSolmLt husrSolm hrev hmax
+    clipperTakeOweGtTabVatFluxCallFailureRevertEquivCore (hperm := by assumption) v hcode hwv hdispatch hdec
+      hlockedStele hstoppedSteleLt husrStele hrev hmax
       (clipperTakeOweGtTabSourceMul_of_post_lot hlot hmul)
       (clipperTakeOweGtTabSourceGt_of_post_words htab hlot hgt)
       (clipperTakeOweGtTabSourceDivLeLot_of_post_words htab hlot hmul hgt)
-      hvatCodeSolm hcallVatSolm hstatus
+      hvatCodeStele hcallVatStele hstatus
 
 theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
     (v : ClipperImmutables) {code : ByteArray}
     {σ σ₀ A I} {g : UInt256}
-    {σPost σPostSolm σVat : AccountMap} {AVat : Substate} {evmPriceSolm : EVM.State}
+    {σPost σPostStele σVat : AccountMap} {AVat : Substate} {evmPriceStele : EVM.State}
     {price tab lot tic packed stopped dataLen dataStart who max amt id : UInt256}
     {zVat : Bool}
     {R : List UInt256} {mem outVat : ByteArray} {aw : UInt256} {k C : ℕ}
@@ -658,14 +663,14 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
     (rd :
       RD code I (Sat256.ofUInt256 g)
@@ -688,12 +693,12 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
           outVat) true)
     (hzVat : zVat = false)
     (houtVat : outVat.size < UInt256.size)
-    (hAccountsPost : Eq σPost σPostSolm)
-    (hevmPriceAccounts : evmPriceSolm.accountMap = σPostSolm)
-    (hevmPriceSigma0 : evmPriceSolm.σ₀ = σ₀)
-    (hevmPriceEnv : evmPriceSolm.executionEnv = I)
-    (htab : tab = clipperTakeSalesTabEVMWord evmPriceSolm I)
-    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceSolm I)
+    (hAccountsPost : Eq σPost σPostStele)
+    (hevmPriceAccounts : evmPriceStele.accountMap = σPostStele)
+    (hevmPriceSigma0 : evmPriceStele.σ₀ = σ₀)
+    (hevmPriceEnv : evmPriceStele.executionEnv = I)
+    (htab : tab = clipperTakeSalesTabEVMWord evmPriceStele I)
+    (hlot : lot = clipperTakeSalesLotEVMWord evmPriceStele I)
     (hwho : who = (clipperTakeWhoWord I).land solcAddrMask)
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hmul : price.toNat * (clipperMinWord (clipperTakeAmtWord I) lot).toNat < UInt256.size)
@@ -708,7 +713,8 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPriceSolm)) :
+          evmPriceStele))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   subst zVat
   have hrev :
@@ -716,45 +722,45 @@ theorem clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostCallAccounts
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
     RD.clipperTakeVatFluxCallFailure (v := v) (hpatch := hpatch)
       (by simpa using rd) houtVat (by simp only [List.length_cons]; omega)
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 <
         (UInt256.ofNat
-          ((evmPriceSolm.lookupAccount v.vat).option 0 (fun acc => acc.code.size))).toNat := by
+          ((evmPriceStele.lookupAccount v.vat).option 0 (fun acc => acc.code.size))).toNat := by
     have hcode :
-        Reasoning.Theory.extCodeSizeWord σPostSolm (clipperTakeVatTarget v) ≠ ⟨0⟩ := by
+        Reasoning.Theory.extCodeSizeWord σPostStele (clipperTakeVatTarget v) ≠ ⟨0⟩ := by
       simpa only [← hAccountsPost] using hvatCodeEvm
     simpa [State.lookupAccount, hevmPriceAccounts] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := σPostSolm) (target := clipperTakeVatTarget v)
+        (σ := σPostStele) (target := clipperTakeVatTarget v)
         (addr := v.vat) (clipperTakeVatTargetAddress v).symm hcode
   let evmPostEvm : EVM.State :=
     { initState σ σ₀ (Sat256.ofUInt256 g) A I with
       accountMap := σPost }
-  have hAccountsState : Eq evmPostEvm.accountMap evmPriceSolm.accountMap := by
+  have hAccountsState : Eq evmPostEvm.accountMap evmPriceStele.accountMap := by
     simpa [evmPostEvm, hevmPriceAccounts] using hAccountsPost
-  obtain ⟨σVatSolm, AVatSolm, hcallVatSolmRaw, _hAccountsVat⟩ :=
+  obtain ⟨σVatStele, AVatStele, hcallVatSteleRaw, _hAccountsVat⟩ :=
     Reasoning.Theory.typedCallViaEVM_sameInputs
-      (evm_solm := evmPriceSolm) (hcall := hcallVatEvm) hAccountsState
+      (evm_stele := evmPriceStele) (hcall := hcallVatEvm) hAccountsState
       (by simpa [evmPostEvm, initState] using hevmPriceSigma0.symm)
       (by simpa [evmPostEvm, initState] using hevmPriceEnv.symm)
-  let evmVatSolm : EVM.State :=
-    { evmPriceSolm with
-      accountMap := σVatSolm
-      substate := AVatSolm
+  let evmVatStele : EVM.State :=
+    { evmPriceStele with
+      accountMap := σVatStele
+      substate := AVatStele
        }
-  have hcallVatSolm :
-      typedCallViaEVM config evmPriceSolm (EVM.address v.vat) "flux" 0
-        [v.ilk, .address evmPriceSolm.executionEnv.codeOwner,
+  have hcallVatStele :
+      typedCallViaEVM config evmPriceStele (EVM.address v.vat) "flux" 0
+        [v.ilk, .address evmPriceStele.executionEnv.codeOwner,
           .address (AccountAddress.ofNat
             (UInt256.land (clipperTakeWhoWord I) solcAddrMask).toNat),
           .int (Int.ofNat
-            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceSolm I) price).toNat)]
-        (false, evmVatSolm, outVat) true := by
-    simpa [evmVatSolm, hevmPriceEnv, htab, hwho] using hcallVatSolmRaw
+            (UInt256.div (clipperTakeSalesTabEVMWord evmPriceStele I) price).toNat)]
+        (false, evmVatStele, outVat) true := by
+    simpa [evmVatStele, hevmPriceEnv, htab, hwho] using hcallVatSteleRaw
   exact
-    clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords v
-      hcode hwv hdispatch hdec hlockedSolm hstoppedSolmLt husrSolm
-      htab hlot hrev hmax hmul hgt hvatCodeSolm hcallVatSolm hstatus
+    clipperTakeOweGtTabVatFluxCallFailureRevertEquivFromPostWords (hperm := by assumption) v
+      hcode hwv hdispatch hdec hlockedStele hstoppedSteleLt husrStele
+      htab hlot hrev hmax hmul hgt hvatCodeStele hcallVatStele hstatus
 
 theorem RD.clipperTakeOweGtTabVatFluxCallFailure {code : ByteArray}
     (v : ClipperImmutables)

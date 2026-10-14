@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.LegacyAddressInts
 import Benchmarks.UniswapV3.Pool.CollectProtocolSource
 import Benchmarks.UniswapV3.Pool.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -19,7 +19,7 @@ theorem collectProtocolRequestedWord_lt (cd : ByteArray) (second : Bool) :
   u256LandMaskToNatLtOfToNat _ _ (by decide)
 
 theorem collectProtocolDecode {cd : ByteArray} (hlen : 100 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (collectProtocolTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (collectProtocolTransition.params.map Param.name)
       (transitionSignature collectProtocolTransition).paramTypes cd =
       some (collectProtocolLocals (collectProtocolRecipient cd)
         (collectProtocolRequestedWord cd false) (collectProtocolRequestedWord cd true)) := by
@@ -31,7 +31,7 @@ theorem collectProtocolDecode {cd : ByteArray} (hlen : 100 ≤ cd.size) :
   exact h
 
 theorem collectProtocolDecodeShort {cd : ByteArray} (hsz : 4 ≤ cd.size) (hshort : cd.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (collectProtocolTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (collectProtocolTransition.params.map Param.name)
       (transitionSignature collectProtocolTransition).paramTypes cd = none :=
   decodeCalldata_legacyAddress_int_int_none_short (.uint ⟨128, by decide⟩) (.uint ⟨128, by decide⟩) hsz hshort
 

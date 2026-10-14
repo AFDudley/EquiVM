@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.NextPriceSource
 import Benchmarks.UniswapV3.Pool.NextPriceTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -42,7 +42,7 @@ theorem nextPriceInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     exact nextPriceReverts (immStore v) evm input a hb
   · refine Or.inr ⟨?_, hv, nextPriceResult_clean input a priceRaw ha hv.2 hp, hr⟩
     apply internalCallFunctionReturn (callee := nextPriceFunction input)
-      (calleeSolm := nextPriceResultFrame (immStore v) input a)
+      (calleeStele := nextPriceResultFrame (immStore v) input a)
       (value := some [.int (Int.ofNat (nextPriceResult input a).toNat)]) he hlookup
       (nextPriceBind input a)
     rw [hc]

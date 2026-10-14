@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.CalleeMemoryGas
 import Benchmarks.UniswapV4PoolManager.ThetaSuccess
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: the returned byte span fits the active memory charged by RETURN.

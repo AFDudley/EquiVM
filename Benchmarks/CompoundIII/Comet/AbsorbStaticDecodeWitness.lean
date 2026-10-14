@@ -1,6 +1,7 @@
 import Benchmarks.CompoundIII.Comet.DiffTarget
 import Benchmarks.CompoundIII.Comet.Common
 import Benchmarks.CompoundIII.Comet.GasBound
+import Stele.Behaviors
 
 /-!
 Reproducer for the original modern mode's eager decoding versus lazy element validation.
@@ -8,12 +9,13 @@ The input is a static absorb call with one dirty address, timestamp 1 and empty 
 This file does not import the unfinished correctness theorem.
 -/
 
-open Solm ABI Solm.DiffTest Ethereum Ethereum.EVM
+open Stele ABI Stele.DiffTest Ethereum Ethereum.EVM
 open Benchmarks.CompoundIII.Comet Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet.AbsorbStaticDecodeWitness
 
-def baselineConfig : Config := { config with abiDecodeMode := .modern }
+def baselineConfig : Config :=
+  { config with externalABI := config.externalABI.withMode .modern }
 
 def zeroImms : CometWithExtendedAssetListImmutables :=
   { governor := EVM.address 0, pauseGuardian := EVM.address 0,
@@ -54,7 +56,7 @@ theorem calldata_selects :
     selectorDispatchMsg contract dirtyData = some absorbTransition := by native_decide
 
 theorem calldata_does_not_decode :
-    decodeCalldataWithMode baselineConfig.abiDecodeMode (absorbTransition.params.map Param.name)
+    baselineConfig.externalABI.decodeCalldata? (absorbTransition.params.map Param.name)
       (transitionSignature absorbTransition).paramTypes dirtyData = none := by native_decide
 
 theorem gas_within_bound : cometGasBound (UInt256.ofNat 3000000) := by
@@ -66,25 +68,24 @@ theorem no_refinement_of_static_decode_failure
     {cfg : Config} {contract : ContractDecl} {σ σ₀ : AccountMap} {gas : UInt256}
     {A : Substate} {I : ExecutionEnv} {imms : Store} {t : TransitionDecl}
     (hdispatch : selectorDispatchMsg contract I.calldata = some t)
-    (hdecode : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdecode : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none)
     (hreceive : receiveDispatchMsg contract I.calldata = none)
     (hevm : Ξ σ σ₀ gas A I = .error .StaticModeViolation) :
     ¬ runtimeRefinementFor cfg contract σ σ₀ gas A I imms := by
   intro h
-  cases h with
-  | execution _ hsolm _ =>
-      cases hsolm with
-      | intro hd hsig hargs _ _ =>
-          cases Option.some.inj (hdispatch.symm.trans hd)
-          subst_vars
-          rw [hdecode] at hargs
-          cases hargs
-      | fallback hd _ _ _ _ _ _ => rw [hdispatch] at hd; cases hd
-      | receive hd _ _ _ _ => rw [hreceive] at hd; cases hd
-  | noDispatch _ hrev => rw [hevm] at hrev; cases hrev
-  | decodingFailed _ _ _ hrev => rw [hevm] at hrev; cases hrev
-  | outOfGas hoog => rw [hevm] at hoog; cases hoog
+  rcases runtimeRefinementFor_captured h with hoog | hcaptured
+  · rw [hevm] at hoog; cases hoog
+  · rw [hevm] at hcaptured
+    obtain ⟨_, hstele⟩ := capturedBySpec_static hcaptured
+    cases hstele with
+    | intro hd hsig hargs _ _ =>
+        cases Option.some.inj (hdispatch.symm.trans hd)
+        subst_vars
+        rw [hdecode] at hargs
+        cases hargs
+    | fallback hd _ _ _ _ _ _ => rw [hdispatch] at hd; cases hd
+    | receive hd _ _ _ _ => rw [hreceive] at hd; cases hd
 
 theorem refinement_fails :
     ¬ runtimeRefinementFor baselineConfig contract zeroTarget.world zeroTarget.world

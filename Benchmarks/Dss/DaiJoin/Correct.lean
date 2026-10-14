@@ -8,17 +8,17 @@ import Benchmarks.Dss.DaiJoin.Live
 import Benchmarks.Dss.DaiJoin.Rely
 import Benchmarks.Dss.DaiJoin.Vat
 import Benchmarks.Dss.DaiJoin.Wards
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS DaiJoin benchmark correctness stub
 
-The upstream Solidity source, optimized runtime bytecode, Solm AST spec, and Solm syntax companion
+The upstream Solidity source, optimized runtime bytecode, Stele AST spec, and Stele syntax companion
 are present. The runtime-equivalence proof is intentionally left as the benchmark target. This file
 also exposes the whole-contract wrapper that combines the constructor and runtime targets.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

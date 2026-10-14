@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PoolSwapPreludeTrace
 import Benchmarks.UniswapV4PoolManager.PoolSwapLoopFinishCorrect
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 

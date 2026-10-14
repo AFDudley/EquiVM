@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.TransferFromTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -14,7 +14,7 @@ theorem transferFromBalanceCore {σ σ₀ A I} {g : UInt256}
     {k C : Nat} {R : List UInt256} (v : PoolManagerImmutables)
     (hcode : I.code = deployedRuntime v)
     (hd : dispatchMsg contract I.calldata = some transferFromTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = some args)
     (henv : evm.executionEnv = I) (hc : receiver.toNat < EVM.addressModulus)
@@ -50,7 +50,7 @@ theorem transferFromBalanceCore {σ σ₀ A I} {g : UInt256}
       have henv1 : evm1.executionEnv = I := (balancePost_env _ _ _ _).trans henv
       have hacc1 : sstoreAccountMap I.codeOwner evm.accountMap (balanceSlot sender id)
           (UInt256.sub (balanceWord evm sender id) amount) = evm1.accountMap := by
-        change _ = (Solm.EVM.storageStore evm evm.executionEnv.codeOwner _ _).accountMap
+        change _ = (Stele.EVM.storageStore evm evm.executionEnv.codeOwner _ _).accountMap
         rw [henv]
         exact (storageStore_accountMap _ _ _ _).symm
       have hmem1 := nestedMappingMemory_size sender id ⟨4⟩ hmem
@@ -78,7 +78,7 @@ theorem transferFromBalanceCore {σ σ₀ A I} {g : UInt256}
             (balanceSlot receiver id) (balanceWord evm1 receiver id + amount) =
             (balanceTransferPost evm sender receiver id amount).accountMap := by
           rw [hacc1]
-          change _ = (Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner _ _).accountMap
+          change _ = (Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner _ _).accountMap
           rw [henv1]
           exact (storageStore_accountMap _ _ _ _).symm
         exact hret.reEquivExecutionGen hcode hd hdec hbody hacc2

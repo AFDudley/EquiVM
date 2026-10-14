@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordArrayLoop
 import Benchmarks.UniswapV4PoolManager.CalldataWordSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 
@@ -34,7 +34,7 @@ theorem arrayHeadOffset_eval {f : Frame} {evm : EVM.State} {data : ByteArray}
       .ok (.bytes (data.extract 4 36)) := by
     simp only [evalExpr?, hd, EvalResult.ofOption, bind, EvalResult.bind, pure]
     exact sliceBytes_nat (by decide) hlen
-  have hdec : decodeReturnValueWithMode? config.abiDecodeMode abiUInt256 (data.extract 4 36) =
+  have hdec : config.externalABI.decodeValue? abiUInt256 (data.extract 4 36) =
       some (.int (Int.ofNat (calldataWord data 4).toNat)) :=
     decodeReturnUint_extract (by decide) hlen (by decide)
   rw [evalExpr?, hs]

@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.PreModuleCallEncoding
 import Benchmarks.Safe.Main.P256Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -68,7 +68,7 @@ theorem evalTokenTransferResult (p : TokenTransferInput) (evm : EVM.State)
     simp only [beq_eq_false_iff_ne, ne_eq, Value.int.injEq]; omega
   by_cases hs : out.size = 32
   · have hd := decodeReturnUint_long (out := out) (by omega) (by rw [hs]; decide)
-    change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256 out = _ at hd
+    change config.externalABI.decodeValue? uint256 out = _ at hd
     have heq : (Value.int (Int.ofNat (calldataWord out 0).toNat) == Value.int 0) =
         decide (calldataWord out 0 = ⟨0⟩) := by
       apply Bool.eq_iff_iff.mpr
@@ -108,7 +108,7 @@ theorem safeTokenTransferSource {evm evm' : EVM.State} {p : TokenTransferInput}
       Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert, EvalResult.ofOption,
       EvalResult.bind, bind, pure, tokenTransferCallEncoding]
   cases z
-  · exact .lowLevelCallFailure ht hv hd hc
-  · exact .lowLevelCallSuccess ht hv hd hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
 
 end Benchmarks.Safe.Main

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapTickSyntax
 import Benchmarks.UniswapV4PoolManager.TickPriceSource
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -36,7 +36,7 @@ theorem poolSwapRepriceSource {f : Frame} {evm : State} {s : PoolSwapStepWords} 
       exact ExecBlock.consRevert hcall
     | some tick =>
       rw [ht] at hcall
-      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign
+      exact ExecBlock.consNormal hcall (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (evalLocalValue (store_get_self _ _ _)) (assignLocalField
           ((store_get_ne _ _ (by decide : ("__c23" == "result") = false)).trans hr) rfl rfl)))
 

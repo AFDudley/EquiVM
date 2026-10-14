@@ -3,7 +3,7 @@ import Benchmarks.Dss.Clipper.StatusPriceCall
 import Benchmarks.Dss.Clipper.TakeStatus
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

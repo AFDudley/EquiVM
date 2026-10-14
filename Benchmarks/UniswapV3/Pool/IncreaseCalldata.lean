@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.Calldata
 import Benchmarks.UniswapV3.Pool.Routines
 import Benchmarks.UniswapV3.Pool.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -17,7 +17,7 @@ theorem increaseRequestedWord_lt (cd : ByteArray) :
   u256LandMaskToNatLtOfToNat _ _ (by decide)
 
 theorem increaseDecode {cd : ByteArray} (hlen : 36 ≤ cd.size) :
-    decodeCalldataWithMode config.abiDecodeMode (increaseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (increaseTransition.params.map Param.name)
       (transitionSignature increaseTransition).paramTypes cd =
       some (increaseLocals (increaseRequestedWord cd)) := by
   have h := decodeCalldata_legacyInt_ok (.uint ⟨16, by decide⟩)
@@ -27,7 +27,7 @@ theorem increaseDecode {cd : ByteArray} (hlen : 36 ≤ cd.size) :
   exact h
 
 theorem increaseDecodeShort {cd : ByteArray} (hsz : 4 ≤ cd.size) (hshort : cd.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (increaseTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (increaseTransition.params.map Param.name)
       (transitionSignature increaseTransition).paramTypes cd = none :=
   decodeCalldata_legacyInt_none_short (.uint ⟨16, by decide⟩) hsz hshort
 

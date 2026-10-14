@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -74,7 +74,7 @@ theorem fileAddressData_value_masked (I : ExecutionEnv) :
 
 
 theorem flipperDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (fileAddressLocals I) := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, fileAddressLocals,
@@ -84,7 +84,7 @@ theorem flipperDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.callda
 
 theorem flipperDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -159,8 +159,8 @@ theorem evalExpr_fileAddressWhatEq_false {evm : EVM.State} {I : ExecutionEnv}
   all_goals decide
 
 theorem assign_fileAddressCatStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨7⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨7⟩)
         (fileAddressDataKey I))
     assignStorageRef? config { contract := contract, locals := fileAddressLocals I } evm
       .storage catRef (.address (fileAddressData I)) =
@@ -186,10 +186,10 @@ theorem flipperFileAddressSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileAddressWhat I = fileAddressCatBytes) :
     let locals := fileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨7⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨7⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨7⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨7⟩)
         (fileAddressDataKey I))
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -228,8 +228,9 @@ theorem flipperFileAddressSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact (execBlock_singleton (ExecStmt.iteTrue hcond hwrite))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -253,7 +254,7 @@ theorem flipperFileAddressSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   simpa [fileAddressTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.ite (.binary .eq (.var "what") catParamLit)
@@ -583,7 +584,7 @@ theorem flipperFileAddressBodyCoreOk
     (hwhat : fileAddressWhat I = fileAddressCatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -594,14 +595,14 @@ theorem flipperFileAddressBodyCoreOk
   let locals := fileAddressLocals I
   let stored := setAddressOffset0Word (solcSlotWord σ I ⟨7⟩) data
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨7⟩ stored
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨7⟩ stored
   have hbodySplit :
-      (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+      (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
         (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
     simpa [evm0, evm1, locals, stored, data, solcSlotWord, initState,
-      Solm.EVM.storageLoad] using
+      Stele.EVM.storageLoad] using
       (flipperFileAddressSourceBodySplit (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauth hwhat)
   obtain ⟨_, _, hdecoded⟩ := flipperFileAddressX_decoded (g := Sat256.ofUInt256 g)
@@ -610,7 +611,7 @@ theorem flipperFileAddressBodyCoreOk
   have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileAddressCatBytes :=
     fileAddressWhatWord_eq_of_bytes_eq (by omega) hwhat
   rcases flipperFileAddressX_storeAuthorizedSplit hmatch hswitch with
-      ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+      ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
   have hret' :
@@ -618,7 +619,7 @@ theorem flipperFileAddressBodyCoreOk
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (sstoreAccountMap I.codeOwner σ ⟨7⟩ stored) ByteArray.empty := by
     simpa [stored, data] using hret
-  exact hret'.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  exact hret'.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
     (by simp [evm1, evm0, initState, storageStore_accountMap])
     (by
       rw [show fileAddressTransition.returnType = [] by rfl]
@@ -632,7 +633,7 @@ theorem flipperFileAddressBodyCoreUnauthorized
     (hauth : solcSlotWordAt (flipperCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -660,7 +661,7 @@ theorem flipperFileAddressBodyCoreUnrecognized
     (hwhat : fileAddressWhat I ≠ fileAddressCatBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (fileAddressLocals I))
     (hreach : ∃ k C, RD flipperBytecode I (Sat256.ofUInt256 g)

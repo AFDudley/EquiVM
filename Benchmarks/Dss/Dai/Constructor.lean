@@ -5,23 +5,23 @@ import Benchmarks.Dss.Dai.Selectors
 import Reasoning.Initcode
 import Reasoning.MemCascade
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Stepping
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO DSS Dai constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present.  The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -984,7 +984,7 @@ theorem evalExpr_daiCtor_domain (evm : EVM.State) (chainId : Int)
           · exact encodePacked_uint256' chainWord
           · simpa using
               evalPackedArgs_cons
-                (cfg := config) (solm := daiCtorFrame chainId) (evm := evm)
+                (cfg := config) (stele := daiCtorFrame chainId) (evm := evm)
                 (ty := uint256) (e := addressAsUint256 (.env .this))
                 (v := .int (Int.ofNat thisWord.toNat))
                 (head := EVM.Word.toBytesBE thisWord) (tailBytes := []) (rest := [])
@@ -1018,8 +1018,8 @@ theorem daiCtorDomainValueToWord (chainIdWord thisWord : UInt256) :
 
 def daiCtorPostState (evm : EVM.State) (I : ExecutionEnv)
     (chainIdWord : UInt256) : EVM.State :=
-  Solm.EVM.storageStore
-    (Solm.EVM.storageStore evm evm.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩)
+  Stele.EVM.storageStore
+    (Stele.EVM.storageStore evm evm.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩)
     evm.executionEnv.codeOwner daiCtorDomainSlot
     (daiCtorDomainWord chainIdWord (daiCtorThisWord I))
 
@@ -1028,7 +1028,7 @@ theorem daiCtorAssignWards (evm : EVM.State) (I : ExecutionEnv) (chainId : Int)
     assignStorageRef? config (daiCtorFrame chainId) evm
       .storage (wardsRef sender) (.int 1) =
         .ok (daiCtorFrame chainId,
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩) := by
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (ty := uint256St)
       (loc := wordLoc (daiCtorWardsSlot I) (.int uint256Int)) (hleaf := by exact Or.inl ⟨_, rfl⟩)
@@ -1047,7 +1047,7 @@ theorem daiCtorAssignDomain (evm : EVM.State) (I : ExecutionEnv) (chainId : Int)
       .storage domainSeparatorRef
       (.fixedBytes bytes32Width (daiCtorDomainBytes chainIdWord (daiCtorThisWord I))) =
         .ok (daiCtorFrame chainId,
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner daiCtorDomainSlot
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner daiCtorDomainSlot
             (daiCtorDomainWord chainIdWord (daiCtorThisWord I))) := by
   apply assignStorageRef_storage_scalar_value (hbackend := rfl)
       (ty := bytes32St)
@@ -1063,7 +1063,7 @@ theorem daiCtorAssignDomain (evm : EVM.State) (I : ExecutionEnv) (chainId : Int)
       (.fixedBytes bytes32Width (daiCtorDomainBytes chainIdWord (daiCtorThisWord I)))
       (daiCtorDomainValueToWord chainIdWord (daiCtorThisWord I))
 
-theorem daiSolmCtorExecReverts_nonpayable
+theorem daiSteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1071,9 +1071,9 @@ theorem daiSolmCtorExecReverts_nonpayable
     {I : ExecutionEnv}
     (chainId : Int)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.int chainId]
+    steleCtorExec config contract [.int chainId]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := daiCtorLocals chainId)
@@ -1480,7 +1480,7 @@ theorem daiInitcodeSuccess
     rdBeforeDomainStore.sstore hperm (by dai_ctor_decode) (by evm_ov)
   exact daiCtorReturnTrace (I := I) chainIdWord rdAfterDomainStore
 
-theorem daiSolmCtorExecSuccess
+theorem daiSteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -1489,15 +1489,16 @@ theorem daiSolmCtorExecSuccess
     (chainId : Int)
     (h0 : 0 ≤ chainId)
     (hlt : chainId < Int.ofNat (EVM.twoPow 256))
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.int chainId]
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec config contract [.int chainId]
       σ σ₀ g A I
       (.returned (daiCtorFrame chainId)
         (daiCtorPostState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           I (EVM.word chainId.toNat))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := daiCtorLocals chainId)
@@ -1506,13 +1507,13 @@ theorem daiSolmCtorExecSuccess
   · simp [daiCtorLocals, contract, constructorDecl]
   · refine ExecFuncBody.execBlockOK ?_
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩
-    refine ExecBlock.consNormal (solm' := daiCtorFrame chainId) (evm' := evm0)
+    let evm1 := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner (daiCtorWardsSlot I) ⟨1⟩
+    refine ExecBlock.consNormal (stele' := daiCtorFrame chainId) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := config)
-        (solm := daiCtorFrame chainId) (evm := evm0)
+        (stele := daiCtorFrame chainId) (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := daiCtorFrame chainId) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .int 1)
+    refine ExecBlock.consNormal (stele' := daiCtorFrame chainId) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign (hperm := Or.inr hperm) (value := .int 1)
         (by simp [evalExpr?, pure])
         (by
           unfold evm0
@@ -1520,14 +1521,14 @@ theorem daiSolmCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             I chainId (by simp [initState]))
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign
+      exact ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using hperm))
         (value := .fixedBytes bytes32Width
           (daiCtorDomainBytes (EVM.word chainId.toNat) (daiCtorThisWord I)))
         (by
           unfold evm1 evm0
           simpa [daiCtorThisWord, storageStore_executionEnv, initState] using
             evalExpr_daiCtor_domain
-            (Solm.EVM.storageStore
+            (Stele.EVM.storageStore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               I.codeOwner (daiCtorWardsSlot I) ⟨1⟩)
             chainId h0 hlt)
@@ -1535,7 +1536,7 @@ theorem daiSolmCtorExecSuccess
           unfold evm1 evm0 daiCtorPostState
           simpa [storageStore_executionEnv, initState] using
             daiCtorAssignDomain
-              (Solm.EVM.storageStore
+              (Stele.EVM.storageStore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 I.codeOwner (daiCtorWardsSlot I) ⟨1⟩)
               I chainId (EVM.word chainId.toNat))
@@ -1564,7 +1565,7 @@ theorem daiConstructorCorrect :
         simpa [Sat256.ofUInt256] using hX)
       rw [hacc] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (daiSolmCtorExecSuccess
+        (daiSteleCtorExecSuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           chainId h0 hlt hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
@@ -1578,7 +1579,7 @@ theorem daiConstructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (daiSolmCtorExecReverts_nonpayable
+        (daiSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           chainId hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

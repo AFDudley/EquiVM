@@ -6,8 +6,8 @@ import Benchmarks.Safe.Main.TransactionHashBody
 import Benchmarks.Safe.Main.Routines
 import Benchmarks.Safe.Main.Blocks.Runtime_011
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -81,7 +81,7 @@ theorem safeGettransactionhashBodyCore
     have hlen : payload.size = len := by
       dsimp only [payload]
       rw [ByteArray.size_extract]; omega
-    have hdec' : decodeCalldataWithMode config.abiDecodeMode
+    have hdec' : config.externalABI.decodeCalldata?
         (gettransactionhashTransition.params.map Param.name)
         (transitionSignature gettransactionhashTransition).paramTypes I.calldata =
         some (transactionArgs tx) := hdec

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.Slot0Source
 import Benchmarks.UniswapV4PoolManager.NatComparisonSource
 import Benchmarks.UniswapV4PoolManager.ConditionalPairSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 

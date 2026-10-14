@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.BodyCommon
 # Morpho `DOMAIN_SEPARATOR()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9347; reach lemma `morphoReachDOMAIN_SEPARATORBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -82,10 +82,11 @@ theorem morphoDOMAIN_SEPARATORBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmut
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (morphoSelBytes 5) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some dOMAIN_SEPARATORTransition :=
     morphoSelectorDispatch_of_selIs (by decide) hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (dOMAIN_SEPARATORTransition.params.map Param.name)
-      (transitionSignature dOMAIN_SEPARATORTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldataWithMode_empty_ok hsz
+      (transitionSignature dOMAIN_SEPARATORTransition).paramTypes I.calldata = some ∅ := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+    exact decodeCalldataWithMode_empty_ok hsz
   by_cases hcv : I.weiValue = ⟨0⟩
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · apply reEquivSelectorExecution hcode

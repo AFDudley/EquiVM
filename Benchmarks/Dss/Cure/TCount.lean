@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -26,9 +26,9 @@ theorem cureDispatchTCount {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_tCount {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tCountTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tCountTransition.params.map Param.name)
       (transitionSignature tCountTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureTCountBodyCore {σ σ₀ A I} {g : UInt256}
@@ -54,7 +54,7 @@ theorem cureTCountBodyCore {σ σ₀ A I} {g : UInt256}
         wordLoc, EvalResult.ofOption, EvalResult.bind, pure, bind]
       rw [cureSrcsLength]
       simp [solcSlotWordAt, solcSlotWord, initState,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
   have hreach := cureReachTCountBody (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     hcode hwv hsz hsize hsel

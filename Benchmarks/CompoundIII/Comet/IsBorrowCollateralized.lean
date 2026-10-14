@@ -4,11 +4,11 @@ import Benchmarks.CompoundIII.Comet.IsBorrowCollateralizedEvm
 # CometWithExtendedAssetList `isBorrowCollateralized(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1213; reach lemma `cometWithExtendedAssetListReachIsBorrowCollateralizedBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -25,7 +25,7 @@ theorem cometWithExtendedAssetListIsBorrowCollateralizedBody {σ σ₀ A I} {g :
   have hbodyEq : isBorrowCollateralizedTransition.body = collateralCheckPublicBody true := rfl
   have hd : selectorDispatchMsg contract I.calldata = some isBorrowCollateralizedTransition :=
     cometSelectorDispatch ⟨19, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (isBorrowCollateralizedTransition.params.map Param.name)
       (transitionSignature isBorrowCollateralizedTransition).paramTypes I.calldata =
       decodeCalldata ["account"] [.elem .address] I.calldata := by

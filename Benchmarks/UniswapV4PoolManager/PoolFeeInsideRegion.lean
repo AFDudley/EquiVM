@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.PoolFeeGrowthStorage
 import Benchmarks.UniswapV4PoolManager.Slot0TickSource
 import Benchmarks.UniswapV4PoolManager.WordWrappingSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -66,12 +66,12 @@ theorem poolFeeInsideRegionRun {f : Frame} {evm : EVM.State} {id : UInt256} {low
     (.int (Int.ofNat (poolFeeInsideRegionWord evm id lower upper region false).toNat)))}
   have e0 := poolFeeInsideRegion_eval (evm := evm) hs hl hu region false
   have a0 : ExecStmt config f evm (poolFeeInsideRegionBody region)[0]! (.ok f1 evm) :=
-    ExecStmt.assign e0 (assignLocalValue h0)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) e0 (assignLocalValue h0)
   have e1 := poolFeeInsideRegion_eval (f := f1) (evm := evm)
     ((store_get_ne _ _ (by decide : ("feeGrowthInside0X128" == "self") = false)).trans hs)
     ((store_get_ne _ _ (by decide : ("feeGrowthInside0X128" == "lower") = false)).trans hl)
     ((store_get_ne _ _ (by decide : ("feeGrowthInside0X128" == "upper") = false)).trans hu) region true
-  exact ExecBlock.consNormal a0 (execBlock_singleton (ExecStmt.assign e1
+  exact ExecBlock.consNormal a0 (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) e1
     (assignLocalValue ((store_get_ne _ _
       (by decide : ("feeGrowthInside0X128" == "feeGrowthInside1X128") = false)).trans h1))))
 

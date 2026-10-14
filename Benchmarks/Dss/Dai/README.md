@@ -33,8 +33,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode.
 - `Dai.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold.
-- `SpecSyntax.lean`: Solm notation presentation, checked by `rfl` against the AST spec.
+- `Spec.lean`: Stele AST benchmark scaffold.
+- `SpecSyntax.lean`: Stele notation presentation, checked by `rfl` against the AST spec.
 - `Constructor.lean`: top-level constructor-equivalence theorem.
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper.
 

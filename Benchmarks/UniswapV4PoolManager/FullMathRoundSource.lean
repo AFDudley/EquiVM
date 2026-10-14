@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.FullMathSource
 import Benchmarks.UniswapV4PoolManager.FullMathRoundWords
 import Benchmarks.UniswapV4PoolManager.Values
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -41,7 +41,7 @@ theorem fullMathRoundTail {f : Frame} {evm : EVM.State} {a b d : UInt256}
     have hadd : ExecStmt config f evm
         (.assign .localVar {base := "result"} (.cast (.binary .add (.var "result") (.intLit 1))
           (.elem (.int (.uint ⟨256, by decide⟩))))) (.ok f1 evm) :=
-      ExecStmt.assign he (assignLocalValue hr)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue hr)
     have hgt := evalWordGt (a := fullMathWord a b d + ⟨1⟩) (b := ⟨0⟩) (wordLocal_eval (cfg := config) (f := f) (evm := evm)
       (name := "result") (w := fullMathWord a b d + ⟨1⟩))
       (show evalExpr? config f1 evm (.intLit 0) = .ok (.int (Int.ofNat (⟨0⟩ : UInt256).toNat)) by
@@ -92,7 +92,7 @@ theorem fullMathRoundBody {f : Frame} {evm : EVM.State} {a b d : UInt256}
   by_cases hfit : fullMathFits a b d
   · rw [if_pos hfit] at hcall
     have h2 : ExecStmt config f1 evm fullMathRoundFunction.body[2]! (.ok f2 evm) :=
-      ExecStmt.assign wordLocal_eval (assignLocalValue
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue
         ((store_get_ne _ _ (by decide : ("__c0" == "result") = false)).trans (store_get_self _ _ _)))
     obtain ⟨f3, htail⟩ := fullMathRoundTail (f := f2) (evm := evm) hfit
       (by simp only [f2, f1, f0, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, ha])

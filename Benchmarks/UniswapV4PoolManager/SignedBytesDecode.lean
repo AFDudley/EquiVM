@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.LocalBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: all full-width signed ABI words are canonical.
@@ -36,7 +36,9 @@ theorem evalBytesWindow {cfg : Config} {f : Frame} {evm : State} {e : Expr}
 
 -- LIBRARY CANDIDATE: decoding one signed ABI word from an in-bounds bytes slice.
 theorem evalDecodeSigned256Slice {cfg : Config} {f : Frame} {evm : State} {e : Expr}
-    {bytes : ByteArray} {start : Nat} (hmode : cfg.abiDecodeMode = .modern)
+    {bytes : ByteArray} {start : Nat}
+    (hdecode : ∀ data, cfg.externalABI.decodeValue? abiInt256 data =
+      ABI.decodeReturnValue? abiInt256 data)
     (he : evalExpr? cfg f evm e = .ok (.bytes bytes)) (hb : start+32 ≤ bytes.size) :
     evalExpr? cfg f evm (.abiDecode abiInt256
       (.bytesSlice e (.intLit (Int.ofNat start)) (.intLit (Int.ofNat (start+32))))) =
@@ -46,6 +48,6 @@ theorem evalDecodeSigned256Slice {cfg : Config} {f : Frame} {evm : State} {e : E
     (by rw [hs]) (by rw [hs]; decide)
   rw [calldataWord_extract_zero (by omega) hb] at hd
   rw [evalExpr?, evalBytesWindow he (by omega) hb]
-  simp only [bind, EvalResult.bind, hmode, ABI.decodeReturnValueWithMode?, hd, pure]
+  simp only [bind, EvalResult.bind, hdecode, hd, pure]
 
 end Benchmarks.UniswapV4PoolManager

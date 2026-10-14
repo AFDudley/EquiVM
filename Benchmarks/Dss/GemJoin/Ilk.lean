@@ -1,6 +1,6 @@
 import Benchmarks.Dss.GemJoin.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.GemJoin
 
@@ -10,9 +10,9 @@ def gemJoinIlkWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨2⟩ σ I
 
 theorem gemJoinDecode_ilk {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (ilkTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (ilkTransition.params.map Param.name)
       (transitionSignature ilkTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem gemJoinReachIlkBody {σ σ₀ A I} {g : Sat256}
@@ -56,7 +56,7 @@ theorem gemJoinIlkBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.fixedBytes bytes32Width (EVM.Word.toBytesBE (gemJoinIlkWord σ I)))])) := by
-    simpa [ilkTransition, gemJoinIlkWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [ilkTransition, gemJoinIlkWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       gemJoinBytes32GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

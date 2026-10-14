@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.ClearTrace
 # PoolManager `clear(address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 3463; reach lemma `poolManagerReachClearBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -53,7 +53,7 @@ theorem poolManagerClearBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManagerIm
           let args := ((∅ : Store).insert "currency" (.address currency)).insert "amount" (.int (Int.ofNat amount.toNat))
           let evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hI : evm.executionEnv = I := rfl
-          have hdec : decodeCalldataWithMode config.abiDecodeMode (clearTransition.params.map Param.name)
+          have hdec : config.externalABI.decodeCalldata? (clearTransition.params.map Param.name)
               (transitionSignature clearTransition).paramTypes I.calldata = some args :=
             decodeCalldata_addr_uint256_ok hlen hhi hcanon
           have hc : args.get? "currency" = some (.address currency) :=

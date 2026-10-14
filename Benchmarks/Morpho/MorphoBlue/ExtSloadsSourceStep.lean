@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.WordArrayABI
 import Benchmarks.Morpho.MorphoBlue.Storage
 import Benchmarks.EAS.Attester.LocalArray
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -91,11 +91,11 @@ theorem extSloadsLoopStep (evm : EVM.State) (locals imms : Store) (slots res : L
   · refine ExecBlock.consNormal (ExecStmt.letDecl
       (evalLocalArrayIndex hl.slots_eq hl.index_eq hlookup rfl)) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl (evalLocalValue hi1)) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl)
       (uint256RangeSourceOk (naturalAddSource (evalLocalValue hsi)
         (by simp only [evalExpr?, pure, Int.ofNat_eq_natCast, Nat.cast_one])) hfit)
       (assignLocalValue hsi)) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign (evalMorphoRawSlot hraw (evalLocalValue hs3))
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (evalMorphoRawSlot hraw (evalLocalValue hs3))
       (assignLocalArrayIndex hrr hi3 (by omega))) ExecBlock.nil
   · constructor
     · simpa [l4, l3, l2, l1, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using hl.slots_eq

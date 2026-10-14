@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 0
@@ -10,9 +10,9 @@ namespace Benchmarks.Dss.Vat
 /-! ## `cage()` -/
 
 theorem vatDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vatDispatchCage {I : ExecutionEnv}
@@ -100,7 +100,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
   have hdispatch : dispatchMsg contract I.calldata = some cageTransition :=
     vatDispatchCage hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅ :=
     vatDecode_cage hsz4
   have hreach := vatReachCageBody (σ := σ)
@@ -117,7 +117,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
   ·
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨10⟩ ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨10⟩ ⟨0⟩
     have hguard := vatAuthGuardEval_true
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) (locals := ∅)
@@ -154,12 +154,12 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
       refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
       · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
       exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) hrest
-    have hbody :
+    have hbody (hperm : I.perm = true) :
         ExecTransitionBody config contract evm0 ∅ cageTransition.body
           (.returned { contract := contract, locals := ∅ } evm1 none) := by
       simpa [ExecTransitionBody, cageTransition, nonpayable, auth, evm0, evm1] using
         ExecFuncBody.execBlockOK (hpre _ (ExecBlock.consNormal
-          (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
+          (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
     have hauthSolc : solcSlotWord σ I (solcMappingSlot ⟨0⟩ (hopeSourceWord I)) = ⟨1⟩ := by
       simpa [callerSlot, vatCallerWardsSlot, solcSlotWordAt] using hauthEvm
     obtain ⟨_, _, hafterAuth⟩ := RD.vatAuthCheckOk
@@ -199,7 +199,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
     have henc : returnEquiv ByteArray.empty none cageTransition.returnType := by
       rw [show cageTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
       haccounts henc
   ·
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -209,7 +209,7 @@ theorem vatCageBodyCore : VatBodyTheoremAnyPerm 1 := by
         (g := Sat256.ofUInt256 g) (locals := ∅)
         (by simp) hauthEvm
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := ∅ })
+        (cfg := config) (stele := { contract := contract, locals := ∅ })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [ .assign .storage liveRef (.intLit 0) ])

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TickSqrtStageSource
 import Benchmarks.UniswapV4PoolManager.TickSqrtBounds
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -68,7 +68,7 @@ theorem tickSqrtBody {f : Frame} {evm : EVM.State} {tick : Int}
   have hpref : ExecBlock config f evm (tickSqrtFunction.body.take 3) (.ok f3 evm) :=
     ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
       (ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-        (ExecBlock.consNormal (ExecStmt.assign (tickSqrtAbsEval ht2 hb) (assignLocalValue (store_get_self _ _ _)))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (tickSqrtAbsEval ht2 hb) (assignLocalValue (store_get_self _ _ _)))
           ExecBlock.nil))
   have ha3 : f3.locals.get? "absTick" = some (.int (Int.ofNat tick.natAbs)) := store_get_self _ _ _
   have hguard : evalExpr? config f3 evm
@@ -94,7 +94,7 @@ theorem tickSqrtBody {f : Frame} {evm : EVM.State} {tick : Int}
     have hpre5 : ExecBlock config f3 evm ((tickSqrtFunction.body.drop 3).take 3) (.ok f5 evm) :=
       ExecBlock.consNormal (ExecStmt.iteFalse (by simpa only [decide_eq_false (by omega : ¬887272 < tick.natAbs)] using hguard) ExecBlock.nil)
         (ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-          (ExecBlock.consNormal (ExecStmt.assign hinit (assignLocalValue (store_get_self _ _ _))) ExecBlock.nil))
+          (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hinit (assignLocalValue (store_get_self _ _ _))) ExecBlock.nil))
     have ha5 : f5.locals.get? "absTick" = some (.int (Int.ofNat (UInt256.ofNat tick.natAbs).toNat)) :=
       (store_get_ne _ _ (by decide : ("price" == "absTick") = false)).trans ha4
     obtain ⟨f6, hstages, hp6, hf6⟩ := tickSqrtStagesExec (evm := evm) tickSqrtFactors ha5 (store_get_self _ _ _)
@@ -127,7 +127,7 @@ theorem tickSqrtBody {f : Frame} {evm : EVM.State} {tick : Int}
             have hnz : price.toNat ≠ 0 := Nat.ne_of_gt (tickSqrtRatio_pos hn)
             exact hnz (congrArg UInt256.toNat hz))
         refine ⟨f7, ExecStmt.iteTrue (by simpa only [decide_eq_true hp] using hpos)
-          (execBlock_singleton (ExecStmt.assign ?_ (assignLocalValue hp6))), store_get_self _ _ _, ?_⟩
+          (execBlock_singleton (ExecStmt.assign (hperm := Or.inl rfl) ?_ (assignLocalValue hp6))), store_get_self _ _ _, ?_⟩
         · simpa only [finalPrice, if_pos hp] using hd
         · exact (store_get_ne _ _ (by decide : ("price" == "sqrtPriceX96") = false)).trans hsqrt6
       · exact ⟨f6, ExecStmt.iteFalse (by simpa only [decide_eq_false hp] using hpos) ExecBlock.nil,
@@ -148,7 +148,7 @@ theorem tickSqrtBody {f : Frame} {evm : EVM.State} {tick : Int}
     let f8 : Frame := {f7 with locals := f7.locals.insert "sqrtPriceX96" (.int (Int.ofNat (tickSqrtPrice tick).toNat))}
     have htail : ExecBlock config f6 evm (tickSqrtFunction.body.drop 25)
         (.returned f8 evm (some [.int (Int.ofNat (tickSqrtPrice tick).toNat)])) :=
-      ExecBlock.consNormal hrecip (ExecBlock.consNormal (ExecStmt.assign hcast (assignLocalValue hs7))
+      ExecBlock.consNormal hrecip (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) hcast (assignLocalValue hs7))
         (ABlock.start.returns (evalLocalValue (store_get_self _ _ _))))
     exact ⟨f8, .execBlockRet (execBlock_append_ok hpref
       (execBlock_append_ok hpre5 (execBlock_append_ok hstages htail)))⟩

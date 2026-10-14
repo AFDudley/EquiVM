@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SingleWordCallMemory
 import Benchmarks.UniswapV4PoolManager.MappingMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: a four-byte selector followed by two ABI words.

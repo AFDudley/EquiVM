@@ -3,7 +3,7 @@ import Reasoning.EVMWord
 import Benchmarks.Dss.DaiJoin.Dispatch
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

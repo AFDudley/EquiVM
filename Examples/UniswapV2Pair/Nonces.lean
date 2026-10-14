@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -46,27 +46,27 @@ theorem noncesStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
 
 theorem uniswapDecode_nonces_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = _
   simpa [noncesStore, noncesOwnerValue, noncesOwnerWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
 
 theorem uniswapDecode_nonces_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
-/-- The Solm `nonces(address)` body returns `nonces[owner]`. -/
+/-- The Stele `nonces(address)` body returns `nonces[owner]`. -/
 theorem uniswapNoncesBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (noncesStore I) noncesTransition.body
       (.returned { contract := contract, locals := noncesStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (noncesStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -165,7 +165,7 @@ theorem uniswapNoncesBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some noncesTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (noncesTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
         (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1125⟩ [sel]
@@ -179,7 +179,7 @@ theorem uniswapNoncesBodyCoreOk
         (.returned { contract := contract, locals := noncesStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (noncesWord σ I).toNat))])) := by
-    simpa [noncesWord, noncesStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [noncesWord, noncesStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapNoncesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

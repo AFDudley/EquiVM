@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TransientSource
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -41,11 +41,11 @@ theorem evalReservesSlot {f : Frame} {evm : EVM.State} (hf : f.contract = contra
   rw [evalExpr?, hf]; rfl
 
 def resetCurrencyPost (evm : EVM.State) : EVM.State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner currencySlot ⟨0⟩
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner currencySlot ⟨0⟩
 def syncReservesCurrencyPost (evm : EVM.State) (currency : AccountAddress) : EVM.State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner currencySlot (accountWord currency)
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner currencySlot (accountWord currency)
 def syncReservesPost (evm : EVM.State) (currency : AccountAddress) (value : UInt256) : EVM.State :=
-  Solm.EVM.transientStore (syncReservesCurrencyPost evm currency) evm.executionEnv.codeOwner reservesSlot value
+  Stele.EVM.transientStore (syncReservesCurrencyPost evm currency) evm.executionEnv.codeOwner reservesSlot value
 
 theorem resetCurrencyBody {f : Frame} {evm : EVM.State} (hf : f.contract = contract) :
     ExecFuncBody config f evm resetCurrencyFunction.body
@@ -57,7 +57,7 @@ theorem resetCurrencyBody {f : Frame} {evm : EVM.State} (hf : f.contract = contr
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignTransientStatic he hw hp))
   · rw [if_neg hp]
-    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hw) ExecBlock.nil)
+    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw) ExecBlock.nil)
 
 theorem resetCurrencyCall {f : Frame} {evm : EVM.State} (hf : f.contract = contract) (retVar : Ident) :
     ExecStmt config f evm (.internalCall "CurrencyReserves_resetCurrency" [] retVar)
@@ -87,8 +87,8 @@ theorem syncReservesBody {f : Frame} {evm : EVM.State} {currency : AccountAddres
       simp only [syncReservesCurrencyPost, transientStore_executionEnv]
     rw [hI] at hw2
     apply ExecFuncBody.execBlockOK
-    exact ExecBlock.consNormal (ExecStmt.assign he hw)
-      (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue hv) hw2) ExecBlock.nil)
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [transientStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (evalLocalValue hv) hw2) ExecBlock.nil)
 
 theorem syncReservesCall {f : Frame} {evm : EVM.State} {ec ev : Expr} {currency : AccountAddress} {value : UInt256}
     (hf : f.contract = contract) (hc : evalExpr? config f evm ec = .ok (.address currency))

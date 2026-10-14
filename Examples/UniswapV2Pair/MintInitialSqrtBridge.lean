@@ -1,19 +1,19 @@
 import Examples.UniswapV2Pair.MintFeeSqrtLoopBridge
 import Examples.UniswapV2Pair.MintRuntimeAfterFee
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 namespace UniswapV2Pair
 
 theorem evalExpr_mint_initialLiquidity_sub_ok
-    {solm : Frame} (evm : EVM.State) (rootLiquidity : Int) (liquidity : UInt256)
-    (hroot : solm.locals.get? "rootLiquidity" = some (.int rootLiquidity))
+    {stele : Frame} (evm : EVM.State) (rootLiquidity : Int) (liquidity : UInt256)
+    (hroot : stele.locals.get? "rootLiquidity" = some (.int rootLiquidity))
     (hge : minimumLiquidity ≤ rootLiquidity)
     (hfit : rootLiquidity - minimumLiquidity < (2 : Int) ^ 256)
     (hliquidity : liquidity = UInt256.ofNat (rootLiquidity - minimumLiquidity).toNat) :
-    evalExpr? config solm evm
+    evalExpr? config stele evm
       (u256 (.binary .sub (.var "rootLiquidity") (.intLit minimumLiquidity))) =
         .ok (uniswapUint256Value liquidity) := by
   have hnonneg : 0 ≤ rootLiquidity - minimumLiquidity := by omega
@@ -71,7 +71,8 @@ theorem uniswapMintInitialLiquidityBranchPrefix
       mintFunctionTotalSupplyNewNat evm (⟨1000⟩ : UInt256) < UInt256.size)
     (hfitBalanceMin :
       mintFunctionToBalanceNewNat evm (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let caller : Frame := { contract := contract, locals := locals }
     let afterRoot := resumeAfterInternalCall caller "rootLiquidity" (some [.int rootLiquidity])
     let afterLiquidity : Frame :=
@@ -97,7 +98,7 @@ theorem uniswapMintInitialLiquidityBranchPrefix
         (.internalCall "_mint" [zeroAddr, .intLit minimumLiquidity] "_minimumMint")
         (.ok (resumeAfterInternalCall afterLiquidity "_minimumMint" none)
           (mintFunctionPostState evm (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))) := by
-    exact uniswapMintFunctionCallSuccess (caller := afterLiquidity) (evm := evm)
+    exact uniswapMintFunctionCallSuccess (hperm := by assumption) (caller := afterLiquidity) (evm := evm)
       (recipient := AccountAddress.ofNat 0) (value := (⟨1000⟩ : UInt256))
       (args := [zeroAddr, .intLit minimumLiquidity]) (retVar := "_minimumMint")
       rfl (evalExprs_mint_minimumMintArgs evm afterLiquidity) hfitSupplyMin hfitBalanceMin
@@ -121,7 +122,8 @@ theorem uniswapMintInitialLiquidityBranchStmtPrefix
       mintFunctionTotalSupplyNewNat evm (⟨1000⟩ : UInt256) < UInt256.size)
     (hfitBalanceMin :
       mintFunctionToBalanceNewNat evm (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let caller : Frame := { contract := contract, locals := locals }
     let afterRoot := resumeAfterInternalCall caller "rootLiquidity" (some [.int rootLiquidity])
     let afterLiquidity : Frame :=
@@ -133,7 +135,7 @@ theorem uniswapMintInitialLiquidityBranchStmtPrefix
   intro caller afterRoot afterLiquidity
   have hcond := evalExpr_mint_totalSupply_eq_zero_true evm htotal
   exact ExecStmt.iteTrue hcond
-    (uniswapMintInitialLiquidityBranchPrefix evm rootLiquidity liquidity hsqrt hge hfit
+    (uniswapMintInitialLiquidityBranchPrefix (hperm := by assumption) evm rootLiquidity liquidity hsqrt hge hfit
       hliquidity hfitSupplyMin hfitBalanceMin)
 
 theorem uniswapMintInitialLiquidityBranchStmtUnderflowReverts
@@ -212,7 +214,8 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn
           (mintFunctionPostState
             (mintFunctionPostState evm (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))
             recipient liquidity) =
-        0) :
+        0)
+    (hperm : evm.executionEnv.perm = true) :
     let caller : Frame := { contract := contract, locals := locals }
     let afterRoot := resumeAfterInternalCall caller "rootLiquidity" (some [.int rootLiquidity])
     let afterLiquidity : Frame :=
@@ -230,7 +233,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn
         (some [uniswapUint256Value liquidity])) := by
   intro caller afterRoot afterLiquidity afterMinimum evmMinimum afterMint afterUpdate
   have hbranchStmt :=
-    uniswapMintInitialLiquidityBranchStmtPrefix evm rootLiquidity liquidity htotal hsqrt hge
+    uniswapMintInitialLiquidityBranchStmtPrefix (hperm := by assumption) evm rootLiquidity liquidity htotal hsqrt hge
       hfit hliquidity hfitSupplyMin hfitBalanceMin
   have hbranch :
       ExecBlock config caller evm [mintLiquidityBranchStmt] (.ok afterMinimum evmMinimum) := by
@@ -309,7 +312,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn
               (mintFunctionPostState evmMinimum recipient liquidity) balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
     simpa [mintAfterLiquidityTailStmts, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
+      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
         (locals := afterMinimum.locals) evmMinimum recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter hunlockedBaseAfter
@@ -380,7 +383,8 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn
                 (mintFunctionPostState evm (AccountAddress.ofNat 0) (⟨1000⟩ : UInt256))
                 recipient liquidity)
               balance0 balance1)) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     let caller : Frame := { contract := contract, locals := locals }
     let afterRoot := resumeAfterInternalCall caller "rootLiquidity" (some [.int rootLiquidity])
     let afterLiquidity : Frame :=
@@ -399,7 +403,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn
         (some [uniswapUint256Value liquidity])) := by
   intro caller afterRoot afterLiquidity afterMinimum evmMinimum afterMint afterUpdate
   have hbranchStmt :=
-    uniswapMintInitialLiquidityBranchStmtPrefix evm rootLiquidity liquidity htotal hsqrt hge
+    uniswapMintInitialLiquidityBranchStmtPrefix (hperm := by assumption) evm rootLiquidity liquidity htotal hsqrt hge
       hfit hliquidity hfitSupplyMin hfitBalanceMin
   have hbranch :
       ExecBlock config caller evm [mintLiquidityBranchStmt] (.ok afterMinimum evmMinimum) := by
@@ -485,7 +489,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn
                 (mintFunctionPostState evmMinimum recipient liquidity) balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     simpa [mintAfterLiquidityTailStmts, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
+      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
         (locals := afterMinimum.locals) evmMinimum recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter

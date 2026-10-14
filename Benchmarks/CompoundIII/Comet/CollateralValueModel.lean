@@ -2,14 +2,14 @@ import Benchmarks.CompoundIII.Comet.CollateralMath
 import Benchmarks.CompoundIII.Comet.UserCollateralRead
 import Benchmarks.CompoundIII.Comet.PriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def collateralBalanceWord (evm : EVM.State) (account : AccountAddress)
     (assetOut : ByteArray) : UInt256 :=
-  low128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+  low128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
     (userCollateralSlot account (AccountAddress.ofNat (calldataWord assetOut 32).toNat)))
 
 structure CollateralValueData where
@@ -85,5 +85,26 @@ def CollateralValueSourceResult (frame : Frame) (evm : EVM.State) (borrow : Bool
   | none => ExecBlock config frame evm body .reverted
   | some (evm', d) => ExecBlock config frame evm body
       (.ok (collateralValueFrame frame borrow d) evm')
+
+theorem CollateralAfterAsset.executionEnv_eq {borrow assetOut amount evm result}
+    (ht : CollateralAfterAsset borrow assetOut amount evm result) :
+    ∀ evm' d, result = some (evm', d) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | priceFailed _ _ _ => intro evm' d he; cases he
+  | result hc _ _ =>
+    intro evm' d he
+    split at he
+    · cases he
+      exact callViaEVM_executionEnv_eq hc
+    · cases he
+
+theorem CollateralValueTrace.executionEnv_eq {v borrow account i evm result}
+    (ht : CollateralValueTrace v borrow account i evm result) :
+    ∀ evm' d, result = some (evm', d) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | assetFailed _ _ _ => intro evm' d he; cases he
+  | assetOk hc _ _ ht =>
+    intro evm' d he
+    exact (ht.executionEnv_eq evm' d he).trans (callViaEVM_executionEnv_eq hc)
 
 end Benchmarks.CompoundIII.Comet

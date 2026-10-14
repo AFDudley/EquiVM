@@ -27,17 +27,17 @@ import Benchmarks.Dss.Vat.Suck
 import Benchmarks.Dss.Vat.Urns
 import Benchmarks.Dss.Vat.Vice
 import Benchmarks.Dss.Vat.Wards
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Vat benchmark correctness stub
 
-The upstream Solidity source, optimized runtime bytecode, Solm AST spec, and Solm syntax companion
+The upstream Solidity source, optimized runtime bytecode, Stele AST spec, and Stele syntax companion
 are present. The runtime-equivalence proof is intentionally left as the benchmark target. This file
 also exposes the whole-contract wrapper that combines the constructor and runtime targets.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -56,7 +56,7 @@ theorem vatNonPayable {σ σ₀ A I} {g : UInt256}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec
@@ -66,7 +66,7 @@ theorem vatNonPayable {σ σ₀ A I} {g : UInt256}
               callargs (by simp only [initState]; exact hwv))
             (by rw [hrev]; exact execResultsEquiv.revert rfl rfl)
 
-/-- Calldata shorter than a selector (`size < 4`) reverts before Solm dispatch. -/
+/-- Calldata shorter than a selector (`size < 4`) reverts before Stele dispatch. -/
 theorem vatShortRevert {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = vatBytecode) (_hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩) (hsz : I.calldata.size < 4) :
@@ -75,7 +75,7 @@ theorem vatShortRevert {σ σ₀ A I} {g : UInt256}
   exact (vatX_short (g := Sat256.ofUInt256 g) hcode hwv hsz).reEquivNoDispatch hcode
     (vatDispatch_none_short hsz)
 
-/-- No selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- No selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem vatNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = vatBytecode)
     (hsize : I.calldata.size < UInt256.size)

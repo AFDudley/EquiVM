@@ -6,11 +6,11 @@ import Benchmarks.UniswapV4PoolManager.MappingMemory
 # PoolManager `balanceOf(address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 11477; reach lemma `poolManagerReachBalanceOfBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -28,7 +28,7 @@ theorem balanceOfBodyReturns (evm : EVM.State) (locals imms : Store) (w id : UIn
     ExecTransitionBody config contract evm locals balanceOfTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mappingSlotWord id (mappingSlotWord w ⟨4⟩))).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   apply evalExpr_storage_scalar_value (hbackend := rfl) (hloc := balanceOf_loc w id hcanon)
@@ -93,7 +93,7 @@ theorem poolManagerBalanceOfBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManag
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k', C', rdReturn⟩ := decodeAddress4 v (by simp) hcanon hjumpReturn rdAddr
           have hret := balanceOfTrace v (by simp) hcanon rdReturn
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (balanceOfTransition.params.map Param.name)
               (transitionSignature balanceOfTransition).paramTypes I.calldata =
               some ((((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))).insert "arg1" (.int (Int.ofNat (calldataWord I.calldata 36).toNat))) :=

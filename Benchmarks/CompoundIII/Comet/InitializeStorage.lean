@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.InitializeSource
 # CometWithExtendedAssetList `initializeStorage()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1330; reach lemma `cometWithExtendedAssetListReachInitializeStorageBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,10 +26,12 @@ theorem cometWithExtendedAssetListInitializeStorageBody {σ σ₀ A I} {g : UInt
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 6) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some initializeStorageTransition :=
     cometSelectorDispatch ⟨6, by decide⟩ hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (initializeStorageTransition.params.map Param.name)
       (transitionSignature initializeStorageTransition).paramTypes I.calldata =
-      some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      some (∅ : Store) := by
+    change decodeCalldataWithMode .solc0815 [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   have hX := initializeX (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   by_cases hv : I.weiValue = ⟨0⟩
@@ -38,13 +40,13 @@ theorem cometWithExtendedAssetListInitializeStorageBody {σ σ₀ A I} {g : UInt
           (timestampWord I).toNat < 2^40
       · unfold InitializeResult at hX
         rw [if_pos ⟨hv, hhi, hvalid⟩] at hX
-        have hz : lastAccrualWord (Solm.EVM.storageLoad
+        have hz : lastAccrualWord (Stele.EVM.storageLoad
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) I.codeOwner ⟨1⟩) = ⟨0⟩ := by
           simpa only [storageLoad_initState_solcSlotWord, solcSlotWordAt] using hvalid.1
         by_cases hp : I.perm = true
         · rw [if_pos hp] at hX
           exact selectorStateReturn_refines hcode hX hd hdec
-            (initializeStorage_returns _ (immStore v) hv hhi hz hvalid.2)
+            (initializeStorage_returns (hperm := hp) _ (immStore v) hv hhi hz hvalid.2)
             initializeSourceState_accountMap.symm voidReturnEquiv
         · rw [if_neg hp] at hX
           exact selectorStatic_refines hcode hX hd hdec

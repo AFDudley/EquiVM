@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.UpdateCallSource
 import Examples.UniswapV2Pair.SyncDynamicRuntime
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000000 in
@@ -52,10 +52,10 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
         exact Int.ofNat_le.mpr hb1
       obtain ⟨_, _, rd7060⟩ := RD.uniswapUpdateOverflowGuardOk rd6959 hb0 hb1
         (by simp only [List.length_cons]; omega)
-      have hslot8 : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
+      have hslot8 : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ =
           solcSlotWordAt ⟨8⟩ σ I := by
         have h := congrArg (fun accounts => solcSlotWordAt ⟨8⟩ accounts I) hAccounts
-        simpa only [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        simpa only [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWordAt, solcSlotWord, henv] using h.symm
       have htime : syncTimeElapsedInt evm = Int.ofNat
           (UInt256.land (uniswapUpdateElapsedWord (solcSlotWordAt ⟨8⟩ σ I) I)
@@ -77,7 +77,7 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
         obtain ⟨kRet, CRet, rdRet⟩ := RD.uniswapUpdateEmitSyncAndJump_dynamic rd7339 hin hlo hgap (by omega) haw hawLo hmem64 hperm
           hret (by omega)
         refine Or.inr ⟨syncUpdatePackedReserveState evm balance0 balance1, _, _, _, _,
-          uniswapUpdateCallReturnsConditionFalse evm balance0 balance1
+          uniswapUpdateCallReturnsConditionFalse (hperm := by simpa only [henv] using hperm) evm balance0 balance1
             reserve0 reserve1 hargs hb0S hb1S hskipS,
           syncUpdatePackedReserveState_accountMap_eq hAccounts henv hslot8 rfl,
           ?_, rdRet, ?_, ?_⟩
@@ -109,7 +109,7 @@ theorem uniswapUpdateCallRuntimeCases_dynamic
             reserve0 reserve1,
           uniswapUpdateCumulativePackedMapWith σ I balance0 balance1 reserve0 reserve1,
           uniswapUpdateCumulativePackedWordWith σ I balance0 balance1 reserve0 reserve1, kRet, CRet,
-          uniswapUpdateCallReturnsConditionTrue evm balance0 balance1
+          uniswapUpdateCallReturnsConditionTrue (hperm := by simpa only [henv] using hperm) evm balance0 balance1
             reserve0 reserve1 hargs hb0S hb1S htS hr0S hr1S,
           syncUpdateCumulativePackedMapWith_accounts_eq hAccounts henv hslot8
             (by rw [← hclean0]; exact reserve112Word_lt _)

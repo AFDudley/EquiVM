@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapCacheSource
 import Benchmarks.UniswapV3.Pool.FeeGrowthStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -124,13 +124,14 @@ theorem swapInitSource (v : UniswapV3PoolImmutables) (a : SwapArgs) (evm : EVM.S
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hself : evm.executionEnv.codeOwner = v.original)
     (hn : a.amountSpecified ≠ 0)
     (hu : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hl : swapLimitValid a evm) :
+    (hl : swapLimitValid a evm)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (swapFrame v a) evm (swapTransition.body.take 13)
       (.ok (swapReadyFrame v a evm) (storeSlot0Unlocked evm false)) := by
   change ExecBlock config _ _ (swapTransition.body.take 9 ++
     (swapTransition.body.drop 9).take 2 ++ (swapTransition.body.drop 11).take 2) _
   exact execBlock_append_ok
-    (execBlock_append_ok (swapLockSource v a evm hwv hself hn hu hl) (swapCacheSource v a evm))
+    (execBlock_append_ok (swapLockSource (hperm := by assumption) v a evm hwv hself hn hu hl) (swapCacheSource v a evm))
     (swapStateSource v a evm)
 
 end Benchmarks.UniswapV3.Pool

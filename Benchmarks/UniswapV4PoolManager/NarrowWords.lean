@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SignedArithmetic
 
 /-! Canonical 24-bit ABI words used by fees and tick spacing. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 3000
 

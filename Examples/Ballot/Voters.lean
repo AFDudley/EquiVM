@@ -1,17 +1,17 @@
 import Reasoning.Storage
 import Reasoning.WordArithmetic
 import Examples.Ballot.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Ballot
 
@@ -107,7 +107,7 @@ theorem ballotVotersBodyReturns (evm : EVM.State) (I : ExecutionEnv)
           (hloc := by simpa only [votersEvaledRef, votersBaseSlot] using
             (ballotStorageLayout_voterWeight (.address (AccountAddress.ofNat (votersArgWord I).toNat)))),
           show wordLoc = uint256Loc from rfl, storageLocLoad_uint256]
-        simp [votersWeightWord, votersBaseSlot, howner, Solm.EVM.storageLoad,
+        simp [votersWeightWord, votersBaseSlot, howner, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage]
       have hvoted :
           evalExpr? ballotConfig { contract := ballotContract, locals := votersStore I } evm
@@ -122,7 +122,7 @@ theorem ballotVotersBodyReturns (evm : EVM.State) (I : ExecutionEnv)
             (ballotStorageLayout_voterVoted (.address (AccountAddress.ofNat (votersArgWord I).toNat)))),
           storageLocLoad_bool_offset0']
         simp [votersVotedWord, votersPackedWord, votersPackedSlot, votersBaseSlot, howner,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       have hdelegate :
           evalExpr? ballotConfig { contract := ballotContract, locals := votersStore I } evm
             (.storage (voterF (.var "a") "delegate")) =
@@ -136,7 +136,7 @@ theorem ballotVotersBodyReturns (evm : EVM.State) (I : ExecutionEnv)
             (ballotStorageLayout_voterDelegate (.address (AccountAddress.ofNat (votersArgWord I).toNat)))),
           storageLocLoad_address_offset1]
         simp [votersDelegateWord, votersPackedWord, votersPackedSlot, votersBaseSlot, howner,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       have hvote :
           evalExpr? ballotConfig { contract := ballotContract, locals := votersStore I } evm
             (.storage (voterF (.var "a") "vote")) =
@@ -149,9 +149,9 @@ theorem ballotVotersBodyReturns (evm : EVM.State) (I : ExecutionEnv)
           (hloc := by simpa only [votersEvaledRef, votersVoteSlot, votersBaseSlot] using
             (ballotStorageLayout_voterVote (.address (AccountAddress.ofNat (votersArgWord I).toNat)))),
           show wordLoc = uint256Loc from rfl, storageLocLoad_uint256]
-        simp [votersVoteWord, votersVoteSlot, votersBaseSlot, howner, Solm.EVM.storageLoad,
+        simp [votersVoteWord, votersVoteSlot, votersBaseSlot, howner, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage]
-      simp only [Solm.evalExprs?.eq_def, EvalResult.bind, bind, pure,
+      simp only [Stele.evalExprs?.eq_def, EvalResult.bind, bind, pure,
         hweight, hvoted, hdelegate, hvote])
 
 /-! ## Memory used by the voter getter -/
@@ -573,7 +573,7 @@ end Ballot
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option maxHeartbeats 500000 in
 /-- Ballot's shared solc one-address decoder at pc 1770, success branch. -/

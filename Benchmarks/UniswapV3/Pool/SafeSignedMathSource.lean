@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SourceSignedBits
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 attribute [local instance] Classical.propDecidable
@@ -60,9 +60,9 @@ theorem safeSignedMathReadySource (subtract : Bool) (imms : Store) (evm : EVM.St
       ((safeSignedMathFunction subtract).body.take 2)
       (.ok (safeSignedMathReadyFrame subtract imms x y) evm) := by
   rw [safeSignedMathBody]
-  refine ExecBlock.consNormal (solm' := safeSignedMathZeroFrame imms x y)
+  refine ExecBlock.consNormal (stele' := safeSignedMathZeroFrame imms x y)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (value := .int (safeSignedMathResult subtract x y)) ?_
     (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)) ExecBlock.nil
   have hx : (safeSignedMathZeroFrame imms x y).locals.get? "x" = some (.int x) := by

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -54,9 +54,9 @@ theorem clipperDispatch_dog {I : ExecutionEnv}
 
 theorem clipperDecode_dog {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dogTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dogTransition.params.map Param.name)
       (transitionSignature dogTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalDog (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
@@ -64,7 +64,7 @@ theorem clipperEvalDog (v : ClipperImmutables) (evm : EVM.State) (locals : Store
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage dogRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
           solcAddrMask).toNat)) := by
   let er : EvaledStorageRef := { base := "dog", steps := [] }
   have her : evalStorageRef config
@@ -84,7 +84,7 @@ theorem clipperDogBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals 
     ExecTransitionBody config contract evm locals dogTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
             solcAddrMask).toNat))])) (immStore v) := by
   simpa [dogTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
@@ -341,7 +341,7 @@ theorem clipperDogBody (v : ClipperImmutables) {code : ByteArray}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat
             (UInt256.land (solcSlotWord σ I ⟨1⟩) solcAddrMask).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperDogBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

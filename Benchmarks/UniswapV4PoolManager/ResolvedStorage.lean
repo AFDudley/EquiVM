@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.PoolStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: resolve a mapping index through a local mapping storage alias.

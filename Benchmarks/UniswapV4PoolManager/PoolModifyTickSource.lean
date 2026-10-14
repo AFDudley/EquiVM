@@ -2,13 +2,13 @@ import Benchmarks.UniswapV4PoolManager.PoolModifyTickAssignments
 import Benchmarks.UniswapV4PoolManager.PoolUpdateTickResult
 import Benchmarks.UniswapV4PoolManager.CallContinuation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
 def poolModifyTickAlias (upper : Bool) : Ident :=
-  if upper then "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.7"
-  else "__solm_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.6"
+  if upper then "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.7"
+  else "__stele_storage_ref._@.Benchmarks.UniswapV4PoolManager.SpecSyntax.2010301240._hygCtx._hyg.6"
 def poolModifyTickAliasFrame (f : Frame) (id : UInt256) (upper : Bool) : Frame :=
   {f with locals := f.locals.insert (poolModifyTickAlias upper) (poolRefValue id)}
 

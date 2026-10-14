@@ -1,7 +1,7 @@
 import Benchmarks.Auction.MintCall
 import Benchmarks.Auction.MintReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

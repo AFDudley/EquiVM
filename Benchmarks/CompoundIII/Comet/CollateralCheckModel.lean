@@ -4,13 +4,13 @@ import Benchmarks.CompoundIII.Comet.SignedMulPriceSource
 import Benchmarks.CompoundIII.Comet.UserBasicRead
 import Benchmarks.CompoundIII.Comet.UintCastWord
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def collateralBasicWord (evm : EVM.State) (account : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot account)
 
 def collateralBaseScale (v : CometWithExtendedAssetListImmutables) : UInt256 :=
   uintCastWord ⟨64, by decide⟩ v.baseScale
@@ -129,5 +129,23 @@ inductive CollateralCheckTrace (v : CometWithExtendedAssetListImmutables) (borro
       (ht : CollateralDebtTrace v borrow account (collateralBasicWord evm account)
         (signedPresentMagnitude evm (collateralBasicWord evm account) true) evm result) :
       CollateralCheckTrace v borrow account evm result
+
+theorem CollateralDebtTrace.executionEnv_eq {v borrow account basic magnitude evm result}
+    (ht : CollateralDebtTrace v borrow account basic magnitude evm result) :
+    ∀ evm' b, result = some (evm', b) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | priceFailed _ _ _ => intro evm' b he; cases he
+  | mathFailed _ _ _ _ => intro evm' b he; cases he
+  | loop hc _ _ _ ht =>
+    intro evm' b he
+    exact (ht.executionEnv_eq evm' b he).trans (callViaEVM_executionEnv_eq hc)
+
+theorem CollateralCheckTrace.executionEnv_eq {v borrow account evm result}
+    (ht : CollateralCheckTrace v borrow account evm result) :
+    ∀ evm' b, result = some (evm', b) → evm'.executionEnv = evm.executionEnv := by
+  cases ht with
+  | solvent _ => intro evm' b he; cases he; rfl
+  | minimum _ _ => intro evm' b he; cases he
+  | debt _ _ ht => exact ht.executionEnv_eq
 
 end Benchmarks.CompoundIII.Comet

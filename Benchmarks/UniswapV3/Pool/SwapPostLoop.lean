@@ -5,7 +5,7 @@ import Benchmarks.UniswapV3.Pool.SwapAmountsTrace
 import Benchmarks.UniswapV3.Pool.SwapFinishSource
 import Benchmarks.UniswapV3.Pool.SwapFinishTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -108,7 +108,7 @@ theorem swapPostLoopX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
   have hpbound := pay.free_bound
   have hget5 (name : Ident) (hn : name ∉ swapPaymentWrites a.zeroForOne) :
       pay.frame'.locals.get? name = f4.locals.get? name := pay.locals_get name hn
-  have hfinish := swapFinishSource pay.frame' pay.evm' a.recipient
+  have hfinish := swapFinishSource (hperm := (congrArg ExecutionEnv.perm pay.source_state.env).trans hperm) pay.frame' pay.evm' a.recipient
     (swapAmount0 a s) (swapAmount1 a s) s (pay.contract_eq.trans hf4)
     ((hget5 _ (by cases a.zeroForOne <;> decide)).trans
       ((hget4 _ (by decide) (by decide)).trans ((w.locals_get _ (by decide)).trans hr)))

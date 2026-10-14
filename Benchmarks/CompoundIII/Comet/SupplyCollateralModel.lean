@@ -2,13 +2,13 @@ import Benchmarks.CompoundIII.Comet.TotalsCollateralData
 import Benchmarks.CompoundIII.Comet.WithdrawCollateralModel
 import Benchmarks.CompoundIII.Comet.TransferInModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
 
 def supplyCollateralReserved (evm : EVM.State) (asset : AccountAddress) : UInt256 :=
-  high128 (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
+  high128 (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (totalsCollateralSlot asset))
 
 def supplyCollateralTotalNext (evm : EVM.State) (asset : AccountAddress) (amount : UInt256) :
     UInt256 := withdrawCollateralTotal evm asset + amount
@@ -40,6 +40,17 @@ def supplyCollateralOutcome (evm : EVM.State) (dst asset : AccountAddress)
       (withdrawCollateralBalance evm dst asset) (supplyCollateralNext evm dst asset amount)
   | .reverted => .reverted
   | .staticViolation => .staticViolation
+
+set_option maxRecDepth 2000 in
+theorem supplyCollateralPrefixOutcome_result_perm {evm evm' dst asset amount out}
+    (he : supplyCollateralPrefixOutcome evm dst asset amount out = .ok evm') :
+    evm'.executionEnv.perm = true := by
+  unfold supplyCollateralPrefixOutcome at he
+  split_ifs at he with ht hc hb hp
+  have hstate := InternalOutcome.ok.inj he
+  rw [← hstate]
+  simpa only [supplyCollateralState, storeTotalsCollateral, storePackedWord,
+    storageStore_executionEnv] using hp
 
 def supplyCollateralTotalExpr : Expr :=
   .inRange (.uint ⟨128, by decide⟩)

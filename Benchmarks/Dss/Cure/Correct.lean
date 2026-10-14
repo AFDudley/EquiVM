@@ -19,7 +19,7 @@ import Benchmarks.Dss.Cure.Tell
 import Benchmarks.Dss.Cure.Wait
 import Benchmarks.Dss.Cure.Wards
 import Benchmarks.Dss.Cure.When
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Cure benchmark correctness scaffold
@@ -28,7 +28,7 @@ The runtime proof now follows the phase-1 shape: this file is a thin selector ro
 function has a separate `...BodyCore` proof obligation in its own file.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

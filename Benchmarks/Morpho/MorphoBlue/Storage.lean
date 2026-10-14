@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.PackedStorage
 
 /-! Morpho storage reads and writes used by the function proofs. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Morpho.MorphoBlue
 
@@ -19,11 +19,11 @@ theorem evalMorphoAddress (evm : EVM.State) (locals imms : Store) (name : Ident)
     (storageLocLoad_address_offset0 evm slot)
 
 -- LIBRARY CANDIDATE: evaluate a single mapping subscript without array bounds.
-theorem evalStorageRef_mindex {cfg : Config} {solm : Frame} {evm : EVM.State}
+theorem evalStorageRef_mindex {cfg : Config} {stele : Frame} {evm : EVM.State}
     {base : Ident} {expr : Expr} {value : Value} {key : KeyValue}
-    (heval : evalExpr? cfg solm evm expr = .ok value)
+    (heval : evalExpr? cfg stele evm expr = .ok value)
     (hkey : valueToKey? value = some key) :
-    evalStorageRef cfg solm evm ⟨base, [.mindex expr]⟩ = .ok ⟨base, [.mindex key]⟩ := by
+    evalStorageRef cfg stele evm ⟨base, [.mindex expr]⟩ = .ok ⟨base, [.mindex key]⟩ := by
   simp only [evalStorageRef, evalStorageRefSteps, evalStorageRefStep, heval,
     hkey, EvalResult.ofOption, pure, bind, EvalResult.bind]
 
@@ -374,8 +374,8 @@ theorem assignMorphoAddress (evm : EVM.State) (locals imms : Store)
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms } evm
       .storage ⟨name, []⟩ (.address (AccountAddress.ofNat value.toNat)) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)) := by
   apply assignStorageRef_storage_scalar_value hbase
     (by simp only [evalStorageRef, evalStorageRefSteps, pure, bind, EvalResult.bind])
     hty rfl hloc (Or.inl ⟨_, rfl⟩)
@@ -400,8 +400,8 @@ theorem assignBoolMappingTrue {cfg : Config} {frame : Frame} {evm : EVM.State}
     (hbackend : cfg.storageBackend = solidityStorageBackend layout)
     (hloc : layout ⟨name, [.mindex kv]⟩ = some (.leaf (boolOffset0Loc slot))) :
     assignStorageRef? cfg frame evm .storage ⟨name, [.mindex key]⟩ (.bool true) =
-      .ok (frame, Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-        (UInt256.lor (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+      .ok (frame, Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+        (UInt256.lor (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.lnot ⟨255⟩)) ⟨1⟩)) := by
   exact assignStorageRef_storage_scalar_value hbase (evalStorageRef_mindex hkey hkv)
     hty hbackend hloc (Or.inl ⟨_, rfl⟩) (storageLocStore_bool_true_offset0 evm slot)
@@ -457,8 +457,8 @@ theorem assignMorphoIsAuthorized (evm : EVM.State) (locals imms : Store)
     assignStorageRef? config { contract := contract, locals := locals, immutables := imms } evm
       .storage ⟨"isAuthorized", [.mindex key0, .mindex key1]⟩ (wordToElem .bool word) =
       .ok ({ contract := contract, locals := locals, immutables := imms },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner (authorizationSlot authorizer authorized)
-          (setBoolOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner (authorizationSlot authorizer authorized)
+          (setBoolOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (authorizationSlot authorizer authorized)) word)) := by
   apply assignStorageRef_storage_scalar_value hbase
     (er := ⟨"isAuthorized", [.mindex (.address (AccountAddress.ofNat authorizer.toNat)),

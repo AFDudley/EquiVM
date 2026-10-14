@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapAccountingSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -64,7 +64,7 @@ theorem swapProtocolUpdateSource {frame : Frame} {evm : EVM.State}
       some (.int (Int.ofNat (swapProtocolDelta c d).toNat)) := Std.HashMap.getElem?_insert_self
   have hex1 : ExecStmt config (swapProtocolDeltaFrame frame c d) evm swapProtocolBody[1]!
       (.ok (swapProtocolFeeFrame frame c d) evm) :=
-    ExecStmt.assign
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (evalExpr_word_sub (evalExpr_structField (name := "feeAmount")
         (evalExpr_var_get hstep) rfl) (evalExpr_var_get hdelta))
       (assignLocalField_frame hstep rfl rfl)
@@ -77,7 +77,7 @@ theorem swapProtocolUpdateSource {frame : Frame} {evm : EVM.State}
       Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using hdelta
   have hex2 : ExecStmt config (swapProtocolFeeFrame frame c d) evm swapProtocolBody[2]!
       (.ok (swapProtocolUpdateFrame frame c s d) evm) :=
-    ExecStmt.assign
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (evalExpr_uint128AddCast (evalExpr_structField (name := "protocolFee")
         (evalExpr_var_get hstate) rfl) (evalExpr_var_get hdelta2))
       (assignLocalField_frame hstate rfl rfl)

@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -27,7 +27,7 @@ def burnFunctionFromSlot (holder : AccountAddress) : UInt256 :=
   balanceOfSlot (burnFunctionFromKey holder)
 
 def burnFunctionFromBalanceWord (evm : EVM.State) (holder : AccountAddress) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (burnFunctionFromSlot holder)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (burnFunctionFromSlot holder)
 
 abbrev burnFunctionFromBalanceValue (evm : EVM.State) (holder : AccountAddress) : Value :=
   uniswapUint256Value (burnFunctionFromBalanceWord evm holder)
@@ -47,12 +47,12 @@ abbrev burnFunctionAfterBalanceStore
 
 def burnFunctionAfterBalanceState
     (evm : EVM.State) (holder : AccountAddress) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (burnFunctionFromSlot holder)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (burnFunctionFromSlot holder)
     (burnFunctionBalanceDebitWord evm holder value)
 
 def burnFunctionTotalSupplyWord
     (evm : EVM.State) (holder : AccountAddress) (value : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad (burnFunctionAfterBalanceState evm holder value)
+  Stele.EVM.storageLoad (burnFunctionAfterBalanceState evm holder value)
     evm.executionEnv.codeOwner ⟨0⟩
 
 abbrev burnFunctionTotalSupplyValue
@@ -74,7 +74,7 @@ abbrev burnFunctionTotalSupplyDebitValue
 
 def burnFunctionPostState
     (evm : EVM.State) (holder : AccountAddress) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (burnFunctionAfterBalanceState evm holder value)
+  Stele.EVM.storageStore (burnFunctionAfterBalanceState evm holder value)
     evm.executionEnv.codeOwner ⟨0⟩ (burnFunctionTotalSupplyDebitWord evm holder value)
 
 def burnFunctionFromEvaledRef (holder : AccountAddress) : EvaledStorageRef :=
@@ -288,7 +288,7 @@ theorem burnFunctionAfterBalance_codeOwner (evm : EVM.State)
     (holder : AccountAddress) (value : UInt256) :
     (burnFunctionAfterBalanceState evm holder value).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [burnFunctionAfterBalanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [burnFunctionAfterBalanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
@@ -398,7 +398,8 @@ theorem bindParams_burnFunction_call (holder : AccountAddress) (value : UInt256)
 
 theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (value : UInt256)
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
-    (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat) :
+    (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config { contract := contract, locals := burnFunctionCallStore holder value } evm
       burnFunction.body
       (.returned { contract := contract, locals := burnFunctionAfterTotalSupplyStore evm holder value }
@@ -421,6 +422,7 @@ theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (val
       (evalExpr_burnFunction_balance_require_true evm holder value hbalance)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr hperm)
       (evalExpr_burnFunction_balance_debit evm holder value hbalance)
       (burnFunctionAssignBalance evm holder value)) ?_
   refine ExecBlock.consNormal
@@ -430,6 +432,7 @@ theorem uniswapBurnFunctionBody (evm : EVM.State) (holder : AccountAddress) (val
       (evalExpr_burnFunction_totalSupply_require_true evm holder value hsupply)) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [burnFunctionAfterBalanceState] using hperm))
       (evalExpr_burnFunction_totalSupply_debit evm holder value hsupply)
       (burnFunctionAssignTotalSupply evm holder value))
     ExecBlock.nil
@@ -441,7 +444,8 @@ theorem uniswapBurnFunctionCallSuccess {caller : Frame} {evm : EVM.State}
       .ok [burnFunctionFromValue holder, burnFunctionValueValue value])
     (hbalance : value.toNat ≤ (burnFunctionFromBalanceWord evm holder).toNat)
     (hsupply : value.toNat ≤ (burnFunctionTotalSupplyWord evm holder value).toNat)
-    (himm : caller.immutables = ∅ := by first | rfl | assumption) :
+    (himm : caller.immutables = ∅ := by first | rfl | assumption)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config caller evm (.internalCall "_burn" args retVar)
       (.ok (resumeAfterInternalCall caller retVar none) (burnFunctionPostState evm holder value)) := by
   exact internalCallFunctionReturn
@@ -450,13 +454,13 @@ theorem uniswapBurnFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (name := "_burn") (retVar := retVar) (args := args)
     (argVals := [burnFunctionFromValue holder, burnFunctionValueValue value])
     (callee := burnFunction) (locals := burnFunctionCallStore holder value)
-    (calleeSolm := { contract := contract, locals := burnFunctionAfterTotalSupplyStore evm holder value })
+    (calleeStele := { contract := contract, locals := burnFunctionAfterTotalSupplyStore evm holder value })
     (value := none)
     hargs
     (by simpa [hcontract, himm] using uniswapLookupBurnFunction)
     (bindParams_burnFunction_call holder value)
     (by
       simpa [hcontract, himm] using
-        (uniswapBurnFunctionBody evm holder value hbalance hsupply))
+        (uniswapBurnFunctionBody (hperm := by assumption) evm holder value hbalance hsupply))
 
 end UniswapV2Pair

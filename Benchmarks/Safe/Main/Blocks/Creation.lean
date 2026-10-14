@@ -2,10 +2,10 @@ import Reasoning.Reach
 import Reasoning.Initcode
 import Benchmarks.Safe.Main.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeCreationBlocks
+namespace Benchmarks.Safe.Main.CreationBlocks
 
 private abbrev d := Reasoning.Theory.decode_append_left_of_decode Benchmarks.Safe.Main.safeCreationBytecode
 private abbrev j := Reasoning.Theory.D_J_contains_append_left Benchmarks.Safe.Main.safeCreationBytecode
@@ -124,4 +124,4 @@ theorem safeCreation_block_32 {tail : ByteArray} {ee : ExecutionEnv} {g : Sat256
   have hcreationCodeSize : Benchmarks.Safe.Main.safeCreationBytecode.size = 11907 := by native_decide
   exact RD.invalid r0 (by exact d tail _ _ _ (by native_decide) (by rw [hcreationCodeSize]; native_decide) (by native_decide))
 
-end safeCreationBlocks
+end Benchmarks.Safe.Main.CreationBlocks

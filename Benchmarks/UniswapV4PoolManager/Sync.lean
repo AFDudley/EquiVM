@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.CurrencyBalanceTrace
 # PoolManager `sync(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2662; reach lemma `poolManagerReachSyncBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -57,7 +57,7 @@ theorem poolManagerSyncBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmutab
             (accountWord_eq_iff currency _ hcanon).1 rfl
           have hclean : UInt256.land (calldataWord I.calldata 4) solcAddrMask = calldataWord I.calldata 4 :=
             solcAddrMask_clean hcanon
-          have hdec : decodeCalldataWithMode config.abiDecodeMode (syncTransition.params.map Param.name)
+          have hdec : config.externalABI.decodeCalldata? (syncTransition.params.map Param.name)
               (transitionSignature syncTransition).paramTypes I.calldata = some args :=
             decodeCalldata_address_ok hlen hhi hcanon
           by_cases hz : currency = AccountAddress.ofNat 0

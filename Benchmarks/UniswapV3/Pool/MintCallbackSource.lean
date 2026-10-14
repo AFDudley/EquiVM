@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.FlashCallbackSource
 import Benchmarks.UniswapV3.Pool.Calls
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def mintCallbackStmts : List Stmt :=
@@ -40,7 +40,7 @@ theorem mintCallbackReverts {frame : Frame} {evm evm' : EVM.State} {σ : Account
     (hc : extCodeSizeWord σ (EVM.word target.val) ≠ ⟨0⟩)
     (hcall : callViaEVM evm target 0 (mintCallbackCalldata amount0 amount1 data) (false, evm', out)) :
     ExecBlock config frame evm mintCallbackStmts .reverted := by
-  apply checkedExternalCallVarFailure (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc) ht
+  apply checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evm' := evm') (out := out) (flashCallbackGuardTrue ha ht hc) ht
     (evalMintCallbackArgs hf0 hf1 hd)
   refine ⟨mintCallbackCalldata amount0 amount1 data, mintCallbackEncode amount0 amount1 data, ?_⟩
   simpa only [show EVM.address target.val = target from by
@@ -58,7 +58,7 @@ theorem mintCallbackReturns {frame : Frame} {evm evm' : EVM.State} {σ : Account
     (hcall : callViaEVM evm target 0 (mintCallbackCalldata amount0 amount1 data) (true, evm', out)) :
     ExecBlock config frame evm mintCallbackStmts
       (.ok {frame with locals := frame.locals.insert "__c4" .unit} evm') := by
-  apply checkedExternalCallVarSuccess (out := out) (flashCallbackGuardTrue ha ht hc) ht
+  apply checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (out := out) (flashCallbackGuardTrue ha ht hc) ht
     (evalMintCallbackArgs hf0 hf1 hd) (value := [])
   · refine ⟨mintCallbackCalldata amount0 amount1 data, mintCallbackEncode amount0 amount1 data, ?_⟩
     simpa only [show EVM.address target.val = target from by

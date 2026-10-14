@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.CreateAssetListSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -20,7 +20,7 @@ theorem createAssetList_call_ok {frame : Frame} {evm evm' : EVM.State}
   exact ExecStmt.internalCallReturn (callee := createAssetListCallable)
     (locals := ((∅ : Store).insert "assets" (.array (assets.map ConstructorAsset.value))).insert
       "factory" (.address factory))
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [factoryExpr, assetsExpr])
     (argVals := [.address factory, .array (assets.map ConstructorAsset.value)])
     (by simp only [evalExprs?, hfactory, hassets, pure, bind, EvalResult.bind])
@@ -41,7 +41,7 @@ theorem createAssetList_call_revert {frame : Frame} {evm evm' : EVM.State}
   apply ExecStmt.internalCallRevert (callee := createAssetListCallable)
     (locals := ((∅ : Store).insert "assets" (.array (assets.map ConstructorAsset.value))).insert
       "factory" (.address factory))
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (args := [factoryExpr, assetsExpr])
     (argVals := [.address factory, .array (assets.map ConstructorAsset.value)])
     (by simp only [evalExprs?, hfactory, hassets, pure, bind, EvalResult.bind])

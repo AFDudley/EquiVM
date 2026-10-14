@@ -1,6 +1,6 @@
 import Benchmarks.Dss.DaiJoin.Exit
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -179,7 +179,7 @@ theorem daiJoinExitVatMoveCallFailedReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hargs hcall)
   simpa [ExecTransitionBody] using ExecFuncBody.execBlockRevert hblock
 
@@ -250,7 +250,7 @@ theorem daiJoinExitDaiMintNoCodeAfterVatReverts (evm evmVat : EVM.State)
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
     exact execBlockAppendReverted (checkedExternalCallNoCode
       (cfg := config) (C := contract) (evm := evmVat)
@@ -334,9 +334,9 @@ theorem daiJoinExitDaiMintCallFailedAfterVatReverts (evm evmVat evmMint : EVM.St
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlockAppendReverted (checkedExternalCallFailure
+    exact execBlockAppendReverted (checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmMint)
       (locals := exitAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "mintRet") (name := "mint")
@@ -376,7 +376,7 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
         (EVM.address (daiJoinDaiAddress evmVat.accountMap evmVat.executionEnv)) "mint" 0
         [.address (AccountAddress.ofUInt256 (exitUsrMaskedWord I)), exitWadValue I]
         (true, evmMint, outMint) true) :
-    (ExecTransitionBody config contract evm (exitStore I) exitTransition.body
+    (evmMint.executionEnv.perm = true → ExecTransitionBody config contract evm (exitStore I) exitTransition.body
       (.returned
         { contract := contract,
           locals := (exitAfterMoveStore I).insert "mintRet" (collapseReturns []) }
@@ -442,9 +442,9 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
     refine ExecBlock.consNormal hmulStmt ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) (perm := true)
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) (perm := true)
         hvat (by simp [evalExpr?, pure]) hmoveArgs hcallMove hmoveDecode) ?_
-    exact execBlock_append_ok (checkedExternalCallSuccess
+    exact execBlock_append_ok (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evmVat) (evm' := evmMint)
       (locals := exitAfterMoveStore I) (receiver := .storage daiRef)
       (retVar := "mintRet") (name := "mint")
@@ -454,9 +454,10 @@ theorem daiJoinExitDaiMintSuccessAfterVatReturnsSplit (evm evmVat evmMint : EVM.
       (out := outMint) (perm := true) (value := [])
       hdaiGuard hdai hmintArgs hcallMint hmintDecode) hlog
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal
-        (ExecStmt.emit (evalExprs_daiJoinExitEvent evmMint I)) ExecBlock.nil))
+        (ExecStmt.emit (hperm := hperm) (evalExprs_daiJoinExitEvent evmMint I)) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic
@@ -469,7 +470,7 @@ theorem daiJoinExitVatMoveCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -520,7 +521,7 @@ theorem daiJoinExitVatMoveCallFailedCore
           evmS.executionEnv.blobVersionedHashes evmS.executionEnv.blocks
           evmS.executionEnv.perm := by
     simpa [evmS, initState] using hΘ
-  have hcallSolm := callCoincides
+  have hcallStele := callCoincides
       (cfg := config) (evm := evmS)
       (tgt := EVM.address (daiJoinVatAddress σ I))
       (targetWord := daiJoinVatTargetWord σ I)
@@ -545,7 +546,7 @@ theorem daiJoinExitVatMoveCallFailedCore
         (by simpa [evmS, initState] using hwv)
         (by simpa [evmS, initState] using hliveOne)
         hfit hcodeSize
-        (by simpa [evmS, initState] using hcallSolm))
+        (by simpa [evmS, initState] using hcallStele))
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
 theorem daiJoinExitDaiMintNoCodeCore
@@ -555,7 +556,7 @@ theorem daiJoinExitDaiMintNoCodeCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -607,7 +608,7 @@ theorem daiJoinExitDaiMintNoCodeCore
           evmS.executionEnv.blobVersionedHashes evmS.executionEnv.blocks
           evmS.executionEnv.perm := by
     simpa [evmS, initState] using hΘ
-  have hcallMoveSolm := callCoincides
+  have hcallMoveStele := callCoincides
       (cfg := config) (evm := evmS)
       (tgt := EVM.address (daiJoinVatAddress σ I))
       (targetWord := daiJoinVatTargetWord σ I)
@@ -632,7 +633,7 @@ theorem daiJoinExitDaiMintNoCodeCore
         (by simpa [evmS, initState] using hwv)
         (by simpa [evmS, initState] using hliveOne)
         hfit hvatCodeSize
-        (by simpa [evmS, initState] using hcallMoveSolm)
+        (by simpa [evmS, initState] using hcallMoveStele)
         (by simpa [evmS, initState] using hdaiCodeSize))
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
 
@@ -643,7 +644,7 @@ theorem daiJoinExitDaiMintCallFailedCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -708,7 +709,7 @@ theorem daiJoinExitDaiMintCallFailedCore
           evmS.executionEnv.blobVersionedHashes evmS.executionEnv.blocks
           evmS.executionEnv.perm := by
     simpa [evmS, initState] using hΘMove
-  have hcallMoveSolm := callCoincides
+  have hcallMoveStele := callCoincides
       (cfg := config) (evm := evmS)
       (tgt := EVM.address (daiJoinVatAddress σ I))
       (targetWord := daiJoinVatTargetWord σ I)
@@ -770,7 +771,7 @@ theorem daiJoinExitDaiMintCallFailedCore
         (by simpa [evmS, initState] using hwv)
         (by simpa [evmS, initState] using hliveOne)
         hfit hvatCodeSize
-        (by simpa [evmS, evmVatS, initState] using hcallMoveSolm)
+        (by simpa [evmS, evmVatS, initState] using hcallMoveStele)
         (by simpa [evmVatS, evmS, initState] using hdaiCodeSize)
         hcallMintAligned)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -782,7 +783,7 @@ theorem daiJoinExitDaiMintSuccessCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some exitTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (exitTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (exitTransition.params.map Param.name)
         (transitionSignature exitTransition).paramTypes I.calldata = some (exitStore I))
     (hliveOne : exitLiveWord σ I = ⟨1⟩)
     (hfit : daiJoinONEWord.toNat * (exitWadWord I).toNat < UInt256.size)
@@ -876,7 +877,7 @@ theorem daiJoinExitDaiMintSuccessCore
           evmS.executionEnv.blobVersionedHashes evmS.executionEnv.blocks
           evmS.executionEnv.perm := by
     simpa [evmS, initState] using hΘMove
-  have hcallMoveSolm := callCoincides
+  have hcallMoveStele := callCoincides
       (cfg := config) (evm := evmS)
       (tgt := EVM.address (daiJoinVatAddress σ I))
       (targetWord := daiJoinVatTargetWord σ I)
@@ -926,7 +927,7 @@ theorem daiJoinExitDaiMintSuccessCore
   let evmMintS : EVM.State :=
     { evmVatS with accountMap := σ'', substate := AMint' }
   have hbodySplit :
-      (ExecTransitionBody config contract evmS (exitStore I) exitTransition.body
+      (I.perm = true → ExecTransitionBody config contract evmS (exitStore I) exitTransition.body
         (.returned
           { contract := contract,
             locals := (exitAfterMoveStore I).insert "mintRet" (collapseReturns []) }
@@ -940,11 +941,11 @@ theorem daiJoinExitDaiMintSuccessCore
         (by simpa [evmS, initState] using hwv)
         (by simpa [evmS, initState] using hliveOne)
         hfit hvatCodeSize
-        (by simpa [evmS, evmVatS, initState] using hcallMoveSolm)
+        (by simpa [evmS, evmVatS, initState] using hcallMoveStele)
         (by simpa [evmVatS, evmS, initState] using hdaiCodeSize)
         hcallMintAligned)
   rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
-  · exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+  · exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 _hperm)
       (by rfl)
       (by
         simpa [exitTransition] using
@@ -1052,7 +1053,7 @@ theorem daiJoinExitBodyCore {σ σ₀ A I} {g : UInt256}
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) :=
               daiJoinExitVatMoveCallFailed rd1467 (by simp [UInt256.size])
             let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            have hcallSolm :
+            have hcallStele :
                 typedCallViaEVM config evmS
                   (EVM.address (daiJoinVatAddress σ I)) "move" 0
                   [.address I.source, .address I.codeOwner,
@@ -1086,7 +1087,7 @@ theorem daiJoinExitBodyCore {σ σ₀ A I} {g : UInt256}
                 (by simpa [evmS, initState] using hwv)
                 (by simpa [evmS, initState] using hlive)
                 hfit hvatCode
-                (by simpa [evmS, initState] using hcallSolm)
+                (by simpa [evmS, initState] using hcallStele)
             exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
       by_cases hwad : exitWadWord I = ⟨0⟩
       · have hmulOk :

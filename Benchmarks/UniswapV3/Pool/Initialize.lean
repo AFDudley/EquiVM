@@ -9,11 +9,11 @@ import Benchmarks.UniswapV3.Pool.OracleInitializeStaticTrace
 # UniswapV3Pool `initialize(uint160)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2218; reach lemma `uniswapV3PoolReachInitializeBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -65,7 +65,7 @@ theorem uniswapV3PoolInitializeBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3P
           have rdRet := uniswapV3PoolBlocks.uniswapV3Pool_block_857
             (immWords := wordsOf (immStore v)) (by simp) rdDone
           exact rdRet.reEquivExecutionGen hcode hd hdec
-            (initializeReturns v evm price hwv hzero hp hv hs) rfl
+            (initializeReturns (hperm := by assumption) v evm price hwv hzero hp hv hs) rfl
             (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
   · have hshort : I.calldata.size < 36 := by omega
     have rdBad := uniswapV3PoolInitializeShortX

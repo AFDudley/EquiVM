@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Cure.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -42,18 +42,18 @@ abbrev liftSrcsElemSlotForLen (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   srcsDataSlot + liftSrcsLenWord σ I
 
 abbrev liftAfterSrcsLengthState (evm : EVM.State) (len : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (len + ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩ (len + ⟨1⟩)
 
 abbrev liftAfterSrcsElemState (evm : EVM.State) (len : UInt256)
     (srcWord : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (srcsDataSlot + len)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (srcsDataSlot + len)
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (srcsDataSlot + len))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (srcsDataSlot + len))
       srcWord)
 
 abbrev liftAfterPosState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (liftPosSlotFor I)
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (liftPosSlotFor I)
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
 
 abbrev liftLengthAccountMap (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨2⟩ (liftSrcsLenWord σ I + ⟨1⟩)
@@ -87,7 +87,7 @@ theorem liftSrcElemSlot_intWord (w : UInt256) :
 
 theorem liftStorageLocStore_uint256_succ_coe (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (wordLoc slot) (.int ((↑val.toNat : Int) + 1)) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot (val + ⟨1⟩)) := by
   simpa [show wordLoc = uint256Loc from rfl] using
     storageLocStore_uint256_succ evm slot val
 
@@ -121,7 +121,7 @@ theorem liftPushArray_ok {σ σ₀ A I} {g : Sat256}
     simpa [liftSrc, liftKey] using solcAddressValue_masked (calldataWord I.calldata 4)
   rw [haddrWord]
   rw [storageLocStore_address_offset0]
-  · simp only [EvalResult.ofOption, storageStore_executionEnv, Solm.EVM.storageLoad,
+  · simp only [EvalResult.ofOption, storageStore_executionEnv, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, Std.ExtTreeMap.get?_eq_getElem?]
     simp [initState]
   · exact hcanonSrc
@@ -130,7 +130,7 @@ theorem evalExpr_liftPosStorage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := liftLocals I } evm
       (.storage (posRef (.var "src"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I)).toNat)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (er := liftPosEvaledRef I) (t := .int uint256Int) (loc := wordLoc (liftPosSlotFor I))]
   · exact congrArg EvalResult.ok (storageLocLoad_uint256 evm (liftPosSlotFor I))
@@ -144,7 +144,7 @@ theorem evalExpr_liftPosStorage (evm : EVM.State) (I : ExecutionEnv) :
       liftPosEvaledRef, liftPosSlotFor]
 
 theorem evalExpr_liftPosZero_true (evm : EVM.State) (I : ExecutionEnv)
-    (hpos : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I) = ⟨0⟩) :
+    (hpos : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I) = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := liftLocals I } evm
       (.binary .eq (.storage (posRef (.var "src"))) (.intLit 0)) = .ok (.bool true) := by
   rw [evalExpr?]
@@ -154,7 +154,7 @@ theorem evalExpr_liftPosZero_true (evm : EVM.State) (I : ExecutionEnv)
   all_goals native_decide
 
 theorem evalExpr_liftPosZero_false (evm : EVM.State) (I : ExecutionEnv)
-    (hpos : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I) ≠ ⟨0⟩) :
+    (hpos : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liftPosSlotFor I) ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := liftLocals I } evm
       (.binary .eq (.storage (posRef (.var "src"))) (.intLit 0)) = .ok (.bool false) := by
   rw [evalExpr?]
@@ -171,7 +171,7 @@ theorem evalExpr_liftSrcsLength (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := liftLocals I } evm
       (.arrayLength .storage srcsRef) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) := by
   simp [evalExpr?, liftLocals, srcsRef, config, contract, storageDecls, storageLayout,
     solidityStorageBackend, storageLayoutRaw, resolveStorageRef?,
     storageTypeAt?, evalStorageRef, evalStorageRefSteps, wordLoc, EvalResult.ofOption,
@@ -180,7 +180,7 @@ theorem evalExpr_liftSrcsLength (evm : EVM.State) (I : ExecutionEnv) :
     (match storageLocLoad evm (wordLoc ⟨2⟩) with
     | Value.int n => EvalResult.ok (Value.int n)
     | _ => EvalResult.error EvalError.storageError) =
-      EvalResult.ok (Value.int ↑(Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+      EvalResult.ok (Value.int ↑(Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
   erw [storageLocLoad_uint256]
   rfl
 
@@ -188,7 +188,7 @@ theorem liftAssignPos_ok (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := liftLocals I } evm
       .storage (posRef (.var "src"))
       (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) =
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) =
         .ok ({ contract := contract, locals := liftLocals I }, liftAfterPosState evm I) := by
   have her :
       evalStorageRef config { contract := contract, locals := liftLocals I } evm
@@ -199,11 +199,11 @@ theorem liftAssignPos_ok (evm : EVM.State) (I : ExecutionEnv) :
   have hstore :
       storageLocStore evm (wordLoc (liftPosSlotFor I))
         (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) =
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)) =
           some (liftAfterPosState evm I) := by
     simpa [liftAfterPosState] using
       storageLocStore_uint256 evm (liftPosSlotFor I)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
   exact assignStorageRef_storage_scalar (hbackend := rfl)
     (ty := .elem (.int uint256Int)) (loc := wordLoc (liftPosSlotFor I)) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
     (hbase := by simp [liftLocals, posRef])
@@ -224,7 +224,7 @@ theorem cureLiftSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     let evm1 := liftAfterSrcsLengthState evm0 len
     let evm2 := liftAfterSrcsElemState evm1 len (liftKey I)
     let evm3 := liftAfterPosState evm2 I
-    (ExecTransitionBody config contract evm0 (liftLocals I) liftTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 (liftLocals I) liftTransition.body
       (.returned { contract := contract, locals := liftLocals I } evm3 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 (liftLocals I)
@@ -237,7 +237,7 @@ theorem cureLiftSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     (locals := liftLocals I) (by simp [liftLocals]) hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (liftPosSlotFor I) = ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (liftPosSlotFor I) = ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardPos := evalExpr_liftPosZero_true evm0 I hposLoad
   have hsrc :
@@ -265,11 +265,12 @@ theorem cureLiftSourceBodyOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardPos) ?_
     exact hrest
   constructor
-  · have hlen := evalExpr_liftSrcsLength evm2 I
+  · intro hperm
+    have hlen := evalExpr_liftSrcsLength evm2 I
     have hassign := liftAssignPos_ok evm2 I
     exact ExecFuncBody.execBlockOK (hprefix
-      (ExecBlock.consNormal (ExecStmt.pushVal hsrc hpush)
-        (ExecBlock.consNormal (ExecStmt.assign hlen hassign) ExecBlock.nil)))
+      (ExecBlock.consNormal (ExecStmt.pushVal (hperm := hperm) hsrc hpush)
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm2, evm1, liftAfterSrcsElemState, liftAfterSrcsLengthState, storageStore_executionEnv] using hperm)) hlen hassign) ExecBlock.nil)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
       (ExecBlock.consStatic (ExecStmt.pushValStatic hsrc hpush
@@ -291,7 +292,7 @@ theorem cureLiftSourceBodyPosRevert {σ σ₀ A I} {g : UInt256}
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     (locals := liftLocals I) (by simp [liftLocals]) hlive
   have hposLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (liftPosSlotFor I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (liftPosSlotFor I) ≠ ⟨0⟩ := by
     simpa [evm0, solcSlotWordAt] using hpos
   have hguardPos := evalExpr_liftPosZero_false evm0 I hposLoad
   have hblock :
@@ -721,7 +722,7 @@ theorem cureDispatchLift {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_lift_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
       (transitionSignature liftTransition).paramTypes I.calldata =
         some (liftLocals I) := by
   simpa [config, liftTransition, liftLocals, liftSrc] using
@@ -729,7 +730,7 @@ theorem cureDecode_lift_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_lift_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
       (transitionSignature liftTransition).paramTypes I.calldata = none := by
   simpa [config, liftTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "src") hsz4 hshort)
@@ -769,7 +770,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
     hcode hwv hsz4 hsize hsel
   by_cases hsz36 : 36 ≤ I.calldata.size
   · have hdecode :
-        decodeCalldataWithMode config.abiDecodeMode (liftTransition.params.map Param.name)
+        config.externalABI.decodeCalldata? (liftTransition.params.map Param.name)
           (transitionSignature liftTransition).paramTypes I.calldata = some (liftLocals I) :=
       cureDecode_lift_ok hsz36
     have hcallerWord : solcSlotWordAt callerSlot σ I = solcSlotWordAt callerSlot σ I := rfl
@@ -792,7 +793,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
       (by native_decide) (by native_decide) (by native_decide) (by native_decide)
       (by native_decide) (by native_decide) (by native_decide) (by jump_dest) (by simp)
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-    · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+    · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
         rw [← hcallerWord]
         exact hauthEvm
       have hauthSolc :
@@ -807,7 +808,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
           repeat' first | apply And.intro | native_decide)
         hauthSolc (by jump_dest) (by simp)
       by_cases hliveEvm : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩
-      · have hliveSolm : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩ := by
+      · have hliveStele : solcSlotWordAt ⟨1⟩ σ I = ⟨1⟩ := by
           rw [← hliveWord]
           exact hliveEvm
         have hliveSolc : solcSlotWord σ I ⟨1⟩ = ⟨1⟩ := by
@@ -832,14 +833,14 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
           rw [u256_land_comm solcAddrMask (calldataWord I.calldata 4)]
           exact solcAddrMask_result_canonical (calldataWord I.calldata 4)
         by_cases hposEvm : solcSlotWordAt (liftPosSlotFor I) σ I = ⟨0⟩
-        · have hposSolm : solcSlotWordAt (liftPosSlotFor I) σ I = ⟨0⟩ := hposEvm
+        · have hposStele : solcSlotWordAt (liftPosSlotFor I) σ I = ⟨0⟩ := hposEvm
           let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
           let len := liftSrcsLenWord σ I
           let evm1 := liftAfterSrcsLengthState evm0 len
           let evm2 := liftAfterSrcsElemState evm1 len (liftKey I)
           let evm3 := liftAfterPosState evm2 I
           have hbodySplit :
-              (ExecTransitionBody config contract evm0 locals liftTransition.body
+              (I.perm = true → ExecTransitionBody config contract evm0 locals liftTransition.body
                 (.returned { contract := contract, locals := locals } evm3 none)) ∧
               (I.perm = false →
                 ExecTransitionBody config contract evm0 locals liftTransition.body
@@ -847,7 +848,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, len, evm1, evm2, evm3, locals] using
               (cureLiftSourceBodyOkSplit
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hposSolm)
+                hwv hauthStele hliveStele hposStele)
           have hposSolc : solcSlotWord σ I (solcMappingSlot ⟨5⟩ key) = ⟨0⟩ := by
             rw [← hposSlotEq]
             simpa [solcSlotWordAt] using hposEvm
@@ -870,10 +871,10 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             (s0 := initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (ee := I) (key := key) (ret := ⟨484⟩) (R := [sel])
             hposPc (by jump_dest) hmemPos hreadPos64 hcanonKey (by simp)
-          rcases hfirstWrite with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+          rcases hfirstWrite with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          have hbody := hbodySplit.1
+          have hbody := hbodySplit.1 hperm
           have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
           have hret :
               RDret cureBytecode (Sat256.ofUInt256 g)
@@ -891,7 +892,7 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
           have haccounts : liftStoreLogAccountMap σ I key = evm3.accountMap := by
             simpa [evm3, evm2, evm1, evm0, liftAfterPosState, liftAfterSrcsElemState,
               liftAfterSrcsLengthState, initState, storageStore_accountMap,
-              storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount,
+              storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount,
               liftFinalAccountMap, liftElemAccountMap, liftLengthAccountMap,
               liftSrcsElemSlotForLen, liftSrcsLenWord, solcSlotWordAt, solcSlotWord, len] using hstoreEq
           have henc : returnEquiv ByteArray.empty none liftTransition.returnType := by
@@ -899,15 +900,15 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
           exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
             haccounts henc
-        · have hposSolm : solcSlotWordAt (liftPosSlotFor I) σ I ≠ ⟨0⟩ := by
-            intro hsolm
-            exact hposEvm (by rw [hposWord, hsolm])
+        · have hposStele : solcSlotWordAt (liftPosSlotFor I) σ I ≠ ⟨0⟩ := by
+            intro hstele
+            exact hposEvm (by rw [hposWord, hstele])
           let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hbody : ExecTransitionBody config contract evm0 locals liftTransition.body .reverted := by
             simpa [evm0, locals] using
               (cureLiftSourceBodyPosRevert
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hposSolm)
+                hwv hauthStele hliveStele hposStele)
           have hposSolc : solcSlotWord σ I (solcMappingSlot ⟨5⟩ key) ≠ ⟨0⟩ := by
             rw [← hposSlotEq]
             simpa [solcSlotWordAt] using hposEvm
@@ -917,19 +918,19 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             (ee := I) (key := key) (ret := ⟨484⟩) (R := [sel])
             hafterLive hcanonKey hposSolc hmemAuth hreadAuth64 (by simp)
           exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hliveSolm : solcSlotWordAt ⟨1⟩ σ I ≠ ⟨1⟩ := by
-          intro hsolm
-          exact hliveEvm (by rw [hliveWord, hsolm])
+      · have hliveStele : solcSlotWordAt ⟨1⟩ σ I ≠ ⟨1⟩ := by
+          intro hstele
+          exact hliveEvm (by rw [hliveWord, hstele])
         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody : ExecTransitionBody config contract evm0 locals liftTransition.body .reverted := by
           have hguardAuth := cureAuthGuardEval_true
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := locals)
-            (by simp [locals]) hauthSolm
+            (by simp [locals]) hauthStele
           have hguardLive := cureLiveGuardEval_false
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
             (g := Sat256.ofUInt256 g) (locals := locals)
-            (by simp [locals]) hliveSolm
+            (by simp [locals]) hliveStele
           have hblock :
               ExecBlock config { contract := contract, locals := locals } evm0
                 [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
@@ -966,17 +967,17 @@ theorem cureLiftBodyCore {σ σ₀ A I} {g : UInt256}
             repeat' first | apply And.intro | native_decide)
           hliveSolc hmemAuth hread64 (by simp)
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm (by rw [hcallerWord, hsolm])
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm (by rw [hcallerWord, hstele])
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody : ExecTransitionBody config contract evm0 locals liftTransition.body .reverted := by
         have hguard := cureAuthGuardEval_false
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := Sat256.ofUInt256 g) (locals := locals)
-          (by simp [locals]) hauthSolm
+          (by simp [locals]) hauthStele
         have hblock := nonpayableSecondRequireReverts
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rest := [

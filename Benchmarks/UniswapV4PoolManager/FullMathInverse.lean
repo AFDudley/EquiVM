@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.FullMathReduce
 import Benchmarks.UniswapV4PoolManager.WordXorSource
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -19,7 +19,7 @@ theorem fullMathInverseStepSource {f : Frame} {evm : EVM.State} {d inv : UInt256
         simp only [evalExpr?, pure]; rfl)
       (evalWordMul hd' hi'))
   rw [u256_mul_comm inv] at he
-  exact ExecStmt.assign he (assignLocalValue hi)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue hi)
 
 def fullMathInverseFrame (f : Frame) (d inv : UInt256) : Nat → Frame
   | 0 => f
@@ -84,7 +84,7 @@ theorem fullMathInverseBody {f : Frame} {evm : EVM.State} {d w : UInt256} {old :
   have hi7 : f7.locals.get? "inv" = some (.int (Int.ofNat (fullMathInverse d).toNat)) :=
     fullMathInverseFrame_inv d inv 6 (store_get_self _ _ _)
   have h23 : ExecStmt config f7 evm fullMathFunction.body[23]! (.ok (wordLocal f7 "result" result) evm) :=
-    ExecStmt.assign (evalWordMul (evalLocalValue hp7) (evalLocalValue hi7)) (assignLocalValue hr7)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordMul (evalLocalValue hp7) (evalLocalValue hi7)) (assignLocalValue hr7)
   refine ⟨wordLocal f7 "result" result, ExecFuncBody.execBlockRet (ExecBlock.consNormal h16 ?_)⟩
   exact execBlock_append hsteps (ExecBlock.consNormal h23 (ABlock.start.returns wordLocal_eval))
 

@@ -5,8 +5,8 @@ import Benchmarks.Safe.Main.Blocks.Runtime_006
 import Benchmarks.Safe.Main.Blocks.Runtime_008
 import Benchmarks.Safe.Main.Blocks.Runtime_009
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -17,15 +17,16 @@ variable {σ σ₀ : AccountMap} {g : UInt256} {A : Substate} {I : ExecutionEnv}
 theorem safeChangeThresholdSource (evm : EVM.State) (value : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
-    (hnz : value ≠ ⟨0⟩) :
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hnz : value ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (thresholdArgs value) changethresholdTransition.body
       (.returned (resumeAfterInternalCall (thresholdFrame value) "_ok" none)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) none) := by
   have hcall := internalCallFunctionReturn (caller := thresholdFrame value)
     (name := "changeThresholdBody") (retVar := "_ok") (callee := changeThresholdBodyFunction)
     (evalExprs?_singleton (safeEvalThreshold evm value)) rfl rfl
-    (safeThresholdSource evm value hle hnz)
+    (safeThresholdSource (hperm := by assumption) evm value hle hnz)
   exact .execBlockOK (.consNormal (.requireTrue (evalCallvalueEq_true hvalue))
     (.consNormal (.requireTrue (by simpa [hauth] using safeEvalAuthorized evm _))
       (.consNormal hcall .nil)))
@@ -33,11 +34,11 @@ theorem safeChangeThresholdSource (evm : EVM.State) (value : UInt256)
 theorem safeChangeThresholdSourceStatic (evm : EVM.State) (value : UInt256)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hle : value.toNat ≤ (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
+    (hle : value.toNat ≤ (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩).toNat)
     (hnz : value ≠ ⟨0⟩) (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (thresholdArgs value) changethresholdTransition.body
       .staticViolation := by
-  have hcall := ExecStmt.internalCallStatic (cfg := config) (solm := thresholdFrame value)
+  have hcall := ExecStmt.internalCallStatic (cfg := config) (stele := thresholdFrame value)
     (name := "changeThresholdBody") (retVar := "_ok") (callee :=
       changeThresholdBodyFunction.toCallable)
     (evalExprs?_singleton (safeEvalThreshold evm value)) rfl rfl
@@ -87,7 +88,7 @@ theorem safeChangethresholdBodyCore
           (solcDecodeLenCheckOk_4_32 hlen hbig hsize) (by jump_dest)
         have h3415 := safeRuntime_block_1045 (by simp) (by jump_dest) h1045
         have h6757 := safeRuntime_block_3415 (by simp) (by jump_dest) h3415
-        have hdec : decodeCalldataWithMode config.abiDecodeMode
+        have hdec : config.externalABI.decodeCalldata?
             (changethresholdTransition.params.map Param.name)
             (transitionSignature changethresholdTransition).paramTypes I.calldata =
             some (thresholdArgs (calldataWord I.calldata 4)) := decodeCalldata_uint256_ok hlen hbig
@@ -114,7 +115,7 @@ theorem safeChangethresholdBodyCore
                   obtain ⟨_, _, _, _, h664⟩ := safeThresholdTrace h3474 (by simp) hperm (by
                     jump_dest)
                   have hret := safeRuntime_block_664 (by simp) h664
-                  have hbody := safeChangeThresholdSource (initState σ σ₀ (.ofUInt256 g) A I)
+                  have hbody := safeChangeThresholdSource (hperm := by assumption) (initState σ σ₀ (.ofUInt256 g) A I)
                     (calldataWord I.calldata 4) hvalue hauth hle hz
                   refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_
                   exact reEquivSelectorExecution hdispatch hdec hbody

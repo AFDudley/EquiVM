@@ -4,8 +4,8 @@ import Benchmarks.Safe.Main.Routines
 import Benchmarks.Safe.Main.Blocks.Runtime_009
 import Benchmarks.Safe.Main.Blocks.Runtime_010
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -33,7 +33,7 @@ theorem safeNonceBodyCore
           (initState σ σ₀ (.ofUInt256 g) A I)
           (some [.int (Int.ofNat (solcSlotWordAt ⟨5⟩ σ I).toNat)])) := by
       simpa only [nonceTransition, nonpayable, solcSlotWordAt, initState,
-        Solm.EVM.storageLoad, State.lookupAccount] using
+        Stele.EVM.storageLoad, State.lookupAccount] using
         uint256GetterBodyReturns (cfg := config) (c := contract)
           (initState σ σ₀ (.ofUInt256 g) A I) ∅
           (ref := nonceRef) (er := { base := "nonce" }) (slot := ⟨5⟩)

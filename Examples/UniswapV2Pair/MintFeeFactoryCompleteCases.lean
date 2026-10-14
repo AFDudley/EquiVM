@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.MintFeeActualRuntimeCases
 import Examples.UniswapV2Pair.MintAfterFeeCases
 import Examples.UniswapV2Pair.MintFeeOnKLastNonzeroInitialFactoryCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -48,7 +48,7 @@ theorem uniswapMintFeeCallFromMint_feeOn_kLastNonzero_fromRootBlockReturn
     (argVals := [mintFeeReserve0Value reserve0, mintFeeReserve1Value reserve1])
     (callee := mintFeeFunction)
     (locals := mintFeeCallStore reserve0 reserve1)
-    (calleeSolm := finalFrame) (value := some [.bool true])
+    (calleeStele := finalFrame) (value := some [.bool true])
     (by simpa [reserve0, reserve1] using
       evalExprs_mint_mintFeeArgs reserveEvm callEvm I balance0 balance1)
     (by simpa using uniswapLookupMintFeeFunction)
@@ -70,8 +70,8 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -271,7 +271,7 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
           using execBlock_append hprefix htail)
     have hbody : ExecTransitionBody config contract evmS (mintStore I)
         mintTransition.body .reverted := ExecFuncBody.execBlockRevert
-      (uniswapMintAfterMintFeeReverts_of_call evmS evm0S evm1S I hwv hunlockedSolm
+      (uniswapMintAfterMintFeeReverts_of_call (hperm := hperm) evmS evm0S evm1S I hwv hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeRevert)
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
   · have hfee : ExecStmt config
@@ -290,7 +290,7 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
       simpa only [mintToMaskedWord, u256_land_comm] using Value.address.inj h
     exact uniswapMintAfterMintFeeCases nextFrame.locals
       (AccountAddress.ofNat (mintToWord I).toNat) true
-      hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+      hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source hfee rd3701
       hbase hamount0Get hamount1Get hreserve0Get hreserve1Get
       (mintFunctionTotalSupplyWord_eq_slot hAfterAccounts henvAfter) rfl

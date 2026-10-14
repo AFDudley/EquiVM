@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.WordCallResult
 import Benchmarks.Safe.Main.WordArrayMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -65,7 +65,7 @@ theorem evalP256Result (evm : EVM.State) (p : P256Input) (z : Bool) (out : ByteA
     (by simp [p256FinalFrame, Std.HashMap.getElem_insert])
   intro ho
   have hd := decodeReturnUint_long (out := out) (by omega) (by rw [ho]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256 out = _ at hd
+  change config.externalABI.decodeValue? uint256 out = _ at hd
   have he : (Value.int (Int.ofNat (calldataWord out 0).toNat) == Value.int 1) =
       decide (calldataWord out 0 = ⟨1⟩) := by
     apply Bool.eq_iff_iff.mpr
@@ -98,7 +98,7 @@ theorem safeP256Source {evm evm' : EVM.State} {p : P256Input} {z : Bool} {out : 
     decide +kernel
   rw [← ha] at hc
   cases z
-  · exact .lowLevelCallFailure ht hv (evalP256Payload evm p) hc
-  · exact .lowLevelCallSuccess ht hv (evalP256Payload evm p) hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalP256Payload evm p) hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalP256Payload evm p) hc
 
 end Benchmarks.Safe.Main

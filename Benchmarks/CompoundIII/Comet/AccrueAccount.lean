@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.AccrueAccountSource
 # CometWithExtendedAssetList `accrueAccount(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 925; reach lemma `cometWithExtendedAssetListReachAccrueAccountBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListAccrueAccountBody {σ σ₀ A I} {g : UInt256}
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 52) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some accrueAccountTransition :=
     cometSelectorDispatch ⟨52, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (accrueAccountTransition.params.map Param.name)
       (transitionSignature accrueAccountTransition).paramTypes I.calldata =
       decodeCalldata ["account"] [.elem .address] I.calldata := by

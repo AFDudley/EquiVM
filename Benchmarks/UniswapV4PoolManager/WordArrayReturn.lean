@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.WordArrayABI
 import Benchmarks.UniswapV4PoolManager.WordArrayDecodeTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def arrayHeaderMemory (n : Nat) : ByteArray :=

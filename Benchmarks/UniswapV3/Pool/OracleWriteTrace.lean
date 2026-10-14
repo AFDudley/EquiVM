@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.OracleWriteEntryTrace
 import Benchmarks.UniswapV3.Pool.OracleWriteStoreTrace
 import Benchmarks.UniswapV3.Pool.OracleWriteResult
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -28,7 +28,8 @@ theorem oracleWriteRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     (RDinvalid (deployedRuntime v) g s0 ∧ ¬ oracleWriteValid a evm) ∨
       (oracleWriteValid a evm ∧
         ((RDstatic (deployedRuntime v) g s0 ∧ oracleWriteSame a evm = false ∧ ee.perm = false) ∨
-          (∃ σ' aw' k' C', SourceState s0 ee σ' (oracleWriteState a evm) ∧
+          (∃ σ' aw' k' C', (oracleWriteSame a evm = true ∨ ee.perm = true) ∧
+            SourceState s0 ee σ' (oracleWriteState a evm) ∧
             RD (deployedRuntime v) ee g s0 ret
               (oracleWriteResultCardinality a evm :: oracleWriteResultIndex a evm :: R)
               (oracleWriteMemory mem p a evm) aw' rdata σ' k' C' ∧
@@ -64,8 +65,8 @@ theorem oracleWriteRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
         · exact Or.inl ⟨hstatic.1, rfl, hstatic.2⟩
         · apply Or.inr
           simp only [oracleWriteMemory, oracleWriteFree, oracleWriteState, oracleWriteResultIndex,
-            oracleWriteResultCardinality, he, Bool.false_eq_true, if_false]
-          exact ⟨_, a4, k4, C4,
+            oracleWriteResultCardinality, he, Bool.false_eq_true, if_false, false_or]
+          exact ⟨_, a4, k4, C4, hp,
             SourceState.oracleObservation hs (oracleWriteIndex a) (oracleWriteResultObservation a evm),
             r4, hh4⟩
     · have heq : (oracleWriteLast a evm).timestamp = a.time := of_decide_eq_true he
@@ -73,7 +74,7 @@ theorem oracleWriteRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       obtain ⟨k2, C2, r2⟩ := oracleWriteSameRawX (v := v) a r1 hret (by omega)
       refine Or.inr ⟨⟨hi, Or.inl he⟩, Or.inr ?_⟩
       simp only [oracleWriteMemory, oracleWriteFree, oracleWriteState, oracleWriteResultIndex,
-        oracleWriteResultCardinality, he, if_true]
+        oracleWriteResultCardinality, he, if_true, true_or, true_and]
       exact ⟨σ, a1, k2, C2, hs, r2, hh1⟩
   · exact Or.inl ⟨oracleWriteReadInvalidRawX (v := v) a rd hfit hi (by omega), fun h ↦ hi h.1⟩
 
@@ -88,7 +89,8 @@ theorem oracleWriteX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     (RDinvalid (deployedRuntime v) g s0 ∧ ¬ oracleWriteValid a evm) ∨
       (oracleWriteValid a evm ∧
         ((RDstatic (deployedRuntime v) g s0 ∧ oracleWriteSame a evm = false ∧ ee.perm = false) ∨
-          (∃ σ' aw' k' C', SourceState s0 ee σ' (oracleWriteState a evm) ∧
+          (∃ σ' aw' k' C', (oracleWriteSame a evm = true ∨ ee.perm = true) ∧
+            SourceState s0 ee σ' (oracleWriteState a evm) ∧
             RD (deployedRuntime v) ee g s0 ret
               (oracleWriteResultCardinality a evm :: oracleWriteResultIndex a evm :: R)
               (oracleWriteMemory mem p a evm) aw' rdata σ' k' C' ∧

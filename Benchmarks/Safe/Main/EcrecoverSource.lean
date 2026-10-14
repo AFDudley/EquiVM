@@ -3,7 +3,7 @@ import Benchmarks.Safe.Main.AddressReturnDecoder
 import Benchmarks.Safe.Main.WordArrayMemory
 import Benchmarks.Safe.Main.LocalArrays
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -78,7 +78,7 @@ theorem evalEcrecoverReturn (evm : EVM.State) (p : EcrecoverInput) (z : Bool) (o
     decide +kernel
   · have hdecode := decodeReturnAddressLong (by omega : 32 ≤ out.size)
       (by rw [h32]; decide) hc
-    change ABI.decodeReturnValueWithMode? config.abiDecodeMode addr out = _ at hdecode
+    change config.externalABI.decodeValue? addr out = _ at hdecode
     simp only [h32, Nat.reduceEqDiff, decide_false, bind, EvalResult.bind]
     rw [evalExpr?, hd]
     simp only [bind, EvalResult.bind, hdecode, pure,
@@ -104,10 +104,10 @@ theorem safeEcrecoverSource {evm evm' : EVM.State} {p : EcrecoverInput} {z : Boo
     simpa only [addressOfAddress] using hc
   cases z
   · apply ExecFuncBody.execBlockRevert
-    exact .consNormal (.lowLevelCallFailure ht hv (evalEcrecoverPayload evm p) hc')
+    exact .consNormal (.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalEcrecoverPayload evm p) hc')
       (.consRevert (.requireFalse hs))
   · apply ExecFuncBody.execBlockRet
-    exact .consNormal (.lowLevelCallSuccess ht hv (evalEcrecoverPayload evm p) hc')
+    exact .consNormal (.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv (evalEcrecoverPayload evm p) hc')
       (.consNormal (.requireTrue hs) (.consReturn (.return (evalExprs?_singleton
         (evalEcrecoverReturn evm' p true out (callEcrecoverOutput hc))))))
 

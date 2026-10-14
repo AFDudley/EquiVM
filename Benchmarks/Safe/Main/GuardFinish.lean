@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.GuardCall
 import Benchmarks.Safe.Main.GuardRefinement
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -10,7 +10,7 @@ theorem safeGuardFinish {σ σ₀ σ' : AccountMap} {g : UInt256} {A : Substate}
     {aw : UInt256} {k C : Nat} {R : List UInt256}
     (hcode : I.code = safeBytecode)
     (hdispatch : selectorDispatchMsg contract I.calldata = some setguardTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (setguardTransition.params.map Param.name) (transitionSignature setguardTransition).paramTypes
       I.calldata = some (guardArgs .transaction guard))
     (hc : guard.toNat < EVM.addressModulus) (hv : I.weiValue = ⟨0⟩)

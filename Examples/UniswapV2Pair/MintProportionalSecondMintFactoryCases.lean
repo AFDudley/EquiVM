@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintProportionalSecondMintFactoryKLastNonzeroReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -158,8 +158,8 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -290,36 +290,36 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   unfold mintProportionalSecondMintOverflowCase at hcase
   rcases hcase with hfeeOffTotal | hrest
-  · exact uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase
-      feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+  · exact uniswapMintProportionalFeeOffKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase (hperm := by assumption)
+      feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
       hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781
       ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq
       htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq hreserve1Eq hamount0Eq
       hamount1Eq hfeeOffTotal
   · rcases hrest with hfeeOffBalance | hrest
     · exact uniswapMintProportionalFeeOffKLastZeroSecondMintBalanceOverflowFromFactoryCase
-        feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+        feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
         hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781
         ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq
         htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq hreserve1Eq hamount0Eq
         hamount1Eq hfeeOffBalance
     · rcases hrest with hfeeOffUpdate | hrest
       · exact uniswapMintProportionalFeeOffKLastZeroUpdateBoundFromFactoryCases
-          feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0
+          feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0
           hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
           hfeeToEq rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
           hkLastEq htotalEq htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq
           hreserve1Eq hamount0Eq hamount1Eq hfeeOffUpdate
       · rcases hrest with hfeeOnTotal | hrest
-        · exact uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase
-            feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+        · exact uniswapMintProportionalFeeOnKLastZeroSecondMintTotalSupplyOverflowFromFactoryCase (hperm := by assumption)
+            feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
             hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq
             rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq
             htotalEq htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq hreserve1Eq
             hamount0Eq hamount1Eq hfeeOnTotal
         · rcases hrest with hfeeOnBalance | hrest
           · exact uniswapMintProportionalFeeOnKLastZeroSecondMintBalanceOverflowFromFactoryCase
-              feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0
+              feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0
               hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
               hfeeToEq rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
               hkLastEq htotalEq htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq
@@ -327,7 +327,7 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
           · rcases hrest with hfeeOffClearedTotal | hrest
             · exact
                 uniswapMintProportionalFeeOffKLastNonzeroSecondMintTotalSupplyOverflowFromFactoryCase
-                  feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1
+                  feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1
                   hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
                   hfeeDec hfeeToEq hPostAccountsFee henvFeeI hcleared rd7781 ho32 hoSize
                   ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalClearedSlot
@@ -336,7 +336,7 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
             · rcases hrest with hfeeOffClearedBalance | hfeeOffClearedUpdate
               · exact
                   uniswapMintProportionalFeeOffKLastNonzeroSecondMintBalanceOverflowFromFactoryCase
-                    feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1
+                    feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1
                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
                     hfeeDec hfeeToEq hPostAccountsFee henvFeeI hcleared rd7781 ho32 hoSize
                     ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalClearedSlot
@@ -344,7 +344,7 @@ theorem uniswapMintProportionalSecondMintOverflowFromFactoryCases
                     hamount1Eq hfeeOffClearedBalance
               · exact
                   uniswapMintProportionalFeeOffKLastNonzeroUpdateBoundFromFactoryCases
-                    feeTo hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1
+                    feeTo hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1
                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
                     hfeeDec hfeeToEq hPostAccountsFee henvFeeI hcleared rd7781 ho32 hoSize
                     ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalClearedSlot

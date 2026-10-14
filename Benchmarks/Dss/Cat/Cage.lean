@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cat.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -38,9 +38,9 @@ theorem catDispatch_cage {I : ExecutionEnv}
     exact hsel
 
 theorem catDecode_cage {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
       (transitionSignature cageTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachCageBody {σ σ₀ A I} {g : Sat256}
@@ -79,7 +79,7 @@ theorem catCageBodyCore
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some cageTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (cageTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (cageTransition.params.map Param.name)
         (transitionSignature cageTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD catBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨483⟩ [sel]
@@ -98,21 +98,21 @@ theorem catCageBodyCore
     (((hentry.jumpdest (by native_decide) (by evm_ov)).push2 ⟨302⟩ (by native_decide) (by evm_ov)).push2
         ⟨2833⟩ (by native_decide) (by evm_ov)).jump (by native_decide) (by jump_dest) (by evm_ov)
   by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
-  · have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
       rw [← hcallerWord]
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨2⟩ ⟨0⟩
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨2⟩ ⟨0⟩
     have hbodySplit :
-        ExecTransitionBody config contract evm0 locals cageTransition.body
-          (.returned { contract := contract, locals := locals } evm1 none) ∧
+        (I.perm = true → ExecTransitionBody config contract evm0 locals cageTransition.body
+          (.returned { contract := contract, locals := locals } evm1 none)) ∧
         (I.perm = false →
           ExecTransitionBody config contract evm0 locals cageTransition.body
             .staticViolation) := by
       have hguard := catAuthGuardEval_true
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals]) hauthSolm
+        (by simp [locals]) hauthStele
       have hassign :
           assignStorageRef? config { contract := contract, locals := locals } evm0
             .storage liveRef (.int 0) =
@@ -133,8 +133,9 @@ theorem catCageBodyCore
             simp [config, storageLayout, solidityStorageBackend, storageLayoutRaw])
           (hstore := hstore)
       constructor
-      · have hblock := nonpayableRequireAssignStorageBlock
-          (cfg := config) (solm := { contract := contract, locals := locals })
+      · intro hperm
+        have hblock := nonpayableRequireAssignStorageBlock (hperm := hperm)
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0) (evm' := evm1)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := liveRef) (value := .int 0)
@@ -144,7 +145,7 @@ theorem catCageBodyCore
           ExecFuncBody.execBlockOK hblock
       · intro hperm
         have hblock := nonpayableRequireAssignStorageBlockStatic
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rhs := .intLit 0) (ref := liveRef) (value := .int 0)
@@ -170,7 +171,7 @@ theorem catCageBodyCore
         unfold catStoreLiveZeroWf
         repeat' first | apply And.intro | native_decide)
       (by jump_dest) (by simp)
-    rcases hstoreSplit with ⟨_, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
+    rcases hstoreSplit with ⟨hperm, _, _, hretPc⟩ | ⟨hperm, hstatic⟩
     swap
     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
     have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -185,18 +186,18 @@ theorem catCageBodyCore
     have henc : returnEquiv ByteArray.empty none cageTransition.returnType := by
       rw [show cageTransition.returnType = [] by rfl]
       exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-    exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+    exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
       haccounts henc
-  · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+  · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
       exact hauthEvm
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     have hbody : ExecTransitionBody config contract evm0 locals cageTransition.body .reverted := by
       have hguard := catAuthGuardEval_false
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
-        (by simp [locals]) hauthSolm
+        (by simp [locals]) hauthStele
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [.assign .storage liveRef (.intLit 0)])

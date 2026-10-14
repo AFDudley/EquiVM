@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SafeCast128Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 attribute [local instance] Classical.propDecidable
@@ -62,7 +62,7 @@ theorem safeCast256Assign (imms : Store) (evm : EVM.State) (y : UInt256)
       omega
     · change (y.toNat : Int) < (2 ^ 255 : Nat)
       exact_mod_cast hy
-  apply ExecStmt.assign (value := .int (Int.ofNat y.toNat))
+  apply ExecStmt.assign (hperm := Or.inl rfl) (value := .int (Int.ofNat y.toNat))
   · have he : evalExpr? config (safeCast256ZeroFrame imms y) evm (.var "y") =
         .ok (.int (Int.ofNat y.toNat)) := evalExpr_var_get (by safe_cast_256_get)
     simp only [evalExpr?, he, castValue?, EvalResult.ofOption, bind, EvalResult.bind, hn]
@@ -73,7 +73,7 @@ theorem safeCast256Returns (imms : Store) (evm : EVM.State) (y : UInt256)
     ExecFuncBody config (safeCast256Frame imms y) evm safeCast256Function.body
       (.returned (safeCast256ReadyFrame imms y) evm (some [.int (Int.ofNat y.toNat)])) := by
   apply ExecFuncBody.execBlockRet
-  refine ExecBlock.consNormal (solm' := safeCast256ZeroFrame imms y) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := safeCast256ZeroFrame imms y) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [decide_eq_true hy] using evalSafeCast256Guard imms evm y
@@ -87,7 +87,7 @@ theorem safeCast256Reverts (imms : Store) (evm : EVM.State) (y : UInt256)
     (hy : ¬ safeCast256Valid y) :
     ExecFuncBody config (safeCast256Frame imms y) evm safeCast256Function.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (solm' := safeCast256ZeroFrame imms y) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := safeCast256ZeroFrame imms y) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   apply ExecBlock.consRevert (ExecStmt.requireFalse ?_)
   simpa only [decide_eq_false hy] using evalSafeCast256Guard imms evm y

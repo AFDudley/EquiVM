@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.PositionWriteStorage
 import Benchmarks.UniswapV4PoolManager.WordLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -10,8 +10,8 @@ theorem positionUpdate_lookup : lookupCallable? contract "Position_update" =
     some positionUpdateFunction.toCallable := rfl
 
 def positionFeeStores (evm : EVM.State) (id key fee0 fee1 : UInt256) : EVM.State :=
-  let evm1 := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (positionFeeSlot id key false) fee0
-  Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner (positionFeeSlot id key true) fee1
+  let evm1 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionFeeSlot id key false) fee0
+  Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner (positionFeeSlot id key true) fee1
 
 def positionFeesStoreResult (f : Frame) (evm : EVM.State) (id key fee0 fee1 owed0 owed1 : UInt256) : ExecResult :=
   if evm.executionEnv.perm = false then .staticViolation else
@@ -32,10 +32,10 @@ theorem positionFeesStoreBody {f : Frame} {evm : EVM.State} {id key fee0 fee1 ow
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignStatic (evalLocalValue h0) hw0 hp))
   · rw [if_neg hp]
-    let evm1 := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (positionFeeSlot id key false) fee0
+    let evm1 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (positionFeeSlot id key false) fee0
     have hw1 := positionFee_write (f := f) (evm := evm1) (value := fee1) hs true
-    refine .execBlockRet (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue h0) hw0)
-      (ExecBlock.consNormal (ExecStmt.assign (evalLocalValue h1) hw1) (ExecBlock.consReturn (ExecStmt.return ?_))))
+    refine .execBlockRet (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) (evalLocalValue h0) hw0)
+      (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, storageStore_executionEnv] using Bool.eq_true_of_not_eq_false hp)) (evalLocalValue h1) hw1) (ExecBlock.consReturn (ExecStmt.return ?_))))
     change evalExprs? config f (positionFeeStores evm id key fee0 fee1) [.var "feesOwed0", .var "feesOwed1"] = _
     simp only [evalExprs?, evalLocalValue (cfg := config) (f := f) (evm := positionFeeStores evm id key fee0 fee1) ho0,
       evalLocalValue (cfg := config) (f := f) (evm := positionFeeStores evm id key fee0 fee1) ho1,

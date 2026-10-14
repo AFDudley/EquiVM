@@ -5,7 +5,7 @@ import Reasoning.ExternalCall
 import Reasoning.MemCascade
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -248,6 +248,7 @@ theorem dealCatCallMem_encode (σ : AccountMap) (I : ExecutionEnv) :
         some ((dealCatCallMem σ I).readWithPadding 128 36) := by
   rw [dealCatCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -610,6 +611,7 @@ theorem dealVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
         some ((dealVatFluxCallMem σmem σ I).readWithPadding 128 132) := by
   rw [dealVatFluxCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :
@@ -1671,7 +1673,7 @@ theorem flipperDealX_vatPostCall
       (flipperVatEvmAddress_eq_target σ I)
       ?_ ?_
     · simpa [dealFluxArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidGuyWord, bidLotWord, bidSlotOfWord, bidPackedSlotOfWord, bidBaseOfWord] using
         dealVatFluxCallMem_encode σmem σ I
     · simpa [initState] using hΘ

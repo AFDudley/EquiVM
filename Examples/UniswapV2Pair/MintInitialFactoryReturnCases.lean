@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintInitialCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -82,8 +82,8 @@ theorem uniswapMintInitialFeeOffKLastZeroReturnFromFactoryWitnessCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -339,8 +339,8 @@ theorem uniswapMintInitialFeeOffKLastZeroReturnFromFactoryWitnessCase
               balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
     exact ExecFuncBody.execBlockRet
-      (uniswapMintInitialFeeOffReturn_kLastZero evmS evm0S evm1S evmFeeS I feeTo
-        rootLiquidity (by simp only [evmS, initState]; exact hwv) hunlockedSolm
+      (uniswapMintInitialFeeOffReturn_kLastZero (hperm := by assumption) evmS evm0S evm1S evmFeeS I feeTo
+        rootLiquidity (by simp only [evmS, initState]; exact hwv) hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard
         hfeeCall hfeeDec hfeeToAddr hkLastSource htotalZero hsqrt hrootGeMin hfitSub
         hliquidity hliqNonzero hfitSupplyMinSource hfitBalanceMinSource hfitSupplySource
@@ -380,8 +380,8 @@ theorem uniswapMintInitialFeeOnKLastZeroReturnFromFactoryWitnessCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -687,8 +687,8 @@ theorem uniswapMintInitialFeeOnKLastZeroReturnFromFactoryWitnessCase
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     exact ExecFuncBody.execBlockRet
-      (uniswapMintInitialFeeOnReturn_kLastZero evmS evm0S evm1S evmFeeS I feeTo
-        rootLiquidity (by simp only [evmS, initState]; exact hwv) hunlockedSolm
+      (uniswapMintInitialFeeOnReturn_kLastZero (hperm := by assumption) evmS evm0S evm1S evmFeeS I feeTo
+        rootLiquidity (by simp only [evmS, initState]; exact hwv) hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard
         hfeeCall hfeeDec hfeeToAddr hkLastSource htotalZero hsqrt hrootGeMin hfitSub
         hliquidity hliqNonzero hfitSupplyMinSource hfitBalanceMinSource hfitSupplySource
@@ -729,8 +729,8 @@ theorem uniswapMintInitialFeeOffKLastNonzeroReturnFromFactoryWitnessCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -995,14 +995,14 @@ theorem uniswapMintInitialFeeOffKLastNonzeroReturnFromFactoryWitnessCase
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by simpa [typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintAfterMintFeeInitialFeeOffReturn_of_call evmS evm0S evm1S evmAfterFee I
+      (uniswapMintAfterMintFeeInitialFeeOffReturn_of_call (hpermAfter := by simpa only [henvCleared] using hperm) (hperm := by assumption) evmS evm0S evm1S evmAfterFee I
         nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
-        (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1
+        (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee
         (by simpa [nextFrame, evmL, evmS] using
           mintAfterMintFeeCallStore_totalSupply evmL I balance0 balance1 false)

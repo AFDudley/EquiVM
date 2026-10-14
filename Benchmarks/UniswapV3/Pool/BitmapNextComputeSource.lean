@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.BitmapNextReadSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -44,12 +44,12 @@ theorem bitmapNextScanSource (imms locals : Store) (evm : EVM.State) (lte : Bool
   cases lte
   · obtain ⟨out, hbody⟩ := bitLsbReturns imms evm masked hx
     exact internalCallFunctionReturn (callee := bitLsbFunction) (locals := bitLsbLocals masked)
-      (calleeSolm := out) (value := some [.int (Int.ofNat (bitLsbCount masked))])
+      (calleeStele := out) (value := some [.int (Int.ofNat (bitLsbCount masked))])
       (by simp only [evalExprs?, he, bind, EvalResult.bind, pure])
       bitLsbLookup (bitLsbBind masked) hbody
   · obtain ⟨out, hbody⟩ := bitMsbReturns imms evm masked hx
     exact internalCallFunctionReturn (callee := bitMsbFunction) (locals := bitMsbLocals masked)
-      (calleeSolm := out) (value := some [.int (Int.ofNat (tickLogMsbCount masked))])
+      (calleeStele := out) (value := some [.int (Int.ofNat (tickLogMsbCount masked))])
       (by simp only [evalExprs?, he, bind, EvalResult.bind, pure])
       bitMsbLookup (bitMsbBind masked) hbody
 
@@ -114,7 +114,7 @@ theorem bitmapNextComputeSource (imms locals : Store) (evm : EVM.State)
         (.assign .localVar ⟨bitmapNextCondName lte, []⟩ (bitmapNextResultExpr lte false))
         (.ok (bitmapNextComputedFrame imms locals compressed spacing lte masked) evm) := by
       simp only [bitmapNextComputedFrame, if_pos hz]
-      exact ExecStmt.assign he (assignLocalVarBase_frame hh)
+      exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hh)
     cases lte <;> exact ExecStmt.iteFalse eg (ExecBlock.consNormal ha ExecBlock.nil)
   · have he := evalBitmapNextResult (frame := bitmapNextScanFrame imms locals lte masked)
       (evm := evm) compressed spacing lte masked
@@ -130,7 +130,7 @@ theorem bitmapNextComputeSource (imms locals : Store) (evm : EVM.State)
         (.assign .localVar ⟨bitmapNextCondName lte, []⟩ (bitmapNextResultExpr lte true))
         (.ok (bitmapNextComputedFrame imms locals compressed spacing lte masked) evm) := by
       simp only [bitmapNextComputedFrame, if_neg hz]
-      exact ExecStmt.assign he (assignLocalVarBase_frame hh')
+      exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalVarBase_frame hh')
     have hscan := bitmapNextScanSource imms locals evm lte masked hm hz
     cases lte <;> exact ExecStmt.iteTrue eg
       (ExecBlock.consNormal hscan (ExecBlock.consNormal ha ExecBlock.nil))

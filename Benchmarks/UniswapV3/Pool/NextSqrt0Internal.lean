@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.NextSqrt0Source
 import Benchmarks.UniswapV3.Pool.NextSqrt0Trace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -39,7 +39,7 @@ theorem nextSqrt0InternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     exact nextSqrt0Reverts (immStore v) evm a hb
   · refine Or.inr ⟨?_, hv, nextSqrt0Result_clean a priceRaw hp, hr⟩
     apply internalCallFunctionReturn (callee := nextSqrtFunction false)
-      (calleeSolm := nextSqrt0FinalFrame (immStore v) a)
+      (calleeStele := nextSqrt0FinalFrame (immStore v) a)
       (value := some [.int (Int.ofNat (nextSqrt0Result a).toNat)]) he hlookup (nextSqrtBind false a)
     rw [hc]
     exact nextSqrt0Returns (immStore v) evm a hv

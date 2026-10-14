@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.ModifyPositionPrefix
 import Benchmarks.UniswapV3.Pool.UpdatePositionInternal
 import Benchmarks.UniswapV3.Pool.UpdatePositionMemoryPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -37,7 +37,7 @@ theorem modifyPositionAssignKeySource (imms : Store) (a : ModifyPositionArgs) (e
     ExecStmt config (modifyPositionUpdateFrame imms a evm) evm'
       (.assign .localVar ⟨"position", []⟩ (.var "__c2"))
       (.ok (modifyPositionUpdatedFrame imms a evm) evm') := by
-  exact ExecStmt.assign (evalExpr_var_get (by modify_position_updated_get))
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get (by modify_position_updated_get))
     (assignLocalVarBase_frame (old := .fixedBytes ⟨31, by decide⟩ (List.replicate 32 0))
       (by modify_position_updated_get))
 

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepInitialGet
 import Benchmarks.UniswapV3.Pool.NextPriceSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -49,7 +49,7 @@ theorem swapStepPriceCallReturns (imms : Store) (evm : EVM.State) (a : SwapStepA
         (swapStepPriceCallName input))
       (.ok (swapStepPriceCallFrame imms a input) evm) := by
   exact internalCallFunctionReturn (callee := nextPriceFunction input)
-    (calleeSolm := nextPriceResultFrame imms input (swapStepNextArgs a))
+    (calleeStele := nextPriceResultFrame imms input (swapStepNextArgs a))
     (locals := nextPriceLocals input (swapStepNextArgs a))
     (value := some [.int (Int.ofNat (nextPriceResult input (swapStepNextArgs a)).toNat)])
     (evalSwapStepPriceArgs imms evm a input hi) (nextPriceLookup input) (nextPriceBind input _)

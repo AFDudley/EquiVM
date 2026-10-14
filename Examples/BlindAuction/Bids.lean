@@ -2,17 +2,17 @@ import Reasoning.ABIViews
 import Reasoning.Storage
 import Reasoning.WordArithmetic
 import Examples.BlindAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace BlindAuction
 
@@ -66,13 +66,13 @@ def bidsDepositWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD (bidsDepositSlot I) ⟨0⟩)
 
 def bidsLengthCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsLengthSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsLengthSlot I)
 
 def bidsBlindedCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsElementSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsElementSlot I)
 
 def bidsDepositCurrent (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsDepositSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsDepositSlot I)
 
 def bidsEvaledRef (I : ExecutionEnv) (field : Ident) : EvaledStorageRef :=
   { base := "bids",
@@ -105,7 +105,7 @@ theorem bidsArrayLength (evm : EVM.State) (a : KeyValue) :
     blindAuctionConfig.storageBackend.length
       { base := "bids", steps := [.mindex a] }
       (.dynamicArray bidStructTy) evm =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase a)).toNat := by
   change solidityStorageLength? blindAuctionStorageLayout
     { base := "bids", steps := [.mindex a] }
@@ -129,7 +129,7 @@ theorem bidsArrayIndexInBounds_ok (evm : EVM.State) (I : ExecutionEnv)
       [.mindex (bidsAddressKey I)] (bidsIndexKey I) = .ok () := by
   have hboundStorage :
       (bidsIndexWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidsBase (KeyValue.address (AccountAddress.ofNat (bidsAddressWord I).toNat)))) := by
     simpa [bidsLengthCurrent, bidsLengthSlot, bidsAddressKey] using hbound
   simp [arrayIndexInBounds?, storageTypeAt?, storageTypeStep?, blindAuctionContract,
@@ -143,11 +143,11 @@ theorem bidsArrayIndexInBounds_revert (evm : EVM.State) (I : ExecutionEnv)
       [.mindex (bidsAddressKey I)] (bidsIndexKey I) = .revert := by
   have hboundStorage :
       ¬ (bidsIndexWord I).toNat <
-        UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidsBase (KeyValue.address (AccountAddress.ofNat (bidsAddressWord I).toNat)))) := by
     simpa [bidsLengthCurrent, bidsLengthSlot, bidsAddressKey] using hbound
   have hleStorage :
-      UInt256.toNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      UInt256.toNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidsBase (KeyValue.address (AccountAddress.ofNat (bidsAddressWord I).toNat)))) ≤
         (bidsIndexWord I).toNat :=
     Nat.le_of_not_gt hboundStorage
@@ -259,7 +259,7 @@ theorem blindAuctionBidsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
             .int (Int.ofNat (bidsDepositCurrent evm I).toNat) := by
         simpa [bidsDepositCurrent, show blindAuctionUint256Loc = uint256Loc from rfl] using
           storageLocLoad_uint256 evm (bidsDepositSlot I)
-      simp only [Solm.evalExprs?.eq_def,
+      simp only [Stele.evalExprs?.eq_def,
         evalExpr_storage_scalar (hbackend := rfl) (t := .bytes ⟨31, by decide⟩) (hbase := hbaseBlinded)
           (her := evalStorageRef_bidsField_ok evm I "blindedBid" hbound)
           (hty := htyBlinded) (hloc := hlocBlinded),
@@ -285,7 +285,7 @@ theorem blindAuctionBidsBodyReverts_oob (evm : EVM.State) (I : ExecutionEnv)
               { contract := blindAuctionContract, locals := bidsStore I } evm
               (bidF (.var "a") (.var "i") "blindedBid") = .revert :=
           evalStorageRef_bidsField_oob evm I "blindedBid" hbound
-        simp [evalExpr?, Solm.evalExprs?.eq_def, resolveStorageRef?, hbaseGet, herBlindedRevert,
+        simp [evalExpr?, Stele.evalExprs?.eq_def, resolveStorageRef?, hbaseGet, herBlindedRevert,
           EvalResult.bind, bind])))
 
 
@@ -927,7 +927,7 @@ theorem blindAuctionBidsBodyCore {σ σ₀ A I} {g : UInt256}
               bidsLengthCurrent
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I =
                 bidsLengthWord σ I := by
-            simp [bidsLengthCurrent, bidsLengthWord, initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+            simp [bidsLengthCurrent, bidsLengthWord, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
           by_cases hbound : (bidsIndexWord I).toNat < (bidsLengthWord σ I).toNat
           · have hbody := blindAuctionBidsBodyReturns
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.ERC6909.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -123,7 +123,7 @@ theorem evalExpr_allowance_storage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := allowanceStore I } evm
       (.storage (allowanceRef (.var "owner") (.var "spender") (.var "id"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlotOf I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlotOf I)).toNat)) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
   have hgid := allowanceStore_id_getElem? I
@@ -165,7 +165,7 @@ theorem erc6909AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody config contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlotOf I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlotOf I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       simpa [allowanceRef] using evalExpr_allowance_storage evm I)
@@ -947,7 +947,7 @@ theorem erc6909AllowanceBodyCore
                 (.returned { contract := contract, locals := allowanceStore I }
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-            simpa [allowanceWord, initState, Solm.EVM.storageLoad,
+            simpa [allowanceWord, initState, Stele.EVM.storageLoad,
               State.lookupAccount] using erc6909AllowanceBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickSqrtPrefix
 import Benchmarks.UniswapV3.Pool.SourceWordBits
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -22,7 +22,7 @@ theorem tickSqrtInvertSource {frame : Frame} {evm : EVM.State} (tick : Int) (rat
   by_cases hp : 0 < tick
   · rw [tickSqrtInvertedFrame, if_pos hp]
     refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal
-      (ExecStmt.assign (value := .int (Int.ofNat (tickSqrtInvert tick ratio).toNat)) ?_ ?_)
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (tickSqrtInvert tick ratio).toNat)) ?_ ?_)
       ExecBlock.nil)
     · simpa only [hp, decide_true] using hgt
     · rw [tickSqrtInvert, if_pos hp]
@@ -89,7 +89,7 @@ theorem tickSqrtRoundSource {frame : Frame} {evm : EVM.State} (ratio : UInt256)
   let value := Value.int (Int.ofNat
     (UInt256.land (tickSqrtRound ratio) (UInt256.ofNat (2 ^ 160 - 1))).toNat)
   refine ⟨{frame with locals := frame.locals.insert "sqrtPriceX96" value}, ?_⟩
-  refine ExecBlock.consNormal (ExecStmt.assign (evalTickSqrtRound ratio hr)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTickSqrtRound ratio hr)
     (assignLocalVarBase_frame hs)) ?_
   apply ExecBlock.consReturn
   apply ExecStmt.return

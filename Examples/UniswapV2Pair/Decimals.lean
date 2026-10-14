@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -14,7 +14,7 @@ def decimalsWord : UInt256 := ⟨18⟩
 def decimalsReturnWord : UInt256 :=
   UInt256.land decimalsWord ⟨255⟩
 
-/-- The Solm `decimals()` body returns the uint8 literal `18`. -/
+/-- The Stele `decimals()` body returns the uint8 literal `18`. -/
 theorem uniswapDecimalsBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals decimalsTransition.body
@@ -40,9 +40,9 @@ theorem uniswapX_decimals {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_decimals {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (decimalsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (decimalsTransition.params.map Param.name)
       (transitionSignature decimalsTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `decimals()` body core, parameterized by dispatcher/decode facts owned by `Correct`. -/
@@ -51,7 +51,7 @@ theorem uniswapDecimalsBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some decimalsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (decimalsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (decimalsTransition.params.map Param.name)
         (transitionSignature decimalsTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨941⟩ [sel]

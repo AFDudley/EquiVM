@@ -7,11 +7,11 @@ import Benchmarks.UniswapV3.Pool.TupleReturn
 # UniswapV3Pool `observations(uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 737; reach lemma `uniswapV3PoolReachObservationsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -211,7 +211,7 @@ theorem uniswapV3PoolObservationsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV
     apply uniswapV3PoolDispatch_observations <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
   by_cases hlen : 36 ≤ I.calldata.size
-  · have hdec : decodeCalldataWithMode config.abiDecodeMode
+  · have hdec : config.externalABI.decodeCalldata?
         (observationsTransition.params.map Param.name)
         (transitionSignature observationsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (Int.ofNat (calldataWord I.calldata 4).toNat))) := by
@@ -228,7 +228,7 @@ theorem uniswapV3PoolObservationsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV
         hd hdec (uniswapV3PoolObservationsOutOfBounds v _ _ (calldataWord I.calldata 4) hwv
           (by simp) (by simp) hin)
   · have hshort : I.calldata.size < 36 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (observationsTransition.params.map Param.name)
         (transitionSignature observationsTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyInt_none_short (.uint ⟨256, by decide⟩) hsz hshort

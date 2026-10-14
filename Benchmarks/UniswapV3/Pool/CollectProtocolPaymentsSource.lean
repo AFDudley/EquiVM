@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.CollectProtocolSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -36,7 +36,7 @@ theorem collectProtocolAdjust (locals imms : Store) (evm : EVM.State)
   · unfold collectProtocolAdjustStmt collectProtocolAdjustLocals collectProtocolAdjustedAmount
     rw [if_pos h, if_pos h]
     apply ExecStmt.iteTrue (by simpa only [h, decide_true] using he)
-    refine ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalVarBase_frame hget)) ExecBlock.nil
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) ?_ (assignLocalVarBase_frame hget)) ExecBlock.nil
     exact evalExpr_uint128Sub ha (show evalExpr? config _ evm (.intLit 1) =
       .ok (.int (Int.ofNat (⟨1⟩ : UInt256).toNat)) from by simp only [evalExpr?, pure]; decide +kernel)
   · unfold collectProtocolAdjustStmt collectProtocolAdjustLocals
@@ -72,7 +72,8 @@ def collectProtocolFeeState (evm : EVM.State) (second : Bool) (amount : UInt256)
 theorem collectProtocolSubtract (locals imms : Store) (evm : EVM.State)
     (second : Bool) (amount : UInt256)
     (hget : locals.get? (poolAmountName second) = some (.int (Int.ofNat amount.toNat)))
-    (hbase : locals.get? "protocolFees" = none) :
+    (hbase : locals.get? "protocolFees" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
       (collectProtocolSubtractStmt second)
       (.ok {contract := contract, locals := locals, immutables := imms}
@@ -81,7 +82,7 @@ theorem collectProtocolSubtract (locals imms : Store) (evm : EVM.State)
     {contract := contract, locals := locals, immutables := imms}) hget
   have hf := evalProtocolFeesWord locals imms evm second hbase
   simpa only [storeProtocolFee_uint128Word] using
-    ExecStmt.assign (evalExpr_uint128Sub hf ha)
+    ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_uint128Sub hf ha)
       (assignProtocolFee evm locals imms second
         (uint128Word (UInt256.sub (protocolFeesWord second evm.accountMap evm.executionEnv) amount)) hbase)
 
@@ -93,7 +94,8 @@ def collectProtocolTokenStmt (second : Bool) : Stmt :=
 theorem collectProtocolPayPrefix (locals imms : Store) (evm : EVM.State)
     (second : Bool) (amount : UInt256)
     (hget : locals.get? (poolAmountName second) = some (.int (Int.ofNat amount.toNat)))
-    (hbase : locals.get? "protocolFees" = none) :
+    (hbase : locals.get? "protocolFees" = none)
+    (hperm : evm.executionEnv.perm = true) :
     let fee := protocolFeesWord second evm.accountMap evm.executionEnv
     let amount' := collectProtocolAdjustedAmount amount fee
     let locals' := collectProtocolAdjustLocals locals second amount fee
@@ -103,7 +105,7 @@ theorem collectProtocolPayPrefix (locals imms : Store) (evm : EVM.State)
         (collectProtocolFeeState evm second amount')) := by
   dsimp only
   apply ExecBlock.consNormal (collectProtocolAdjust locals imms evm second amount hget hbase)
-  refine ExecBlock.consNormal (collectProtocolSubtract _ imms evm second _
+  refine ExecBlock.consNormal (collectProtocolSubtract (hperm := hperm) _ imms evm second _
     (collectProtocolAdjust_get locals second amount _ hget) ?_) ExecBlock.nil
   rw [collectProtocolAdjust_get_other locals second amount _ "protocolFees"
     (by cases second <;> decide)]
@@ -142,7 +144,8 @@ theorem collectProtocolTokenReturns (v : UniswapV3PoolImmutables) (locals : Stor
       (collectProtocolAdjustedAmount amount (protocolFeesWord second evm.accountMap evm.executionEnv)))
       (collectProtocolFeeState evm second
         (collectProtocolAdjustedAmount amount (protocolFeesWord second evm.accountMap evm.executionEnv)))
-      safeTransferFunction.body (.returned calleeFrame evm' none)) :
+      safeTransferFunction.body (.returned calleeFrame evm' none))
+    (hperm : evm.executionEnv.perm = true) :
     let locals' := collectProtocolAdjustLocals locals second amount
       (protocolFeesWord second evm.accountMap evm.executionEnv)
     ExecStmt config {contract := contract, locals := locals, immutables := immStore v} evm
@@ -154,7 +157,7 @@ theorem collectProtocolTokenReturns (v : UniswapV3PoolImmutables) (locals : Stor
   apply ExecStmt.iteTrue (collectProtocolTokenPositive locals (immStore v) evm second amount hget hpos)
   change ExecBlock _ _ _ ([collectProtocolAdjustStmt second, collectProtocolSubtractStmt second] ++
     [poolTransferStmt second]) _
-  apply execBlock_append_ok (collectProtocolPayPrefix locals (immStore v) evm second amount hget hbase)
+  apply execBlock_append_ok (collectProtocolPayPrefix (hperm := hperm) locals (immStore v) evm second amount hget hbase)
   refine ExecBlock.consNormal (poolTransferReturns v _ _ evm' second recipient _ calleeFrame
     ?_ (collectProtocolAdjust_get locals second amount _ hget) hcall) ExecBlock.nil
   rw [collectProtocolAdjust_get_other locals second amount _ "recipient"
@@ -170,13 +173,14 @@ theorem collectProtocolTokenReverts (v : UniswapV3PoolImmutables) (locals : Stor
       (collectProtocolAdjustedAmount amount (protocolFeesWord second evm.accountMap evm.executionEnv)))
       (collectProtocolFeeState evm second
         (collectProtocolAdjustedAmount amount (protocolFeesWord second evm.accountMap evm.executionEnv)))
-      safeTransferFunction.body .reverted) :
+      safeTransferFunction.body .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := immStore v} evm
       (collectProtocolTokenStmt second) .reverted := by
   apply ExecStmt.iteTrue (collectProtocolTokenPositive locals (immStore v) evm second amount hget hpos)
   change ExecBlock _ _ _ ([collectProtocolAdjustStmt second, collectProtocolSubtractStmt second] ++
     [poolTransferStmt second]) _
-  apply execBlock_append_ok (collectProtocolPayPrefix locals (immStore v) evm second amount hget hbase)
+  apply execBlock_append_ok (collectProtocolPayPrefix (hperm := hperm) locals (immStore v) evm second amount hget hbase)
   refine ExecBlock.consRevert (poolTransferReverts v _ _ second recipient _
     ?_ (collectProtocolAdjust_get locals second amount _ hget) hcall)
   rw [collectProtocolAdjust_get_other locals second amount _ "recipient"
@@ -222,7 +226,8 @@ theorem collectProtocolPaid_values {locals : Store} {recipient : AccountAddress}
 
 theorem collectProtocolFinish (locals imms : Store) (evm : EVM.State)
     (recipient : AccountAddress) (amount0 amount1 : UInt256)
-    (h : CollectProtocolValues locals recipient amount0 amount1) :
+    (h : CollectProtocolValues locals recipient amount0 amount1)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm
       (collectProtocolTransition.body.drop 11)
       (.returned {contract := contract, locals := locals, immutables := imms}
@@ -234,10 +239,10 @@ theorem collectProtocolFinish (locals imms : Store) (evm : EVM.State)
     {contract := contract, locals := locals, immutables := imms}) h.amount0
   have h1 := evalExpr_var_get (cfg := config) (evm := evm) (frame :=
     {contract := contract, locals := locals, immutables := imms}) h.amount1
-  refine ExecBlock.consNormal (ExecStmt.emit (vals := [.address evm.executionEnv.source,
+  refine ExecBlock.consNormal (ExecStmt.emit (hperm := hperm) (vals := [.address evm.executionEnv.source,
     .address recipient, .int (Int.ofNat amount0.toNat), .int (Int.ofNat amount1.toNat)]) ?_) ?_
   · simp only [evalExprs?, hr, h0, h1, evalExpr?, envValue, bind, EvalResult.bind, pure]
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure])
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked evm locals imms true h.slot0)) ?_
   apply ExecBlock.consReturn (ExecStmt.return ?_)
   have h0' := evalExpr_var_get (cfg := config) (evm := storeSlot0Unlocked evm true) (frame :=
@@ -254,7 +259,8 @@ theorem collectProtocolOwnerAmountsPrefix (v : UniswapV3PoolImmutables) (evm evm
       {contract := contract, locals := ∅, immutables := immStore v}
       (storeSlot0Unlocked evm false) factoryOwnerFunction.body
       (.returned calleeFrame evm' (some [.address owner])))
-    (howner : evm'.executionEnv.source = owner) :
+    (howner : evm'.executionEnv.source = owner)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (collectProtocolFrame v recipient req0 req1) evm (collectProtocolTransition.body.take 9)
       (.ok (collectProtocolAmountsFrame v recipient req0 req1 owner
         (minWord req0 (protocolFeesWord false evm'.accountMap evm'.executionEnv))
@@ -262,7 +268,7 @@ theorem collectProtocolOwnerAmountsPrefix (v : UniswapV3PoolImmutables) (evm evm
   change ExecBlock _ _ _ (collectProtocolTransition.body.take 7 ++
     (collectProtocolTransition.body.drop 7).take 2) _
   exact execBlock_append_ok
-    (collectProtocolOwnerPrefix v evm evm' recipient req0 req1 owner calleeFrame hwv hunlocked hfactory howner)
+    (collectProtocolOwnerPrefix (hperm := hperm) v evm evm' recipient req0 req1 owner calleeFrame hwv hunlocked hfactory howner)
     (collectProtocolAmounts v evm' recipient req0 req1 owner)
 
 theorem collectProtocolSourceReturn (v : UniswapV3PoolImmutables) (evm evm0 evm1 evm2 : EVM.State)
@@ -276,7 +282,8 @@ theorem collectProtocolSourceReturn (v : UniswapV3PoolImmutables) (evm evm0 evm1
     (hpay1 : ExecStmt config {contract := contract, locals := locals1, immutables := immStore v} evm1
       (collectProtocolTokenStmt true)
       (.ok {contract := contract, locals := locals2, immutables := immStore v} evm2))
-    (hvalues : CollectProtocolValues locals2 recipient amount0 amount1) :
+    (hvalues : CollectProtocolValues locals2 recipient amount0 amount1)
+    (hperm : evm2.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (collectProtocolLocals recipient req0 req1)
       collectProtocolTransition.body
       (.returned {contract := contract, locals := locals2, immutables := immStore v}
@@ -286,7 +293,7 @@ theorem collectProtocolSourceReturn (v : UniswapV3PoolImmutables) (evm evm0 evm1
   rw [← List.take_append_drop 9 collectProtocolTransition.body]
   apply execBlock_append_ok hprefix
   exact ExecBlock.consNormal hpay0 (ExecBlock.consNormal hpay1
-    (collectProtocolFinish locals2 (immStore v) evm2 recipient amount0 amount1 hvalues))
+    (collectProtocolFinish (hperm := hperm) locals2 (immStore v) evm2 recipient amount0 amount1 hvalues))
 
 theorem collectProtocolSourceRevert0 (v : UniswapV3PoolImmutables) (evm evm0 : EVM.State)
     (recipient : AccountAddress) (req0 req1 : UInt256) (frame0 : Frame)

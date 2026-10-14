@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapStepRecalcGet
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -29,7 +29,7 @@ theorem swapStepRecalcKeepSource (locals imms : Store) (evm : EVM.State) (a : Sw
     rw [swapStepRecalcZeroGet_other _ _ _ _ (by swap_step_recalc_name)]
     exact hg
   simp only [swapStepRecalcChosenLocals, swapStepAmount, hk, if_true]
-  exact ExecStmt.assign (evalExpr_var_get ho)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get ho)
     (assignLocalVarBase_frame Std.HashMap.getElem?_insert_self)
 
 theorem swapStepRecalcCallAssign (locals imms : Store) (evm : EVM.State) (a : SwapStepArgs)
@@ -46,7 +46,7 @@ theorem swapStepRecalcCallAssign (locals imms : Store) (evm : EVM.State) (a : Sw
       Std.HashMap.getElem?_insert, hn, Bool.false_eq_true, if_false]
     exact Std.HashMap.getElem?_insert_self
   simp only [swapStepRecalcChosenLocals, swapStepAmount, hk, Bool.false_eq_true, if_false]
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame hg)
 
 theorem swapStepRecalcAssign (locals imms : Store) (evm : EVM.State) (a : SwapStepArgs)
@@ -66,7 +66,7 @@ theorem swapStepRecalcAssign (locals imms : Store) (evm : EVM.State) (a : SwapSt
       simpa only [swapStepRecalcChosenLocals, swapStepRecalcCallLocals,
         swapStepRecalcZeroLocals, hk, Bool.false_eq_true, if_false, if_true,
         Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert, hc, hr] using hg
-  exact ExecStmt.assign (evalExpr_var_get Std.HashMap.getElem?_insert_self)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get Std.HashMap.getElem?_insert_self)
     (assignLocalVarBase_frame ho)
 
 theorem swapStepRecalcChoiceSource (locals imms : Store) (evm : EVM.State) (a : SwapStepArgs)
@@ -98,7 +98,7 @@ theorem swapStepRecalcSource (locals imms : Store) (evm : EVM.State) (a : SwapSt
     ExecBlock config (swapStepCalcFrame imms locals) evm (swapStepRecalcBlock a input)
       (.ok (swapStepCalcFrame imms (swapStepRecalcLocals locals a input)) evm) := by
   refine ExecBlock.consNormal
-    (solm' := swapStepCalcFrame imms (swapStepRecalcZeroLocals locals a input))
+    (stele' := swapStepCalcFrame imms (swapStepRecalcZeroLocals locals a input))
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (swapStepRecalcChoiceSource locals imms evm a input hg ha hp hv ho)
     (ExecBlock.consNormal (swapStepRecalcAssign locals imms evm a input ho) ExecBlock.nil)

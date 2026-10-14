@@ -1,20 +1,20 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # Safe benchmark spec
 
-Source-shaped Solm spec for upstream `safe-global/safe-smart-account`
+Source-shaped Stele spec for upstream `safe-global/safe-smart-account`
 `Benchmarks/Safe/Main/contracts/Safe.sol`, compiled with solc 0.8.35.
 
 The refinement relation observes successful return values, the final account map, reverts, and
 static-mode violations. Event statements retain their position and static-mode behavior, although
 log contents and revert payloads are not observations of that relation. Gas observations and call
-gas use Solm's existential witnesses. The fallback and receive entrypoints are modeled explicitly.
+gas use Stele's existential witnesses. The fallback and receive entrypoints are modeled explicitly.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Benchmarks.Safe.Main
 
@@ -1260,8 +1260,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := safeExternalABI
-    abiDecodeMode := safeDecodeMode
+    externalABI := (safeExternalABI).withMode safeDecodeMode
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.Safe.Main

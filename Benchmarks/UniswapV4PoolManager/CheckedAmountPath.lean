@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.CheckedAmountSource
 import Benchmarks.UniswapV4PoolManager.WordLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem checkedAmountPath {f : Frame} {evm : EVM.State} {stmt : Stmt} {w : UInt256}

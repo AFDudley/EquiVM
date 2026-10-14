@@ -3,13 +3,13 @@ import Benchmarks.Dss.Clipper.Fallback
 import Reasoning.EVMWord
 
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -708,7 +708,7 @@ theorem clipperWmulFunctionReturns (v : ClipperImmutables) (evm : EVM.State)
         (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat y.toNat)])
         (callee := mulFunction)
         (locals := clipperUintBinaryLocals x y)
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract, locals := clipperUintBinaryLocalsZ x y (UInt256.mul x y), immutables := immStore v })
         (value := some [.int (Int.ofNat (UInt256.mul x y).toNat)])
         (clipperEvalExprsUintBinary v evm (clipperUintBinaryLocals x y) x y
@@ -775,7 +775,7 @@ theorem clipperRmulFunctionReturns (v : ClipperImmutables) (evm : EVM.State)
         (args := [.var "x", .var "y"])
         (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat y.toNat)])
         (callee := mulFunction) (locals := clipperUintBinaryLocals x y)
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract, locals := clipperUintBinaryLocalsZ x y (UInt256.mul x y), immutables := immStore v })
         (value := some [.int (Int.ofNat (UInt256.mul x y).toNat)])
         (clipperEvalExprsUintBinary v evm (clipperUintBinaryLocals x y) x y
@@ -841,7 +841,7 @@ theorem clipperRdivFunctionReturns (v : ClipperImmutables) (evm : EVM.State)
         (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat clipperRayWord.toNat)])
         (callee := mulFunction)
         (locals := clipperUintBinaryLocals x clipperRayWord)
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract,
             locals := clipperUintBinaryLocalsZ x clipperRayWord
               (UInt256.mul x clipperRayWord), immutables := immStore v })
@@ -907,7 +907,7 @@ theorem clipperRdivFunctionRevertsDivZero (v : ClipperImmutables) (evm : EVM.Sta
         (argVals := [.int (Int.ofNat x.toNat), .int (Int.ofNat clipperRayWord.toNat)])
         (callee := mulFunction)
         (locals := clipperUintBinaryLocals x clipperRayWord)
-        (calleeSolm :=
+        (calleeStele :=
           { contract := contract,
             locals := clipperUintBinaryLocalsZ x clipperRayWord
               (UInt256.mul x clipperRayWord), immutables := immStore v })

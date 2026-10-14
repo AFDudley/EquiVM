@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.CardinalityStorage
 import Benchmarks.UniswapV3.Pool.OracleGrow
 import Benchmarks.UniswapV3.Pool.NoDelegateCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -36,20 +36,21 @@ theorem increaseAssignLock (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (next : UInt256) :
     ExecStmt config (increaseFrame v next) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (increaseFrame v next) (storeSlot0Unlocked evm false)) := by
-  exact ExecStmt.assign (by simp only [evalExpr?, pure])
+      (if evm.executionEnv.perm then .ok (increaseFrame v next) (storeSlot0Unlocked evm false) else .staticViolation) := by
+  exact execStmt_assign_storage (by simp only [evalExpr?, pure])
     (assignSlot0Unlocked evm _ _ false (by simp [increaseLocals]))
 
 theorem increaseLockPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (next : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (increaseFrame v next) evm (increaseTransition.body.take 3)
       (.ok (increaseFrame v next) (storeSlot0Unlocked evm false)) := by
   apply (ABlock.start.requireStep (evalCallvalueEq_true hwv)).run
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hunlocked, decide_false, Bool.not_false] using
       evalIncreaseUnlocked v evm next
-  · exact ExecBlock.consNormal (increaseAssignLock v evm next) ExecBlock.nil
+  · exact ExecBlock.consNormal (by simpa only [hperm, if_true] using increaseAssignLock v evm next) ExecBlock.nil
 
 theorem increaseStatic (v : UniswapV3PoolImmutables) (evm : EVM.State)
     (next : UInt256) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -80,11 +81,12 @@ def increaseGrownFrame (v : UniswapV3PoolImmutables) (next current result : UInt
 theorem increaseDelegateReverts (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hdelegate : evm.executionEnv.codeOwner ≠ v.original) :
+    (hdelegate : evm.executionEnv.codeOwner ≠ v.original)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (increaseLocals next) increaseTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 3 increaseTransition.body]
-  apply execBlock_append_ok (increaseLockPrefix v evm next hwv hunlocked)
+  apply execBlock_append_ok (increaseLockPrefix (hperm := hperm) v evm next hwv hunlocked)
   apply ExecBlock.consRevert
   exact internalCallFunctionRevert (argVals := []) (locals := ∅)
     (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl
@@ -93,17 +95,18 @@ theorem increaseDelegateReverts (v : UniswapV3PoolImmutables) (evm : EVM.State) 
 theorem increaseReadyPrefix (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
-    (hself : evm.executionEnv.codeOwner = v.original) :
+    (hself : evm.executionEnv.codeOwner = v.original)
+    (hperm : evm.executionEnv.perm = true) :
     let locked := storeSlot0Unlocked evm false
     ExecBlock config (increaseFrame v next) evm (increaseTransition.body.take 5)
       (.ok (increaseReadyFrame v next (slot0FieldWord 27 2 locked.accountMap locked.executionEnv)) locked) := by
   change ExecBlock _ _ _ (increaseTransition.body.take 3 ++ (increaseTransition.body.drop 3).take 2) _
-  apply execBlock_append_ok (increaseLockPrefix v evm next hwv hunlocked)
+  apply execBlock_append_ok (increaseLockPrefix (hperm := hperm) v evm next hwv hunlocked)
   have hcall : ExecStmt config (increaseFrame v next) (storeSlot0Unlocked evm false)
       (.internalCall "checkNotDelegateCall" [] "__c0")
       (.ok (increaseCheckedFrame v next) (storeSlot0Unlocked evm false)) :=
     internalCallFunctionReturn (callee := noDelegateCallFunction) (argVals := []) (locals := ∅)
-      (calleeSolm := noDelegateCallFrame v) (value := none)
+      (calleeStele := noDelegateCallFrame v) (value := none)
       (by simp only [evalExprs?, pure]) noDelegateCallLookup rfl
       (noDelegateCallReturns v _ (by simpa only [storeSlot0Unlocked_executionEnv] using hself))
   refine ExecBlock.consNormal hcall ?_
@@ -118,15 +121,16 @@ theorem increaseGrowArgs (v : UniswapV3PoolImmutables) (evm : EVM.State) (next c
     Std.HashMap.getElem_insert, EvalResult.ofOption, EvalResult.bind, bind, pure]
 
 theorem increaseGrowCall (v : UniswapV3PoolImmutables) (evm : EVM.State) (next current : UInt256)
-    (hpos : 0 < current.toNat) (hnext : next.toNat < 2 ^ 16) :
+    (hpos : 0 < current.toNat) (hnext : next.toNat < 2 ^ 16)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config (increaseReadyFrame v next current) evm
       (.internalCall "Oracle_grow" [.var "observationCardinalityNextOld", .var "observationCardinalityNext"]
         "observationCardinalityNextNew")
       (.ok (increaseGrownFrame v next current (oracleGrowResult current next))
         (oracleGrowState evm current.toNat (next.toNat - current.toNat))) := by
-  obtain ⟨frame, hbody⟩ := oracleGrowReturns (immStore v) evm current next hpos hnext
+  obtain ⟨frame, hbody⟩ := oracleGrowReturns (hperm := hperm) (immStore v) evm current next hpos hnext
   exact internalCallFunctionReturn (callee := oracleGrowFunction) (locals := oracleGrowLocals current next)
-    (calleeSolm := frame) (value := some [.int (Int.ofNat (oracleGrowResult current next).toNat)])
+    (calleeStele := frame) (value := some [.int (Int.ofNat (oracleGrowResult current next).toNat)])
     (increaseGrowArgs v evm next current) oracleGrowLookup (oracleGrowBind current next) hbody
 
 theorem increaseGrowZeroReverts (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : UInt256)
@@ -134,11 +138,12 @@ theorem increaseGrowZeroReverts (v : UniswapV3PoolImmutables) (evm : EVM.State) 
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
     (hself : evm.executionEnv.codeOwner = v.original)
     (hcurrent : slot0FieldWord 27 2 (storeSlot0Unlocked evm false).accountMap
-      (storeSlot0Unlocked evm false).executionEnv = ⟨0⟩) :
+      (storeSlot0Unlocked evm false).executionEnv = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (increaseLocals next) increaseTransition.body .reverted (immStore v) := by
   apply ExecFuncBody.execBlockRevert
   rw [← List.take_append_drop 5 increaseTransition.body]
-  have hprefix := increaseReadyPrefix v evm next hwv hunlocked hself
+  have hprefix := increaseReadyPrefix (hperm := hperm) v evm next hwv hunlocked hself
   dsimp only at hprefix
   rw [hcurrent] at hprefix
   apply execBlock_append_ok hprefix
@@ -154,7 +159,8 @@ theorem oracleGrowResult_lt (current next : UInt256)
   split <;> assumption
 
 theorem increaseFinish (v : UniswapV3PoolImmutables) (evm : EVM.State) (next current result : UInt256)
-    (hfit : result.toNat < 2 ^ 16) :
+    (hfit : result.toNat < 2 ^ 16)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config (increaseGrownFrame v next current result) evm (increaseTransition.body.drop 6)
       (.ok (increaseGrownFrame v next current result)
         (storeSlot0Unlocked (storeSlot0CardinalityNext evm result) true)) := by
@@ -166,7 +172,7 @@ theorem increaseFinish (v : UniswapV3PoolImmutables) (evm : EVM.State) (next cur
     intro evm'; exact evalExpr_var_get (by simp [increaseGrownFrame, increaseReadyFrame, Std.HashMap.getElem_insert])
   have hbase : (increaseGrownFrame v next current result).locals.get? "slot0" = none := by
     simp [increaseGrownFrame, increaseReadyFrame, increaseCheckedFrame, increaseLocals]
-  refine ExecBlock.consNormal (ExecStmt.assign (hnew evm)
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (hnew evm)
     (assignSlot0CardinalityNext evm _ _ result hbase hfit)) ?_
   have hevent : ExecStmt config (increaseGrownFrame v next current result) (storeSlot0CardinalityNext evm result)
       (.ite (.binary .ne (.var "observationCardinalityNextOld") (.var "observationCardinalityNextNew"))
@@ -176,12 +182,12 @@ theorem increaseFinish (v : UniswapV3PoolImmutables) (evm : EVM.State) (next cur
     by_cases heq : current.toNat = result.toNat
     · apply ExecStmt.iteFalse ?_ ExecBlock.nil
       simp [evalExpr?, hold, hnew, evalBinaryOp?, heq, bind, EvalResult.bind]
-    · refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal (ExecStmt.emit
+    · refine ExecStmt.iteTrue ?_ (ExecBlock.consNormal (ExecStmt.emit (hperm := by simpa only [storeSlot0CardinalityNext_executionEnv] using hperm)
         (vals := [.int (Int.ofNat current.toNat), .int (Int.ofNat result.toNat)]) ?_) ExecBlock.nil)
       · simp [evalExpr?, hold, hnew, evalBinaryOp?, heq, bind, EvalResult.bind]
       · simp only [evalExprs?, hold, hnew, bind, EvalResult.bind, pure]
   exact ExecBlock.consNormal hevent (ExecBlock.consNormal
-    (ExecStmt.assign (by simp only [evalExpr?, pure])
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [storeSlot0CardinalityNext_executionEnv] using hperm)) (by simp only [evalExpr?, pure])
       (assignSlot0Unlocked _ _ _ true hbase)) ExecBlock.nil)
 
 theorem increaseReturns (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : UInt256)
@@ -189,7 +195,8 @@ theorem increaseReturns (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : 
     (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
     (hself : evm.executionEnv.codeOwner = v.original) (hnext : next.toNat < 2 ^ 16)
     (hpos : 0 < (slot0FieldWord 27 2 (storeSlot0Unlocked evm false).accountMap
-      (storeSlot0Unlocked evm false).executionEnv).toNat) :
+      (storeSlot0Unlocked evm false).executionEnv).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     let locked := storeSlot0Unlocked evm false
     let current := slot0FieldWord 27 2 locked.accountMap locked.executionEnv
     let result := oracleGrowResult current next
@@ -200,8 +207,8 @@ theorem increaseReturns (v : UniswapV3PoolImmutables) (evm : EVM.State) (next : 
   dsimp only
   apply ExecFuncBody.execBlockOK
   rw [← List.take_append_drop 5 increaseTransition.body]
-  apply execBlock_append_ok (increaseReadyPrefix v evm next hwv hunlocked hself)
-  exact ExecBlock.consNormal (increaseGrowCall v _ next _ hpos hnext)
-    (increaseFinish v _ next _ _ (oracleGrowResult_lt _ _ (slot0CardinalityNext_lt _ _) hnext))
+  apply execBlock_append_ok (increaseReadyPrefix (hperm := hperm) v evm next hwv hunlocked hself)
+  exact ExecBlock.consNormal (increaseGrowCall (hperm := by simpa only [storeSlot0Unlocked_executionEnv] using hperm) v _ next _ hpos hnext)
+    (increaseFinish (hperm := by simpa only [oracleGrowState_executionEnv, storeSlot0Unlocked_executionEnv] using hperm) v _ next _ _ (oracleGrowResult_lt _ _ (slot0CardinalityNext_lt _ _) hnext))
 
 end Benchmarks.UniswapV3.Pool

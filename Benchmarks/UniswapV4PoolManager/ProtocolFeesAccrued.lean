@@ -9,11 +9,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_011
 # PoolManager `protocolFeesAccrued(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2942; reach lemma `poolManagerReachProtocolFeesAccruedBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem protocolFeesAccruedBodyReturns (evm : EVM.State) (locals imms : Store) (
     ExecTransitionBody config contract evm locals protocolFeesAccruedTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mappingSlotWord w ⟨1⟩)).toNat)])) imms := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mappingSlotWord w ⟨1⟩)).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   have hr := protocolFeesRead (f := calldataFrame contract locals imms evm) (evm := evm) rfl
     ((store_get_ne locals _ (by decide : ("__calldata" == "protocolFeesAccrued") = false)).trans hbase)
@@ -84,7 +84,7 @@ theorem poolManagerProtocolFeesAccruedBodyCore {σ σ₀ A I} {g : UInt256} (v :
             rw [deployedRuntime_jumps v]; jump_dest
           obtain ⟨k', C', rdReturn⟩ := decodeAddress4 v (by simp) hcanon hjumpReturn rdAddr
           have hret := protocolFeesAccruedTrace v (by simp) hcanon rdReturn
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (protocolFeesAccruedTransition.params.map Param.name)
               (transitionSignature protocolFeesAccruedTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))) :=

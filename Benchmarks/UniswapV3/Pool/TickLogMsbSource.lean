@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickLogPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def tickLogMsbBits : List Nat := [128, 64, 32, 16, 8, 4, 2, 1]
@@ -58,14 +58,14 @@ theorem tickLogMsbStepSource {frame : Frame} {evm : EVM.State}
       simpa [mid, Std.HashMap.getElem?_insert] using hr
     refine ⟨out, ?_, ?_, ?_, ?_⟩
     · refine ExecStmt.iteTrue (by simpa only [h, decide_true] using he) ?_
-      refine ExecBlock.consNormal (solm' := mid) (evm' := evm)
-        (ExecStmt.assign (value := .int (Int.ofNat (state.1 + bits))) ?_ ?_) ?_
+      refine ExecBlock.consNormal (stele' := mid) (evm' := evm)
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (state.1 + bits))) ?_ ?_) ?_
       · have hm' := evalExpr_var_get (cfg := config) (evm := evm) hm
         simp only [evalExpr?, hm', evalBinaryOp?, bind, EvalResult.bind, pure]
         rfl
       · exact assignLocalVarBase_frame hm
-      refine ExecBlock.consNormal (solm' := out)
-        (ExecStmt.assign (value := .int
+      refine ExecBlock.consNormal (stele' := out)
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int
           (Int.ofNat (UInt256.shiftRight state.2 (UInt256.ofNat bits)).toNat)) ?_ ?_) ExecBlock.nil
       · exact evalExpr_word_shr bits hb (evalExpr_var_get hr')
       · exact assignLocalVarBase_frame hr'

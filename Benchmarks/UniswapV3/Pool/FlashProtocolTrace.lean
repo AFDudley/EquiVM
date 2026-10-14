@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.FlashProtocolCalc
 import Benchmarks.UniswapV3.Pool.FlashProtocolSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -86,7 +86,7 @@ theorem flashProtocolX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
         (flashProtocolMap σ ee second fees) k' C' := by
   dsimp only
   refine ⟨SourceState.flashProtocolState hs second _, ?_, ?_⟩
-  · have h := flashProtocolSource locals (immStore v) evm second _ hp hslot hfees
+  · have h := flashProtocolSource (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) locals (immStore v) evm second _ hp hslot hfees
     simpa only [← hs.accounts, hs.env] using h
   · obtain ⟨_, _, rdCalc⟩ := flashProtocolCalcX (v := v) second rd (by omega)
     exact flashProtocolStoreX (v := v) second rdCalc hperm (by evm_ov)

@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.ConstructorMemory
 import Examples.UniswapV2Pair.ConstructorHashes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.Amount0DeltaPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -59,7 +59,7 @@ theorem amount0DeltaCallSource (imms : Store) (evm : EVM.State) (a : AmountDelta
   have hbind := fullMathBind (amountDeltaNumerator a) (amountDeltaDifference a) (amountDeltaUpper a)
   cases hr : a.roundUp
   · have hc := internalCallFunctionReturn (callee := fullMathFunction) (retVar := "__c4")
-      (calleeSolm := fullMathProductFrame imms (amountDeltaNumerator a)
+      (calleeStele := fullMathProductFrame imms (amountDeltaNumerator a)
         (amountDeltaDifference a) (amountDeltaUpper a))
       (locals := fullMathLocals (amountDeltaNumerator a) (amountDeltaDifference a) (amountDeltaUpper a))
       (value := some [.int (Int.ofNat (fullMathResult (amountDeltaNumerator a)
@@ -70,7 +70,7 @@ theorem amount0DeltaCallSource (imms : Store) (evm : EVM.State) (a : AmountDelta
     simpa only [amount0DeltaCallFrame, amount0DeltaCallName, amountDeltaMulResult,
       amountDeltaFactor, amountDeltaDenominator, hr, Bool.false_eq_true, if_false] using hc
   · have hc := internalCallFunctionReturn (callee := fullMathRoundFunction) (retVar := "__c2")
-      (calleeSolm := fullMathRoundFinalFrame imms (amountDeltaNumerator a)
+      (calleeStele := fullMathRoundFinalFrame imms (amountDeltaNumerator a)
         (amountDeltaDifference a) (amountDeltaUpper a))
       (locals := fullMathLocals (amountDeltaNumerator a) (amountDeltaDifference a) (amountDeltaUpper a))
       (value := some [.int (Int.ofNat (fullMathRoundResult (amountDeltaNumerator a)
@@ -100,7 +100,7 @@ theorem amount0DeltaRoundSource (imms : Store) (evm : EVM.State) (a : AmountDelt
           Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert_self])
   have hy := evalExpr_var_get (cfg := config) (evm := evm) (amount0DeltaCallLower imms a)
   exact internalCallFunctionReturn (callee := unsafeDivRoundFunction) (retVar := "__c3")
-    (calleeSolm := unsafeDivRoundFrame imms (amountDeltaMulResult false a) (amountDeltaLower a))
+    (calleeStele := unsafeDivRoundFrame imms (amountDeltaMulResult false a) (amountDeltaLower a))
     (locals := unsafeDivRoundLocals (amountDeltaMulResult false a) (amountDeltaLower a))
     (value := some [.int (Int.ofNat (unsafeDivRoundResult
       (amountDeltaMulResult false a) (amountDeltaLower a)).toNat)])

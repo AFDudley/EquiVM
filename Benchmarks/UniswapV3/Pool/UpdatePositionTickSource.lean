@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.UpdatePositionTickModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
@@ -57,12 +57,13 @@ theorem updatePositionTickCallSource (v : UniswapV3PoolImmutables) (a : UpdatePo
     (hm : tickUpdateGrossAfter (updatePositionTickArgs v a evm upper)
       (updatePositionTickBefore v a evm upper) ≤ Int.ofNat (uint128Word v.maxLiquidityPerTick).toNat)
     (hn : safeCast128Valid (tickUpdateNetResult (updatePositionTickArgs v a evm upper)
-      (updatePositionTickBefore v a evm upper) upper)) :
+      (updatePositionTickBefore v a evm upper) upper))
+    (hperm : (updatePositionTickBefore v a evm upper).executionEnv.perm = true) :
     ExecStmt config (updatePositionTickInputFrame v a evm upper)
       (updatePositionTickBefore v a evm upper)
       (.internalCall "Tick_update" (updatePositionTickExprs upper) (if upper then "__c4" else "__c3"))
       (.ok (updatePositionTickCallFrame v a evm upper) (updatePositionTickAfter v a evm upper)) := by
-  have hb := tickUpdateReturns (immStore v) (updatePositionTickBefore v a evm upper)
+  have hb := tickUpdateReturns (hperm := by assumption) (immStore v) (updatePositionTickBefore v a evm upper)
     (updatePositionTickArgs v a evm upper) ha.2.2.1.1 ha.2.2.1.2 hv hm hn
   have he := evalUpdatePositionTickExprs v a evm (updatePositionTickBefore v a evm upper) upper
   have hf : {updatePositionTickInputFrame v a evm upper with
@@ -72,7 +73,7 @@ theorem updatePositionTickCallSource (v : UniswapV3PoolImmutables) (a : UpdatePo
   have hc := internalCallFunctionReturn
     (argVals := tickUpdateValues (updatePositionTickArgs v a evm upper))
     (callee := tickUpdateFunction) (locals := tickUpdateLocals (updatePositionTickArgs v a evm upper))
-    (calleeSolm := tickUpdateNetReadyFrame (immStore v) (updatePositionTickArgs v a evm upper)
+    (calleeStele := tickUpdateNetReadyFrame (immStore v) (updatePositionTickArgs v a evm upper)
       (updatePositionTickBefore v a evm upper) upper)
     (value := some [.bool (updatePositionFlipped v a evm upper)])
     (retVar := if upper then "__c4" else "__c3") (name := "Tick_update") he
@@ -116,7 +117,7 @@ theorem updatePositionTickAssignSource (v : UniswapV3PoolImmutables) (a : Update
       (.ok (updatePositionTickDoneFrame v a evm upper) evm') := by
   cases upper
   all_goals
-    exact ExecStmt.assign (evalExpr_var_get (by update_position_tick_get))
+    exact ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_var_get (by update_position_tick_get))
       (assignLocalVarBase_frame (old := .bool false) (by update_position_tick_get))
 
 def updatePositionTickBody (upper : Bool) : List Stmt :=
@@ -132,11 +133,12 @@ theorem updatePositionTickSource (v : UniswapV3PoolImmutables) (a : UpdatePositi
     (hm : tickUpdateGrossAfter (updatePositionTickArgs v a evm upper)
       (updatePositionTickBefore v a evm upper) ≤ Int.ofNat (uint128Word v.maxLiquidityPerTick).toNat)
     (hn : safeCast128Valid (tickUpdateNetResult (updatePositionTickArgs v a evm upper)
-      (updatePositionTickBefore v a evm upper) upper)) :
+      (updatePositionTickBefore v a evm upper) upper))
+    (hperm : (updatePositionTickBefore v a evm upper).executionEnv.perm = true) :
     ExecBlock config (updatePositionTickInputFrame v a evm upper)
       (updatePositionTickBefore v a evm upper) (updatePositionTickBody upper)
       (.ok (updatePositionTickDoneFrame v a evm upper) (updatePositionTickAfter v a evm upper)) :=
-  ExecBlock.consNormal (updatePositionTickCallSource v a evm upper ha hv hm hn)
+  ExecBlock.consNormal (updatePositionTickCallSource (hperm := by assumption) v a evm upper ha hv hm hn)
     (ExecBlock.consNormal (updatePositionTickAssignSource v a evm _ upper) ExecBlock.nil)
 
 end Benchmarks.UniswapV3.Pool

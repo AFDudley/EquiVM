@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.MemoryGas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: telescope the expansion costs of an arbitrary sequence of memory accesses.

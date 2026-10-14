@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.ProtocolFeeSource
 import Benchmarks.UniswapV4PoolManager.TransientTrace
 import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_011
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
@@ -71,7 +71,7 @@ theorem collectSelectTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : State} {f :
     (store_get_ne _ _ (by decide : ("amountCollected" == "protocolFeesAccrued") = false)).trans hb
   obtain ⟨result, hbody, hr⟩ := collectDebitTrace (f := f1) v hstack hI hσ0 hf hc1 ht1
     (store_get_self _ _ _) hb1 hm' hf' rdDebit
-  exact ⟨result, execFuncBody_prepend (execBlock_singleton (ExecStmt.assign heval (assignLocalValue ha0))) hbody, hr⟩
+  exact ⟨result, execFuncBody_prepend (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) heval (assignLocalValue ha0))) hbody, hr⟩
 
 theorem collectCurrencyCheckTrace {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
     {mem rdata : ByteArray} {aw amount : UInt256} {currency recipient : AccountAddress}

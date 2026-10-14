@@ -5,7 +5,7 @@ import Benchmarks.Dss.Clipper.Dispatch
 # MakerDAO/Sky DSS Clipper fallback and global-revert scaffolds
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -1037,7 +1037,7 @@ theorem clipperNonPayable (v : ClipperImmutables) {code : ByteArray}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec
@@ -1047,7 +1047,7 @@ theorem clipperNonPayable (v : ClipperImmutables) {code : ByteArray}
               callargs (by simp only [initState]; exact hwv))
             (by rw [hrev]; exact execResultsEquiv.revert rfl rfl)
 
-/-- `size < 4` or no selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- `size < 4` or no selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem clipperNoDispatch (v : ClipperImmutables) {code : ByteArray}
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     {σ σ₀ A I} {g : UInt256}

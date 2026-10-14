@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Rely
 import Benchmarks.Dss.Dai.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -50,10 +50,10 @@ def mintAuthWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
     (fun acc => acc.storage.getD (mintAuthStorageSlot I) ⟨0⟩)
 
 def mintUsrBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintUsrStorageSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintUsrStorageSlot I)
 
 def mintTotalSupplyWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner mintTotalSupplySlot
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner mintTotalSupplySlot
 
 def mintUsrCreditNat (evm : EVM.State) (I : ExecutionEnv) : ℕ :=
   (mintUsrBalanceWord evm I).toNat + (mintWadWord I).toNat
@@ -65,7 +65,7 @@ abbrev mintUsrCreditValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (mintUsrCreditNat evm I))
 
 def mintAfterUsrCreditState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (mintUsrStorageSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (mintUsrStorageSlot I)
     (mintUsrCreditWord evm I)
 
 def mintSupplyCreditNat (evm : EVM.State) (I : ExecutionEnv) : ℕ :=
@@ -78,7 +78,7 @@ abbrev mintSupplyCreditValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (mintSupplyCreditNat evm I))
 
 def mintPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (mintAfterUsrCreditState evm I)
+  Stele.EVM.storageStore (mintAfterUsrCreditState evm I)
     (mintAfterUsrCreditState evm I).executionEnv.codeOwner mintTotalSupplySlot
     (mintSupplyCreditWord (mintAfterUsrCreditState evm I) I)
 
@@ -138,9 +138,9 @@ theorem mintAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem daiDecode_mint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = some (mintStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = _
   simpa [mintStore, mintUsrValue, mintWadValue, mintUsrWord, mintWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -148,9 +148,9 @@ theorem daiDecode_mint_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem daiDecode_mint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["usr", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["usr", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "usr") (y := "wad") hsz4 hshort
@@ -184,7 +184,7 @@ theorem evalStorageRef_mint_totalSupply (evm : EVM.State) (I : ExecutionEnv) :
 theorem evalExpr_mint_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := mintStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -192,7 +192,7 @@ theorem evalExpr_mint_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := mintStore I })
+      (stele := { contract := contract, locals := mintStore I })
       (slot := wardsRef sender)
       (er := mintAuthEvaledRef I)
       (t := .int uint256Int)
@@ -213,18 +213,18 @@ theorem evalExpr_mint_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_mint_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := mintStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := mintStore I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (mintAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := mintStore I })
+      (stele := { contract := contract, locals := mintStore I })
       (slot := wardsRef sender)
       (er := mintAuthEvaledRef I)
       (t := .int uint256Int)
@@ -240,7 +240,7 @@ theorem evalExpr_mint_auth_false (evm : EVM.State) (I : ExecutionEnv)
           storageLocLoad_uint256 evm (mintAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mintAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -248,13 +248,13 @@ theorem evalExpr_mint_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mintAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -265,7 +265,7 @@ theorem evalExpr_mint_usr_balance (evm : EVM.State) (I : ExecutionEnv) :
         .ok (.int (Int.ofNat (mintUsrBalanceWord evm I).toNat)) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := mintStore I })
+    (stele := { contract := contract, locals := mintStore I })
     (slot := balanceOfRef (.var "usr"))
     (er := mintUsrBalanceRef I)
     (t := .int uint256Int)
@@ -287,7 +287,7 @@ theorem evalExpr_mint_totalSupply (evm : EVM.State) (I : ExecutionEnv) :
         .ok (.int (Int.ofNat (mintTotalSupplyWord evm).toNat)) := by
   rw [evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := mintStore I })
+    (stele := { contract := contract, locals := mintStore I })
     (slot := totalSupplyRef)
     (er := mintTotalSupplyEvaledRef)
     (t := .int uint256Int)
@@ -472,7 +472,7 @@ theorem mintAssignSupply (evm : EVM.State) (I : ExecutionEnv)
     assignStorageRef? config { contract := contract, locals := mintStore I } evm
       .storage totalSupplyRef (mintSupplyCreditValue evm I) =
         .ok ({ contract := contract, locals := mintStore I },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner mintTotalSupplySlot
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner mintTotalSupplySlot
             (mintSupplyCreditWord evm I)) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (slot := totalSupplyRef)
@@ -498,9 +498,10 @@ theorem daiMintBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hfitUsr : mintUsrCreditNat evm I < UInt256.size)
-    (hfitSupply : mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size) :
+    (hfitSupply : mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body
       (.returned { contract := contract, locals := mintStore I }
         (mintPostState evm I) none) := by
@@ -513,14 +514,14 @@ theorem daiMintBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_mint_usr_checkedAdd_true evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_mint_usr_credit evm I hfitUsr)
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_mint_usr_credit evm I hfitUsr)
       (mintAssignUsr evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue
       (evalExpr_mint_supply_checkedAdd_true (mintAfterUsrCreditState evm I) I
         hfitSupply)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (hperm := Or.inr (by simpa only [mintAfterUsrCreditState, storageStore_executionEnv] using hperm))
       (evalExpr_mint_supply_credit (mintAfterUsrCreditState evm I) I hfitSupply)
       (by simpa [mintPostState] using
         mintAssignSupply (mintAfterUsrCreditState evm I) I hfitSupply)) ?_
@@ -530,7 +531,7 @@ theorem daiMintBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hfitUsr : mintUsrCreditNat evm I < UInt256.size)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body
@@ -552,7 +553,7 @@ theorem daiMintBodyReverts_auth (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [mintTransition, nonpayable, auth, creditBalance, checkedAdd, List.append_assoc,
@@ -566,7 +567,7 @@ theorem daiMintBodyReverts_usrOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hover : UInt256.size ≤ mintUsrCreditNat evm I) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -583,9 +584,10 @@ theorem daiMintBodyReverts_supplyOverflow (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (mintAuthStorageSlot I) = ⟨1⟩)
     (hfitUsr : mintUsrCreditNat evm I < UInt256.size)
-    (hover : UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evm I) I) :
+    (hover : UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evm I) I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (mintStore I) mintTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simp only [mintTransition, nonpayable, auth, creditBalance, checkedAdd, List.append_assoc,
@@ -596,7 +598,7 @@ theorem daiMintBodyReverts_supplyOverflow (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_mint_usr_checkedAdd_true evm I hfitUsr)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_mint_usr_credit evm I hfitUsr)
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalExpr_mint_usr_credit evm I hfitUsr)
       (mintAssignUsr evm I hfitUsr)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireRevert
@@ -1273,7 +1275,7 @@ theorem mintAfterUsrCredit_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
   simp [mintAfterUsrCreditState, storageStore_executionEnv]
 
 set_option maxHeartbeats 1000000 in
-theorem mintSolmAfterUsrBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
+theorem mintSteleAfterUsrBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
     (howner : evm.executionEnv.codeOwner = I.codeOwner)
     (hmap : evm.accountMap = σ)
     (hfitUsr :
@@ -1286,9 +1288,9 @@ theorem mintSolmAfterUsrBridge {σ : AccountMap} {evm : EVM.State} {I : Executio
   have husrWord :
       mintEvmUsrBalanceWord σ I = mintUsrBalanceWord evm I := by
     simpa [mintEvmUsrBalanceWord, mintUsrBalanceWord, mintEvmUsrSlot,
-      mintUsrStorageSlot_eq_mapSlot_masked, Solm.EVM.storageLoad, State.lookupAccount,
+      mintUsrStorageSlot_eq_mapSlot_masked, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, solcSlotWord, howner, hmap]
-  have hfitUsrSolm : mintUsrCreditNat evm I < UInt256.size := by
+  have hfitUsrStele : mintUsrCreditNat evm I < UInt256.size := by
     unfold mintUsrCreditNat
     rw [← husrWord]
     exact hfitUsr
@@ -1297,7 +1299,7 @@ theorem mintSolmAfterUsrBridge {σ : AccountMap} {evm : EVM.State} {I : Executio
     apply u256_inj
     unfold mintEvmUsrCreditWord mintUsrCreditWord
     rw [uadd_toNat, Nat.mod_eq_of_lt hfitUsr]
-    rw [ulit_toNat' _ hfitUsrSolm]
+    rw [ulit_toNat' _ hfitUsrStele]
     unfold mintUsrCreditNat
     rw [← husrWord]
   have hafterMap :
@@ -1312,17 +1314,17 @@ theorem mintSolmAfterUsrBridge {σ : AccountMap} {evm : EVM.State} {I : Executio
         (mintAfterUsrCreditState evm I).executionEnv.codeOwner = I.codeOwner := by
       simpa [mintAfterUsrCredit_codeOwner evm I] using howner
     simpa [mintEvmTotalSupplyWord, mintTotalSupplyWord, mintTotalSupplySlot,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, solcSlotWord,
       hownerAfter, hafterMap]
   have hsupplyNat :
       mintSupplyCreditNat (mintAfterUsrCreditState evm I) I =
         (mintEvmTotalSupplyWord σ I).toNat + (mintWadWord I).toNat := by
     unfold mintSupplyCreditNat
     rw [← hsupplyWord]
-  exact ⟨hfitUsrSolm, hafterMap, hsupplyNat⟩
+  exact ⟨hfitUsrStele, hafterMap, hsupplyNat⟩
 
 set_option maxHeartbeats 1000000 in
-theorem mintSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
+theorem mintSteleBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
     (howner : evm.executionEnv.codeOwner = I.codeOwner)
     (hmap : evm.accountMap = σ)
     (hfitUsr :
@@ -1332,9 +1334,9 @@ theorem mintSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
     mintUsrCreditNat evm I < UInt256.size ∧
     mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size ∧
     mintEvmPostAccountMap σ I = (mintPostState evm I).accountMap := by
-  rcases mintSolmAfterUsrBridge howner hmap hfitUsr with
-    ⟨hfitUsrSolm, hafterMap, hsupplyNat⟩
-  have hfitSupplySolm :
+  rcases mintSteleAfterUsrBridge howner hmap hfitUsr with
+    ⟨hfitUsrStele, hafterMap, hsupplyNat⟩
+  have hfitSupplyStele :
       mintSupplyCreditNat (mintAfterUsrCreditState evm I) I < UInt256.size := by
     rw [hsupplyNat]
     exact hfitSupply
@@ -1344,7 +1346,7 @@ theorem mintSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
     apply u256_inj
     unfold mintEvmSupplyCreditWord mintSupplyCreditWord
     rw [uadd_toNat, Nat.mod_eq_of_lt hfitSupply]
-    rw [ulit_toNat' _ hfitSupplySolm]
+    rw [ulit_toNat' _ hfitSupplyStele]
     exact hsupplyNat.symm
   have hownerAfter :
       (mintAfterUsrCreditState evm I).executionEnv.codeOwner = I.codeOwner := by
@@ -1353,9 +1355,9 @@ theorem mintSolmBridge {σ : AccountMap} {evm : EVM.State} {I : ExecutionEnv}
       mintEvmPostAccountMap σ I = (mintPostState evm I).accountMap := by
     simp [mintEvmPostAccountMap, mintPostState, storageStore_accountMap,
       mintTotalSupplySlot, hownerAfter, hsupplyCreditEq, hafterMap]
-  exact ⟨hfitUsrSolm, hfitSupplySolm, hfinal⟩
+  exact ⟨hfitUsrStele, hfitSupplyStele, hfinal⟩
 
-/-- `mint(address,uint256)` body refines its Solm transition. -/
+/-- `mint(address,uint256)` body refines its Stele transition. -/
 theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -1372,62 +1374,62 @@ theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
   · have hdecode := daiDecode_mint_ok (I := I) hsz68
     obtain ⟨_, _, rd2011⟩ :=
       daiMintX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    have hownerSolm : evmSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmSolm, initState]
-    have hsourceSolm : evmSolm.executionEnv.source = I.source := by
-      simp [evmSolm, initState]
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    have hownerStele : evmStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmStele, initState]
+    have hsourceStele : evmStele.executionEnv.source = I.source := by
+      simp [evmStele, initState]
     have hauthLoadEq :
-        Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
+        Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
             (mintAuthStorageSlot I) =
           mintAuthWord σ I := by
-      simp [evmSolm, initState, mintAuthWord, Solm.EVM.storageLoad,
+      simp [evmStele, initState, mintAuthWord, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]
     have hUsrCreditNat :
-        mintUsrCreditNat evmSolm I =
+        mintUsrCreditNat evmStele I =
           (mintEvmUsrBalanceWord σ I).toNat + (mintWadWord I).toNat := by
       have hword :
-          mintEvmUsrBalanceWord σ I = mintUsrBalanceWord evmSolm I := by
+          mintEvmUsrBalanceWord σ I = mintUsrBalanceWord evmStele I := by
         simpa [mintEvmUsrBalanceWord, mintUsrBalanceWord, mintEvmUsrSlot,
-          mintUsrStorageSlot_eq_mapSlot_masked, Solm.EVM.storageLoad, State.lookupAccount,
-          Account.lookupStorage, solcSlotWord, hownerSolm, evmSolm, initState]
+          mintUsrStorageSlot_eq_mapSlot_masked, Stele.EVM.storageLoad, State.lookupAccount,
+          Account.lookupStorage, solcSlotWord, hownerStele, evmStele, initState]
       unfold mintUsrCreditNat
       rw [← hword]
     by_cases hauth : mintAuthWord σ I = ⟨1⟩
     · obtain ⟨_, _, rd2100⟩ := daiMintX_authorized (I := I) hauth rd2011
       have hauthBody :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
               (mintAuthStorageSlot I) = ⟨1⟩ := by
         rw [hauthLoadEq]
         exact hauth
       by_cases hfitUsr :
           (mintEvmUsrBalanceWord σ I).toNat + (mintWadWord I).toNat <
             UInt256.size
-      · rcases mintSolmAfterUsrBridge hownerSolm (by simp [evmSolm, initState]) hfitUsr with
+      · rcases mintSteleAfterUsrBridge hownerStele (by simp [evmStele, initState]) hfitUsr with
           ⟨hfitUsrBody, _hafterMap, hsupplyNat⟩
         by_cases hperm : I.perm = true
         swap
         · have hstatic : I.perm = false := by simpa using hperm
-          have hbody := daiMintBodyStatic evmSolm I
-            (by simpa [evmSolm, initState] using hwv) hsourceSolm hauthBody hfitUsrBody
-            (by simpa [evmSolm, initState] using hstatic)
+          have hbody := daiMintBodyStatic evmStele I
+            (by simpa [evmStele, initState] using hwv) hsourceStele hauthBody hfitUsrBody
+            (by simpa [evmStele, initState] using hstatic)
           exact (permSplit_false hstatic (daiMintX_storeUsr_successSplit hfitUsr rd2100))
             |>.reEquivStaticHalt hcode hdispatch hdecode hbody
         by_cases hfitSupply :
             (mintEvmTotalSupplyWord σ I).toNat + (mintWadWord I).toNat <
               UInt256.size
-        · rcases mintSolmBridge hownerSolm (by simp [evmSolm, initState])
+        · rcases mintSteleBridge hownerStele (by simp [evmStele, initState])
             hfitUsr hfitSupply with
             ⟨hfitUsrBody', hfitSupplyBody, hfinal⟩
           have hbody :
-              ExecTransitionBody config contract evmSolm (mintStore I)
+              ExecTransitionBody config contract evmStele (mintStore I)
                 mintTransition.body
                 (.returned { contract := contract, locals := mintStore I }
-                  (mintPostState evmSolm I) none) := by
-            simpa [evmSolm] using
-              daiMintBodyReturns evmSolm I
-                (by simp only [evmSolm, initState]; exact hwv)
-                hsourceSolm
+                  (mintPostState evmStele I) none) := by
+            simpa [evmStele] using
+              daiMintBodyReturns (hperm := hperm) evmStele I
+                (by simp only [evmStele, initState]; exact hwv)
+                hsourceStele
                 hauthBody
                 hfitUsrBody'
                 hfitSupplyBody
@@ -1443,16 +1445,16 @@ theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
                 (mintEvmTotalSupplyWord σ I).toNat + (mintWadWord I).toNat := by
             omega
           have hoverBody :
-              UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evmSolm I) I := by
+              UInt256.size ≤ mintSupplyCreditNat (mintAfterUsrCreditState evmStele I) I := by
             rw [hsupplyNat]
             exact hover
           have hbody :
-              ExecTransitionBody config contract evmSolm (mintStore I)
+              ExecTransitionBody config contract evmStele (mintStore I)
                 mintTransition.body .reverted := by
-            simpa [evmSolm] using
-              daiMintBodyReverts_supplyOverflow evmSolm I
-                (by simp only [evmSolm, initState]; exact hwv)
-                hsourceSolm
+            simpa [evmStele] using
+              daiMintBodyReverts_supplyOverflow (hperm := hperm) evmStele I
+                (by simp only [evmStele, initState]; exact hwv)
+                hsourceStele
                 hauthBody
                 hfitUsrBody
                 hoverBody
@@ -1466,33 +1468,33 @@ theorem daiMintBodyCore {σ σ₀ A I} {g : UInt256}
             UInt256.size ≤
               (mintEvmUsrBalanceWord σ I).toNat + (mintWadWord I).toNat := by
           omega
-        have hoverBody : UInt256.size ≤ mintUsrCreditNat evmSolm I := by
+        have hoverBody : UInt256.size ≤ mintUsrCreditNat evmStele I := by
           rw [hUsrCreditNat]
           exact hover
         have hbody :
-            ExecTransitionBody config contract evmSolm (mintStore I)
+            ExecTransitionBody config contract evmStele (mintStore I)
               mintTransition.body .reverted := by
-          simpa [evmSolm] using
-            daiMintBodyReverts_usrOverflow evmSolm I
-              (by simp only [evmSolm, initState]; exact hwv)
-              hsourceSolm
+          simpa [evmStele] using
+            daiMintBodyReverts_usrOverflow evmStele I
+              (by simp only [evmStele, initState]; exact hwv)
+              hsourceStele
               hauthBody
               hoverBody
         exact (daiMintX_usrOverflowRevert (I := I) (sel := daiSelWord I)
             hover rd2100)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have hauthBody :
-          Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
+          Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
               (mintAuthStorageSlot I) ≠ ⟨1⟩ := by
         rw [hauthLoadEq]
         exact hauth
       have hbody :
-          ExecTransitionBody config contract evmSolm (mintStore I)
+          ExecTransitionBody config contract evmStele (mintStore I)
             mintTransition.body .reverted := by
-        simpa [evmSolm] using
-          daiMintBodyReverts_auth evmSolm I
-            (by simp only [evmSolm, initState]; exact hwv)
-            hsourceSolm
+        simpa [evmStele] using
+          daiMintBodyReverts_auth evmStele I
+            (by simp only [evmStele, initState]; exact hwv)
+            hsourceStele
             hauthBody
       exact (daiMintX_unauthorized (I := I) hauth rd2011)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody

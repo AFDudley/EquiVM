@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SwapAfterSource
 import Benchmarks.UniswapV4PoolManager.BeforeSwapSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def swapBeforeStartFrame (f : Frame) : Frame :=
@@ -41,7 +41,7 @@ theorem swapBeforeAssignSource {f : Frame} {evm : State} {amount before fee : UI
       some (.tuple (beforeSwapReturnValues amount before fee)) :=
     (store_get_ne2 _ _ _ (by decide : ("amountToSwap" == "__c5") = false)
       (by decide : ("beforeSwapDelta" == "__c5") = false)).trans (store_get_self _ _ _)
-  exact execBlock_append hp (execBlock_singleton (ExecStmt.assign
+  exact execBlock_append hp (execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalTupleProjection (evalLocalValue ht) (i := 2) rfl)
     (assignLocalValue ((store_get_ne3 _ _ _ _ (by decide : ("__c5" == "lpFeeOverride") = false)
       (by decide : ("amountToSwap" == "lpFeeOverride") = false)

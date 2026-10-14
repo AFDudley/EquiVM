@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.LocalArrays
 import Benchmarks.Safe.Main.Bytes32ReturnDecoder
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -28,7 +28,7 @@ theorem evalSignatureUintAt {frame : Frame} {evm : EVM.State}
     (by omega) hin
   have hd := decodeReturnUint_extract (out := bytes) (start := i) (finish := i + 32)
     (by omega) hin (by omega)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode uint256
+  change config.externalABI.decodeValue? uint256
     (bytes.extract i (i + 32)) = some (uint256Value (calldataWord bytes i)) at hd
   rw [signatureUintAt, evalExpr?, addE, hs]
   simp only [bind, EvalResult.bind, hd, pure]
@@ -46,7 +46,7 @@ theorem evalSignatureWordAt {frame : Frame} {evm : EVM.State}
   have hd := decodeBytes32ReturnLong (out := bytes.extract i (i + 32))
     (by rw [ByteArray.size_extract]; omega) (by rw [ByteArray.size_extract]; omega)
   rw [calldataWord_extract_zero (by omega) hin] at hd
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode bytes32
+  change config.externalABI.decodeValue? bytes32
     (bytes.extract i (i + 32)) = some (wordBytes32Value (calldataWord bytes i)) at hd
   rw [signatureWordAt, evalExpr?, addE, hs]
   simp only [bind, EvalResult.bind, hd, pure]

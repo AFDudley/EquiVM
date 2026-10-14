@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.DentBodyBranch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -37,16 +37,16 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
     have hendEq : bidEndWord (dentId I) σ I = bidEndWord (dentId I) σ I := by
       simp [bidEndWord, flipperUint48Offset26Word, hpacked]
     by_cases hguyEvm : bidGuyWord (dentId I) σ I = ⟨0⟩
-    · have hguySolm : bidGuyWord (dentId I) σ I = ⟨0⟩ := by
+    · have hguyStele : bidGuyWord (dentId I) σ I = ⟨0⟩ := by
         simpa [← hguyEq] using hguyEvm
       have hbody :
           ExecTransitionBody config contract evm0 locals dentTransition.body .reverted := by
         simpa [evm0, locals] using
           (flipperDentSourceBodyGuyNotSet
-            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hguySolm)
+            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hguyStele)
       exact (flipperDentX_guyNotSet (g := Sat256.ofUInt256 g) hguyEvm hdecoded)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hguySolm : bidGuyWord (dentId I) σ I ≠ ⟨0⟩ := by
+    · have hguyStele : bidGuyWord (dentId I) σ I ≠ ⟨0⟩ := by
         intro hzero
         exact hguyEvm (by simpa [hguyEq] using hzero)
       obtain ⟨_, _, rd4033⟩ :=
@@ -55,10 +55,10 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
       · by_cases hticLeEvm :
             (bidTicWord (dentId I) σ I).toNat ≤
               (UInt256.ofNat I.header.timestamp).toNat
-        · have hticNeSolm : bidTicWord (dentId I) σ I ≠ ⟨0⟩ := by
+        · have hticNeStele : bidTicWord (dentId I) σ I ≠ ⟨0⟩ := by
             intro hzero
             exact hticNeEvm (by simpa [hticEq] using hzero)
-          have hticLeSolm :
+          have hticLeStele :
               (bidTicWord (dentId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat := by
             simpa [← hticEq] using hticLeEvm
@@ -67,7 +67,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               (flipperDentSourceBodyAlreadyFinishedTic
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := g) hwv hguySolm hticNeSolm hticLeSolm)
+                (g := g) hwv hguyStele hticNeStele hticLeStele)
           exact (flipperDentX_alreadyFinishedTic (g := Sat256.ofUInt256 g)
             hticNeEvm hticLeEvm rd4033)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -75,7 +75,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidTicWord (dentId I) σ I).toNat := by
             omega
-          have hticGtSolm :
+          have hticGtStele :
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidTicWord (dentId I) σ I).toNat := by
             simpa [← hticEq] using hticGtEvm
@@ -88,13 +88,13 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               evalExpr_dentTicActive_true_left
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := Sat256.ofUInt256 g) hticGtSolm
+                (g := Sat256.ofUInt256 g) hticGtStele
           obtain ⟨_, _, rd4191⟩ :=
             flipperDentX_ticGtOk (g := Sat256.ofUInt256 g) hticGtEvm rd4033
           by_cases hendLeEvm :
               (bidEndWord (dentId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat
-          · have hendLeSolm :
+          · have hendLeStele :
                 (bidEndWord (dentId I) σ I).toNat ≤
                   (UInt256.ofNat I.header.timestamp).toNat := by
               simpa [← hendEq] using hendLeEvm
@@ -103,7 +103,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 (flipperDentSourceBodyAlreadyFinishedEnd
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := g) hwv hguySolm hticGuard hendLeSolm)
+                  (g := g) hwv hguyStele hticGuard hendLeStele)
             exact (flipperDentX_alreadyFinishedEnd (g := Sat256.ofUInt256 g)
               (dentHashMem1_size I) (dentHashMem1_read64 I) hendLeEvm rd4191)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -111,7 +111,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (bidEndWord (dentId I) σ I).toNat := by
               omega
-            have hendGtSolm :
+            have hendGtStele :
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (bidEndWord (dentId I) σ I).toNat := by
               simpa [← hendEq] using hendGtEvm
@@ -122,11 +122,11 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 evalExpr_dentEndGtTimestamp_true
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := Sat256.ofUInt256 g) hendGtSolm
+                  (g := Sat256.ofUInt256 g) hendGtStele
             obtain ⟨_, _, rd4308⟩ := flipperDentX_endOk (g := Sat256.ofUInt256 g)
               (dentHashMem1_size I) hendGtEvm rd4191
             by_cases hbidEvm : dentBid I = bidBidWord (dentId I) σ I
-            · have hbidSolm : dentBid I = bidBidWord (dentId I) σ I := by
+            · have hbidStele : dentBid I = bidBidWord (dentId I) σ I := by
                 simpa [← hbidWordEq] using hbidEvm
               have hbidGuard :
                   evalExpr? config { contract := contract, locals := locals } evm0
@@ -135,11 +135,11 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   evalExpr_dentBidEqBidBid_true
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := Sat256.ofUInt256 g) hbidSolm
+                    (g := Sat256.ofUInt256 g) hbidStele
               obtain ⟨_, _, rd4406⟩ := flipperDentX_bidOk (g := Sat256.ofUInt256 g)
                 (dentHashMem2_size I) hbidEvm rd4308
               by_cases htabEvm : dentBid I = bidTabWord (dentId I) σ I
-              · have htabSolm : dentBid I = bidTabWord (dentId I) σ I := by
+              · have htabStele : dentBid I = bidTabWord (dentId I) σ I := by
                   simpa [← htabWordEq] using htabEvm
                 have htabGuard :
                     evalExpr? config { contract := contract, locals := locals } evm0
@@ -148,13 +148,13 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     evalExpr_dentBidEqBidTab_true
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := Sat256.ofUInt256 g) htabSolm
+                      (g := Sat256.ofUInt256 g) htabStele
                 obtain ⟨_, _, rd4507⟩ := flipperDentX_bidEqTabOk (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I))
                   htabEvm rd4406
                 by_cases hlotLtEvm :
                     (dentLot I).toNat < (bidLotWord (dentId I) σ I).toNat
-                · have hlotLtSolm :
+                · have hlotLtStele :
                       (dentLot I).toNat < (bidLotWord (dentId I) σ I).toNat := by
                     simpa [← hlotWordEq] using hlotLtEvm
                   have hlotGuard :
@@ -164,7 +164,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [evm0, locals] using
                       evalExpr_dentLotLtBidLot_true
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                        (g := Sat256.ofUInt256 g) hlotLtSolm
+                        (g := Sat256.ofUInt256 g) hlotLtStele
                   obtain ⟨_, _, rd4601⟩ := flipperDentX_lotLowerOk (g := Sat256.ofUInt256 g)
                     (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                       (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I)))
@@ -190,12 +190,12 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                         (twoWordHashMem_read64 (dentId I) ⟨1⟩ (dentHashMem2_size I)
                           (dentHashMem2_read64 I)))
                   exact flipperDentBodyFrom4601LotLower hcode hdispatch hdecode hwv
-                    hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard
+                    hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard
                     hmem4601Size hmem4601Read64 rd4601
                 · have hlotLeEvm :
                       (bidLotWord (dentId I) σ I).toNat ≤ (dentLot I).toNat := by
                     omega
-                  have hlotLeSolm :
+                  have hlotLeStele :
                       (bidLotWord (dentId I) σ I).toNat ≤ (dentLot I).toNat := by
                     simpa [← hlotWordEq] using hlotLeEvm
                   have hbody :
@@ -203,8 +203,8 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [evm0, locals] using
                       (flipperDentSourceBodyLotNotLower
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                        (g := g) hwv hguySolm hticGuard hendGuard hbidGuard htabGuard
-                        hlotLeSolm)
+                        (g := g) hwv hguyStele hticGuard hendGuard hbidGuard htabGuard
+                        hlotLeStele)
                   exact (flipperDentX_lotNotLower (g := Sat256.ofUInt256 g)
                     (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                       (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I)))
@@ -214,7 +214,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                         (dentHashMem2_read64 I)))
                     hlotLeEvm rd4507)
                     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-              · have htabSolm : dentBid I ≠ bidTabWord (dentId I) σ I := by
+              · have htabStele : dentBid I ≠ bidTabWord (dentId I) σ I := by
                   intro htab
                   exact htabEvm (by simpa [htabWordEq] using htab)
                 have hbody :
@@ -222,14 +222,14 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     (flipperDentSourceBodyTendNotFinished
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := g) hwv hguySolm hticGuard hendGuard hbidGuard htabSolm)
+                      (g := g) hwv hguyStele hticGuard hendGuard hbidGuard htabStele)
                 exact (flipperDentX_tendNotFinished (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I))
                   (twoWordHashMem_read64 (dentId I) ⟨1⟩ (dentHashMem2_size I)
                     (dentHashMem2_read64 I))
                   htabEvm rd4406)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-            · have hbidSolm : dentBid I ≠ bidBidWord (dentId I) σ I := by
+            · have hbidStele : dentBid I ≠ bidBidWord (dentId I) σ I := by
                 intro hbid
                 exact hbidEvm (by simpa [hbidWordEq] using hbid)
               have hbody :
@@ -237,13 +237,13 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   (flipperDentSourceBodyNotMatchingBid
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := g) hwv hguySolm hticGuard hendGuard hbidSolm)
+                    (g := g) hwv hguyStele hticGuard hendGuard hbidStele)
               exact (flipperDentX_notMatchingBid (g := Sat256.ofUInt256 g)
                 (dentHashMem2_size I) (dentHashMem2_read64 I) hbidEvm rd4308)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hticZeroEvm : bidTicWord (dentId I) σ I = ⟨0⟩ := by
           exact Classical.not_not.mp hticNeEvm
-        have hticZeroSolm : bidTicWord (dentId I) σ I = ⟨0⟩ := by
+        have hticZeroStele : bidTicWord (dentId I) σ I = ⟨0⟩ := by
           simpa [← hticEq] using hticZeroEvm
         have hticGuard :
             evalExpr? config { contract := contract, locals := locals } evm0
@@ -254,13 +254,13 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
           simpa [evm0, locals] using
             evalExpr_dentTicActive_true_right
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-              (g := Sat256.ofUInt256 g) hticZeroSolm
+              (g := Sat256.ofUInt256 g) hticZeroStele
         obtain ⟨_, _, rd4191⟩ :=
           flipperDentX_ticZeroOk (g := Sat256.ofUInt256 g) hticZeroEvm rd4033
         by_cases hendLeEvm :
             (bidEndWord (dentId I) σ I).toNat ≤
               (UInt256.ofNat I.header.timestamp).toNat
-        · have hendLeSolm :
+        · have hendLeStele :
               (bidEndWord (dentId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat := by
             simpa [← hendEq] using hendLeEvm
@@ -269,7 +269,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               (flipperDentSourceBodyAlreadyFinishedEnd
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := g) hwv hguySolm hticGuard hendLeSolm)
+                (g := g) hwv hguyStele hticGuard hendLeStele)
           exact (flipperDentX_alreadyFinishedEnd (g := Sat256.ofUInt256 g)
             (dentHashMem2_size I) (dentHashMem2_read64 I) hendLeEvm rd4191)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -277,7 +277,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidEndWord (dentId I) σ I).toNat := by
             omega
-          have hendGtSolm :
+          have hendGtStele :
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidEndWord (dentId I) σ I).toNat := by
             simpa [← hendEq] using hendGtEvm
@@ -288,11 +288,11 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               evalExpr_dentEndGtTimestamp_true
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := Sat256.ofUInt256 g) hendGtSolm
+                (g := Sat256.ofUInt256 g) hendGtStele
           obtain ⟨_, _, rd4308⟩ := flipperDentX_endOk (g := Sat256.ofUInt256 g)
             (dentHashMem2_size I) hendGtEvm rd4191
           by_cases hbidEvm : dentBid I = bidBidWord (dentId I) σ I
-          · have hbidSolm : dentBid I = bidBidWord (dentId I) σ I := by
+          · have hbidStele : dentBid I = bidBidWord (dentId I) σ I := by
               simpa [← hbidWordEq] using hbidEvm
             have hbidGuard :
                 evalExpr? config { contract := contract, locals := locals } evm0
@@ -301,12 +301,12 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 evalExpr_dentBidEqBidBid_true
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := Sat256.ofUInt256 g) hbidSolm
+                  (g := Sat256.ofUInt256 g) hbidStele
             obtain ⟨_, _, rd4406⟩ := flipperDentX_bidOk (g := Sat256.ofUInt256 g)
               (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I))
               hbidEvm rd4308
             by_cases htabEvm : dentBid I = bidTabWord (dentId I) σ I
-            · have htabSolm : dentBid I = bidTabWord (dentId I) σ I := by
+            · have htabStele : dentBid I = bidTabWord (dentId I) σ I := by
                 simpa [← htabWordEq] using htabEvm
               have htabGuard :
                   evalExpr? config { contract := contract, locals := locals } evm0
@@ -315,14 +315,14 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   evalExpr_dentBidEqBidTab_true
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := Sat256.ofUInt256 g) htabSolm
+                    (g := Sat256.ofUInt256 g) htabStele
               obtain ⟨_, _, rd4507⟩ := flipperDentX_bidEqTabOk (g := Sat256.ofUInt256 g)
                 (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I)))
                 htabEvm rd4406
               by_cases hlotLtEvm :
                   (dentLot I).toNat < (bidLotWord (dentId I) σ I).toNat
-              · have hlotLtSolm :
+              · have hlotLtStele :
                     (dentLot I).toNat < (bidLotWord (dentId I) σ I).toNat := by
                   simpa [← hlotWordEq] using hlotLtEvm
                 have hlotGuard :
@@ -332,7 +332,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     evalExpr_dentLotLtBidLot_true
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := Sat256.ofUInt256 g) hlotLtSolm
+                      (g := Sat256.ofUInt256 g) hlotLtStele
                 obtain ⟨_, _, rd4601⟩ := flipperDentX_lotLowerOk (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                     (twoWordHashMem_size_96 (dentId I) ⟨1⟩
@@ -366,12 +366,12 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                         (twoWordHashMem_read64 (dentId I) ⟨1⟩ (dentHashMem2_size I)
                           (dentHashMem2_read64 I))))
                 exact flipperDentBodyFrom4601LotLower hcode hdispatch hdecode hwv
-                  hguySolm hticGuard hendGuard hbidGuard htabGuard hlotGuard
+                  hguyStele hticGuard hendGuard hbidGuard htabGuard hlotGuard
                   hmem4601Size hmem4601Read64 rd4601
               · have hlotLeEvm :
                     (bidLotWord (dentId I) σ I).toNat ≤ (dentLot I).toNat := by
                   omega
-                have hlotLeSolm :
+                have hlotLeStele :
                     (bidLotWord (dentId I) σ I).toNat ≤ (dentLot I).toNat := by
                   simpa [← hlotWordEq] using hlotLeEvm
                 have hbody :
@@ -379,8 +379,8 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     (flipperDentSourceBodyLotNotLower
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := g) hwv hguySolm hticGuard hendGuard hbidGuard htabGuard
-                      hlotLeSolm)
+                      (g := g) hwv hguyStele hticGuard hendGuard hbidGuard htabGuard
+                      hlotLeStele)
                 exact (flipperDentX_lotNotLower (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                     (twoWordHashMem_size_96 (dentId I) ⟨1⟩
@@ -394,7 +394,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                         (dentHashMem2_read64 I))))
                   hlotLeEvm rd4507)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-            · have htabSolm : dentBid I ≠ bidTabWord (dentId I) σ I := by
+            · have htabStele : dentBid I ≠ bidTabWord (dentId I) σ I := by
                 intro htab
                 exact htabEvm (by simpa [htabWordEq] using htab)
               have hbody :
@@ -402,7 +402,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   (flipperDentSourceBodyTendNotFinished
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := g) hwv hguySolm hticGuard hendGuard hbidGuard htabSolm)
+                    (g := g) hwv hguyStele hticGuard hendGuard hbidGuard htabStele)
               exact (flipperDentX_tendNotFinished (g := Sat256.ofUInt256 g)
                 (twoWordHashMem_size_96 (dentId I) ⟨1⟩
                   (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I)))
@@ -412,7 +412,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
                     (dentHashMem2_read64 I)))
                 htabEvm rd4406)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-          · have hbidSolm : dentBid I ≠ bidBidWord (dentId I) σ I := by
+          · have hbidStele : dentBid I ≠ bidBidWord (dentId I) σ I := by
               intro hbid
               exact hbidEvm (by simpa [hbidWordEq] using hbid)
             have hbody :
@@ -420,7 +420,7 @@ theorem flipperDentBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 (flipperDentSourceBodyNotMatchingBid
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := g) hwv hguySolm hticGuard hendGuard hbidSolm)
+                  (g := g) hwv hguyStele hticGuard hendGuard hbidStele)
             exact (flipperDentX_notMatchingBid (g := Sat256.ofUInt256 g)
               (twoWordHashMem_size_96 (dentId I) ⟨1⟩ (dentHashMem2_size I))
               (twoWordHashMem_read64 (dentId I) ⟨1⟩ (dentHashMem2_size I)

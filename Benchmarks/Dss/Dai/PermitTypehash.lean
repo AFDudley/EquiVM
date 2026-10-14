@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -19,15 +19,15 @@ theorem permitTypehashBytes_eq_word :
 
 theorem daiDecode_permitTypehash_ok {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (permitTypehashTransition.params.map Param.name)
       (transitionSignature permitTypehashTransition).paramTypes I.calldata =
         some permitTypehashStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `PERMIT_TYPEHASH()` body returns Maker's permit typehash constant. -/
+/-- The Stele `PERMIT_TYPEHASH()` body returns Maker's permit typehash constant. -/
 theorem daiPermitTypehashBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm permitTypehashStore permitTypehashTransition.body
@@ -63,7 +63,7 @@ theorem daiPermitTypehashBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some permitTypehashTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (permitTypehashTransition.params.map Param.name)
         (transitionSignature permitTypehashTransition).paramTypes I.calldata =
           some permitTypehashStore)
@@ -88,7 +88,7 @@ theorem daiPermitTypehashBodyCoreOk
         (by simpa [bytes32, bytes32Width] using
           bytes32ReturnEncoding permitTypehashWord))
 
-/-- `PERMIT_TYPEHASH()` body refines its Solm transition. -/
+/-- `PERMIT_TYPEHASH()` body refines its Stele transition. -/
 theorem daiPermitTypehashBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

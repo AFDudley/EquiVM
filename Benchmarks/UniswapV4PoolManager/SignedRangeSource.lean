@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.Values
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES the checked signed-addition rule to every width and expression.

@@ -4,8 +4,8 @@ import Benchmarks.Safe.Main.SetupBodyTrace
 import Benchmarks.Safe.Main.Blocks.Runtime_006
 import Benchmarks.Safe.Main.Blocks.Runtime_010
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -45,7 +45,7 @@ theorem safeSetupBodyCore
       exact reEquivSelectorDecodingFailed (cfg := config) hcode hdispatch hdec hr
   | some args =>
       obtain ⟨n, len, hb, hc, rfl⟩ := decodeSetupEvidence hlong hdec
-      have hdec' : decodeCalldataWithMode config.abiDecodeMode
+      have hdec' : config.externalABI.decodeCalldata?
           (setupTransition.params.map Param.name) (transitionSignature setupTransition).paramTypes
           I.calldata = some (setupCalldataInput I.calldata n len).args := hdec
       obtain ⟨k', C', h₂⟩ := safeDecodeSetupValid hdecode hb (by simp) (by jump_dest)

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TransferFromSource
 
 /-! The authorization and allowance step of the internal ERC6909 burn helper. -/
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -103,7 +103,7 @@ theorem burnAuthExec {f : Frame} {evm : EVM.State} {sender id amount : UInt256}
             (ExecBlock.consStatic (ExecStmt.assignStatic heval hwrite hp)))
         · rw [if_neg hp]
           exact ExecBlock.consNormal (ExecStmt.iteTrue hcondTrue
-            (ExecBlock.consNormal (ExecStmt.assign heval hwrite) ExecBlock.nil)) ExecBlock.nil
+            (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) heval hwrite) ExecBlock.nil)) ExecBlock.nil
       · rw [if_neg hsub]
         exact ExecBlock.consRevert (ExecStmt.iteTrue hcondTrue
           (ExecBlock.consRevert (ExecStmt.assignExprRevert

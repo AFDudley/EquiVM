@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapTargetWords
 import Benchmarks.UniswapV4PoolManager.WordConditionalSource
 import Benchmarks.UniswapV4PoolManager.WordBorrowSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 abbrev swapTargetFunction : FunctionDecl := contract.functions[105]!

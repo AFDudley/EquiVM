@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickUpdatePrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -52,7 +52,7 @@ theorem tickUpdateCheckedSource (imms : Store) (evm : EVM.State) (a : TickUpdate
   apply execBlock_append_ok (tickUpdateAfterSource imms evm a hv)
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (by simpa only [hm, decide_true] using evalTickUpdateMax imms evm a)) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (evalTickUpdateFlipped imms evm a)
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalTickUpdateFlipped imms evm a)
     (assignLocalVarBase_frame (old := .bool false) (by tick_update_get))) ExecBlock.nil
 
 end Benchmarks.UniswapV3.Pool

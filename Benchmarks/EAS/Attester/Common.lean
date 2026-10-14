@@ -5,7 +5,7 @@ import Reasoning.ABI
 import Reasoning.Constructor
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
 /-!
 # Attester proof prelude
@@ -15,7 +15,7 @@ and shared refinement machinery. Functional proof obligations remain unproved.
 `Audit.lean` is executable regression evidence and is deliberately separate from this prelude.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Reach
 
@@ -37,7 +37,7 @@ theorem RDrev.reEquivNonPayableOfMem {cfg : Config} {contract : ContractDecl}
     have htmem : t ∈ contract.transitions := by
       rw [dispatchMsg_eq_dispatchList contract I.calldata hfallback hreceive] at ht
       exact dispatchList_some_mem ht
-    by_cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    by_cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes I.calldata = none
     · exact reEquiv_decodingFailed ht hdec hrev hfallback hreceive
     · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

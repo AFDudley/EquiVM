@@ -50,7 +50,7 @@ Use `--write` to regenerate them. The Linux compiler used for this refresh has S
 
 ## Specification and proof targets
 
-`SpecSyntax.lean` is the authoritative current-Solm surface specification. `Spec.lean` derives
+`SpecSyntax.lean` is the authoritative current-Stele surface specification. `Spec.lean` derives
 the contract and transition handles and supplies the empty storage backend, ABI codecs,
 modern decoder mode, and constructor deployment codec. There is one contract body.
 

@@ -4,22 +4,22 @@ import Benchmarks.WETH9.StringEncode
 
 `name()` is a public non-payable getter returning the dynamic string stored at slot 0.  The EVM
 return encoder is proved in `StringReturn.lean`/`StringReturnLong2.lean` (empty/short/long); this
-module connects those `RDret`s to the Solm `.return [.storage nameRef]` body via `returnEquiv`.
+module connects those `RDret`s to the Stele `.return [.storage nameRef]` body via `returnEquiv`.
 Shared header/word/slot-parametric encode machinery lives in `StringEncode.lean`. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
 
 namespace Benchmarks.WETH9
 
-/-! ## Solm-side `name()` storage read -/
+/-! ## Stele-side `name()` storage read -/
 
 /-- The evaled `name` storage reference. -/
 def nameEvaledRef : EvaledStorageRef := { base := "name", steps := [] }
 
-/-- The Solm `name()` body's `.storage nameRef` evaluates through the WETH9 total-decode string
+/-- The Stele `name()` body's `.storage nameRef` evaluates through the WETH9 total-decode string
     hook `weth9ReadBytesValue?`. -/
 theorem weth9NameStorageRead {σ σ₀ A I} {g : Sat256} :
     evalExpr? config { contract := contract, locals := ∅ } (initState σ σ₀ g A I)
@@ -40,7 +40,7 @@ theorem weth9NameBaseSlotLen {σ σ₀ A I} {g : Sat256} :
   simp only [nameEvaledRef, List.nil_append, storageLayoutRaw,
     storageLoad_initState_solcSlotWord, weth9DecodeBytesLengthHeader_stringLen]
 
-/-- The `.bytes` value the Solm `name()` body returns: the decoded compact string. -/
+/-- The `.bytes` value the Stele `name()` body returns: the decoded compact string. -/
 theorem weth9NameReadValue {σ σ₀ A I} {g : Sat256} :
     weth9ReadBytesValue? storageLayoutRaw nameEvaledRef (initState σ σ₀ g A I) =
       .ok (.bytes (if (weth9StringLen (solcSlotWord σ I ⟨0⟩)).toNat < 32
@@ -54,7 +54,7 @@ theorem weth9NameReadValue {σ σ₀ A I} {g : Sat256} :
   simp only [storageLoad_initState_solcSlotWord]
   split <;> rfl
 
-/-- The full Solm `name()` body `evalExpr?` result. -/
+/-- The full Stele `name()` body `evalExpr?` result. -/
 theorem weth9NameEval {σ σ₀ A I} {g : Sat256} :
     evalExpr? config { contract := contract, locals := ∅ } (initState σ σ₀ g A I)
       (.storage nameRef)
@@ -212,9 +212,9 @@ theorem weth9SelectorDispatchName {I : ExecutionEnv} (hsel : selIs I (weth9SelBy
 
 /-- `name()` has no parameters: its ABI decode yields the empty store. -/
 theorem weth9Decode_name_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (nameTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (nameTransition.params.map Param.name)
       (transitionSignature nameTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
 theorem weth9NameBodyCore {σ σ₀ A I} {g : UInt256}
@@ -224,7 +224,7 @@ theorem weth9NameBodyCore {σ σ₀ A I} {g : UInt256}
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (weth9SelBytes 0) (by native_decide) hsel
   by_cases hwv : I.weiValue = ⟨0⟩
-  · -- string return: the Solm `.return [.storage nameRef]` body ABI-encodes to the EVM encoder's
+  · -- string return: the Stele `.return [.storage nameRef]` body ABI-encodes to the EVM encoder's
     -- output (`StringReturnLong2.lean`); `weth9StorageWF` excludes the ≥2^64-byte regime.
     have hbody := nonpayableReturnExprBodyReturns (cfg := config) (contract := contract)
       (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (locals := ∅)

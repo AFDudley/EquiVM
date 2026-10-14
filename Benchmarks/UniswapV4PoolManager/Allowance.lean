@@ -7,11 +7,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_023
 # PoolManager `allowance(address,address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 8163; reach lemma `poolManagerReachAllowanceBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -30,7 +30,7 @@ theorem allowanceBodyReturns (evm : EVM.State) (locals imms : Store) (a b id : U
     ExecTransitionBody config contract evm locals allowanceTransition.body
       (.returned (calldataFrame contract locals imms evm) evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (mappingSlotWord id (mappingSlotWord b (mappingSlotWord a ⟨5⟩)))).toNat)])) imms := by
   apply guardedReturnBody hwv hhi
   apply evalExpr_storage_scalar_value (hbackend := rfl) (hloc := allowance_loc a b id hca hcb)
@@ -122,7 +122,7 @@ theorem poolManagerAllowanceBodyCore {σ σ₀ A I} {g : UInt256} (v : PoolManag
             obtain ⟨k'', C'', rdReturn1⟩ := decodeAddress36 v (by simp) hcanon1 hjumpReturn1 rdAddr1
             have hret := allowanceTrace v (by simp) hcanon hcanon1 rdReturn1
             let args := ((((∅ : Store).insert "arg0" (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat)))).insert "arg1" (.address (AccountAddress.ofNat (calldataWord I.calldata 36).toNat))).insert "arg2" (.int (Int.ofNat (calldataWord I.calldata 68).toNat))
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (allowanceTransition.params.map Param.name)
                 (transitionSignature allowanceTransition).paramTypes I.calldata = some args :=
               decodeCalldata_address_address_uint256_ok hlen hhi hcanon hcanon1

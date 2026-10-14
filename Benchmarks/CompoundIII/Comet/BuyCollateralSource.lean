@@ -3,7 +3,7 @@ import Benchmarks.CompoundIII.Comet.QuoteSource
 import Benchmarks.CompoundIII.Comet.TransferInSource
 import Benchmarks.CompoundIII.Comet.InternalBlockComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -51,7 +51,7 @@ theorem buyCollateralAfterReserves_source {v asset recipient minimum base reserv
         EvalResult.ofOption]; rfl
     have hassign : ExecStmt config read evm'
         (.assign .localVar ⟨"baseAmount", []⟩ (.var "__c3")) (.ok ready evm') :=
-      ExecStmt.assign ha (assignLocalFrame hread.base)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ha (assignLocalFrame hread.base)
     exact ((buyCollateralAfterIn_source hn ready (hread.setBase amount)).prepend hassign).prepend
       hc |>.prepend (ExecStmt.requireTrue (hg.trans (by rw [decide_eq_true hv])))
 

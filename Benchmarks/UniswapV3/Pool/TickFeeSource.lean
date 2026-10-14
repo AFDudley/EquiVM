@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.TickFeePrefix
 import Benchmarks.UniswapV3.Pool.TickFeeSideSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -67,7 +67,7 @@ theorem tickFeeReadySource (imms : Store) (evm : EVM.State) (a : TickFeeArgs) :
   refine ExecBlock.consNormal (tickFeeBelowSource imms evm a) ?_
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := tickFeeAboveZeroFrame imms a evm)
+  refine ExecBlock.consNormal (stele' := tickFeeAboveZeroFrame imms a evm)
     (ExecStmt.letDecl (value := .int 0) (by simp only [evalExpr?, pure])) ?_
   exact ExecBlock.consNormal (tickFeeAboveSource imms evm a) ExecBlock.nil
 
@@ -98,14 +98,14 @@ theorem tickFeeReturns (imms : Store) (evm : EVM.State) (a : TickFeeArgs) :
   apply ExecFuncBody.execBlockRet
   rw [← List.take_append_drop 10 tickFeeFunction.body]
   apply execBlock_append_ok (tickFeeReadySource imms evm a)
-  refine ExecBlock.consNormal (solm' := tickFeeFirstFrame imms a evm) (evm' := evm)
-    (ExecStmt.assign (value := .int
+  refine ExecBlock.consNormal (stele' := tickFeeFirstFrame imms a evm) (evm' := evm)
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int
       (Int.ofNat (tickFeeInside a evm.accountMap evm.executionEnv false).toNat)) ?_ ?_) ?_
   · exact evalTickFeeInside (tickFeeReadyFrame imms a evm).locals imms evm a false
       (by tick_fee_get) (by tick_fee_get) (by tick_fee_get)
   · exact assignLocalVarBase_frame (old := .int 0) (by tick_fee_get)
-  · refine ExecBlock.consNormal (solm' := tickFeeFinalFrame imms a evm) (evm' := evm)
-      (ExecStmt.assign (value := .int
+  · refine ExecBlock.consNormal (stele' := tickFeeFinalFrame imms a evm) (evm' := evm)
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int
         (Int.ofNat (tickFeeInside a evm.accountMap evm.executionEnv true).toNat)) ?_ ?_) ?_
     · exact evalTickFeeInside (tickFeeFirstFrame imms a evm).locals imms evm a true
         (by tick_fee_get) (by tick_fee_get) (by tick_fee_get)

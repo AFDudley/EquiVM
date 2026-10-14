@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV4PoolManager.FunctionResultTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: source function traces with an arbitrary ABI return signature.
@@ -11,7 +11,7 @@ def abiResultTrace (types : List ABIType) (code : ByteArray) (g : Sat256) (s0 : 
 theorem abiResultTrace_refinement {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
     {σ σ₀ A I} {g : UInt256} {code : ByteArray} {args imms : Store} {result : ExecResult}
     (hcode : I.code = code) (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) args t.body result imms)
     (htrace : abiResultTrace t.returnType code (Sat256.ofUInt256 g) (initState σ σ₀ (Sat256.ofUInt256 g) A I) result)
@@ -23,6 +23,6 @@ theorem abiResultTrace_refinement {cfg : Config} {contract : ContractDecl} {t : 
       exact hr.reEquivExecutionGen hcode hd hdec hbody rfl he hfallback hreceive
   | reverted => exact htrace.reEquivExecutionRevert hcode hd hdec hbody hfallback hreceive
   | staticViolation => exact htrace.reEquivStaticHalt hcode hd hdec hbody hfallback hreceive
-  | ok | «break» | «continue» => exact False.elim htrace
+  | ok | «break» | «continue» | noMatch | decodingFailed => exact False.elim htrace
 
 end Benchmarks.UniswapV4PoolManager

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolDonateModel
 import Benchmarks.UniswapV4PoolManager.PoolDonateStatic
 import Benchmarks.UniswapV4PoolManager.ReachCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.UniswapV4PoolManager.Immutables
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
@@ -38,7 +38,7 @@ theorem poolDonateGrowth0Trace {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
       hpt (by rw [poolManagerPatchedValidJumpsRuntime v]; jump_dest) hr) rd
   refine ⟨k', C', by omega, ?_⟩
   simpa only [poolDonateStep, if_neg hz, storageStore_accountMap, hI, poolFeeGrowthSlot,
-    Bool.false_eq_true, if_false, poolFeeGrowthWord, Solm.EVM.storageLoad,
+    Bool.false_eq_true, if_false, poolFeeGrowthWord, Stele.EVM.storageLoad,
     poolDonateGrowth_compiled, poolDonateDelta, balanceDeltaWord,
     poolManagerBlocks.poolManager_block_10246_taken_stack] using hr
 
@@ -72,7 +72,7 @@ theorem poolDonateGrowth1Trace {I : ExecutionEnv} {g : Sat256} {s0 evm : State}
   refine ⟨junk, junk, k', C', by omega, ?_⟩
   have hslot : UInt256.ofNat 2 + poolSlot id = poolSlot id + UInt256.ofNat 2 := u256_add_comm ..
   simpa only [poolDonateStep, if_neg hz, storageStore_accountMap, hI, poolFeeGrowthSlot,
-    if_true, poolFeeGrowthWord, Solm.EVM.storageLoad, poolDonateGrowth_compiled,
+    if_true, poolFeeGrowthWord, Stele.EVM.storageLoad, poolDonateGrowth_compiled,
     poolManagerBlocks.poolManager_block_10482_stack, hslot] using hr
 
 end Benchmarks.UniswapV4PoolManager

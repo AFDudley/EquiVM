@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.TickUpdateNetModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -30,7 +30,7 @@ theorem tickUpdateMathCall (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
       (.ok (tickUpdateMathFrame imms a evm subtract) (tickUpdateGrossState a evm)) := by
   exact internalCallFunctionReturn (callee := safeSignedMathFunction subtract)
     (locals := safeSignedMathLocals (tickUpdateNetBefore a evm) a.delta)
-    (calleeSolm := safeSignedMathReadyFrame subtract imms (tickUpdateNetBefore a evm) a.delta)
+    (calleeStele := safeSignedMathReadyFrame subtract imms (tickUpdateNetBefore a evm) a.delta)
     (value := some [.int (tickUpdateNetResult a evm subtract)])
     (evalTickUpdateNetArgs imms evm a) (safeSignedMathLookup subtract)
     (safeSignedMathBind subtract (tickUpdateNetBefore a evm) a.delta)
@@ -52,7 +52,7 @@ theorem tickUpdateCastCall (imms : Store) (evm : EVM.State) (a : TickUpdateArgs)
       (.ok (tickUpdateCastFrame imms a evm subtract) (tickUpdateGrossState a evm)) := by
   exact internalCallFunctionReturn (callee := safeCast128Function)
     (locals := safeCast128Locals (tickUpdateNetResult a evm subtract))
-    (calleeSolm := safeCast128ReadyFrame imms (tickUpdateNetResult a evm subtract))
+    (calleeStele := safeCast128ReadyFrame imms (tickUpdateNetResult a evm subtract))
     (value := some [.int (tickUpdateNetResult a evm subtract)])
     (evalTickUpdateCastArgs imms evm a subtract) safeCast128Lookup
     (safeCast128Bind (tickUpdateNetResult a evm subtract))
@@ -66,7 +66,7 @@ theorem tickUpdateNetBranchSource (imms : Store) (evm : EVM.State) (a : TickUpda
       (.ok (tickUpdateNetReadyFrame imms a evm subtract) (tickUpdateGrossState a evm)) := by
   refine ExecBlock.consNormal (tickUpdateMathCall imms evm a subtract hdlo hdhi) ?_
   refine ExecBlock.consNormal (tickUpdateCastCall imms evm a subtract hv) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalExpr_var_get Std.HashMap.getElem?_insert_self) ?_) ExecBlock.nil
   apply assignLocalVarBase_frame (old := .int 0)
   cases subtract <;> simp only [tickUpdateCastFrame, tickUpdateMathFrame, tickUpdateNetStartFrame,

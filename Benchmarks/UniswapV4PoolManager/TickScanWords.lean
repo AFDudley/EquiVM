@@ -6,7 +6,7 @@ import Benchmarks.UniswapV4PoolManager.TickBitmapStorage
 import Benchmarks.UniswapV4PoolManager.MostSignificantBit
 import Benchmarks.UniswapV4PoolManager.LeastSignificantBit
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 def tickScanCompressed (tick spacing : UInt256) (lte : Bool) : UInt256 :=

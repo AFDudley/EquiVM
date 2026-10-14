@@ -1,6 +1,6 @@
 import Benchmarks.Dss.LinearDecrease.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.LinearDecrease
 
@@ -10,9 +10,9 @@ def tauWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨1⟩ σ I
 
 theorem stairstepDecode_tau {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tauTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tauTransition.params.map Param.name)
       (transitionSignature tauTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem stairstepReachTauBody {σ σ₀ A I} {g : Sat256}
@@ -48,7 +48,7 @@ theorem stairstepTauBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some tauTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tauTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tauTransition.params.map Param.name)
         (transitionSignature tauTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD linearDecreaseBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) stairstepTauEntryPc [sel]
@@ -60,7 +60,7 @@ theorem stairstepTauBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (tauWord σ I).toNat))])) := by
-    simpa [tauTransition, tauWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [tauTransition, tauWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       stairstepUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

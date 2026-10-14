@@ -12,7 +12,7 @@ import Benchmarks.Dss.Cat.BiteEVM
 import Benchmarks.Dss.Cat.FileAddress
 import Benchmarks.Dss.Cat.BiteBodyAw
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -25,7 +25,7 @@ param types `[bytes32, addr]` are defeq `[abiBytes32, abiAddress]` and its outpu
 This is the decode the integrator needs — `catDecode_bite`'s spurious `hbig`/`hcanon` (neither derivable
 from `hsize`) are avoided entirely. -/
 theorem biteDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
       (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I) := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 ["ilk", "urn"] [bytes32, addr] I.calldata
     = some (biteLocals I)
@@ -92,7 +92,7 @@ theorem catBiteBodyIlksNoCode {σ σ₀ A I} {g : UInt256}
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hvatCode :
       Reasoning.Theory.extCodeSizeWord σ (catBiteVatTargetWord σ I) = ⟨0⟩) :
@@ -105,7 +105,7 @@ theorem catBiteBodyIlksNoCode {σ σ₀ A I} {g : UInt256}
 
 
 /-- Target-word ↔ vat-address reconciliation (σ-generic). The ilks/urns STATICCALL target word
-`catBiteVatTargetWord σ I` (as an `AccountAddress`) equals the Solm `biteVatAddr` under `EVM.address`. -/
+`catBiteVatTargetWord σ I` (as an `AccountAddress`) equals the Stele `biteVatAddr` under `EVM.address`. -/
 theorem catBiteVatEvmAddr_eq_target {σ σ₀ A I} {g : UInt256} :
     EVM.address (biteVatAddr (initState σ σ₀ (Sat256.ofUInt256 g) A I)) =
       AccountAddress.ofUInt256 (catBiteVatTargetWord σ I) := by
@@ -124,7 +124,7 @@ theorem catBiteBodyIlksFailCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = catBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some biteTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (biteTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (biteTransition.params.map Param.name)
         (transitionSignature biteTransition).paramTypes I.calldata = some (biteLocals I))
     (hvatCode : Reasoning.Theory.extCodeSizeWord σ (catBiteVatTargetWord σ I) ≠ ⟨0⟩)
     (hIlksFailCall : typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -135,14 +135,14 @@ theorem catBiteBodyIlksFailCore {σ σ₀ A I} {g : UInt256}
       (⟨0⟩ :: R) mem awi oi σi ki Ci)
     (hosz : oi.size < UInt256.size) (hov : R.length + 5 ≤ 1024) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  obtain ⟨σs, As, hIlksSolm, _hEq⟩ := catBiteMapIlksCall hIlksFailCall
+  obtain ⟨σs, As, hIlksStele, _hEq⟩ := catBiteMapIlksCall hIlksFailCall
   have htw : catBiteVatTargetWord σ I = catBiteVatTargetWord σ I := rfl
   have htgt : (AccountAddress.ofUInt256 (catBiteVatTargetWord σ I))
       = EVM.address (biteVatAddr (initState σ σ₀ (Sat256.ofUInt256 g) A I)) := by
     rw [htw]; exact (catBiteVatEvmAddr_eq_target).symm
-  rw [htgt] at hIlksSolm
+  rw [htgt] at hIlksStele
   exact catBiteIlksFailLeaf hcode hdispatch hdecode rd hosz hov
-    (catBiteSourceIlksFailRevert hwv (catBiteVatCodePos_of_uniswap hvatCode) hIlksSolm)
+    (catBiteSourceIlksFailRevert hwv (catBiteVatCodePos_of_uniswap hvatCode) hIlksStele)
 
 section CatBiteAwCollapse
 -- Freeze `M` around the two post-`CALL` active-words collapses so the targeted `rw [hawEq]` cannot

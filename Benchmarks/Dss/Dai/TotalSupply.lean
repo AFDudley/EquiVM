@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -18,32 +18,32 @@ def totalSupplyWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
     (fun acc => acc.storage.getD totalSupplyStorageSlot ⟨0⟩)
 
 theorem daiDecode_totalSupply_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (totalSupplyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata =
         some totalSupplyStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `totalSupply()` body returns the scalar storage slot `1`. -/
+/-- The Stele `totalSupply()` body returns the scalar storage slot `1`. -/
 theorem daiTotalSupplyBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm totalSupplyStore totalSupplyTransition.body
       (.returned { contract := contract, locals := totalSupplyStore } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             totalSupplyStorageSlot).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := totalSupplyStore })
+        (stele := { contract := contract, locals := totalSupplyStore })
         (slot := totalSupplyRef)
         (er := ({ base := "totalSupply", steps := [] } : EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc totalSupplyStorageSlot (.int uint256Int))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             totalSupplyStorageSlot).toNat))
         (hbase := by
           simp [totalSupplyStore, totalSupplyRef])
@@ -80,7 +80,7 @@ theorem daiTotalSupplyBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some totalSupplyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (totalSupplyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (totalSupplyTransition.params.map Param.name)
         (transitionSignature totalSupplyTransition).paramTypes I.calldata =
           some totalSupplyStore)
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
@@ -95,7 +95,7 @@ theorem daiTotalSupplyBodyCoreOk
         (.returned { contract := contract, locals := totalSupplyStore }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, totalSupplyStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [totalSupplyWord, totalSupplyStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       daiTotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -105,7 +105,7 @@ theorem daiTotalSupplyBodyCoreOk
       (returnEquiv_of_encode
         (by simpa [uint256] using uint256ReturnEncoding (totalSupplyWord σ I)))
 
-/-- `totalSupply()` body refines its Solm transition. -/
+/-- `totalSupply()` body refines its Stele transition. -/
 theorem daiTotalSupplyBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

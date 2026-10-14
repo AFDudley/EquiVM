@@ -3,10 +3,10 @@ import Benchmarks.Safe.Main.Selectors
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.JumpDest
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -53,7 +53,7 @@ theorem selectorDispatchFacts {c : ContractDecl} {t : TransitionDecl} {I : Execu
 theorem reEquivSelectorExecution {cfg : Config} {c : ContractDecl} {imms : Store}
     {σ σ₀ A I t args result} {g : UInt256}
     (hd : selectorDispatchMsg c I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some args)
     (hbody : ExecTransitionBody cfg c (initState σ σ₀ (.ofUInt256 g) A I)
       args t.body result imms)
@@ -72,9 +72,9 @@ theorem reEquivSelectorRevert {cfg : Config} {c : ContractDecl} {imms : Store}
       args t.body .reverted imms) :
     runtimeRefinementFor cfg c σ σ₀ g.toUInt256 A I imms := by
   refine RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦ ?_
-  cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata with
-  | none => exact .decodingFailed hd rfl hdec hΞ
+  | none => exact .execution hΞ (.decodingFailed hd hdec) (.decodingFailed rfl rfl)
   | some args =>
       exact reEquivSelectorExecution hd hdec (hbody args) (.revert hΞ rfl)
 
@@ -83,11 +83,12 @@ theorem reEquivSelectorDecodingFailed {cfg : Config} {c : ContractDecl} {imms : 
     {σ σ₀ A I t} {g : Sat256} {code : ByteArray}
     (hcode : I.code = code)
     (hd : selectorDispatchMsg c I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none)
     (hrev : RDrev code g (initState σ σ₀ g A I)) :
     runtimeRefinementFor cfg c σ σ₀ g.toUInt256 A I imms :=
-  RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦ .decodingFailed hd rfl hdec hΞ
+  RDrev.reEquivElim hcode hrev fun _ _ hΞ ↦
+    .execution hΞ (.decodingFailed hd hdec) (.decodingFailed rfl rfl)
 
 -- GENERALIZES RDret.reEquivElim to a final account map changed by storage writes.
 theorem reEquivReturnElim {imms : Store} {cfg c σ σ₀ σ' A I} {g : Sat256}

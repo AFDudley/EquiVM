@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.TendTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -342,7 +342,7 @@ theorem flipperTendSourceBodyPayCallFailureSameCaller {σ σ₀ A I}
           "_payRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmPay) (locals := tendLocalsBidOneBegBid σ I)
         (receiver := .storage vatRef) (retVar := "_payRet") (name := "move")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -423,17 +423,17 @@ theorem flipperTendSourceBodySuccessSameCallerSplit {σ σ₀ A I}
     (hpayOwner : evmPay.executionEnv.codeOwner = I.codeOwner) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+    let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
       (bidBaseOfWord (tendId I)) (tendBid I)
-    let evmTic := Solm.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
       (bidPackedSlotOfWord (tendId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
           (bidPackedSlotOfWord (tendId I)))
         (tendTicNewWord evmBid.accountMap I))
-    (((tendNow48 I).toNat +
+    (I.perm = true → ((tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat <
         2 ^ 48) →
       ExecTransitionBody config contract evm0 locals tendTransition.body
@@ -477,7 +477,7 @@ theorem flipperTendSourceBodySuccessSameCallerSplit {σ σ₀ A I}
           "_payRet")
         (.ok { contract := contract, locals := tendLocalsAfterPay σ I } evmPay) := by
     simpa [checkedExternalCallStmts, tendLocalsAfterPay] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmPay) (locals := tendLocalsBidOneBegBid σ I)
         (receiver := .storage vatRef) (retVar := "_payRet") (name := "move")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -529,7 +529,10 @@ theorem flipperTendSourceBodySuccessSameCallerSplit {σ σ₀ A I}
           hendGuard hlotGuard htabGuard hbidGuard hfitBid hfitBeg hinc hcaller htail)
     exact hblock
   constructor
-  · intro hfitTic
+  · intro hperm hfitTic
+    have hpPay : evmPay.executionEnv.perm = true := by
+      rw [typedCallViaEVM_executionEnv_eq hcallPay]
+      exact hperm
     have hletTic :
         evalExpr? config { contract := contract, locals := tendLocalsAfterPay σ I } evmBid
           (wrap48 (.binary .add now48 (.storage ttlRef))) =
@@ -572,11 +575,11 @@ theorem flipperTendSourceBodySuccessSameCallerSplit {σ σ₀ A I}
             [ .assign .storage (bidsF (.var "id") "tic") (.var "tic_") ])
           (.ok { contract := contract, locals := tendLocalsWithTicFrom σ evmBid.accountMap I }
             evmTic) := by
-      refine ExecBlock.consNormal (ExecStmt.assign hbidVar hassignBid) ?_
+      refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hpPay) hbidVar hassignBid) ?_
       simp only [checkedAdd48Into]
       refine ExecBlock.consNormal (ExecStmt.letDecl hletTic) ?_
       refine ExecBlock.consNormal (ExecStmt.requireTrue hgeTic) ?_
-      exact ExecBlock.consNormal (ExecStmt.assign hticVar hassignTic) ExecBlock.nil
+      exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evmBid, storageStore_executionEnv] using hpPay)) hticVar hassignTic) ExecBlock.nil
     exact ExecFuncBody.execBlockOK (hprefix hpost)
   · intro hperm
     have hp : evmPay.executionEnv.perm = false := by
@@ -642,17 +645,18 @@ theorem flipperTendSourceBodySuccessSameCaller {σ σ₀ A I}
     (hfitTic :
       (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat <
-        2 ^ 48) :
+        2 ^ 48)
+    (hperm : I.perm = true) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+    let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
       (bidBaseOfWord (tendId I)) (tendBid I)
-    let evmTic := Solm.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
+    let evmTic := Stele.EVM.storageStore evmBid evmBid.executionEnv.codeOwner
       (bidPackedSlotOfWord (tendId I))
       (setUint48Offset20Word
-        (Solm.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmBid evmBid.executionEnv.codeOwner
           (bidPackedSlotOfWord (tendId I)))
         (tendTicNewWord evmBid.accountMap I))
     ExecTransitionBody config contract evm0 locals tendTransition.body
@@ -660,7 +664,7 @@ theorem flipperTendSourceBodySuccessSameCaller {σ σ₀ A I}
         evmTic none) :=
   (flipperTendSourceBodySuccessSameCallerSplit
     hwv hguy hticGuard hendGuard hlotGuard htabGuard hbidGuard
-    hfitBid hfitBeg hinc hcaller hvatCode hcallPay hpayTs hpayOwner).1 hfitTic
+    hfitBid hfitBeg hinc hcaller hvatCode hcallPay hpayTs hpayOwner).1 hperm hfitTic
 
 theorem flipperTendSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
     {g : UInt256} {evmPay : EVM.State} {outPay : ByteArray}
@@ -720,13 +724,14 @@ theorem flipperTendSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
       2 ^ 48 ≤
         (tendNow48 I).toNat +
           (tendTtlWord
-            (Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
-              (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat) :
+            (Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+              (bidBaseOfWord (tendId I)) (tendBid I)).accountMap I).toNat)
+    (hperm : I.perm = true) :
     let locals := tendLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals tendTransition.body .reverted := by
   intro locals evm0
-  let evmBid := Solm.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
+  let evmBid := Stele.EVM.storageStore evmPay evmPay.executionEnv.codeOwner
     (bidBaseOfWord (tendId I)) (tendBid I)
   have hvat :
       evalExpr? config { contract := contract, locals := tendLocalsBidOneBegBid σ I } evm0
@@ -762,7 +767,7 @@ theorem flipperTendSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
           "_payRet")
         (.ok { contract := contract, locals := tendLocalsAfterPay σ I } evmPay) := by
     simpa [checkedExternalCallStmts, tendLocalsAfterPay] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmPay) (locals := tendLocalsBidOneBegBid σ I)
         (receiver := .storage vatRef) (retVar := "_payRet") (name := "move")
         (target := flipperVatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -807,7 +812,7 @@ theorem flipperTendSourceBodyAdd48OverflowSameCaller {σ σ₀ A I}
           checkedAdd48Into "tic_" now48 (.storage ttlRef) ++
           [ .assign .storage (bidsF (.var "id") "tic") (.var "tic_") ])
         .reverted := by
-    refine ExecBlock.consNormal (ExecStmt.assign hbidVar hassignBid) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by rw [typedCallViaEVM_executionEnv_eq hcallPay]; exact hperm)) hbidVar hassignBid) ?_
     simp only [checkedAdd48Into, List.cons_append, List.nil_append]
     refine ExecBlock.consNormal (ExecStmt.letDecl hletTic) ?_
     exact ExecBlock.consRevert (ExecStmt.requireFalse hgeTicFalse)

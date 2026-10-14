@@ -7,11 +7,11 @@ import Benchmarks.UniswapV3.Pool.TupleMemory
 # UniswapV3Pool `positions(bytes32)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1357; reach lemma `uniswapV3PoolReachPositionsBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -177,7 +177,7 @@ theorem uniswapV3PoolPositionsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3Po
     apply uniswapV3PoolDispatch_positions <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
   by_cases hlen : 36 ≤ I.calldata.size
-  · have hdec : decodeCalldataWithMode config.abiDecodeMode
+  · have hdec : config.externalABI.decodeCalldata?
         (positionsTransition.params.map Param.name)
         (transitionSignature positionsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.fixedBytes ⟨31, by decide⟩
@@ -189,7 +189,7 @@ theorem uniswapV3PoolPositionsBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3Po
           (by simp) (by simp))
         (returnEquiv.returned rfl (positionsReturnEncoding (calldataWord I.calldata 4) σ I))
   · have hshort : I.calldata.size < 36 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (positionsTransition.params.map Param.name)
         (transitionSignature positionsTransition).paramTypes I.calldata = none :=
       decodeCalldataWithMode_legacyBytes32_none_short hsz hshort

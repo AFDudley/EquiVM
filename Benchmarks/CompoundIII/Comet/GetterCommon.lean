@@ -3,12 +3,17 @@ import Benchmarks.CompoundIII.Comet.SelectorRefinement
 import Benchmarks.CompoundIII.Comet.SourceSelectors
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_011
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
+
+theorem cometDecode_empty {cd : ByteArray} (hsz : 4 ≤ cd.size) :
+    config.externalABI.decodeCalldata? [] [] cd = some (∅ : Store) := by
+  change decodeCalldataWithMode .solc0815 [] [] cd = some (∅ : Store)
+  exact decodeCalldataWithMode_empty_ok hsz
 
 -- LIBRARY CANDIDATE: outcome of a nonpayable getter with a signed calldata-size guard.
 def GetterResult (code : ByteArray) (ee : ExecutionEnv) (g : Sat256) (s0 : State)
@@ -21,6 +26,7 @@ theorem guardedGetter_refines {cfg : Config} {C : ContractDecl} {t : TransitionD
     {imms : Store} {σ σ₀ A I} {g : UInt256} {code out : ByteArray}
     {body : List Stmt} {value : Value} {ty : ABIType}
     (hcode : I.code = code) (hsz : 4 ≤ I.calldata.size)
+    (hempty : cfg.externalABI.decodeCalldata? [] [] I.calldata = some (∅ : Store))
     (hd : selectorDispatchMsg C I.calldata = some t) (hp : t.params = [])
     (hb : t.body = calldataPrologue body) (ht : t.returnType = [ty])
     (henc : encodeReturnValue? ty value = some out)
@@ -31,10 +37,9 @@ theorem guardedGetter_refines {cfg : Config} {C : ContractDecl} {t : TransitionD
     (hX : GetterResult code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ out) :
     runtimeRefinementFor cfg C σ σ₀ g A I imms := by
-  have hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  have hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some (∅ : Store) := by
-    simpa only [transitionSignature, hp, List.map_nil] using
-      (decodeCalldataWithMode_empty_ok (mode := cfg.abiDecodeMode) hsz)
+    simpa only [transitionSignature, hp, List.map_nil] using hempty
   by_cases hvalue : I.weiValue = ⟨0⟩
   · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
     · simp only [GetterResult, hvalue, hhi, and_self, if_true] at hX
@@ -57,6 +62,7 @@ theorem immutableGetter_refines {cfg : Config} {C : ContractDecl} {t : Transitio
     {imms : Store} {σ σ₀ A I} {g : UInt256} {code out : ByteArray}
     {name : Ident} {value : Value} {ty : ABIType}
     (hcode : I.code = code) (hsz : 4 ≤ I.calldata.size)
+    (hempty : cfg.externalABI.decodeCalldata? [] [] I.calldata = some (∅ : Store))
     (hd : selectorDispatchMsg C I.calldata = some t) (hp : t.params = [])
     (hb : t.body = calldataPrologue [.return [.immutable name]])
     (ht : t.returnType = [ty]) (hget : imms.get? name = some value)
@@ -64,7 +70,7 @@ theorem immutableGetter_refines {cfg : Config} {C : ContractDecl} {t : Transitio
     (hX : GetterResult code I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) σ out) :
     runtimeRefinementFor cfg C σ σ₀ g A I imms := by
-  apply guardedGetter_refines hcode hsz hd hp hb ht henc ?_ hX
+  apply guardedGetter_refines hcode hsz hempty hd hp hb ht henc ?_ hX
   intro hvalue hhi
   exact ⟨_, immutableGetter_returns hvalue hhi hget⟩
 

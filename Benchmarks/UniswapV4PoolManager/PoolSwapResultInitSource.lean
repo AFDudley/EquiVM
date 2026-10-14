@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapInputsSource
 import Benchmarks.UniswapV4PoolManager.Slot0TickSource
 import Benchmarks.UniswapV4PoolManager.PoolLiquidityStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -55,7 +55,7 @@ theorem poolSwapResultInitSource {f : Frame} {evm : State} {id packed : UInt256}
     (store_get_ne3 _ _ _ _ (by decide : ("amountSpecifiedRemaining" == "result") = false)
       (by decide : ("amountCalculated" == "result") = false) (by decide : ("__c4" == "result") = false)).trans hr
   have h3 : ExecStmt config f3 evm poolSwapFunction.body[14]! (.ok f4 evm) :=
-    ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) (assignLocalField hr3 rfl rfl)
+    ExecStmt.assign (hperm := Or.inl rfl) (evalLocalValue (store_get_self _ _ _)) (assignLocalField hr3 rfl rfl)
   have hslot4 : f4.locals.get? "slot0Start" = some (wordBytes32Value packed) :=
     (store_get_ne2 _ _ _ (by decide : ("__c4" == "slot0Start") = false)
       (by decide : ("result" == "slot0Start") = false)).trans hslot2
@@ -64,13 +64,13 @@ theorem poolSwapResultInitSource {f : Frame} {evm : State} {id packed : UInt256}
   have hr5 : f5.locals.get? "result" = some (poolSwapResultValue {poolSwapZeroResult with price := slot0SqrtPriceWord packed}) :=
     (store_get_ne _ _ (by decide : ("__c5" == "result") = false)).trans (store_get_self _ _ _)
   have h5 : ExecStmt config f5 evm poolSwapFunction.body[16]! (.ok f6 evm) :=
-    ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) (assignLocalField hr5 rfl rfl)
+    ExecStmt.assign (hperm := Or.inl rfl) (evalLocalValue (store_get_self _ _ _)) (assignLocalField hr5 rfl rfl)
   have hs6 : f6.locals.get? "self" = some (poolRefValue id) := by
     simp only [f6, f5, f4, f3, f2, f1, valueLocal_get, wordLocal_get, beq_iff_eq, String.reduceEq,
       if_false, hs]
   have h6 : ExecStmt config f6 evm poolSwapFunction.body[17]!
       (.ok (poolSwapResultInitFrame f packed (poolLiquidityWord evm id) p.amountSpecified) evm) :=
-    ExecStmt.assign (poolLiquidity_read hs6) (assignLocalField (store_get_self _ _ _) rfl rfl)
+    ExecStmt.assign (hperm := Or.inl rfl) (poolLiquidity_read hs6) (assignLocalField (store_get_self _ _ _) rfl rfl)
   exact ExecBlock.consNormal h0 (ExecBlock.consNormal h1 (ExecBlock.consNormal h2
     (ExecBlock.consNormal h3 (ExecBlock.consNormal h4 (ExecBlock.consNormal h5 (execBlock_singleton h6))))))
 

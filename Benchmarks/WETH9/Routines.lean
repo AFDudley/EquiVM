@@ -11,7 +11,7 @@ JUMPDEST gt; POP` — the peel lemmas below are the per-function analogues of th
 `solcGuardCallvalueZero` / `solcGuardCallvalueNonzeroRevert`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -35,7 +35,7 @@ theorem weth9ReEquivExecGen {cfg : Config} {contract : ContractDecl} {t : Transi
     (hcode : I.code = weth9Bytecode)
     (h : RDret weth9Bytecode g (initState σ σ₀ g A I) acc o)
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body
@@ -56,7 +56,7 @@ theorem weth9ReEquivExecGen {cfg : Config} {contract : ContractDecl} {t : Transi
           callargs t.body (.returned cs evm'' retVal) := by
       simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hbody
     refine runtimeRefinementFor.execution rfl
-      (solmExec.intro hsel rfl hdec rfl hbody') ?_
+      (steleExec.intro hsel rfl hdec rfl hbody') ?_
     rw [hxi]
     have haccounts : s.accountMap = evm''.accountMap := hsacc.trans hAccountMap
     exact execResultsEquiv.success rfl rfl haccounts (.abi henc)
@@ -66,7 +66,7 @@ theorem weth9ReEquivExecStatic {cfg : Config} {contract : ContractDecl}
     (hcode : I.code = weth9Bytecode)
     (h : RDstatic weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
       (initState σ σ₀ g A I) callargs t.body .staticViolation) :
@@ -78,7 +78,7 @@ theorem weth9ReEquivExecStatic {cfg : Config} {contract : ContractDecl}
       callargs t.body .staticViolation := by
     simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hbody
   refine runtimeRefinementFor.execution rfl
-    (solmExec.intro hsel rfl hdec rfl hbody') ?_
+    (steleExec.intro hsel rfl hdec rfl hbody') ?_
   rw [hstatic]
   exact execResultsEquiv.staticHalt rfl rfl
 
@@ -88,7 +88,7 @@ theorem weth9ReEquivExecRev {cfg : Config} {contract : ContractDecl} {t : Transi
     (hcode : I.code = weth9Bytecode)
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body .reverted) :
@@ -106,7 +106,7 @@ theorem weth9ReEquivExecRev {cfg : Config} {contract : ContractDecl} {t : Transi
           callargs t.body .reverted := by
       simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hbody
     refine runtimeRefinementFor.execution rfl
-      (solmExec.intro hsel rfl hdec rfl hbody') ?_
+      (steleExec.intro hsel rfl hdec rfl hbody') ?_
     rw [hxi]; exact execResultsEquiv.revert rfl rfl
 
 /-- `RDrev ⇒ decodingFailed` for a directly-matched selector whose ABI decode fails. -/
@@ -115,7 +115,7 @@ theorem weth9ReEquivDecodeFailed {cfg : Config} {contract : ContractDecl} {t : T
     (hcode : I.code = weth9Bytecode)
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = none) :
     runtimeRefinementFor cfg contract σ σ₀ g.toUInt256 A I := by
   rcases h with hoog | ⟨g', o, hrev⟩
@@ -125,24 +125,24 @@ theorem weth9ReEquivDecodeFailed {cfg : Config} {contract : ContractDecl} {t : T
   · have hxi := Xi_revert_of_X (g := g.toUInt256) (by
       rw [← hcode] at hrev
       simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hrev)
-    exact runtimeRefinementFor.decodingFailed hsel rfl hdec hxi
+    exact .execution hxi (.decodingFailed hsel hdec) (.decodingFailed rfl rfl)
 
 /-- Non-payable function, `callvalue != 0` branch: the EVM reverts at the function's own callvalue
-    guard.  On the Solm side the body reverts at its `require(msg.value == 0)` (when the calldata
+    guard.  On the Stele side the body reverts at its `require(msg.value == 0)` (when the calldata
     decodes) or decoding fails first — both revert, matching the EVM revert.  `hbodyRev` supplies the
-    Solm body revert for the decode-success case (typically `bodyReverts_nonPayable`). -/
+    Stele body revert for the decode-success case (typically `bodyReverts_nonPayable`). -/
 theorem weth9NonpayableRevert {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}
     {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = weth9Bytecode)
     (h : RDrev weth9Bytecode g (initState σ σ₀ g A I))
     (hsel : selectorDispatchMsg contract I.calldata = some t)
     (hbodyRev : ∀ callargs,
-      decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+      cfg.externalABI.decodeCalldata? (t.params.map Param.name)
         (transitionSignature t).paramTypes I.calldata = some callargs →
       ExecTransitionBody cfg contract (initState σ σ₀ g A I) callargs t.body
         .reverted) :
     runtimeRefinementFor cfg contract σ σ₀ g.toUInt256 A I := by
-  by_cases hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+  by_cases hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none
   · exact weth9ReEquivDecodeFailed hcode h hsel hdec
   · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

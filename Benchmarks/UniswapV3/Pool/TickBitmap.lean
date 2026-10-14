@@ -8,11 +8,11 @@ import Benchmarks.UniswapV3.Pool.SignedWords
 # UniswapV3Pool `tickBitmap(int16)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1446; reach lemma `uniswapV3PoolReachTickBitmapBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -96,7 +96,7 @@ theorem uniswapV3PoolTickBitmapBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3P
     apply uniswapV3PoolDispatch_tickBitmap <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
   by_cases hlen : 36 ≤ I.calldata.size
-  · have hdec : decodeCalldataWithMode config.abiDecodeMode
+  · have hdec : config.externalABI.decodeCalldata?
         (tickBitmapTransition.params.map Param.name)
         (transitionSignature tickBitmapTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (tickBitmapKey I))) :=
@@ -107,7 +107,7 @@ theorem uniswapV3PoolTickBitmapBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3P
           (by simp) (by simp))
         (returnEquiv_of_encode (uint256ReturnEncoding (tickBitmapWord (tickBitmapKey I) σ I)))
   · have hshort : I.calldata.size < 36 := by omega
-    have hdec : decodeCalldataWithMode config.abiDecodeMode
+    have hdec : config.externalABI.decodeCalldata?
         (tickBitmapTransition.params.map Param.name)
         (transitionSignature tickBitmapTransition).paramTypes I.calldata = none :=
       decodeCalldata_legacyInt_none_short (.sint ⟨16, by decide⟩) hsz hshort

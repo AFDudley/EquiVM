@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.PositionOwedStorage
 import Benchmarks.UniswapV3.Pool.SourceWordArithmetic
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -95,15 +95,15 @@ theorem burnAmountsSource (v : UniswapV3PoolImmutables) (a : BurnArgs)
   refine ExecBlock.consNormal (ExecStmt.letDecl (name := "amount1Int") (value := .int a1) h1) ?_
   have h0i : evalExpr? config (burnIntsFrame v a key a0 a1) evm (.var "amount0Int") =
       .ok (.int a0) := evalExpr_var_get (by burn_amounts_get)
-  refine ExecBlock.consNormal (solm := burnIntsFrame v a key a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (burnAmount a0).toNat))
+  refine ExecBlock.consNormal (stele := burnIntsFrame v a key a0 a1)
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (burnAmount a0).toNat))
     (by simp only [evalExpr?, h0i, castValue?, evalBinaryOp?, bind, EvalResult.bind,
           EvalResult.ofOption, pure, burnAmount_cast])
     (assignLocalVarBase_frame (old := .int 0) (by burn_amounts_get))) ?_
   have h1i : evalExpr? config (burnAmount0Frame v a key a0 a1) evm (.var "amount1Int") =
       .ok (.int a1) := evalExpr_var_get (by burn_amounts_get)
-  exact ExecBlock.consNormal (solm := burnAmount0Frame v a key a0 a1)
-    (ExecStmt.assign (value := .int (Int.ofNat (burnAmount a1).toNat))
+  exact ExecBlock.consNormal (stele := burnAmount0Frame v a key a0 a1)
+    (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (burnAmount a1).toNat))
     (by simp only [evalExpr?, h1i, castValue?, evalBinaryOp?, bind, EvalResult.bind,
           EvalResult.ofOption, pure, burnAmount_cast])
     (assignLocalVarBase_frame (old := .int 0) (by burn_amounts_get))) ExecBlock.nil

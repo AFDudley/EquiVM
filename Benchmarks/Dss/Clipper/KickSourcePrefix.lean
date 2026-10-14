@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.KickSourceInit
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -31,10 +31,10 @@ theorem clipperKickSourcePrefix
     (v : ClipperImmutables) (evm : EVM.State) (I : ExecutionEnv)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
-    (hauth : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hauth : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (clipperRelyAuthStorageSlot I) = ⟨1⟩)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
-    (hstopped : (Solm.EVM.storageLoad (clipperKickLockedState evm)
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨13⟩ = ⟨0⟩)
+    (hstopped : (Stele.EVM.storageLoad (clipperKickLockedState evm)
       (clipperKickLockedState evm).executionEnv.codeOwner ⟨14⟩).toNat < 1)
     (htab : 0 < (clipperKickTabWord I).toNat)
     (hlot : 0 < (clipperKickLotWord I).toNat)
@@ -49,10 +49,13 @@ theorem clipperKickSourcePrefix
         { contract := contract,
           locals := clipperKickLocalsActivePos (clipperKickLockedState evm) I, immutables := immStore v }
         (clipperKickSourceInitializedState (clipperKickLockedState evm) I)
-        (clipperKickAfterInitializationBody) result) :
+        (clipperKickAfterInitializationBody) result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := clipperKickStore I, immutables := immStore v }
       evm kickTransition.body result := by
   let evmLock := clipperKickLockedState evm
+  have hpLock : evmLock.executionEnv.perm = true := by
+    simpa only [evmLock, clipperKickLockedState, storageStore_executionEnv] using hperm
   let startFrame : Frame := { contract := contract, locals := clipperKickStore I, immutables := immStore v }
   let idFrame : Frame :=
     { contract := contract, locals := clipperKickLocalsId evmLock I, immutables := immStore v }
@@ -73,7 +76,7 @@ theorem clipperKickSourcePrefix
         (.assign .storage lockedRef (.intLit 1)) (.ok startFrame evmLock) := by
     have hone : evalExpr? config startFrame evm (.intLit 1) =
         .ok (.int 1) := by simp [startFrame, evalExpr?, pure]
-    apply ExecStmt.assign hone
+    apply ExecStmt.assign (hperm := Or.inr hperm) hone
     simpa [startFrame, evmLock, clipperKickLockedState] using
       assign_clipperLocked v evm (clipperKickStore I)
         (clipperKickStore_get_locked I) ⟨1⟩
@@ -97,7 +100,7 @@ theorem clipperKickSourcePrefix
         .ok (.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)) := by
       simp only [idFrame, evalExpr?, clipperKickLocalsId, store_get_self,
         EvalResult.ofOption]
-    apply ExecStmt.assign hidValue
+    apply ExecStmt.assign (hperm := Or.inr hpLock) hidValue
     · simpa [idFrame] using clipperKickAssignId v evmLock I
   have hpush :
       ExecStmt config idFrame (clipperKickSourceIdState evmLock)
@@ -108,7 +111,8 @@ theorem clipperKickSourcePrefix
         .ok (.int (Int.ofNat (clipperKickSourceIdWord evmLock).toNat)) := by
       simp only [idFrame, evalExpr?, clipperKickLocalsId, store_get_self,
         EvalResult.ofOption]
-    apply ExecStmt.pushVal hidValue
+    apply ExecStmt.pushVal (hperm := by
+      simpa only [clipperKickSourceIdState, storageStore_executionEnv] using hpLock) hidValue
     · simpa [idFrame] using clipperKickPushActive v evmLock I hlen
   have hposLet :
       ExecStmt config idFrame (clipperKickSourceActiveState evmLock)
@@ -142,11 +146,11 @@ theorem clipperKickSourcePrefix
           (clipperEvalKickIdPositive v evmLock I hid)) ?_
         refine ExecBlock.consNormal hpush ?_
         refine ExecBlock.consNormal hposLet ?_
-        refine ExecBlock.consNormal (clipperKickAssignSalesPos v evmLock I) ?_
-        refine ExecBlock.consNormal (clipperKickAssignSalesTab v evmLock I) ?_
-        refine ExecBlock.consNormal (clipperKickAssignSalesLot v evmLock I) ?_
-        refine ExecBlock.consNormal (clipperKickAssignSalesUsr v evmLock I) ?_
-        refine ExecBlock.consNormal (clipperKickAssignSalesTic v evmLock I) ?_
+        refine ExecBlock.consNormal (clipperKickAssignSalesPos (hperm := hpLock) v evmLock I) ?_
+        refine ExecBlock.consNormal (clipperKickAssignSalesTab (hperm := hpLock) v evmLock I) ?_
+        refine ExecBlock.consNormal (clipperKickAssignSalesLot (hperm := hpLock) v evmLock I) ?_
+        refine ExecBlock.consNormal (clipperKickAssignSalesUsr (hperm := hpLock) v evmLock I) ?_
+        refine ExecBlock.consNormal (clipperKickAssignSalesTic (hperm := hpLock) v evmLock I) ?_
         simpa [posFrame, evmLock] using hafter)
   simpa [startFrame] using hbody
 

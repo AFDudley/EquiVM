@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.Slot0Storage
 import Benchmarks.UniswapV3.Pool.SourceExpressions
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -41,19 +41,20 @@ theorem poolAmountsAssignLock (locals imms : Store) (evm : EVM.State)
     (hslot : (poolAmountsFrame locals imms).locals.get? "slot0" = none) :
     ExecStmt config (poolAmountsFrame locals imms) evm
       (.assign .storage ⟨"slot0", [.field "unlocked"]⟩ (.boolLit false))
-      (.ok (poolAmountsFrame locals imms) (storeSlot0Unlocked evm false)) :=
-  ExecStmt.assign (by simp only [evalExpr?, pure]) (assignSlot0Unlocked evm _ imms false hslot)
+      (if evm.executionEnv.perm then .ok (poolAmountsFrame locals imms) (storeSlot0Unlocked evm false) else .staticViolation) :=
+  execStmt_assign_storage (by simp only [evalExpr?, pure]) (assignSlot0Unlocked evm _ imms false hslot)
 
 theorem poolLockPrefixSource (locals imms : Store) (evm : EVM.State)
     (hslot : (poolAmountsFrame locals imms).locals.get? "slot0" = none)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩) :
+    (hunlocked : slot0FieldWord 30 1 evm.accountMap evm.executionEnv ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm
       poolLockPrefixBody (.ok (poolAmountsFrame locals imms) (storeSlot0Unlocked evm false)) := by
   apply execBlock_append_ok (poolAmountsInitSource locals imms evm hwv)
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · simpa only [hunlocked, decide_false, Bool.not_false] using evalPoolAmountsUnlocked locals imms evm hslot
-  · exact ExecBlock.consNormal (poolAmountsAssignLock locals imms evm hslot) ExecBlock.nil
+  · exact ExecBlock.consNormal (by simpa only [hperm, if_true] using poolAmountsAssignLock locals imms evm hslot) ExecBlock.nil
 
 theorem poolEntryRevertsLocked (locals imms : Store) (evm : EVM.State) (rest : List Stmt)
     (hslot : (poolAmountsFrame locals imms).locals.get? "slot0" = none)

@@ -5,7 +5,7 @@ import Benchmarks.CompoundIII.Comet.WithdrawBaseTailSource
 import Benchmarks.CompoundIII.Comet.UpdateBaseSource
 import Benchmarks.CompoundIII.Comet.InternalBlockComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -74,7 +74,7 @@ theorem withdrawBaseReady_finish {v src recipient amount evm evm' evm'' result}
   have hfargs := withdrawBaseReady_args v src recipient amount evm
   have hcall := withdrawBaseReady_update (v := v) (recipient := recipient) evm' hf
   simp only [hu, internalStmtResult] at hcall
-  have hb := withdrawBaseTail_source tail
+  have hb := withdrawBaseTail_source (hperm := updateBaseOutcome_result_perm hu) tail
     { ready with locals := ready.locals.insert "__c5" .unit } (withdrawBaseSupplied evm src amount)
     (hfargs.insert "__c5" .unit (by decide)) (withdrawSupplyAmount_lt _ _)
     (by simpa only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using

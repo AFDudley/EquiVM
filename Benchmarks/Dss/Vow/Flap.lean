@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Vow.HealSuccess
 import Benchmarks.Dss.Vow.VatSinCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -34,9 +34,9 @@ theorem vowDispatch_flap {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_flap {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
       (transitionSignature flapTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachFlapBody {σ σ₀ A I} {g : Sat256}
@@ -459,7 +459,7 @@ theorem vowFlapSourceVatSin0CallFailure
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin0"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallSin
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flapTransition.body
         .reverted := by
@@ -504,7 +504,7 @@ theorem vowFlapSourceVatSin0DecodeRevert
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin0"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallSin hdecSin
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 flapTransition.body
@@ -521,7 +521,7 @@ theorem vowFlapVatSin0NoCodeBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨349⟩ [sel]
@@ -554,7 +554,7 @@ theorem vowFlapSin0CallFailureBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (rd937 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨937⟩
@@ -584,7 +584,7 @@ theorem vowFlapSin0DecodeShortBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (rd937 : RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨937⟩

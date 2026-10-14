@@ -12,7 +12,7 @@ the return address `ret`, and the stack tail `S`, in the three branch cases (`sr
 reverts (`balanceOf[src] < wad`; inner `allowance < wad`).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000

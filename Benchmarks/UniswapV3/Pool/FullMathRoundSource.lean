@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.FullMathSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 attribute [local instance] Classical.propDecidable
@@ -55,16 +55,16 @@ theorem fullMathRoundPrefix (imms : Store) (evm : EVM.State) (a b d : UInt256)
     (hv : fullMathValid a b d) :
     ExecBlock config (fullMathFrame imms a b d) evm (fullMathRoundFunction.body.take 3)
       (.ok (fullMathRoundResultFrame imms a b d (fullMathResult a b d)) evm) := by
-  refine ExecBlock.consNormal (solm' := fullMathRoundZeroFrame imms a b d) (evm' := evm)
+  refine ExecBlock.consNormal (stele' := fullMathRoundZeroFrame imms a b d) (evm' := evm)
     (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
-  refine ExecBlock.consNormal (solm' := fullMathRoundCallFrame imms a b d) (evm' := evm) ?_ ?_
+  refine ExecBlock.consNormal (stele' := fullMathRoundCallFrame imms a b d) (evm' := evm) ?_ ?_
   · exact internalCallFunctionReturn (callee := fullMathFunction)
       (caller := fullMathRoundZeroFrame imms a b d) (calleeEvm := evm)
-      (calleeSolm := fullMathProductFrame imms a b d)
+      (calleeStele := fullMathProductFrame imms a b d)
       (value := some [.int (Int.ofNat (fullMathResult a b d).toNat)])
       (evalFullMathRoundArgs imms evm a b d) fullMathLookup (fullMathBind a b d)
       (fullMathReturns imms evm a b d hv)
-  refine ExecBlock.consNormal (ExecStmt.assign (value := .int (Int.ofNat (fullMathResult a b d).toNat))
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (fullMathResult a b d).toNat))
     ?_ ?_) ExecBlock.nil
   · exact evalExpr_var_get (by simp [fullMathRoundCallFrame])
   · exact assignLocalVarBase_frame (old := .int 0) (by
@@ -93,7 +93,7 @@ theorem fullMathRoundIncrement (imms : Store) (evm : EVM.State) (a b d : UInt256
       (.assign .localVar ⟨"result", []⟩
         (.cast (.binary .add (.var "result") (.intLit 1)) (.elem (.int (.uint ⟨256, by decide⟩)))))
       (.ok (fullMathRoundIncrementFrame imms a b d) evm) := by
-  apply ExecStmt.assign (value := .int (Int.ofNat (fullMathResult a b d + ⟨1⟩).toNat))
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (fullMathResult a b d + ⟨1⟩).toNat))
   · exact evalExpr_word_add (a := fullMathResult a b d) (b := ⟨1⟩)
       (frame := fullMathRoundResultFrame imms a b d (fullMathResult a b d)) (evm := evm)
       (evalExpr_var_get (by simp [fullMathRoundResultFrame]))
@@ -116,7 +116,7 @@ theorem fullMathRoundReturns (imms : Store) (evm : EVM.State) (a b d : UInt256)
   by_cases hr : 0 < fullMathProduct a b % d.toNat
   · simp only [fullMathRoundResult, fullMathRoundFinalFrame, if_pos hr]
     refine ExecBlock.consNormal
-      (solm' := fullMathRoundIncrementFrame imms a b d)
+      (stele' := fullMathRoundIncrementFrame imms a b d)
       (evm' := evm) (ExecStmt.iteTrue ?_ ?_) ?_
     · simpa only [hr, decide_true] using evalFullMathRoundCondition imms evm a b d
         (fullMath_denominator_pos hv.1)
@@ -151,7 +151,7 @@ theorem fullMathRoundReverts (imms : Store) (evm : EVM.State) (a b d : UInt256)
         (fullMath_denominator_pos hbase)
     · apply ExecBlock.consRevert (ExecStmt.requireFalse ?_)
       simpa only [hmax, decide_false] using evalFullMathRoundGuard imms evm a b d
-  · refine ExecBlock.consNormal (solm' := fullMathRoundZeroFrame imms a b d) (evm' := evm)
+  · refine ExecBlock.consNormal (stele' := fullMathRoundZeroFrame imms a b d) (evm' := evm)
       (ExecStmt.letDecl (by simp only [evalExpr?, pure])) ?_
     apply ExecBlock.consRevert
     exact internalCallFunctionRevert (callee := fullMathFunction)

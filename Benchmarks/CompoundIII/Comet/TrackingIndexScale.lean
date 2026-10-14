@@ -8,11 +8,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_028
 # CometWithExtendedAssetList `trackingIndexScale()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 943; reach lemma `cometWithExtendedAssetListReachTrackingIndexScaleBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -60,7 +60,7 @@ theorem cometWithExtendedAssetListTrackingIndexScaleBody {σ σ₀ A I} {g : UIn
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 50) rfl hsel
-  exact immutableGetter_refines (t := trackingIndexScaleTransition) hcode hsz
+  exact immutableGetter_refines (t := trackingIndexScaleTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨50, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_trackingIndexScale v) (uint256ReturnEncoding v.trackingIndexScale)
     (trackingIndexScaleX v hcode hsz hsize hsel)

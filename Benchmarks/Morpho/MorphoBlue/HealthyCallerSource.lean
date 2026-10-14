@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.HealthyFunctionRefine
 import Benchmarks.Morpho.MorphoBlue.SafeTransferSourceAllocation
 import Benchmarks.Morpho.MorphoBlue.MarketTransferLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -27,7 +27,7 @@ theorem healthyCaptureMemory {frame : Frame} {evm : EVM.State} {ex : Expr} {word
     have ha : ExecStmt config frame evm
         (.assign .localVar ⟨"__memory", []⟩ (.binary .add (.var "__memory") (.intLit 32)))
         (.ok { frame with locals := frame.locals.insert "__memory" (.int (Int.ofNat (base + 32))) } evm) :=
-      ExecStmt.assign (safeTransferMemoryAdd_eval hm 32) (assignLocalWord hm)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (safeTransferMemoryAdd_eval hm 32) (assignLocalWord hm)
     simpa only [healthyCapturedLocals, if_neg hz] using ExecStmt.iteTrue he (ExecBlock.consNormal ha ExecBlock.nil)
 
 theorem healthyCapturedLocals_get {locals : Store} {base : Nat} (word : UInt256)

@@ -41,7 +41,7 @@ Generated artifacts and scaffold files:
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
 - `Immutables.lean`: explicit immutable values and solc immutable-reference offset table for
   `factory` and `WETH`.
-- `Spec.lean`: Solm AST benchmark scaffold with full public ABI surface, exact external-call
+- `Spec.lean`: Stele AST benchmark scaffold with full public ABI surface, exact external-call
   selectors, source-shaped router/library helper bodies, and empty storage layout.
 - `SpecSyntax.lean`: syntax-side wrapper checked definitionally against the AST scaffold.
 - `Constructor.lean`: top-level constructor-equivalence theorem, intentionally `sorry`.
@@ -67,6 +67,6 @@ Scaffold notes:
 - The source uses dynamic calldata/memory arrays, `for` loops, `abi.encodePacked`, `keccak256`,
   raw TransferHelper calls, typed pair/factory/WETH/ERC20 calls, payable ETH paths, and a payable
   `receive` restricted to WETH.
-- No change to `Reasoning/` or `Solm/` was needed for this scaffold to build. The likely proof
+- No change to `Reasoning/` or `Stele/` was needed for this scaffold to build. The likely proof
   hotspots are CREATE2 `pairFor`, the chained `getAmountsIn`/`getAmountsOut` loops, TransferHelper
   raw-call return decoding, and the optimized router dispatcher.

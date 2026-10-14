@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleWriteMemoryPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -42,7 +42,7 @@ theorem oracleWriteInternalRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
     apply internalCallFunctionRevert he hl (oracleWriteBind a)
     rw [hc]
     exact oracleWriteSourceReverts (immStore v) evm a hbad
-  · rcases hout with ⟨rr, hsame, hperm⟩ | ⟨σ', aw', kr, Cr, hs', rr, hm'⟩
+  · rcases hout with ⟨rr, hsame, hperm⟩ | ⟨σ', aw', kr, Cr, hperm, hs', rr, hm'⟩
     · refine Or.inr (Or.inl ⟨?_, rr⟩)
       apply ExecStmt.internalCallStatic he hl (oracleWriteBind a)
       rw [hc]
@@ -50,11 +50,11 @@ theorem oracleWriteInternalRawX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat25
         (hv.2.resolve_left (by simp only [hsame]; decide)) ha (by rw [hs.env]; exact hperm)
     · refine Or.inr (Or.inr ⟨?_, hv, σ', aw', kr, Cr, hs', rr, hm'⟩)
       apply internalCallFunctionReturn (callee := oracleWriteFunction)
-        (calleeSolm := oracleWriteReturnFrame (immStore v) a evm)
+        (calleeStele := oracleWriteReturnFrame (immStore v) a evm)
         (value := some [.int (Int.ofNat (oracleWriteResultIndex a evm).toNat),
           .int (Int.ofNat (oracleWriteResultCardinality a evm).toNat)]) he hl (oracleWriteBind a)
       rw [hc]
-      exact oracleWriteSourceReturns (immStore v) evm a hv ha
+      exact oracleWriteSourceReturns (hperm := by simpa only [hs.env] using hperm) (immStore v) evm a hv ha
 
 theorem oracleWriteInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
     {s0 : EVM.State} {k C : Nat} {aw p ret : UInt256} {mem rdata : ByteArray}

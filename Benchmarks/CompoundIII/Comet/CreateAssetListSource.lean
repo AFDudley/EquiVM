@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.CreateAssetListLoop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -33,13 +33,13 @@ theorem createAssetListPrefix_exec (imms : Store) (factory : AccountAddress)
   exact .consNormal hw .nil
 
 theorem createAssetListReturn_decode {out : ByteArray} (hhi : out.size < 2^255) :
-    decodeReturnValueWithMode? config.abiDecodeMode abiAddress out =
+    config.externalABI.decodeValue? abiAddress out =
       if ConstructorFactoryReturnValid out then
         some (.address (AccountAddress.ofUInt256 (calldataWord out 0))) else none := by
   have hd := constructorFactory_decode hhi
-  change (decodeReturnValueWithMode? config.abiDecodeMode abiAddress out).map
+  change (config.externalABI.decodeValue? abiAddress out).map
     (fun v ↦ [v]) = _ at hd
-  cases he : decodeReturnValueWithMode? config.abiDecodeMode abiAddress out <;>
+  cases he : config.externalABI.decodeValue? abiAddress out <;>
     by_cases hv : ConstructorFactoryReturnValid out <;> simp_all
 
 def createAssetListCallFrame (frame : Frame) (z : Bool) (out : ByteArray) : Frame :=
@@ -57,7 +57,7 @@ theorem createAssetListCall_exec {factory : AccountAddress} {assets : List Const
     ExecStmt config frame evm
       (.lowLevelCall (.var "factory") (.intLit 0) (.var "payload") "ok" "result")
       (.ok (createAssetListCallFrame frame z out) evm') := by
-  exact lowLevelCallSourceWithPerm (target := factory) (value := 0)
+  exact lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := factory) (value := 0)
     (calldata := createAssetListPayload assets assets.length)
     (by simp only [evalExpr?, h.factory, EvalResult.ofOption])
     (by simp only [evalExpr?, pure])
@@ -80,7 +80,7 @@ theorem createAssetListRemainder_ok {factory : AccountAddress} {assets : List Co
     ?_) ?_
   · simp only [evalExpr?, createAssetListCallFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert, EvalResult.ofOption, bind, EvalResult.bind]
-    change (match decodeReturnValueWithMode? config.abiDecodeMode abiAddress out with
+    change (match config.externalABI.decodeValue? abiAddress out with
       | some value => EvalResult.ok value | none => .revert) = _
     rw [createAssetListReturn_decode hhi, if_pos hv]
   apply ABlock.returns ABlock.start
@@ -109,7 +109,7 @@ theorem createAssetListRemainder_revert {factory : AccountAddress} {assets : Lis
     apply ExecBlock.consRevert (.letDeclRevert ?_)
     simp only [evalExpr?, createAssetListCallFrame, Std.HashMap.get?_eq_getElem?,
       Std.HashMap.getElem?_insert, EvalResult.ofOption, bind, EvalResult.bind]
-    change (match decodeReturnValueWithMode? config.abiDecodeMode abiAddress out with
+    change (match config.externalABI.decodeValue? abiAddress out with
       | some value => EvalResult.ok value | none => .revert) = _
     rw [createAssetListReturn_decode hhi, if_neg (fun hh ↦ hv ⟨rfl, hh⟩)]
 

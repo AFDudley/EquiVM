@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ModuleStorage
 import Benchmarks.Safe.Main.LocalArrays
 import Benchmarks.Safe.Main.LinkedPages
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -75,9 +75,9 @@ theorem safeModulesCountStep (evm : EVM.State) {locals start pageSize index curr
     simpa [ls₂, ls₁, Std.HashMap.getElem?_insert] using hl.count
   have hn := safeEvalModuleLink evm ls₁ (.var "next") current
     (by simpa [ls₁, Std.HashMap.getElem?_insert] using hl.modules) hc (evalLocalValue hnext₁)
-  exact .consNormal (.assign (evalLocalValue hl.next) (assignLocalVarBase_ok hl.last))
-    (.consNormal (.assign hn (assignLocalVarBase_ok hnext₁))
-      (.consNormal (.assign (evalNatIncrement (evalLocalValue hcount₂) hfit)
+  exact .consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue hl.next) (assignLocalVarBase_ok hl.last))
+    (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hn (assignLocalVarBase_ok hnext₁))
+      (.consNormal (.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalNatIncrement (evalLocalValue hcount₂) hfit)
         (assignLocalVarBase_ok hcount₂)) .nil))
 
 theorem safeModulesCountLoop (evm : EVM.State) {locals start pageSize index current last fuel

@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.UniswapV2Router02.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # UniswapV2Router02 benchmark correctness stub
@@ -9,7 +9,7 @@ it) refines the spec run with those immutables.  With the constructor target thi
 contract refinement.  Proofs are the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Benchmarks.UniswapV2Router02.Immutables
+open Stele ABI Ethereum Ethereum.EVM Benchmarks.UniswapV2Router02.Immutables
 
 namespace Benchmarks.UniswapV2Router02
 

@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.Common
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Reasoning.Reach
 

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SwapCrossTickSource
 import Benchmarks.UniswapV3.Pool.SwapTickStore
 import Benchmarks.UniswapV3.Pool.SwapIterationStartTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool

@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleObserveBindings
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -54,11 +54,11 @@ theorem oracleObserveStep (imms : Store) (evm : EVM.State) (locals : Store) (tim
   obtain ⟨callee, hbody⟩ := oracleObserveSingleReturns imms evm time secondsAgos[i] tick
     index liquidity card [.int tickValue, .int secondsValue] hc htick hrun
   have hcall := internalCallFunctionReturn (cfg := config) (caller := f) (evm := evm)
-    (callee := oracleObserveSingleFunction) (calleeSolm := callee) (retVar := "__c0")
+    (callee := oracleObserveSingleFunction) (calleeStele := callee) (retVar := "__c0")
     (value := some [.int tickValue, .int secondsValue]) (oracleObserveCallArgs h hi hib)
     oracleObserveSingleLookup (oracleObserveSingleBind _ _ _ _ _ _) hbody
   have hst : ExecStmt config f1 evm oracleObserveLoopBody[1]! (.ok f2 evm) := by
-    apply ExecStmt.assign (value := .int tickValue)
+    apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int tickValue)
     · simp [f1, evalExpr?, bind, EvalResult.bind, tupleGetValue?, EvalResult.ofOption]
     · exact assignLocalArrayIndex
         (by simpa [f1, f, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert] using ht)
@@ -67,7 +67,7 @@ theorem oracleObserveStep (imms : Store) (evm : EVM.State) (locals : Store) (tim
       (.ok {contract := contract
             locals := oracleObserveStepLocals locals i ticks seconds tickValue secondsValue
             immutables := imms} evm) := by
-    apply ExecStmt.assign (value := .int secondsValue)
+    apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int secondsValue)
     · simp [f2, f1, evalExpr?, bind, EvalResult.bind, tupleGetValue?, EvalResult.ofOption,
         Std.HashMap.getElem_insert]
     · exact assignLocalArrayIndex

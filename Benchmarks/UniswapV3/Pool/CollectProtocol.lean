@@ -5,11 +5,11 @@ import Benchmarks.UniswapV3.Pool.CollectProtocolCalldata
 # UniswapV3Pool `collectProtocol(address,uint128,uint128)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1526; reach lemma `uniswapV3PoolReachCollectProtocolBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -51,7 +51,7 @@ theorem uniswapV3PoolCollectProtocolBody {σ σ₀ A I} {g : UInt256} (v : Unisw
               (by unfold ActiveWords; constructor <;> decide) (by simp) with
             ⟨rdRevert, hfactory⟩ | ⟨out, σ', A', aw', _, _, hout, houtsize, ha', hfactory, rdOwner⟩
           · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-              (collectProtocolFactoryReverts v evm recipient req0 req1 hwv hunlocked hfactory)
+              (collectProtocolFactoryReverts (hperm := by assumption) v evm recipient req0 req1 hwv hunlocked hfactory)
           · let evm' : EVM.State := { (storeSlot0Unlocked evm false) with accountMap := σ', substate := A' }
             let owner := AccountAddress.ofNat (fromByteArrayBigEndian (out.extract 0 32))
             have henv' : evm'.executionEnv = I := storeSlot0Unlocked_executionEnv evm false
@@ -60,13 +60,13 @@ theorem uniswapV3PoolCollectProtocolBody {σ σ₀ A I} {g : UInt256} (v : Unisw
             rcases collectProtocolOwnerGuardX (v := v) rdOwner hout houtsize ha' (by simp) with
               ⟨rdRevert, howner⟩ | ⟨howner, awAuth, _, _, haAuth, rdAuthorized⟩
             · exact rdRevert.reEquivExecutionRevert hcode hd hdec
-                (collectProtocolRevertsOwner v evm evm' recipient req0 req1 owner _ hwv hunlocked hfactory
+                (collectProtocolRevertsOwner (hperm := by assumption) v evm evm' recipient req0 req1 owner _ hwv hunlocked hfactory
                   (by simpa only [henv'] using howner))
             · have howner' : evm'.executionEnv.source = owner := by simpa only [henv'] using howner
               let amount0 := minWord req0 (protocolFeesWord false evm'.accountMap evm'.executionEnv)
               let amount1 := minWord req1 (protocolFeesWord true evm'.accountMap evm'.executionEnv)
               let locals := (collectProtocolAmountsFrame v recipient req0 req1 owner amount0 amount1).locals
-              have hprefix := collectProtocolOwnerAmountsPrefix v evm evm' recipient req0 req1 owner _
+              have hprefix := collectProtocolOwnerAmountsPrefix (hperm := by assumption) v evm evm' recipient req0 req1 owner _
                 hwv hunlocked hfactory howner'
               have hvalues := collectProtocolAmounts_values v recipient req0 req1 owner amount0 amount1
               have hfit0 : amount0.toNat < 2 ^ 128 := minWord_lt _ _

@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Traces.Memory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -373,7 +373,7 @@ theorem erc6909TransferFromX_skipCaller_afterLoad {σ σ₀ A I}
   exact ⟨k1, C1, by
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
       hslot, hcallerWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd1373₀⟩
 
 theorem erc6909TransferFromX_skipCaller_afterRequire {σ σ₀ A I}
@@ -762,7 +762,7 @@ theorem erc6909TransferFromX_skipCaller_toCheckedAdd {σ σ₀ A I}
       (sstoreAccountMap I.codeOwner σ (transferFromSenderBalanceSlot I)
         (transferFromTailSenderDebitWord (initState σ σ₀ g A I) I)) k1 C1 := by
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
-      transferFromSenderBalanceSlot, hslot, initState, Solm.EVM.storageLoad,
+      transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
       using rd1526₀
   exact ⟨_, _, evm_run rd1526 with [

@@ -2,10 +2,10 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Spot.ConstructorBase
 
 /-!
-# MakerDAO/Sky DSS Spotter constructor Solm source semantics
+# MakerDAO/Sky DSS Spotter constructor Stele source semantics
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -15,19 +15,19 @@ abbrev spotCtorLocals (vat : AccountAddress) : Store :=
   (∅ : Store).insert "vat_" (.address vat)
 
 abbrev spotCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev spotCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (EVM.word vat.val))
 
 abbrev spotCtorAfterParState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ spotCtorOneWord
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ spotCtorOneWord
 
 abbrev spotCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ ⟨1⟩
 
 
 theorem evalExpr_spotCtorLocalVat {evm : EVM.State} (vat : AccountAddress) :
@@ -68,8 +68,8 @@ private theorem assign_spotCtorAddressStorage (evm : EVM.State) (locals : Store)
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -115,7 +115,7 @@ private theorem assign_spotCtorUint256Storage (evm : EVM.State) (locals : Store)
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some uint256St)
     (hloc : config.storageBackend.locate? er = some (.leaf (wordLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -168,7 +168,8 @@ theorem spotCtorCallerWardsSlot_eq (I : ExecutionEnv) :
 theorem spotCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := spotCtorLocals vat
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -206,17 +207,18 @@ theorem spotCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, spotCtorAfterWardsState, storageStore_executionEnv, evm0, initState] using hperm)) ?_ hassignVat) ?_
   · simpa [locals] using evalExpr_spotCtorLocalVat (evm := evm1) vat
-  refine ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignPar) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignLive) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm2, evm1, spotCtorAfterWardsState, spotCtorAfterVatState, storageStore_executionEnv, evm0, initState] using hperm)) (by rw [evalExpr?]; rfl) hassignPar) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm3, evm2, evm1, spotCtorAfterWardsState, spotCtorAfterVatState, spotCtorAfterParState, storageStore_executionEnv, evm0, initState] using hperm)) (by rw [evalExpr?]; rfl) hassignLive) ExecBlock.nil
 
-theorem spotSolmCtorExecSuccess
+theorem spotSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec config contract [.address vat] σ σ₀ g A I
       (.returned { contract := contract, locals := spotCtorLocals vat }
         (spotCtorAfterLiveState
           (spotCtorAfterParState
@@ -225,7 +227,7 @@ theorem spotSolmCtorExecSuccess
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I))
               vat)))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := spotCtorLocals vat)
@@ -234,15 +236,15 @@ theorem spotSolmCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (spotCtorBodySuccess
+        (spotCtorBodySuccess (hperm := hperm)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat hwv)
 
-theorem spotSolmCtorExecReverts_nonpayable
+theorem spotSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [.address vat] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := spotCtorLocals vat)

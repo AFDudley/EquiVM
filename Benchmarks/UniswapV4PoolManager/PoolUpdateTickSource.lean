@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.PoolUpdateTickPrelude
 import Benchmarks.UniswapV4PoolManager.PoolUpdateTickFinishSource
 import Benchmarks.UniswapV4PoolManager.TickGrossWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -40,7 +40,7 @@ theorem poolUpdateTickBody {f : Frame} {evm : EVM.State} {id : UInt256} {tick de
     let f9 : Frame := {f8 with locals := f8.locals.insert "flipped" (.bool (tickFlipped packed delta))}
     have hafter : Int.ofNat (EVM.wordOfInt after).toNat = after := tickGrossAfter_value hfit
     have hassign : ExecStmt config f7 evm poolUpdateTickFunction.body[7]! (.ok f8 evm) :=
-      ExecStmt.assign (evalLocalValue (store_get_self _ _ _)) (assignLocalValue
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalLocalValue (store_get_self _ _ _)) (assignLocalValue
         ((store_get_ne5 _ _ _ _ _ _ (by decide : ("info" == "liquidityGrossAfter") = false)
           (by decide : ("liquidityPacked" == "liquidityGrossAfter") = false)
           (by decide : ("liquidityGrossBefore" == "liquidityGrossAfter") = false)
@@ -61,7 +61,7 @@ theorem poolUpdateTickBody {f : Frame} {evm : EVM.State} {id : UInt256} {tick de
       cases decide (tickGrossAfterInt packed delta = 0) <;>
         cases decide (Int.ofNat (tickGrossWord packed).toNat = 0) <;> rfl
     have hflip : ExecStmt config f8 evm poolUpdateTickFunction.body[8]! (.ok f9 evm) :=
-      ExecStmt.assign hflipExpr (assignLocalValue
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflipExpr (assignLocalValue
         ((store_get_ne2 _ _ _ (by decide : ("__c0" == "flipped") = false)
           (by decide : ("liquidityGrossAfter" == "flipped") = false)).trans
         ((store_get_ne5 _ _ _ _ _ _ (by decide : ("liquidityGrossAfter" == "flipped") = false)

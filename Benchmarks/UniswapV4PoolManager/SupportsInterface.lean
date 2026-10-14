@@ -8,11 +8,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_032
 # PoolManager `supportsInterface(bytes4)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 11286; reach lemma `poolManagerReachSupportsInterfaceBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -123,7 +123,7 @@ theorem poolManagerSupportsInterfaceBodyCore {σ σ₀ A I} {g : UInt256} (v : P
             u256_sub_eq_zero_iff_eq.mpr hclean.symm
           have rdCompare := poolManagerBlocks.poolManager_block_11334_fallthrough (by simp) hcond rdDecode
           have hret := supportsInterfaceTrace v hlen (by simp) rdCompare
-          have hdec : decodeCalldataWithMode config.abiDecodeMode
+          have hdec : config.externalABI.decodeCalldata?
               (supportsInterfaceTransition.params.map Param.name)
               (transitionSignature supportsInterfaceTransition).paramTypes I.calldata =
               some ((∅ : Store).insert "interfaceId" (.fixedBytes abiBytes4Width (calldataBytes4Arg I.calldata))) :=

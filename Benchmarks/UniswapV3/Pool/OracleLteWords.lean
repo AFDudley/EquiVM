@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.OracleLteSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 theorem oracleAdjusted_lt (time value : UInt256) (hv : value.toNat < 2 ^ 32) :

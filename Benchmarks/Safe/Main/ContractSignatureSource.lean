@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.WordCallResult
 import Benchmarks.Safe.Main.Bytes32ReturnDecoder
 import Benchmarks.Safe.Main.PreModuleCallEncoding
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -58,7 +58,7 @@ theorem evalContractSignatureResult (evm : EVM.State) (owner : EVM.Address) (has
     (by simp [contractSignatureFinalFrame, Std.HashMap.getElem_insert])
   intro ho
   have hd := decodeBytes32ReturnLong (out := out) (by omega) (by rw [ho]; decide)
-  change ABI.decodeReturnValueWithMode? config.abiDecodeMode bytes32 out =
+  change config.externalABI.decodeValue? bytes32 out =
     some (wordBytes32Value (calldataWord out 0)) at hd
   have hm : eip1271MagicBytes32 =
       .fixedBytesLit bytes32Width (EVM.Word.toBytesBE signatureMagicWord) := by native_decide
@@ -93,7 +93,7 @@ theorem safeContractSignatureSource {evm evm' : EVM.State} {owner : EVM.Address}
       Std.HashMap.getElem_insert, EvalResult.ofOption, EvalResult.bind, bind, pure,
       contractSignatureCallEncoding]
   cases z
-  · exact .lowLevelCallFailure ht hv hd hc
-  · exact .lowLevelCallSuccess ht hv hd hc
+  · exact .lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
+  · exact .lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hd hc
 
 end Benchmarks.Safe.Main

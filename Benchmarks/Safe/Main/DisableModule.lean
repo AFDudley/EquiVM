@@ -6,9 +6,9 @@ import Benchmarks.Safe.Main.Blocks.Runtime_011
 import Benchmarks.Safe.Main.Blocks.Runtime_026
 import Benchmarks.Safe.Main.Blocks.Runtime_027
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
-open safeRuntimeBlocks
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -58,7 +58,8 @@ theorem safeDisableModuleSource (evm : EVM.State) (prev key : UInt256)
     (hprev : prev.toNat < EVM.addressModulus) (hkey : key.toNat < EVM.addressModulus)
     (hvalue : evm.executionEnv.weiValue = ⟨0⟩)
     (hauth : evm.executionEnv.source = evm.executionEnv.codeOwner)
-    (hgood : key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩) (hlink : moduleLink evm prev = key) :
+    (hgood : key ≠ ⟨0⟩ ∧ key ≠ ⟨1⟩) (hlink : moduleLink evm prev = key)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (disableModuleArgs prev key) disablemoduleTransition.body
       (.returned (disableModuleFrame prev key) (disableModuleState evm prev key) none) := by
   have hbase : (disableModuleArgs prev key)["modules"]? = none := by
@@ -78,8 +79,8 @@ theorem safeDisableModuleSource (evm : EVM.State) (prev key : UInt256)
       (.consNormal (.requireTrue (by simpa [hgood] using safeDisableModuleGuard evm prev key hkey))
         (.consNormal (.requireTrue
           (by simpa [hlink] using safeDisableModuleLinkGuard evm prev key hprev hkey))
-          (.consNormal (.assign hnext hfirst) (.consNormal (.assign hzero hsecond)
-            (.consNormal (.emit (evalExprs?_singleton (safeEvalDisableModule _ prev key)))
+          (.consNormal (.assign (hperm := Or.inr hperm) hnext hfirst) (.consNormal (.assign (hperm := Or.inr (by simpa only [writeModuleLink, storageStore_executionEnv] using hperm)) hzero hsecond)
+            (.consNormal (.emit (hperm := by simpa only [writeModuleLink, storageStore_executionEnv] using hperm) (evalExprs?_singleton (safeEvalDisableModule _ prev key)))
               .nil)))))))
 
 theorem safeDisableModuleSourceStatic (evm : EVM.State) (prev key : UInt256)
@@ -289,7 +290,7 @@ theorem safeDisablemoduleBodyCore
               hcheck hc0 hc1 (by jump_dest)
             have h5524 := safeRuntime_block_1403 (by simp) (by jump_dest) h1403
             have h6757 := safeRuntime_block_5524 (by simp) (by jump_dest) h5524
-            have hdec : decodeCalldataWithMode config.abiDecodeMode
+            have hdec : config.externalABI.decodeCalldata?
                 (disablemoduleTransition.params.map Param.name)
                 (transitionSignature disablemoduleTransition).paramTypes I.calldata =
                 some (disableModuleArgs (calldataWord I.calldata 4) (calldataWord I.calldata 36)) :=
@@ -335,7 +336,7 @@ theorem safeDisablemoduleBodyCore
                           solcAddrMask_clean_left hc0]
                         exact twoWordHashMem_size_96 _ _ solcFreePtrMem_size
                       have hret := safeDisableModuleTrace h5637 (by simp) hmem hc0 hc1 hperm
-                      have hbody := safeDisableModuleSource (initState σ σ₀ (.ofUInt256 g) A I)
+                      have hbody := safeDisableModuleSource (hperm := by assumption) (initState σ σ₀ (.ofUInt256 g) A I)
                         (calldataWord I.calldata 4) (calldataWord I.calldata 36)
                         hc0 hc1 hvalue hauth hgood hlink'
                       refine reEquivReturnElim hcode hret fun _ _ hsuccess ↦ ?_

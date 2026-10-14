@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Cat.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Cat spec in the Solidity-faithful Solm frontend
+# Cat spec in the Solidity-faithful Stele frontend
 
 The whole `cat.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked-math helper stmt-lists and the extCodeSize-guarded external calls
@@ -10,7 +10,7 @@ are inlined as surface statements; `file` keys are big-endian `bytes32` literals
 order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Dss.Cat.Syntax
 
@@ -96,7 +96,7 @@ def contractSyntax : ContractDecl := solidity% contract Cat {
     require(dart > 0 && dink > 0);
     require(dart <= #int256Limit && dink <= #int256Limit);
     require(vat.code.length > 0);
-    -- Negation is unbounded in Solminus; explicitly wrap the signed-minimum case.
+    -- Negation is unbounded in Stele; explicitly wrap the signed-minimum case.
     var _grabRet = vat.grab(ilk, urn, address(this), vow,
       int256(-int256(dink)), int256(-int256(dart)));
     uint256 dartRate = (dart * rate) as uint256;

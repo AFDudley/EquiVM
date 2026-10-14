@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.ProtocolSwapFeeSource
 import Benchmarks.UniswapV4PoolManager.WordConditionalSource
 import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -95,7 +95,7 @@ theorem poolSwapFeeInitSource {f : Frame} {evm : State} {protocol lpFee : UInt25
   have hg := evalEqWords (evalLocalValue (cfg := config) (evm := evm) hp1)
     (show evalExpr? config f1 evm (.intLit 0) = .ok (.int (Int.ofNat (⟨0⟩ : UInt256).toNat)) by simp only [evalExpr?, pure]; rfl)
   have h1 : ExecStmt config f1 evm poolSwapFunction.body[22]! (.ok (poolSwapFeeInitFrame f protocol lpFee) evm) :=
-    ExecStmt.assign (evalWordConditional hg (evalLocalValue hl1) (evalLocalValue (store_get_self _ _ _))) (assignLocalValue hs1)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalWordConditional hg (evalLocalValue hl1) (evalLocalValue (store_get_self _ _ _))) (assignLocalValue hs1)
   exact ExecBlock.consNormal h0 (execBlock_singleton h1)
 
 end Benchmarks.UniswapV4PoolManager

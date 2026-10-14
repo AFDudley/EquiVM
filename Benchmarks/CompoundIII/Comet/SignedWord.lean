@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.SignedFields
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -109,7 +109,7 @@ theorem signedWord_add_of_range {a b : UInt256}
   rw [signedWord_eq]
   exact (int_eq_signed_word_of_range_mod hlo hhi hm).symm
 
--- GENERALIZES evalExpr_s256_ok/revert from Reasoning.SolmArithmetic to arbitrary frames.
+-- GENERALIZES evalExpr_s256_ok/revert from Reasoning.SteleArithmetic to arbitrary frames.
 theorem signedRangeSourceOk {cfg frame evm expr i}
     (he : evalExpr? cfg frame evm expr = .ok (.int i))
     (hlo : -(2^255 : Int) ≤ i) (hhi : i < (2^255 : Int)) :

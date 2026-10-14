@@ -4,7 +4,7 @@ import Benchmarks.Dss.Clipper.TakeCallbackSkipSuccessContinuationEquiv
 import Benchmarks.Dss.Clipper.TakeOweGtTabEquiv
 import Benchmarks.Dss.Clipper.TakeOweLeTabEquiv
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -100,12 +100,12 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                   (σ := σLock) hpatch (by simpa [σLock] using hstoppedLt)
                   (by simpa [σLock] using rd3610)
                 by_cases husrEvm : clipperTakeSalesUsrWord σLock I = ⟨0⟩
-                · let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                · let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
                   have hbody :
-                      ExecTransitionBody config contract evmSolm
+                      ExecTransitionBody config contract evmStele
                         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                    simpa [evmSolm, σLock] using
-                      (clipperTakeInactiveSourceReverts
+                    simpa [evmStele, σLock] using
+                      (clipperTakeInactiveSourceReverts (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                         hlockedEvm hstoppedLt husrEvm)
                   have hrev := clipperTakeX_usrZero (v := v) (σ := σLock)
@@ -133,17 +133,17 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                           (initState σLock σ₀ (Sat256.ofUInt256 g) A I) I =
                         clipperTakeSalesTicStackWord σLock I := by
                     simp [clipperTakeSalesTicEVMWord, clipperTakeSalesTicStackWord,
-                      initState, Solm.EVM.storageLoad, State.lookupAccount,
+                      initState, Stele.EVM.storageLoad, State.lookupAccount,
                       Account.lookupStorage, solcSlotWord, u256_land_comm]
                   have htopWord :
                       clipperTakeSalesTopWord σLock I =
                         clipperTakeSalesTopWord σLock I := rfl
-                  have htopSolmLoad :
+                  have htopSteleLoad :
                       clipperTakeSalesTopEVMWord
                           (initState σLock σ₀ (Sat256.ofUInt256 g) A I) I =
                         clipperTakeSalesTopWord σLock I := by
                     simp [clipperTakeSalesTopEVMWord, clipperTakeSalesTopWord,
-                      initState, Solm.EVM.storageLoad, State.lookupAccount,
+                      initState, Stele.EVM.storageLoad, State.lookupAccount,
                       Account.lookupStorage, solcSlotWord]
                   have hmask96 : clipperSalesUint96Mask.toNat = 2 ^ 96 - 1 := by
                     native_decide
@@ -181,35 +181,35 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                         (clipperTakeSalesTopHashMem_size I)
                         (clipperTakeSalesTopHashMem_read64 I)
                         (by simp only [List.length_cons, List.length_nil]; omega)
-                    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                    let evmLockSolm :=
-                      Solm.EVM.storageStore evmSolm evmSolm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
-                    have hcalcSlotSolm :
+                    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                    let evmLockStele :=
+                      Stele.EVM.storageStore evmStele evmStele.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+                    have hcalcSlotStele :
                         solcSlotWord σLock I ⟨4⟩ = solcSlotWord σLock I ⟨4⟩ := rfl
-                    have hticSolmLoad :
-                        clipperTakeSalesTicEVMWord evmLockSolm I =
+                    have hticSteleLoad :
+                        clipperTakeSalesTicEVMWord evmLockStele I =
                           clipperTakeSalesTicStackWord σLock I := by
-                      simp [σLock, evmLockSolm, evmSolm, initState,
+                      simp [σLock, evmLockStele, evmStele, initState,
                         clipperTakeSalesTicEVMWord, clipperTakeSalesTicStackWord,
-                        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                         solcSlotWord, storageStore_accountMap, storageStore_executionEnv,
                         u256_land_comm]
-                    have htimestampSolm :
-                        clipperTimestampWord evmLockSolm = UInt256.ofNat I.header.timestamp := by
-                      simp [evmLockSolm, evmSolm, initState, clipperTimestampWord,
+                    have htimestampStele :
+                        clipperTimestampWord evmLockStele = UInt256.ofNat I.header.timestamp := by
+                      simp [evmLockStele, evmStele, initState, clipperTimestampWord,
                         storageStore_executionEnv]
-                    have hlePriceSolm :
-                        (clipperTakeSalesTicEVMWord evmLockSolm I).toNat ≤
-                          (clipperTimestampWord evmLockSolm).toNat := by
-                      simpa [hticSolmLoad, htimestampSolm, ← hticStackWord] using hlePrice
-                    have htopSolmLoadLock :
-                        clipperTakeSalesTopEVMWord evmLockSolm I =
+                    have hlePriceStele :
+                        (clipperTakeSalesTicEVMWord evmLockStele I).toNat ≤
+                          (clipperTimestampWord evmLockStele).toNat := by
+                      simpa [hticSteleLoad, htimestampStele, ← hticStackWord] using hlePrice
+                    have htopSteleLoadLock :
+                        clipperTakeSalesTopEVMWord evmLockStele I =
                           clipperTakeSalesTopWord σLock I := by
-                      simp [σLock, evmLockSolm, evmSolm, initState,
+                      simp [σLock, evmLockStele, evmStele, initState,
                         clipperTakeSalesTopEVMWord, clipperTakeSalesTopWord,
-                        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                         solcSlotWord, storageStore_accountMap, storageStore_executionEnv]
-                    have hticCleanSolm :
+                    have hticCleanStele :
                         UInt256.land (clipperTakeSalesTicStackWord σLock I)
                             clipperSalesUint96Mask =
                           clipperTakeSalesTicStackWord σLock I := by
@@ -217,27 +217,27 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                       exact hticClean
                     by_cases hcalcCode :
                         Reasoning.Theory.extCodeSizeWord σLock calcAddr ≠ ⟨0⟩
-                    · have hcalcAddrSolm :
-                          clipperStatusCalcAddress evmLockSolm =
+                    · have hcalcAddrStele :
+                          clipperStatusCalcAddress evmLockStele =
                             AccountAddress.ofUInt256 calcAddr := by
-                        simp [σLock, evmLockSolm, evmSolm, clipperStatusCalcAddress,
-                          clipperStatusCalcWord, calcAddr, initState, Solm.EVM.storageLoad,
+                        simp [σLock, evmLockStele, evmStele, clipperStatusCalcAddress,
+                          clipperStatusCalcWord, calcAddr, initState, Stele.EVM.storageLoad,
                           State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                          storageStore_accountMap, storageStore_executionEnv, hcalcSlotSolm]
-                      have hcalcCodeSolmNE :
+                          storageStore_accountMap, storageStore_executionEnv, hcalcSlotStele]
+                      have hcalcCodeSteleNE :
                           Reasoning.Theory.extCodeSizeWord σLock calcAddr ≠ ⟨0⟩ := by
                         exact hcalcCode
-                      have hcalcCodeSolm :
+                      have hcalcCodeStele :
                           0 < (UInt256.ofNat
-                            ((evmLockSolm.lookupAccount
-                              (clipperStatusCalcAddress evmLockSolm)).option 0
+                            ((evmLockStele.lookupAccount
+                              (clipperStatusCalcAddress evmLockStele)).option 0
                               (fun acc => acc.code.size))).toNat := by
-                        simpa [σLock, evmLockSolm, evmSolm, State.lookupAccount,
+                        simpa [σLock, evmLockStele, evmStele, State.lookupAccount,
                           initState, storageStore_accountMap] using
                           extCodeSizeWord_ne_zero_lookup_code_pos
                             (σ := σLock) (target := calcAddr)
-                            (addr := clipperStatusCalcAddress evmLockSolm)
-                            hcalcAddrSolm hcalcCodeSolmNE
+                            (addr := clipperStatusCalcAddress evmLockStele)
+                            hcalcAddrStele hcalcCodeSteleNE
                       by_cases hdepth : I.depth.val < 1024
                       · obtain ⟨σ', z, o, A', k8565, C8565, rd8565,
                             hcallPrice, hout⟩ :=
@@ -255,46 +255,46 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                             Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusPriceCallFailure
                               (v := v) hpatch (by simpa using rd8565) hout
                               (by simp only [List.length_cons, List.length_nil]; omega)
-                          have hcallPriceSolmRaw := hcallPrice
-                          let evmPriceSolm : EVM.State :=
-                            { evmLockSolm with accountMap := σ', substate := A' }
-                          have hlockStateSolm :
-                              evmLockSolm =
+                          have hcallPriceSteleRaw := hcallPrice
+                          let evmPriceStele : EVM.State :=
+                            { evmLockStele with accountMap := σ', substate := A' }
+                          have hlockStateStele :
+                              evmLockStele =
                                 initState σLock σ₀
                                   (Sat256.ofUInt256 g) A I := by
-                            unfold evmLockSolm evmSolm σLock
+                            unfold evmLockStele evmStele σLock
                             have hOne : ({ val := 1 } : UInt256) ≠ default := by
                               native_decide
                             cases hacc : σ.get? I.codeOwner <;>
-                              simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                              simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                                 State.setAccount, sstoreAccountMap, Account.updateStorage,
                                 Option.option, hOne, hacc]
-                          have hcallPriceSolm :
-                              typedCallViaEVM config evmLockSolm
-                                (EVM.address (clipperStatusCalcAddress evmLockSolm))
+                          have hcallPriceStele :
+                              typedCallViaEVM config evmLockStele
+                                (EVM.address (clipperStatusCalcAddress evmLockStele))
                                 "price" 0
                                 [.int (Int.ofNat
-                                  (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                  (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                   .int (Int.ofNat
-                                    (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                      (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)]
-                                (false, evmPriceSolm, o) false := by
-                            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                                    (UInt256.sub (clipperTimestampWord evmLockStele)
+                                      (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)]
+                                (false, evmPriceStele, o) false := by
+                            simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                               σLock, initState, clipperStatusCalcAddress,
                               clipperStatusCalcWord, clipperTakeSalesTopEVMWord,
                               clipperTakeSalesTopWord, clipperTakeSalesTicEVMWord,
                               clipperTakeSalesTicStackWord, clipperTimestampWord,
-                              Solm.EVM.storageLoad, State.lookupAccount,
+                              Stele.EVM.storageLoad, State.lookupAccount,
                               Account.lookupStorage, solcSlotWord,
-                              hcalcSlotSolm, hcalcAddrSolm, htopSolmLoadLock, htopWord,
-                              hticSolmLoad, hticStackWord, htimestampSolm, hticClean,
-                              hticCleanSolm, u256_land_comm, calcAddr]
-                              using hcallPriceSolmRaw
+                              hcalcSlotStele, hcalcAddrStele, htopSteleLoadLock, htopWord,
+                              hticSteleLoad, hticStackWord, htimestampStele, hticClean,
+                              hticCleanStele, u256_land_comm, calcAddr]
+                              using hcallPriceSteleRaw
                           have hstatus :
                               let evm0 := initState σ σ₀
                                 (Sat256.ofUInt256 g) A I
                               let evmLock :=
-                                Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                   ⟨13⟩ ⟨1⟩
                               ExecStmt config
                                 { contract := contract,
@@ -303,15 +303,15 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                 (.internalCall "status"
                                   [.var "tic", .storage (salesF (.var "id") "top")] "st")
                                 .reverted := by
-                            simpa [evmSolm, evmLockSolm] using
+                            simpa [evmStele, evmLockStele] using
                               clipperTakeStatusCallRevertsPriceCallFailure v
-                                (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                I hlePriceSolm hcalcCodeSolm hcallPriceSolm
+                                (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                I hlePriceStele hcalcCodeStele hcallPriceStele
                           have hbody :
-                              ExecTransitionBody config contract evmSolm
+                              ExecTransitionBody config contract evmStele
                                 (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                            simpa [evmSolm, σLock] using
-                              (clipperTakeStatusSourceRevertsOfStatus
+                            simpa [evmStele, σLock] using
+                              (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                 (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                 hstatus)
@@ -331,47 +331,47 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                             have hpriceDecode :
                                 config.externalABI.decode? "price" o = none :=
                               clipperStatusPriceDecode_none_short hshortOut
-                            have hcallPriceSolmRaw := hcallPrice
-                            let evmPriceSolm : EVM.State :=
-                              { evmLockSolm with accountMap := σ', substate := A' }
-                            have hPostAccounts : Eq σ' evmPriceSolm.accountMap := rfl
-                            have hlockStateSolm :
-                                evmLockSolm =
+                            have hcallPriceSteleRaw := hcallPrice
+                            let evmPriceStele : EVM.State :=
+                              { evmLockStele with accountMap := σ', substate := A' }
+                            have hPostAccounts : Eq σ' evmPriceStele.accountMap := rfl
+                            have hlockStateStele :
+                                evmLockStele =
                                   initState σLock σ₀
                                     (Sat256.ofUInt256 g) A I := by
-                              unfold evmLockSolm evmSolm σLock
+                              unfold evmLockStele evmStele σLock
                               have hOne : ({ val := 1 } : UInt256) ≠ default := by
                                 native_decide
                               cases hacc : σ.get? I.codeOwner <;>
-                                simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                                simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                                   State.setAccount, sstoreAccountMap, Account.updateStorage,
                                   Option.option, hOne, hacc]
-                            have hcallPriceSolm :
-                                typedCallViaEVM config evmLockSolm
-                                  (EVM.address (clipperStatusCalcAddress evmLockSolm))
+                            have hcallPriceStele :
+                                typedCallViaEVM config evmLockStele
+                                  (EVM.address (clipperStatusCalcAddress evmLockStele))
                                   "price" 0
                                   [.int (Int.ofNat
-                                    (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                    (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                     .int (Int.ofNat
-                                      (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                        (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)]
-                                  (true, evmPriceSolm, o) false := by
-                              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                                      (UInt256.sub (clipperTimestampWord evmLockStele)
+                                        (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)]
+                                  (true, evmPriceStele, o) false := by
+                              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                                 σLock, initState, clipperStatusCalcAddress,
                                 clipperStatusCalcWord, clipperTakeSalesTopEVMWord,
                                 clipperTakeSalesTopWord, clipperTakeSalesTicEVMWord,
                                 clipperTakeSalesTicStackWord, clipperTimestampWord,
-                                Solm.EVM.storageLoad, State.lookupAccount,
+                                Stele.EVM.storageLoad, State.lookupAccount,
                                 Account.lookupStorage, solcSlotWord,
-                                hcalcSlotSolm, hcalcAddrSolm, htopSolmLoadLock, htopWord,
-                                hticSolmLoad, hticStackWord, htimestampSolm, hticClean,
-                                hticCleanSolm, u256_land_comm, calcAddr]
-                                using hcallPriceSolmRaw
+                                hcalcSlotStele, hcalcAddrStele, htopSteleLoadLock, htopWord,
+                                hticSteleLoad, hticStackWord, htimestampStele, hticClean,
+                                hticCleanStele, u256_land_comm, calcAddr]
+                                using hcallPriceSteleRaw
                             have hstatus :
                                 let evm0 := initState σ σ₀
                                   (Sat256.ofUInt256 g) A I
                                 let evmLock :=
-                                  Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                  Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                     ⟨13⟩ ⟨1⟩
                                 ExecStmt config
                                   { contract := contract,
@@ -380,15 +380,15 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                   (.internalCall "status"
                                     [.var "tic", .storage (salesF (.var "id") "top")] "st")
                                   .reverted := by
-                              simpa [evmSolm, evmLockSolm] using
+                              simpa [evmStele, evmLockStele] using
                                 clipperTakeStatusCallRevertsPriceDecode v
-                                  (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                  I hlePriceSolm hcalcCodeSolm hcallPriceSolm hpriceDecode
+                                  (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                  I hlePriceStele hcalcCodeStele hcallPriceStele hpriceDecode
                             have hbody :
-                                ExecTransitionBody config contract evmSolm
+                                ExecTransitionBody config contract evmStele
                                   (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                              simpa [evmSolm, σLock] using
-                                (clipperTakeStatusSourceRevertsOfStatus
+                              simpa [evmStele, σLock] using
+                                (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                   (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                   hstatus)
@@ -408,58 +408,58 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                   some [.int (Int.ofNat priceWord.toNat)] := by
                               simpa [priceWord, clipperStatusPriceValues] using
                                 (clipperStatusPriceDecode_ok (out := o) hloOut)
-                            have hcallPriceSolmRaw := hcallPrice
-                            let evmPriceSolm : EVM.State :=
-                              { evmLockSolm with accountMap := σ', substate := A' }
-                            have hPostAccounts : Eq σ' evmPriceSolm.accountMap := rfl
-                            have hlockStateSolm :
-                                evmLockSolm =
+                            have hcallPriceSteleRaw := hcallPrice
+                            let evmPriceStele : EVM.State :=
+                              { evmLockStele with accountMap := σ', substate := A' }
+                            have hPostAccounts : Eq σ' evmPriceStele.accountMap := rfl
+                            have hlockStateStele :
+                                evmLockStele =
                                   initState σLock σ₀
                                     (Sat256.ofUInt256 g) A I := by
-                              unfold evmLockSolm evmSolm σLock
+                              unfold evmLockStele evmStele σLock
                               have hOne : ({ val := 1 } : UInt256) ≠ default := by
                                 native_decide
                               cases hacc : σ.get? I.codeOwner <;>
-                                simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                                simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                                   State.setAccount, sstoreAccountMap, Account.updateStorage,
                                   Option.option, hOne, hacc]
-                            have hevmPriceAccounts : evmPriceSolm.accountMap = σ' := rfl
-                            have hevmPriceSigma0 : evmPriceSolm.σ₀ = σ₀ := by
-                              change evmLockSolm.σ₀ = σ₀
+                            have hevmPriceAccounts : evmPriceStele.accountMap = σ' := rfl
+                            have hevmPriceSigma0 : evmPriceStele.σ₀ = σ₀ := by
+                              change evmLockStele.σ₀ = σ₀
                               simpa [initState] using congrArg (fun s : EVM.State => s.σ₀)
-                                hlockStateSolm
-                            have hevmPriceEnv : evmPriceSolm.executionEnv = I := by
-                              change evmLockSolm.executionEnv = I
+                                hlockStateStele
+                            have hevmPriceEnv : evmPriceStele.executionEnv = I := by
+                              change evmLockStele.executionEnv = I
                               simpa [initState] using congrArg
-                                (fun s : EVM.State => s.executionEnv) hlockStateSolm
-                            have hcallPriceSolm :
-                                typedCallViaEVM config evmLockSolm
-                                  (EVM.address (clipperStatusCalcAddress evmLockSolm))
+                                (fun s : EVM.State => s.executionEnv) hlockStateStele
+                            have hcallPriceStele :
+                                typedCallViaEVM config evmLockStele
+                                  (EVM.address (clipperStatusCalcAddress evmLockStele))
                                   "price" 0
                                   [.int (Int.ofNat
-                                    (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                    (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                     .int (Int.ofNat
-                                      (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                        (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)]
-                                  (true, evmPriceSolm, o) false := by
-                              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                                      (UInt256.sub (clipperTimestampWord evmLockStele)
+                                        (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)]
+                                  (true, evmPriceStele, o) false := by
+                              simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                                 σLock, initState, clipperStatusCalcAddress,
                                 clipperStatusCalcWord, clipperTakeSalesTopEVMWord,
                                 clipperTakeSalesTopWord, clipperTakeSalesTicEVMWord,
                                 clipperTakeSalesTicStackWord, clipperTimestampWord,
-                                Solm.EVM.storageLoad, State.lookupAccount,
+                                Stele.EVM.storageLoad, State.lookupAccount,
                                 Account.lookupStorage, solcSlotWord,
-                                hcalcSlotSolm, hcalcAddrSolm, htopSolmLoadLock, htopWord,
-                                hticSolmLoad, hticStackWord, htimestampSolm, hticClean,
-                                hticCleanSolm, u256_land_comm, calcAddr]
-                                using hcallPriceSolmRaw
+                                hcalcSlotStele, hcalcAddrStele, htopSteleLoadLock, htopWord,
+                                hticSteleLoad, hticStackWord, htimestampStele, hticClean,
+                                hticCleanStele, u256_land_comm, calcAddr]
+                                using hcallPriceSteleRaw
                             by_cases hleDone :
                                 (clipperTakeSalesTicStackWord σLock I).toNat ≤
                                   (UInt256.ofNat I.header.timestamp).toNat
-                            · have hleDoneSolm :
-                                  (clipperTakeSalesTicEVMWord evmLockSolm I).toNat ≤
-                                    (clipperTimestampWord evmPriceSolm).toNat := by
-                                simpa [evmPriceSolm, htimestampSolm, hticSolmLoad,
+                            · have hleDoneStele :
+                                  (clipperTakeSalesTicEVMWord evmLockStele I).toNat ≤
+                                    (clipperTimestampWord evmPriceStele).toNat := by
+                                simpa [evmPriceStele, htimestampStele, hticSteleLoad,
                                   ← hticStackWord] using hleDone
                               by_cases htailLt :
                                   (solcSlotWord σ' I ⟨6⟩).toNat <
@@ -490,26 +490,26 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                       (clipperTakeSalesTopHashMem_size I)
                                       (clipperTakeSalesTopHashMem_read64 I) hout)
                                     (by simp only [List.length_cons, List.length_nil]; omega)
-                                have htailSlotSolm :
+                                have htailSlotStele :
                                     solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ' I ⟨6⟩ := rfl
                                 have hlockOwner :
-                                    evmLockSolm.executionEnv.codeOwner = I.codeOwner := by
-                                  rw [hlockStateSolm]
+                                    evmLockStele.executionEnv.codeOwner = I.codeOwner := by
+                                  rw [hlockStateStele]
                                   simp [initState]
-                                have htailSolm :
-                                    (clipperStatusTailWord evmPriceSolm).toNat <
-                                      (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                        (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat := by
-                                  simpa [evmPriceSolm, clipperStatusTailWord,
-                                    clipperTimestampWord, Solm.EVM.storageLoad,
+                                have htailStele :
+                                    (clipperStatusTailWord evmPriceStele).toNat <
+                                      (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                        (clipperTakeSalesTicEVMWord evmLockStele I)).toNat := by
+                                  simpa [evmPriceStele, clipperStatusTailWord,
+                                    clipperTimestampWord, Stele.EVM.storageLoad,
                                     State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                                    htailSlotSolm, htimestampSolm, hticSolmLoad,
+                                    htailSlotStele, htimestampStele, hticSteleLoad,
                                     ← hticStackWord, hticClean, hlockOwner] using htailLt
                                 have hstatus :
                                     let evm0 := initState σ σ₀
                                       (Sat256.ofUInt256 g) A I
                                     let evmLock :=
-                                      Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                      Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                         ⟨13⟩ ⟨1⟩
                                     ExecStmt config
                                       { contract := contract,
@@ -520,17 +520,17 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                       (.ok
                                         { contract := contract,
                                           locals := clipperTakeLocalsSt evmLock I true priceWord, immutables := immStore v }
-                                        evmPriceSolm) := by
-                                  simpa [evmSolm, evmLockSolm] using
+                                        evmPriceStele) := by
+                                  simpa [evmStele, evmLockStele] using
                                     clipperTakeStatusCallReturnsDoneTailTrue v
-                                      (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                      I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                      hcallPriceSolm hdecPrice hleDoneSolm htailSolm
+                                      (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                      I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                      hcallPriceStele hdecPrice hleDoneStele htailStele
                                 have hbody :
-                                    ExecTransitionBody config contract evmSolm
+                                    ExecTransitionBody config contract evmStele
                                       (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                                  simpa [evmSolm, σLock] using
-                                    (clipperTakeStatusDoneTrueSourceReverts
+                                  simpa [evmStele, σLock] using
+                                    (clipperTakeStatusDoneTrueSourceReverts (hperm := by assumption)
                                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                       (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                       priceWord hstatus)
@@ -541,20 +541,20 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                           clipperSalesUint96Mask)).toNat ≤
                                       (solcSlotWord σ' I ⟨6⟩).toNat := by
                                   exact Nat.le_of_not_gt htailLt
-                                have htailSlotSolm :
+                                have htailSlotStele :
                                     solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ' I ⟨6⟩ := rfl
                                 have hlockOwner :
-                                    evmLockSolm.executionEnv.codeOwner = I.codeOwner := by
-                                  rw [hlockStateSolm]
+                                    evmLockStele.executionEnv.codeOwner = I.codeOwner := by
+                                  rw [hlockStateStele]
                                   simp [initState]
-                                have htailSolm :
-                                    (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                        (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat ≤
-                                      (clipperStatusTailWord evmPriceSolm).toNat := by
-                                  simpa [evmPriceSolm, clipperStatusTailWord,
-                                    clipperTimestampWord, Solm.EVM.storageLoad,
+                                have htailStele :
+                                    (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                        (clipperTakeSalesTicEVMWord evmLockStele I)).toNat ≤
+                                      (clipperStatusTailWord evmPriceStele).toNat := by
+                                  simpa [evmPriceStele, clipperStatusTailWord,
+                                    clipperTimestampWord, Stele.EVM.storageLoad,
                                     State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                                    htailSlotSolm, htimestampSolm, hticSolmLoad,
+                                    htailSlotStele, htimestampStele, hticSteleLoad,
                                     ← hticStackWord, hticClean, hlockOwner] using htailLe
                                 by_cases hmul :
                                     priceWord.toNat * clipperRayWord.toNat < UInt256.size
@@ -566,14 +566,14 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                         (by simpa [hticClean] using hleDone) htailLe
                                         (by simpa [priceWord] using hmul) htopZero
                                         (by simp only [List.length_cons, List.length_nil]; omega)
-                                    have htopSolmZero :
-                                        clipperTakeSalesTopEVMWord evmLockSolm I = ⟨0⟩ := by
-                                      simpa [htopSolmLoadLock, ← htopWord] using htopZero
+                                    have htopSteleZero :
+                                        clipperTakeSalesTopEVMWord evmLockStele I = ⟨0⟩ := by
+                                      simpa [htopSteleLoadLock, ← htopWord] using htopZero
                                     have hstatus :
                                         let evm0 := initState σ σ₀
                                           (Sat256.ofUInt256 g) A I
                                         let evmLock :=
-                                          Solm.EVM.storageStore evm0
+                                          Stele.EVM.storageStore evm0
                                             evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                                         ExecStmt config
                                           { contract := contract,
@@ -583,18 +583,18 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                             [.var "tic",
                                               .storage (salesF (.var "id") "top")] "st")
                                           .reverted := by
-                                      simpa [evmSolm, evmLockSolm] using
+                                      simpa [evmStele, evmLockStele] using
                                         clipperTakeStatusCallRevertsRdivDivZero v
-                                          (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                          I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                          hcallPriceSolm hdecPrice hleDoneSolm htailSolm
-                                          hmul htopSolmZero
+                                          (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                          I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                          hcallPriceStele hdecPrice hleDoneStele htailStele
+                                          hmul htopSteleZero
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm
+                                        ExecTransitionBody config contract evmStele
                                           (clipperTakeStore I) takeTransition.body
                                           .reverted (immStore v) := by
-                                      simpa [evmSolm, σLock] using
-                                        (clipperTakeStatusSourceRevertsOfStatus
+                                      simpa [evmStele, σLock] using
+                                        (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                           (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                           hstatus)
@@ -612,52 +612,52 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                         (clipperTakeSalesTopWord σLock I)
                                     let cuspWord : UInt256 := solcSlotWord σ' I ⟨7⟩
                                     let doneWord : UInt256 := UInt256.lt ratioWord cuspWord
-                                    have hcuspWordSolm :
-                                        cuspWord = clipperStatusCuspWord evmPriceSolm := by
-                                      simpa [cuspWord, evmPriceSolm, hlockOwner,
+                                    have hcuspWordStele :
+                                        cuspWord = clipperStatusCuspWord evmPriceStele := by
+                                      simpa [cuspWord, evmPriceStele, hlockOwner,
                                         clipperStatusCuspWord, initState,
-                                        Solm.EVM.storageLoad, State.lookupAccount,
+                                        Stele.EVM.storageLoad, State.lookupAccount,
                                         Account.lookupStorage, solcSlotWord]
-                                    have hratioWordSolm :
+                                    have hratioWordStele :
                                         ratioWord =
                                           UInt256.div (UInt256.mul priceWord clipperRayWord)
-                                            (clipperTakeSalesTopEVMWord evmLockSolm I) := by
-                                      simp [ratioWord, htopSolmLoadLock, ← htopWord]
+                                            (clipperTakeSalesTopEVMWord evmLockStele I) := by
+                                      simp [ratioWord, htopSteleLoadLock, ← htopWord]
                                     by_cases hratio :
                                         ratioWord.toNat <
-                                          (clipperStatusCuspWord evmPriceSolm).toNat
+                                          (clipperStatusCuspWord evmPriceStele).toNat
                                     · have hdoneEval :
                                           evalExpr? config
                                             { contract := contract,
                                               locals := clipperStatusRatioLocals
-                                                (clipperTakeSalesTicEVMWord evmLockSolm I)
-                                                (clipperTakeSalesTopEVMWord evmLockSolm I)
-                                                (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                                  (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                                (clipperTakeSalesTicEVMWord evmLockStele I)
+                                                (clipperTakeSalesTopEVMWord evmLockStele I)
+                                                (UInt256.sub (clipperTimestampWord evmLockStele)
+                                                  (clipperTakeSalesTicEVMWord evmLockStele I))
                                                 priceWord
-                                                (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                                  (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                                (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                                  (clipperTakeSalesTicEVMWord evmLockStele I))
                                                 (UInt256.div
                                                   (UInt256.mul priceWord clipperRayWord)
-                                                  (clipperTakeSalesTopEVMWord evmLockSolm I)), immutables := immStore v }
-                                            evmPriceSolm
+                                                  (clipperTakeSalesTopEVMWord evmLockStele I)), immutables := immStore v }
+                                            evmPriceStele
                                             (.binary .lt (.var "ratio") (.storage cuspRef)) =
                                               .ok (.bool true) := by
-                                        rw [← hratioWordSolm]
+                                        rw [← hratioWordStele]
                                         exact clipperEvalStatusRatioCuspCond_true v
-                                          evmPriceSolm
-                                          (clipperTakeSalesTicEVMWord evmLockSolm I)
-                                          (clipperTakeSalesTopEVMWord evmLockSolm I)
-                                          (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                            (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                          evmPriceStele
+                                          (clipperTakeSalesTicEVMWord evmLockStele I)
+                                          (clipperTakeSalesTopEVMWord evmLockStele I)
+                                          (UInt256.sub (clipperTimestampWord evmLockStele)
+                                            (clipperTakeSalesTicEVMWord evmLockStele I))
                                           priceWord
-                                          (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                            (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                          (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                            (clipperTakeSalesTicEVMWord evmLockStele I))
                                           ratioWord hratio
                                       have hdoneWordOne : doneWord = ⟨1⟩ := by
                                         unfold doneWord
                                         exact ult_one
-                                          (by simpa [cuspWord, hcuspWordSolm] using hratio)
+                                          (by simpa [cuspWord, hcuspWordStele] using hratio)
                                       have hrev :=
                                         RD.clipperTakeStatusDoneTrueReverts (v := v)
                                           (hpatch := hpatch)
@@ -684,7 +684,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                           let evm0 := initState σ σ₀
                                             (Sat256.ofUInt256 g) A I
                                           let evmLock :=
-                                            Solm.EVM.storageStore evm0
+                                            Stele.EVM.storageStore evm0
                                               evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                                           ExecStmt config
                                             { contract := contract,
@@ -697,73 +697,73 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               { contract := contract,
                                                 locals :=
                                                   clipperTakeLocalsSt evmLock I true priceWord, immutables := immStore v }
-                                              evmPriceSolm) := by
-                                        simpa [evmSolm, evmLockSolm] using
+                                              evmPriceStele) := by
+                                        simpa [evmStele, evmLockStele] using
                                           clipperTakeStatusCallReturnsRdivBranch v
-                                            (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                            I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                            hcallPriceSolm hdecPrice hleDoneSolm htailSolm
+                                            (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                            I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                            hcallPriceStele hdecPrice hleDoneStele htailStele
                                             hmul
                                             (by
                                               intro hzero
                                               exact htopZero
                                                 (by
-                                                  simpa [htopSolmLoadLock, ← htopWord]
+                                                  simpa [htopSteleLoadLock, ← htopWord]
                                                     using hzero))
                                             true hdoneEval
                                       have hbody :
-                                          ExecTransitionBody config contract evmSolm
+                                          ExecTransitionBody config contract evmStele
                                             (clipperTakeStore I) takeTransition.body
                                             .reverted (immStore v) := by
-                                        simpa [evmSolm, σLock] using
-                                          (clipperTakeStatusDoneTrueSourceReverts
+                                        simpa [evmStele, σLock] using
+                                          (clipperTakeStatusDoneTrueSourceReverts (hperm := by assumption)
                                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                             (g := g) v hwv hlockedEvm hstoppedLt
                                             husrEvm priceWord hstatus)
                                       exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
                                     · have hratioLe :
-                                          (clipperStatusCuspWord evmPriceSolm).toNat ≤
+                                          (clipperStatusCuspWord evmPriceStele).toNat ≤
                                             ratioWord.toNat := by
                                         exact Nat.le_of_not_gt hratio
                                       have hdoneEval :
                                           evalExpr? config
                                             { contract := contract,
                                               locals := clipperStatusRatioLocals
-                                                (clipperTakeSalesTicEVMWord evmLockSolm I)
-                                                (clipperTakeSalesTopEVMWord evmLockSolm I)
-                                                (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                                  (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                                (clipperTakeSalesTicEVMWord evmLockStele I)
+                                                (clipperTakeSalesTopEVMWord evmLockStele I)
+                                                (UInt256.sub (clipperTimestampWord evmLockStele)
+                                                  (clipperTakeSalesTicEVMWord evmLockStele I))
                                                 priceWord
-                                                (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                                  (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                                (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                                  (clipperTakeSalesTicEVMWord evmLockStele I))
                                                 (UInt256.div
                                                   (UInt256.mul priceWord clipperRayWord)
-                                                  (clipperTakeSalesTopEVMWord evmLockSolm I)), immutables := immStore v }
-                                            evmPriceSolm
+                                                  (clipperTakeSalesTopEVMWord evmLockStele I)), immutables := immStore v }
+                                            evmPriceStele
                                             (.binary .lt (.var "ratio") (.storage cuspRef)) =
                                               .ok (.bool false) := by
-                                        rw [← hratioWordSolm]
+                                        rw [← hratioWordStele]
                                         exact clipperEvalStatusRatioCuspCond_false v
-                                          evmPriceSolm
-                                          (clipperTakeSalesTicEVMWord evmLockSolm I)
-                                          (clipperTakeSalesTopEVMWord evmLockSolm I)
-                                          (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                            (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                          evmPriceStele
+                                          (clipperTakeSalesTicEVMWord evmLockStele I)
+                                          (clipperTakeSalesTopEVMWord evmLockStele I)
+                                          (UInt256.sub (clipperTimestampWord evmLockStele)
+                                            (clipperTakeSalesTicEVMWord evmLockStele I))
                                           priceWord
-                                          (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                            (clipperTakeSalesTicEVMWord evmLockSolm I))
+                                          (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                            (clipperTakeSalesTicEVMWord evmLockStele I))
                                           ratioWord hratioLe
                                       have hdoneWordZero : doneWord = ⟨0⟩ := by
                                         unfold doneWord
                                         exact ult_zero
                                           (by
-                                            simpa [ratioWord, cuspWord, hcuspWordSolm]
+                                            simpa [ratioWord, cuspWord, hcuspWordStele]
                                               using hratioLe)
                                       have hstatus :
                                           let evm0 := initState σ σ₀
                                             (Sat256.ofUInt256 g) A I
                                           let evmLock :=
-                                            Solm.EVM.storageStore evm0
+                                            Stele.EVM.storageStore evm0
                                               evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                                           ExecStmt config
                                             { contract := contract,
@@ -776,18 +776,18 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               { contract := contract,
                                                 locals :=
                                                   clipperTakeLocalsSt evmLock I false priceWord, immutables := immStore v }
-                                              evmPriceSolm) := by
-                                        simpa [evmSolm, evmLockSolm] using
+                                              evmPriceStele) := by
+                                        simpa [evmStele, evmLockStele] using
                                           clipperTakeStatusCallReturnsRdivBranch v
-                                            (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                            I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                            hcallPriceSolm hdecPrice hleDoneSolm htailSolm
+                                            (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                            I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                            hcallPriceStele hdecPrice hleDoneStele htailStele
                                             hmul
                                             (by
                                               intro hzero
                                               exact htopZero
                                                 (by
-                                                  simpa [htopSolmLoadLock, ← htopWord]
+                                                  simpa [htopSteleLoadLock, ← htopWord]
                                                     using hzero))
                                             false hdoneEval
                                       by_cases hmaxLt :
@@ -818,11 +818,11 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               simp only [List.length_cons, List.length_nil]
                                               omega)
                                         have hbody :
-                                            ExecTransitionBody config contract evmSolm
+                                            ExecTransitionBody config contract evmStele
                                               (clipperTakeStore I) takeTransition.body
                                               .reverted (immStore v) := by
-                                          simpa [evmSolm, σLock] using
-                                            (clipperTakeTooExpensiveSourceReverts
+                                          simpa [evmStele, σLock] using
+                                            (clipperTakeTooExpensiveSourceReverts (hperm := by assumption)
                                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                               (g := g) v hwv hlockedEvm hstoppedLt
                                               husrEvm priceWord hmaxLt hstatus)
@@ -872,16 +872,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                                 (clipperTakeVatTarget v) = (⟨0⟩ : UInt256)
                                           · have htab :=
                                               clipperTakePostTabWord_eq (σ := σ') (τ := σ')
-                                                (evm := evmPriceSolm) (I := I)
+                                                (evm := evmPriceStele) (I := I)
                                                 (by simpa using hPostAccounts)
-                                                (by simp [evmPriceSolm])
-                                                (by simpa [evmPriceSolm] using hlockOwner)
+                                                (by simp [evmPriceStele])
+                                                (by simpa [evmPriceStele] using hlockOwner)
                                             have hlot :=
                                               clipperTakePostLotWord_eq (σ := σ') (τ := σ')
-                                                (evm := evmPriceSolm) (I := I)
+                                                (evm := evmPriceStele) (I := I)
                                                 (by simpa using hPostAccounts)
-                                                (by simp [evmPriceSolm])
-                                                (by simpa [evmPriceSolm] using hlockOwner)
+                                                (by simp [evmPriceStele])
+                                                (by simpa [evmPriceStele] using hlockOwner)
                                             have hbaseMem196 :
                                                 (clipperStatusPricePostCallMem
                                                     (clipperTakeSalesTopWord σLock I)
@@ -949,12 +949,12 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                                   (⟨12⟩ : UInt256)
                                                   (by rw [hbaseMem196]; norm_num) hbaseRead64
                                             exact
-                                              clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
+                                              clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts (hperm := by assumption)
                                                 (v := v) (hpatch := hpatch) hcode hwv hdispatch hdec
                                                 hlockedEvm hstoppedLt husrEvm
                                                 (by simpa [sliceE, lotE] using rd8686)
                                                 (by simpa using hPostAccounts)
-                                                (by simp [evmPriceSolm])
+                                                (by simp [evmPriceStele])
                                                 htab hlot (by rfl) hmaxLe howeMul hcase.1
                                                 hmem196 hread64 hcase.2
                                                 (by
@@ -978,16 +978,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                                 hstatus hdepth hperm
                                             · have htab :=
                                                 clipperTakePostTabWord_eq (σ := σ')
-                                                  (τ := σ') (evm := evmPriceSolm)
+                                                  (τ := σ') (evm := evmPriceStele)
                                                   (I := I) (by simpa using hPostAccounts)
-                                                  (by simp [evmPriceSolm])
-                                                  (by simpa [evmPriceSolm] using hlockOwner)
+                                                  (by simp [evmPriceStele])
+                                                  (by simpa [evmPriceStele] using hlockOwner)
                                               have hlot :=
                                                 clipperTakePostLotWord_eq (σ := σ')
-                                                  (τ := σ') (evm := evmPriceSolm)
+                                                  (τ := σ') (evm := evmPriceStele)
                                                   (I := I) (by simpa using hPostAccounts)
-                                                  (by simp [evmPriceSolm])
-                                                  (by simpa [evmPriceSolm] using hlockOwner)
+                                                  (by simp [evmPriceStele])
+                                                  (by simpa [evmPriceStele] using hlockOwner)
                                               have hbaseMem196 :
                                                   (clipperStatusPricePostCallMem
                                                       (clipperTakeSalesTopWord σLock I)
@@ -1109,16 +1109,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               (v := v) (hpatch := hpatch) rd8686
                                               (by simpa [sliceE, lotE] using Nat.le_of_not_gt howeMul)
                                               (by simp only [List.length_cons, List.length_nil]; omega)
-                                          have hlot := clipperTakePostLotWord_eq (σ := σ') (τ := σ') (evm := evmPriceSolm) (I := I)
-                                            (by simpa using hPostAccounts) (by simp [evmPriceSolm]) (by simpa [evmPriceSolm] using hlockOwner)
+                                          have hlot := clipperTakePostLotWord_eq (σ := σ') (τ := σ') (evm := evmPriceStele) (I := I)
+                                            (by simpa using hPostAccounts) (by simp [evmPriceStele]) (by simpa [evmPriceStele] using hlockOwner)
                                           have hsrcHover : UInt256.size ≤
-                                              (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceSolm I)
+                                              (clipperMinWord (clipperTakeSalesLotEVMWord evmPriceStele I)
                                                 (clipperTakeAmtWord I)).toNat * priceWord.toNat := by
                                             simpa [sliceE, lotE, hlot, clipperMinWord_comm, Nat.mul_comm]
                                               using Nat.le_of_not_gt howeMul
                                           have hbody := by
-                                            simpa [evmSolm, σLock] using
-                                              (clipperTakeOwe0MulOverflowSourceReverts
+                                            simpa [evmStele, σLock] using
+                                              (clipperTakeOwe0MulOverflowSourceReverts (hperm := by assumption)
                                                 (σ := σ)
                                                 (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                                                 hlockedEvm hstoppedLt husrEvm priceWord hmaxLe
@@ -1137,7 +1137,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                       let evm0 := initState σ σ₀
                                         (Sat256.ofUInt256 g) A I
                                       let evmLock :=
-                                        Solm.EVM.storageStore evm0
+                                        Stele.EVM.storageStore evm0
                                           evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                                       ExecStmt config
                                         { contract := contract,
@@ -1147,17 +1147,17 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                           [.var "tic",
                                             .storage (salesF (.var "id") "top")] "st")
                                         .reverted := by
-                                    simpa [evmSolm, evmLockSolm] using
+                                    simpa [evmStele, evmLockStele] using
                                       clipperTakeStatusCallRevertsRdivMul v
-                                        (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                        I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                        hcallPriceSolm hdecPrice hleDoneSolm htailSolm hover
+                                        (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                        I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                        hcallPriceStele hdecPrice hleDoneStele htailStele hover
                                   have hbody :
-                                      ExecTransitionBody config contract evmSolm
+                                      ExecTransitionBody config contract evmStele
                                         (clipperTakeStore I) takeTransition.body
                                         .reverted (immStore v) := by
-                                    simpa [evmSolm, σLock] using
-                                      (clipperTakeStatusSourceRevertsOfStatus
+                                    simpa [evmStele, σLock] using
+                                      (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                         (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                         hstatus)
@@ -1171,16 +1171,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                 Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusAgeForDoneRevert
                                   (v := v) (hpatch := hpatch) rd8606 hltDone
                                   (by simp only [List.length_cons, List.length_nil]; omega)
-                              have hltDoneSolm :
-                                  (clipperTimestampWord evmPriceSolm).toNat <
-                                    (clipperTakeSalesTicEVMWord evmLockSolm I).toNat := by
-                                simpa [evmPriceSolm, htimestampSolm, hticSolmLoad,
+                              have hltDoneStele :
+                                  (clipperTimestampWord evmPriceStele).toNat <
+                                    (clipperTakeSalesTicEVMWord evmLockStele I).toNat := by
+                                simpa [evmPriceStele, htimestampStele, hticSteleLoad,
                                   ← hticStackWord] using Nat.lt_of_not_ge hleDone
                               have hstatus :
                                   let evm0 := initState σ σ₀
                                     (Sat256.ofUInt256 g) A I
                                   let evmLock :=
-                                    Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                                    Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                       ⟨13⟩ ⟨1⟩
                                   ExecStmt config
                                     { contract := contract,
@@ -1189,16 +1189,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                     (.internalCall "status"
                                       [.var "tic", .storage (salesF (.var "id") "top")] "st")
                                     .reverted := by
-                                simpa [evmSolm, evmLockSolm] using
+                                simpa [evmStele, evmLockStele] using
                                   clipperTakeStatusCallRevertsAgeForDone v
-                                    (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                    I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                    hcallPriceSolm hdecPrice hltDoneSolm
+                                    (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                    I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                    hcallPriceStele hdecPrice hltDoneStele
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm
+                                  ExecTransitionBody config contract evmStele
                                     (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                                simpa [evmSolm, σLock] using
-                                  (clipperTakeStatusSourceRevertsOfStatus
+                                simpa [evmStele, σLock] using
+                                  (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                     (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                     hstatus)
@@ -1226,21 +1226,21 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                           UInt256.sub (UInt256.ofNat I.header.timestamp)
                             (UInt256.land (clipperTakeSalesTicStackWord σLock I)
                               clipperSalesUint96Mask)
-                        have hdepthInit : evmLockSolm.executionEnv.depth = 1024 := by
-                          simpa [evmLockSolm, evmSolm, initState,
+                        have hdepthInit : evmLockStele.executionEnv.depth = 1024 := by
+                          simpa [evmLockStele, evmStele, initState,
                             storageStore_executionEnv] using hdepthEq
-                        let evmPriceSolm : EVM.State :=
-                          { evmLockSolm with
+                        let evmPriceStele : EVM.State :=
+                          { evmLockStele with
                             substate :=
-                              (evmLockSolm.addAccessedAccount
-                                (EVM.address (clipperStatusCalcAddress evmLockSolm))).substate }
+                              (evmLockStele.addAccessedAccount
+                                (EVM.address (clipperStatusCalcAddress evmLockStele))).substate }
                         have hcd :
                             config.externalABI.encode? "price"
                               [.int (Int.ofNat
-                                (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                 .int (Int.ofNat
-                                  (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                    (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)] =
+                                  (UInt256.sub (clipperTimestampWord evmLockStele)
+                                    (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)] =
                               some ((clipperStatusPriceCalldataMem
                                 (clipperTakeSalesTopWord σLock I) ageForPrice
                                 (clipperTakeSalesTopHashMem I)).readWithPadding 128 68) := by
@@ -1256,38 +1256,38 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                               clipperStatusPriceEncode_eq
                                 (clipperTakeSalesTopWord σLock I) ageForPrice
                                 (clipperTakeSalesTopHashMem_size I)
-                          have htopEvmSolm :
-                              clipperTakeSalesTopEVMWord evmLockSolm I =
+                          have htopEvmStele :
+                              clipperTakeSalesTopEVMWord evmLockStele I =
                                 clipperTakeSalesTopWord σLock I := by
-                            rw [htopSolmLoadLock, ← htopWord]
-                          have hageForPriceSolm :
-                              UInt256.sub (clipperTimestampWord evmLockSolm)
-                                  (clipperTakeSalesTicEVMWord evmLockSolm I) =
+                            rw [htopSteleLoadLock, ← htopWord]
+                          have hageForPriceStele :
+                              UInt256.sub (clipperTimestampWord evmLockStele)
+                                  (clipperTakeSalesTicEVMWord evmLockStele I) =
                                 ageForPrice := by
-                            simp [ageForPrice, htimestampSolm, hticSolmLoad,
+                            simp [ageForPrice, htimestampStele, hticSteleLoad,
                               ← hticStackWord, hticClean]
-                          rw [htopEvmSolm, hageForPriceSolm]
+                          rw [htopEvmStele, hageForPriceStele]
                           exact hcdRaw
-                        have hcallPriceSolm :
-                            typedCallViaEVM config evmLockSolm
-                              (EVM.address (clipperStatusCalcAddress evmLockSolm))
+                        have hcallPriceStele :
+                            typedCallViaEVM config evmLockStele
+                              (EVM.address (clipperStatusCalcAddress evmLockStele))
                               "price" 0
                               [.int (Int.ofNat
-                                (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                 .int (Int.ofNat
-                                  (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                    (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)]
-                              (false, evmPriceSolm, ByteArray.empty) false := by
-                          simpa [evmPriceSolm] using
-                            (callNotMade_depthLimit (cfg := config) (evm := evmLockSolm)
-                              (tgt := EVM.address (clipperStatusCalcAddress evmLockSolm))
+                                  (UInt256.sub (clipperTimestampWord evmLockStele)
+                                    (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)]
+                              (false, evmPriceStele, ByteArray.empty) false := by
+                          simpa [evmPriceStele] using
+                            (callNotMade_depthLimit (cfg := config) (evm := evmLockStele)
+                              (tgt := EVM.address (clipperStatusCalcAddress evmLockStele))
                               (name := "price")
                               (args :=
                                 [.int (Int.ofNat
-                                  (clipperTakeSalesTopEVMWord evmLockSolm I).toNat),
+                                  (clipperTakeSalesTopEVMWord evmLockStele I).toNat),
                                   .int (Int.ofNat
-                                    (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                      (clipperTakeSalesTicEVMWord evmLockSolm I)).toNat)])
+                                    (UInt256.sub (clipperTimestampWord evmLockStele)
+                                      (clipperTakeSalesTicEVMWord evmLockStele I)).toNat)])
                               (callPerm := false)
                               (calldata :=
                                 (clipperStatusPriceCalldataMem
@@ -1298,7 +1298,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                             let evm0 := initState σ σ₀
                               (Sat256.ofUInt256 g) A I
                             let evmLock :=
-                              Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner
+                              Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner
                                 ⟨13⟩ ⟨1⟩
                             ExecStmt config
                               { contract := contract,
@@ -1307,16 +1307,16 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                               (.internalCall "status"
                                 [.var "tic", .storage (salesF (.var "id") "top")] "st")
                               .reverted := by
-                          simpa [evmSolm, evmLockSolm] using
+                          simpa [evmStele, evmLockStele] using
                             clipperTakeStatusCallRevertsPriceCallFailure v
-                              (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                              I (out := ByteArray.empty) hlePriceSolm hcalcCodeSolm
-                              hcallPriceSolm
+                              (evm := evmLockStele) (evmPrice := evmPriceStele)
+                              I (out := ByteArray.empty) hlePriceStele hcalcCodeStele
+                              hcallPriceStele
                         have hbody :
-                            ExecTransitionBody config contract evmSolm
+                            ExecTransitionBody config contract evmStele
                               (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                          simpa [evmSolm, σLock] using
-                            (clipperTakeStatusSourceRevertsOfStatus
+                          simpa [evmStele, σLock] using
+                            (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                               (g := g) v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                         exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
@@ -1328,36 +1328,36 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                           (v := v) hpatch rd8549
                           (by simpa [calcAddr] using hcalcZero)
                           (by simp only [List.length_cons, List.length_nil]; omega)
-                      have hcalcAddrSolm :
-                          clipperStatusCalcAddress evmLockSolm =
+                      have hcalcAddrStele :
+                          clipperStatusCalcAddress evmLockStele =
                             AccountAddress.ofUInt256 calcAddr := by
-                        simp [σLock, evmLockSolm, evmSolm, clipperStatusCalcAddress,
-                          clipperStatusCalcWord, calcAddr, initState, Solm.EVM.storageLoad,
+                        simp [σLock, evmLockStele, evmStele, clipperStatusCalcAddress,
+                          clipperStatusCalcWord, calcAddr, initState, Stele.EVM.storageLoad,
                           State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                          storageStore_accountMap, storageStore_executionEnv, hcalcSlotSolm]
-                      have hcalcZeroSolm :
+                          storageStore_accountMap, storageStore_executionEnv, hcalcSlotStele]
+                      have hcalcZeroStele :
                           Reasoning.Theory.extCodeSizeWord σLock calcAddr = ⟨0⟩ := by
                         exact hcalcZero
-                      have hnoCodeSolm :
+                      have hnoCodeStele :
                           (UInt256.ofNat
-                            ((evmLockSolm.lookupAccount
-                              (clipperStatusCalcAddress evmLockSolm)).option 0
+                            ((evmLockStele.lookupAccount
+                              (clipperStatusCalcAddress evmLockStele)).option 0
                               (fun acc => acc.code.size))).toNat = 0 := by
-                        rw [hcalcAddrSolm]
-                        unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroSolm
-                        simp [-Std.ExtTreeMap.get?_eq_getElem?, evmLockSolm, evmSolm, State.lookupAccount, initState,
-                          storageStore_accountMap] at hcalcZeroSolm ⊢
+                        rw [hcalcAddrStele]
+                        unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroStele
+                        simp [-Std.ExtTreeMap.get?_eq_getElem?, evmLockStele, evmStele, State.lookupAccount, initState,
+                          storageStore_accountMap] at hcalcZeroStele ⊢
                         cases hacc : σLock.get? (AccountAddress.ofUInt256 calcAddr) with
                         | none =>
                             native_decide
                         | some acc =>
-                            simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroSolm ⊢
-                            exact congrArg UInt256.toNat hcalcZeroSolm
+                            simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroStele ⊢
+                            exact congrArg UInt256.toNat hcalcZeroStele
                       have hstatus :
                           let evm0 := initState σ σ₀
                             (Sat256.ofUInt256 g) A I
                           let evmLock :=
-                            Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+                            Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                           ExecStmt config
                             { contract := contract,
                               locals := clipperTakeLocalsTic evmLock I, immutables := immStore v }
@@ -1365,14 +1365,14 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                             (.internalCall "status"
                               [.var "tic", .storage (salesF (.var "id") "top")] "st")
                             .reverted := by
-                        simpa [evmSolm, evmLockSolm] using
-                          clipperTakeStatusCallRevertsPriceNoCode v evmLockSolm I
-                            hlePriceSolm hnoCodeSolm
+                        simpa [evmStele, evmLockStele] using
+                          clipperTakeStatusCallRevertsPriceNoCode v evmLockStele I
+                            hlePriceStele hnoCodeStele
                       have hbody :
-                          ExecTransitionBody config contract evmSolm
+                          ExecTransitionBody config contract evmStele
                             (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                        simpa [evmSolm, σLock] using
-                          (clipperTakeStatusSourceRevertsOfStatus
+                        simpa [evmStele, σLock] using
+                          (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                       exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
@@ -1380,39 +1380,39 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                         (UInt256.ofNat I.header.timestamp).toNat <
                           (clipperTakeSalesTicStackWord σLock I).toNat := by
                       omega
-                    have hltSolm :
+                    have hltStele :
                         (UInt256.ofNat I.header.timestamp).toNat <
                           (clipperTakeSalesTicStackWord σLock I).toNat := by
                       rw [← hticStackWord]
                       exact hltEvm
-                    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                    let evmLockSolm :=
-                      Solm.EVM.storageStore evmSolm evmSolm.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+                    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                    let evmLockStele :=
+                      Stele.EVM.storageStore evmStele evmStele.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                     have hltLoad :
-                        (clipperTimestampWord evmLockSolm).toNat <
-                          (clipperTakeSalesTicEVMWord evmLockSolm I).toNat := by
-                      simpa [evmLockSolm, evmSolm, clipperTimestampWord,
+                        (clipperTimestampWord evmLockStele).toNat <
+                          (clipperTakeSalesTicEVMWord evmLockStele I).toNat := by
+                      simpa [evmLockStele, evmStele, clipperTimestampWord,
                         clipperTakeSalesTicEVMWord, clipperTakeSalesTicStackWord,
-                        initState, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+                        initState, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
                         storageStore_accountMap, storageStore_executionEnv, u256_land_comm]
-                        using hltSolm
+                        using hltStele
                     have hstatus :
                         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                         let evmLock :=
-                          Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+                          Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
                         ExecStmt config
                           { contract := contract, locals := clipperTakeLocalsTic evmLock I, immutables := immStore v }
                           evmLock
                           (.internalCall "status"
                             [.var "tic", .storage (salesF (.var "id") "top")] "st")
                           .reverted := by
-                      simpa [evmSolm, evmLockSolm] using
-                        clipperTakeStatusCallRevertsAgeForPrice v evmLockSolm I hltLoad
+                      simpa [evmStele, evmLockStele] using
+                        clipperTakeStatusCallRevertsAgeForPrice v evmLockStele I hltLoad
                     have hbody :
-                        ExecTransitionBody config contract evmSolm
+                        ExecTransitionBody config contract evmStele
                           (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                      simpa [evmSolm, σLock] using
-                        (clipperTakeStatusSourceRevertsOfStatus
+                      simpa [evmStele, σLock] using
+                        (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                     have hrev :=
@@ -1423,12 +1423,12 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                     exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
               · have hstoppedEvmGe : 3 ≤ (solcSlotWord σLock I ⟨14⟩).toNat := by
                   omega
-                let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
                 have hbody :
-                    ExecTransitionBody config contract evmSolm
+                    ExecTransitionBody config contract evmStele
                       (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-                  simpa [evmSolm, σLock] using
-                    (clipperTakeStoppedSourceReverts
+                  simpa [evmStele, σLock] using
+                    (clipperTakeStoppedSourceReverts (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                       hlockedEvm hstoppedEvmGe)
                 have hrev := clipperTakeX_stoppedClosed (v := v) (σ := σLock)

@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.TickLowerStoreTrace
 import Benchmarks.UniswapV4PoolManager.MappingScratchMemory
 import Benchmarks.UniswapV4PoolManager.SparseBytesMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 theorem tickLowerResultMemory_size_ge (mem : ByteArray) (ptr gross flipped : UInt256) :

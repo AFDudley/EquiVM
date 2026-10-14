@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.Common
 
 /-! Shared calldata guards for the PoolManager entry points. -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.UniswapV4PoolManager
 

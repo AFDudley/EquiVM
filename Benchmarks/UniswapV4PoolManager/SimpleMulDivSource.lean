@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SimpleMulDivWords
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -43,7 +43,7 @@ theorem simpleMulDivBody {f : Frame} {evm : State} {a b denominator : UInt256}
   have he := simpleMulDiv_eval (evalLocalValue (cfg := config) (evm := evm) ha1) (evalLocalValue hb1) (evalLocalValue hd1)
   refine ⟨f2, .execBlockRet ?_⟩
   exact ExecBlock.consNormal (ExecStmt.letDecl (by simp only [evalExpr?, pure]))
-    (ExecBlock.consNormal (ExecStmt.assign he (assignLocalValue (store_get_self _ _ _)))
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue (store_get_self _ _ _)))
       (ABlock.start.returns (evalLocalValue (store_get_self _ _ _))))
 
 theorem simpleMulDivCall {f : Frame} {evm : State} {a b denominator : UInt256} {ea eb ed : Expr}

@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.ModifyPositionMiddleAmountTrace
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaInternal
 import Benchmarks.UniswapV3.Pool.PoolLiquidityStoreTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -53,7 +53,7 @@ theorem modifyPositionMiddleFinalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sa
   · obtain ⟨σ', ks, Cs, hs', rs⟩ := poolLiquidityStoreX (v := v)
       (modifyPositionMiddleStoresState v a evm) hs rr hperm (by evm_ov)
     exact Or.inr ⟨ExecBlock.consNormal hcall (ExecBlock.consNormal
-      (modifyPositionMiddleLiquidityStoreSource v a evm _) ExecBlock.nil),
+      (modifyPositionMiddleLiquidityStoreSource (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) v a evm _) ExecBlock.nil),
       σ', aw1, ks, Cs, hs', rs, hm1⟩
 
 end Benchmarks.UniswapV3.Pool

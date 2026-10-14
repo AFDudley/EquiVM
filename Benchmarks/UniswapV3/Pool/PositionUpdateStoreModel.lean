@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.PositionUpdateModel
 import Benchmarks.UniswapV3.Pool.PositionScalarStorage
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 def positionUpdateLiquidityState (a : PositionUpdateArgs) (evm : EVM.State) : EVM.State :=
@@ -38,7 +38,8 @@ theorem positionUpdateOwedSource (locals imms : Store) (original current : EVM.S
     (a : PositionUpdateArgs) (second : Bool)
     (hself : locals.get? "self" = some (positionAlias a.key))
     (howed : locals.get? (positionOwedField second) =
-      some (.int (Int.ofNat (positionUpdateOwed a original second).toNat))) :
+      some (.int (Int.ofNat (positionUpdateOwed a original second).toNat)))
+    (hperm : current.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := imms} current
       (positionUpdateOwedStmt second)
       (.ok {contract := contract, locals := locals, immutables := imms}
@@ -57,7 +58,7 @@ theorem positionUpdateOwedSource (locals imms : Store) (original current : EVM.S
   have hstore (value : UInt256) : storePositionOwed current a.key second (uint128Word value) =
       storePositionOwed current a.key second value := by
     simp only [storePositionOwed, protocolFeeUpdateWord, uint128Word_clean (uint128Word_lt value)]
-  simpa only [positionUpdateOwedState, hstore] using ExecStmt.assign he
+  simpa only [positionUpdateOwedState, hstore] using ExecStmt.assign (hperm := Or.inr hperm) he
     (assignPositionAliasOwed locals imms current "self" a.key second
       (uint128Word (positionOwedWord a.key second current.accountMap current.executionEnv +
         positionUpdateOwed a original second)) hself)

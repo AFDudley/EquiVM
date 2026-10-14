@@ -4,7 +4,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapTickSyntax
 import Benchmarks.UniswapV4PoolManager.TickCrossSource
 import Benchmarks.UniswapV4PoolManager.WordSignedCast
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -51,7 +51,7 @@ theorem poolSwapCrossNegate {f : Frame} {evm : State} {net : UInt256} {zeroForOn
         EVM.signed (poolSwapCrossDelta true net) := by
       rw [← normalizeSignedEncoded ⟨128, by decide⟩ _, normalizeSigned128Word, wordOfInt_signed_sub]
       rfl
-    exact execBlock_singleton (ExecStmt.assign (by
+    exact execBlock_singleton (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by
       simpa only [hn] using evalExpr_cast_int (intType := .sint ⟨128, by decide⟩) he)
       (assignLocalValue (store_get_self _ _ _)))
 
@@ -140,7 +140,7 @@ theorem poolSwapCrossSource {f : Frame} {evm : State} {id : UInt256}
       have hstore : ExecStmt config
           (wordLocal f5 "__c22" (poolSwapCrossLiquidity evm id s zeroForOne r.liquidity)) post poolSwapCrossStmts[6]!
           (.ok (poolSwapCrossFrame f evm id s r zeroForOne) post) :=
-        ExecStmt.assign wordLocal_eval (assignLocalField
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalField
           ((store_get_ne _ _ (by decide : ("__c22" == "result") = false)).trans hr5) rfl rfl)
       exact execBlock_append hpre (ExecBlock.consNormal hcall (ExecBlock.consNormal hneg
         (ExecBlock.consNormal hadd (execBlock_singleton hstore))))

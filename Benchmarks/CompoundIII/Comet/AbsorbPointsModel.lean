@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.LiquidatorPointsData
 import Benchmarks.CompoundIII.Comet.InternalOutcome
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -29,7 +29,7 @@ instance (p : LiquidatorPointsData) (n gasUsed fee : UInt256) :
     Decidable (AbsorbPointsValid p n gasUsed fee) := inferInstanceAs (Decidable ((_ ∧ _) ∧ _))
 
 def absorbPointsLoaded (evm : State) (addr : AccountAddress) : LiquidatorPointsData :=
-  liquidatorPointsData (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr))
+  liquidatorPointsData (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (liquidatorSlot addr))
 
 def absorbPointsOutcome (evm : State) (addr : AccountAddress) (n gasUsed : UInt256) :
     InternalOutcome :=

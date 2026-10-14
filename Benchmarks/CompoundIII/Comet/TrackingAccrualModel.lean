@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.DivBaseWei
 import Benchmarks.CompoundIII.Comet.AccrualWrites
 import Benchmarks.CompoundIII.Comet.NarrowArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.CompoundIII.Comet.Immutables
 
 namespace Benchmarks.CompoundIII.Comet
@@ -49,8 +49,8 @@ def trackingAccrualFrame (frame : Frame) (borrow : Bool) (increment : UInt256) :
 
 def trackingAccrualState (evm : EVM.State) (v : CometWithExtendedAssetListImmutables)
     (borrow : Bool) (elapsed : UInt256) : EVM.State :=
-  let w0 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
-  let w1 := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
+  let w0 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  let w1 := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩
   storeTrackingIndex evm borrow
     (trackingIndexWord w0 borrow +
       trackingIncrement v borrow (totalsPrincipalWord w1 borrow) elapsed)
@@ -58,14 +58,14 @@ def trackingAccrualState (evm : EVM.State) (v : CometWithExtendedAssetListImmuta
 abbrev TrackingEnabled (v : CometWithExtendedAssetListImmutables)
     (borrow : Bool) (evm : EVM.State) : Prop :=
   v.baseMinForRewards.toNat ≤
-    (totalsPrincipalWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow).toNat
+    (totalsPrincipalWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow).toNat
 
 abbrev TrackingBranchValid (v : CometWithExtendedAssetListImmutables)
     (borrow : Bool) (evm : EVM.State) (elapsed : UInt256) : Prop :=
   if TrackingEnabled v borrow evm then
     TrackingAccrualValid v borrow
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed else True
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) elapsed else True
 
 def trackingBranchState (evm : EVM.State) (v : CometWithExtendedAssetListImmutables)
     (borrow : Bool) (elapsed : UInt256) : EVM.State :=
@@ -75,7 +75,7 @@ def trackingBranchFrame (frame : Frame) (evm : EVM.State)
     (v : CometWithExtendedAssetListImmutables) (borrow : Bool) (elapsed : UInt256) : Frame :=
   if TrackingEnabled v borrow evm then trackingAccrualFrame frame borrow
     (trackingIncrement v borrow
-      (totalsPrincipalWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow)
+      (totalsPrincipalWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩) borrow)
       elapsed)
   else frame
 

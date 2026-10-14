@@ -1,7 +1,7 @@
 import Examples.ERC20.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,17 +12,17 @@ def totalSupplyWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 
 theorem totalSupplyWord_eq_storageLoad_init {σ σ₀ A I} {g : Sat256} :
     totalSupplyWord σ I =
-      Solm.EVM.storageLoad (initState σ σ₀ g A I)
+      Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ :=
   rfl
 
-/-- The Solm `totalSupply()` body returns the word stored in slot 2. -/
+/-- The Stele `totalSupply()` body returns the word stored in slot 2. -/
 theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "totalSupply" = none) :
     ExecTransitionBody erc20Config erc20Contract evm locals totalSupplyTransition.body
       (.returned { contract := erc20Contract, locals := locals } evm
-        (some [(.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
+        (some [(.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef erc20Config { contract := erc20Contract, locals := locals } evm
@@ -121,7 +121,7 @@ theorem erc20TotalSupplyBodyCore
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

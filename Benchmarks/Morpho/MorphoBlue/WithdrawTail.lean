@@ -3,16 +3,17 @@ import Benchmarks.Morpho.MorphoBlue.MarketLiquidity
 import Benchmarks.Morpho.MorphoBlue.MarketTransferPair
 import Benchmarks.Morpho.MorphoBlue.MarketTransferEvents
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
 theorem withdrawEmit (p : MarketParamsWords) (assets shares account receiver : UInt256)
-    (locals imms : Store) (evm : EVM.State) (hl : MarketTransferLocals p assets shares account receiver locals) :
+    (locals imms : Store) (evm : EVM.State) (hl : MarketTransferLocals p assets shares account receiver locals)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm
-      withdrawTransition.body[20]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := hl.emit imms evm "Withdraw"
+      withdrawTransition.body[20]! (.ok { contract := contract, locals := locals, immutables := imms } evm) := hl.emit imms evm "Withdraw" hperm
 
 theorem morphoWithdrawTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
     {s0 evm : State} {mem out : ByteArray} {aw fp assets shares account receiver : UInt256} {σ : AccountMap}
@@ -43,7 +44,7 @@ theorem morphoWithdrawTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat25
     have hab : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
         (withdrawTransition.body.drop 19) { contract := contract, locals := locals, immutables := imms } evm
         (withdrawTransition.body.drop 21) :=
-      (StateBlock.start.step hguard).step (withdrawEmit p assets shares account receiver locals imms evm hl)
+      (StateBlock.start.step hguard).step (withdrawEmit (hperm := (congrArg ExecutionEnv.perm hs.env).trans hp) p assets shares account receiver locals imms evm hl)
     have hm2 := hm1.event (UInt256.ofNat ee.source.val) assets shares
     have hpe := hm1.eventPrefix (UInt256.ofNat ee.source.val) assets shares
     have hpref := had.preserves.trans (hpe.mono (by rw [had.cursor]; omega))

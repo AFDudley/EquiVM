@@ -9,7 +9,7 @@ higher (`SWAP4`/`SWAP3` where Jug has `SWAP3`/`SWAP2`) and there is one extra `S
 `SSTORE`.  The store leaves `[⟨1⟩]` on the stack.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 

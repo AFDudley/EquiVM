@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.Common
 import Benchmarks.EAS.Attester.UnboundedMemory
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

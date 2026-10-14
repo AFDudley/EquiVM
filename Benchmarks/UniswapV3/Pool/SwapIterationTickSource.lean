@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.SwapIterationSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -26,8 +26,8 @@ theorem swapIterationBitmapStoresSource {frame : Frame} {evm : EVM.State}
       (.tupleGet (.var "__c2") 1) = .ok (.bool hit) := by
     simp only [evalExpr?, hg, EvalResult.ofOption, bind, EvalResult.bind, tupleGetValue?]
     rfl
-  exact ExecBlock.consNormal (ExecStmt.assign he (assignLocalField_frame hd rfl rfl))
-    (ExecBlock.consNormal (ExecStmt.assign hf
+  exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalField_frame hd rfl rfl))
+    (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hf
       (assignLocalField_frame Std.HashMap.getElem?_insert_self rfl rfl)) ExecBlock.nil)
 
 def swapIterationClampTick (tick : Int) : Int :=
@@ -65,7 +65,7 @@ theorem swapIterationClampSource {frame : Frame} {evm : EVM.State} (d : SwapIter
   by_cases hlo : d.tickNext < -887272
   · simp only [swapIterationClampFrame, if_pos hlo]
     apply ExecStmt.iteTrue (by simpa only [hlo, decide_true] using hl)
-    exact ExecBlock.consNormal (ExecStmt.assign (by
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by
       simp only [evalExpr?, evalUnaryOp?, EvalResult.ofOption, bind, EvalResult.bind, pure])
       (assignLocalField_frame hd rfl rfl)) ExecBlock.nil
   · simp only [swapIterationClampFrame, if_neg hlo]
@@ -74,7 +74,7 @@ theorem swapIterationClampSource {frame : Frame} {evm : EVM.State} (d : SwapIter
     by_cases hhi : 887272 < d.tickNext
     · simp only [if_pos hhi]
       apply ExecStmt.iteTrue (by simpa only [hhi, decide_true] using hu)
-      apply ExecBlock.consNormal (ExecStmt.assign ?_ (assignLocalField_frame hd rfl rfl))
+      apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ?_ (assignLocalField_frame hd rfl rfl))
         ExecBlock.nil
       simp only [evalExpr?, evalUnaryOp?, evalBinaryOp?, castValue?, EvalResult.ofOption,
         bind, EvalResult.bind, pure]

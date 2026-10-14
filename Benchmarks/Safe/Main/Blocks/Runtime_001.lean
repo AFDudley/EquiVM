@@ -1,10 +1,10 @@
 import Reasoning.Reach
 import Benchmarks.Safe.Main.Bytecode
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 open Reasoning.Theory Reasoning.Reach
 
-namespace safeRuntimeBlocks
+namespace Benchmarks.Safe.Main.RuntimeBlocks
 
 /-- Final memory for bytecode block summary `safeRuntime_block_0_taken`. -/
 def safeRuntime_block_0_taken_memory {mem : ByteArray} : ByteArray :=
@@ -535,4 +535,4 @@ theorem safeRuntime_block_111_taken_packed {ee : ExecutionEnv} {g : Sat256} {s0 
   obtain ⟨k', C', h'⟩ := RD.pack (safeRuntime_block_111_taken hstack hcond hvalid h)
   exact ⟨_, k', C', h'⟩
 
-end safeRuntimeBlocks
+end Benchmarks.Safe.Main.RuntimeBlocks

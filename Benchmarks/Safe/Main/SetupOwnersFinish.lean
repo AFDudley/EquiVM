@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.SetupOwnersStore
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 
@@ -10,7 +10,7 @@ theorem safeAssignThresholdLocals (evm : EVM.State) (locals : Store) (value : UI
     (hb : locals["threshold"]? = none) :
     assignStorageRef? config { contract := contract, locals := locals } evm .storage thresholdRef
       (uint256Value value) = .ok ({ contract := contract, locals := locals },
-        Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
+        Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨4⟩ value) := by
   apply assignStorageRef_storage_scalar_value (er := { base := "threshold" })
     (loc := uint256Loc ⟨4⟩)
   · exact hb
@@ -24,13 +24,14 @@ theorem safeAssignThresholdLocals (evm : EVM.State) (locals : Store) (value : UI
 def setupOwnersFinishState (p : SetupOwnersInput) (evm : EVM.State)
     (current : UInt256) : EVM.State :=
   let evm₁ := writeOwnerLink evm current ⟨1⟩
-  let evm₂ := Solm.EVM.storageStore evm₁ evm₁.executionEnv.codeOwner ⟨3⟩
+  let evm₂ := Stele.EVM.storageStore evm₁ evm₁.executionEnv.codeOwner ⟨3⟩
     (UInt256.ofNat p.owners.length)
-  Solm.EVM.storageStore evm₂ evm₂.executionEnv.codeOwner ⟨4⟩ p.threshold
+  Stele.EVM.storageStore evm₂ evm₂.executionEnv.codeOwner ⟨4⟩ p.threshold
 
 theorem safeSetupOwnersFinishSource (evm : EVM.State) {p locals i current}
     (hl : SetupOwnersLocals p locals i current) (hc : current.toNat < EVM.addressModulus)
-    (hn : p.owners.length < UInt256.size) :
+    (hn : p.owners.length < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm
       (setupOwnersFunction.body.drop 7)
       (.ok { contract := contract, locals := locals } (setupOwnersFinishState p evm current)) := by
@@ -41,9 +42,9 @@ theorem safeSetupOwnersFinishSource (evm : EVM.State) {p locals i current}
       .ok (uint256Value (UInt256.ofNat p.owners.length)) := by
     rw [uint256Value, ulit_toNat' _ hn]
     exact evalLocalValue hl.length
-  exact .consNormal (.assign (safeEvalOwnerSentinel evm locals) hfirst)
-    (.consNormal (.assign hlen (safeAssignOwnerCount _ locals _ hl.countAbsent))
-      (.consNormal (.assign (evalLocalValue hl.threshold)
+  exact .consNormal (.assign (hperm := Or.inr hperm) (safeEvalOwnerSentinel evm locals) hfirst)
+    (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) hlen (safeAssignOwnerCount _ locals _ hl.countAbsent))
+      (.consNormal (.assign (hperm := Or.inr (by simpa only [writeOwnerLink, storageStore_executionEnv] using hperm)) (evalLocalValue hl.threshold)
         (safeAssignThresholdLocals _ locals _ hl.thresholdAbsent)) .nil))
 
 theorem setupOwnersFinishState_accounts (p : SetupOwnersInput) (evm : EVM.State)

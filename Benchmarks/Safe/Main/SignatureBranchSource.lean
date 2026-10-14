@@ -1,6 +1,6 @@
 import Benchmarks.Safe.Main.SignaturePiece
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -40,7 +40,7 @@ theorem signatureCurrentSource {f : Frame} {evm : EVM.State} {r : UInt256} {old 
       (.assign .localVar (varRef "currentOwner")
         (uint256AsAddress (bytes32AsUint256 (.var "r"))))
       (.ok (signatureCurrentFrame f r) evm) := by
-  apply ExecStmt.assign
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
   · simpa only [accountAddress_ofUInt256_eq_ofNat_toNat] using
       evalNatAsAddress (evalWordBytesAsUint256 (evalLocalValue hr))
   · simpa only [signatureCurrentFrame, signatureSet, varRef,

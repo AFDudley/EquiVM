@@ -5,11 +5,11 @@ import Benchmarks.UniswapV3.Pool.Routines
 # UniswapV3Pool `fee()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 2048; reach lemma `uniswapV3PoolReachFeeBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -58,10 +58,12 @@ theorem uniswapV3PoolFeeBody {σ σ₀ A I} {g : UInt256} (v : UniswapV3PoolImmu
   have hd : dispatchMsg contract I.calldata = some feeTransition := by
     apply uniswapV3PoolDispatch_fee <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (feeTransition.params.map Param.name)
       (transitionSignature feeTransition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolFeeX (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolFeeReturns v _ ∅ hwv)
       (returnEquiv_of_encode (uintCastReturnEncoding ⟨24, by decide⟩ v.fee

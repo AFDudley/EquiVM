@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.BlockResultTrace
 import Benchmarks.UniswapV4PoolManager.ReachCost
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- LIBRARY CANDIDATE: rebase a block's successful cursor to preserve the incoming cost floor.
@@ -24,6 +24,6 @@ theorem blockResultTrace_retainCost {code : ByteArray} {I J : ExecutionEnv} {g :
     intro budget start hin
     exact (routine budget start 0 0 hin).2
   | reverted | staticViolation => exact hr
-  | returned | «break» | «continue» => exact False.elim hr
+  | returned | «break» | «continue» | noMatch | decodingFailed => exact False.elim hr
 
 end Benchmarks.UniswapV4PoolManager

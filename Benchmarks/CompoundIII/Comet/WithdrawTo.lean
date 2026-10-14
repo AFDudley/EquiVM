@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.WithdrawToSource
 # CometWithExtendedAssetList `withdrawTo(address,address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 907; reach lemma `cometWithExtendedAssetListReachWithdrawToBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListWithdrawToBody {σ σ₀ A I} {g : UInt256} (v
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 54) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some withdrawToTransition :=
     cometSelectorDispatch ⟨54, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (withdrawToTransition.params.map Param.name)
       (transitionSignature withdrawToTransition).paramTypes I.calldata =
       decodeCalldata ["to", "asset", "amount"]

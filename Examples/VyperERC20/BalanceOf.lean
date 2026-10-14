@@ -1,9 +1,10 @@
 import Reasoning.WordArithmetic
+import Reasoning.Vyper
 import Examples.VyperERC20.TotalSupply
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -70,10 +71,10 @@ theorem erc20BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       ERC20.balanceOfTransition.body
       (.returned { contract := erc20Contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
-      rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
+      rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .int uint256Int)
         (hbase := by simp [balanceOfStore, balanceOfRef, ERC20.balanceOfRef])
         (her := by
           simp [evalStorageRef, evalStorageRefStep, balanceOfRef, ERC20.balanceOfRef,
@@ -124,52 +125,11 @@ theorem balanceOfHashMem_size (owner : UInt256) :
   unfold balanceOfHashMem
   exact wordAt0Mem_size_96 ⟨0⟩ (balanceOfKeyMem_size owner)
 
-theorem balanceOfKeyMem_read32 (owner : UInt256) :
-    (balanceOfKeyMem owner).readWithPadding 32 32 = UInt256.toByteArray owner := by
-  unfold balanceOfKeyMem wordAt32Mem
-  rw [write32_read_back _ _ _ (by rw [toByteArray_size])
-    (by rw [balanceOfOwnerArgMem_size owner]; omega)]
-  apply ByteArray.ext
-  rw [ByteArray.data_extract]
-  exact Array.extract_eq_self_of_le (by
-    change (UInt256.toByteArray owner).size ≤ 32
-    rw [toByteArray_size])
-
-theorem balanceOfHashMem_read0 (owner : UInt256) :
-    (balanceOfHashMem owner).readWithPadding 0 32 = UInt256.toByteArray (⟨0⟩ : UInt256) := by
-  unfold balanceOfHashMem
-  exact wordAt0Mem_read0 ⟨0⟩ (balanceOfKeyMem owner)
-
-theorem balanceOfHashMem_read32 (owner : UInt256) :
-    (balanceOfHashMem owner).readWithPadding 32 32 = UInt256.toByteArray owner := by
-  unfold balanceOfHashMem wordAt0Mem
-  rw [write32_read_above _ _ 0 32 (by rw [toByteArray_size])
-    (by rw [balanceOfKeyMem_size owner]; omega)
-    (by omega)
-    (by rw [balanceOfKeyMem_size owner]; omega)]
-  exact balanceOfKeyMem_read32 owner
-
 theorem balanceOfHashMem_read0_64 (owner : UInt256) :
     (balanceOfHashMem owner).readWithPadding 0 64 =
       UInt256.toByteArray (⟨0⟩ : UInt256) ++ UInt256.toByteArray owner := by
-  rw [readWithPadding_eq_extract' _ 0 64 (by norm_num) (by norm_num)
-      (by rw [balanceOfHashMem_size owner]; omega)]
-  have hleft :
-      (balanceOfHashMem owner).extract 0 32 = UInt256.toByteArray (⟨0⟩ : UInt256) := by
-    rw [← readWithPadding_eq_extract _ 0
-        (by rw [balanceOfHashMem_size owner]; omega),
-      balanceOfHashMem_read0 owner]
-  have hright :
-      (balanceOfHashMem owner).extract 32 64 = UInt256.toByteArray owner := by
-    rw [← readWithPadding_eq_extract _ 32
-        (by rw [balanceOfHashMem_size owner]; omega),
-      balanceOfHashMem_read32 owner]
-  rw [show (balanceOfHashMem owner).extract 0 64 =
-      (balanceOfHashMem owner).extract 0 32 ++
-        (balanceOfHashMem owner).extract 32 64 by
-      rw [ByteArray.extract_append_extract]
-      norm_num]
-  rw [hleft, hright]
+  exact wordAt0Mem_wordAt32Mem_read0_64 ⟨0⟩ owner
+    (by rw [balanceOfOwnerArgMem_size]; omega)
 
 theorem balanceOfKeccakSlot (I : ExecutionEnv)
     (hcanon : (balanceOfOwnerWord I).toNat < EVM.addressModulus) :
@@ -177,9 +137,7 @@ theorem balanceOfKeccakSlot (I : ExecutionEnv)
         (KEC ((balanceOfHashMem (balanceOfOwnerWord I)).readWithPadding 0 64)))
       = balanceOfSlot I := by
   rw [balanceOfHashMem_read0_64]
-  unfold balanceOfSlot erc20BalanceOfSlot vyperMappingSlot
-  rw [keyValueToWord_address_of_canonical _ hcanon]
-  exact keccakSlot_eq _
+  exact vyperMappingSlot_hash_address ⟨0⟩ (balanceOfOwnerWord I) hcanon
 
 theorem balanceOfReturnMem_size (owner val : UInt256) :
     (balanceOfReturnMem owner val).size = 128 := by
@@ -487,7 +445,7 @@ theorem erc20BalanceOfBodyCore
         (.returned { contract := erc20Contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfSlot, initState, Solm.EVM.storageLoad,
+    simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using erc20BalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
@@ -496,7 +454,7 @@ theorem erc20BalanceOfBodyCore
   · by_cases hcanon : (balanceOfOwnerWord I).toNat < EVM.addressModulus
     · have hdec0 := erc20Decode_balanceOf_ok (I := I) hsz36 hcanon
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata =
               some (balanceOfStore I) := by
@@ -506,7 +464,7 @@ theorem erc20BalanceOfBodyCore
           (returnEquiv_of_encode (Reasoning.Theory.uint256ReturnEncoding (balanceOfWord σ I)))
     · have hdec0 := erc20Decode_balanceOf_none_noncanon (I := I) hsz36 hcanon
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -516,7 +474,7 @@ theorem erc20BalanceOfBodyCore
   · have hshort : I.calldata.size < 36 := by omega
     have hdec0 := erc20Decode_balanceOf_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.balanceOfTransition.params.map Param.name)
           (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

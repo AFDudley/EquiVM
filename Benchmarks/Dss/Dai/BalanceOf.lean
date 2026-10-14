@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -35,40 +35,40 @@ theorem balanceOfStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
   rw [keyValueToWord_address_ofNat_mask]
 
 theorem daiDecode_balanceOf_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = _
   simpa [balanceOfStore, balanceOfArgValue, balanceOfArgWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem daiDecode_balanceOf_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0")
     hsz4 hshort
 
-/-- The Solm `balanceOf(address)` body returns `balanceOf[arg0]`. -/
+/-- The Stele `balanceOf(address)` body returns `balanceOf[arg0]`. -/
 theorem daiBalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := balanceOfStore I })
+        (stele := { contract := contract, locals := balanceOfStore I })
         (slot := balanceOfRef (.var "arg0"))
         (er := ({ base := "balanceOf", steps := [.mindex (balanceOfArgKey I)] } :
           EvaledStorageRef))
         (t := .int uint256Int)
         (loc := wordLoc (balanceOfStorageSlot I) (.int uint256Int))
         (value := .int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))
         (hbase := by
           simp [balanceOfStore, balanceOfRef])
@@ -157,7 +157,7 @@ theorem daiBalanceOfBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some balanceOfTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
         (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨734⟩ [sel]
@@ -171,7 +171,7 @@ theorem daiBalanceOfBodyCoreOk
         (.returned { contract := contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [balanceOfWord, balanceOfStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       daiBalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
@@ -194,7 +194,7 @@ theorem daiBalanceOfBodyCoreDecodeFailed_short
   exact (daiBalanceOfX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `balanceOf(address)` body refines its Solm transition. -/
+/-- `balanceOf(address)` body refines its Stele transition. -/
 theorem daiBalanceOfBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

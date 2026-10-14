@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.CurrencyTransferABI
 import Benchmarks.UniswapV4PoolManager.MappingMemory
 import Benchmarks.UniswapV4PoolManager.WordReturnTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 -- GENERALIZES Reasoning.Theory.write0_from_read32_above: arbitrary write offset and length.

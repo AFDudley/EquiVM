@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.AccrueFeePosition
 import Benchmarks.Morpho.MorphoBlue.SharesDownSource
 import Benchmarks.Morpho.MorphoBlue.StateBlock
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -74,7 +74,7 @@ theorem morphoAccrueFeeAssignLocal (locals imms : Store) (evm : EVM.State) (shar
       (.var "__c6") = .ok (.int (Int.ofNat shares.toNat))) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm accrueFeeBody[2]!
       (.ok { contract := contract, locals := locals.insert "feeShares" (.int (Int.ofNat shares.toNat)), immutables := imms } evm) :=
-  ExecStmt.assign he (assignLocalWord hg)
+  ExecStmt.assign (hperm := Or.inl rfl) he (assignLocalWord hg)
 
 theorem MarketLocals.evalFeeRecipient {p : MarketParamsWords} {locals : Store}
     (hl : MarketLocals p locals) (imms : Store) (evm : EVM.State) :
@@ -99,10 +99,10 @@ theorem morphoAccrueFeePositionAssign (p : MarketParamsWords) (locals imms : Sto
     (hfit : (solcSlotWordAt (accrueFeePositionSlot evm.accountMap evm.executionEnv p.id)
       evm.accountMap evm.executionEnv).toNat + shares.toNat < UInt256.size) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm accrueFeeBody[3]!
-      (.ok { contract := contract, locals := locals, immutables := imms }
+      (if evm.executionEnv.perm then .ok { contract := contract, locals := locals, immutables := imms }
         (storePositionSupplyShares evm p.id (accrueFeeRecipient evm.accountMap evm.executionEnv)
-          (solcSlotWordAt (accrueFeePositionSlot evm.accountMap evm.executionEnv p.id) evm.accountMap evm.executionEnv + shares))) := by
-  apply ExecStmt.assign (checkedAddSourceOk (hl.evalFeePosition imms evm) he hfit)
+          (solcSlotWordAt (accrueFeePositionSlot evm.accountMap evm.executionEnv p.id) evm.accountMap evm.executionEnv + shares)) else .staticViolation) := by
+  apply execStmt_assign_storage (checkedAddSourceOk (hl.evalFeePosition imms evm) he hfit)
   exact assignPositionSupplyShares evm locals imms _ _ p.id _ _ (solcAddrMask_result_canonical _)
     hl.position (hl.evalId imms evm) (hl.evalFeeRecipient imms evm)
 

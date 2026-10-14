@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Benchmarks.Auction.InitializerSource
 import Benchmarks.Auction.InitializeRuntime
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -32,16 +32,16 @@ theorem initializerEnteredState_accounts (evm : EVM.State) :
 
 
 def initializerPauseState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)
       (UInt256.lnot ⟨255⟩))
 
 def initializerStatusState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ ⟨1⟩
 
 def initializerOwnerState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩)
       (solcSourceWord evm.executionEnv))
 
 def initializeBaseState (evm : EVM.State) : EVM.State :=
@@ -50,20 +50,20 @@ def initializeBaseState (evm : EVM.State) : EVM.State :=
 
 def initializePausedState (evm : EVM.State) : EVM.State :=
   let evm1 := initializeBaseState evm
-  Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨51⟩
-    (pauseWord (Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨51⟩))
+  Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨51⟩
+    (pauseWord (Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨51⟩))
 
 def InitializeArgs.storeState (args : InitializeArgs) (evm : EVM.State) : EVM.State :=
-  let evm1 := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨201⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨201⟩) args.nouns)
-  let evm2 := Solm.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨202⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨202⟩) args.weth)
-  let evm3 := Solm.EVM.storageStore evm2 evm2.executionEnv.codeOwner ⟨203⟩ args.timeBuffer
-  let evm4 := Solm.EVM.storageStore evm3 evm3.executionEnv.codeOwner ⟨204⟩ args.reservePrice
-  let evm5 := Solm.EVM.storageStore evm4 evm4.executionEnv.codeOwner ⟨205⟩
-    (UInt256.lor (UInt256.land (Solm.EVM.storageLoad evm4 evm4.executionEnv.codeOwner ⟨205⟩)
+  let evm1 := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨201⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨201⟩) args.nouns)
+  let evm2 := Stele.EVM.storageStore evm1 evm1.executionEnv.codeOwner ⟨202⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm1 evm1.executionEnv.codeOwner ⟨202⟩) args.weth)
+  let evm3 := Stele.EVM.storageStore evm2 evm2.executionEnv.codeOwner ⟨203⟩ args.timeBuffer
+  let evm4 := Stele.EVM.storageStore evm3 evm3.executionEnv.codeOwner ⟨204⟩ args.reservePrice
+  let evm5 := Stele.EVM.storageStore evm4 evm4.executionEnv.codeOwner ⟨205⟩
+    (UInt256.lor (UInt256.land (Stele.EVM.storageLoad evm4 evm4.executionEnv.codeOwner ⟨205⟩)
       (UInt256.lnot ⟨255⟩)) args.minBidIncrement)
-  Solm.EVM.storageStore evm5 evm5.executionEnv.codeOwner ⟨206⟩ args.duration
+  Stele.EVM.storageStore evm5 evm5.executionEnv.codeOwner ⟨206⟩ args.duration
 
 def initializerExitedState (evm : EVM.State) (top : Bool) : EVM.State :=
   if top then setInitializingState evm false else evm

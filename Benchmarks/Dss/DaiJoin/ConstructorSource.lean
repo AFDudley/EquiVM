@@ -2,13 +2,13 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.DaiJoin.Common
 import Reasoning.Initcode
 import Reasoning.ExternalCall
-import Solm.Refine
+import Stele.Refine
 
 /-!
-# MakerDAO/Sky DSS DaiJoin constructor Solm source semantics
+# MakerDAO/Sky DSS DaiJoin constructor Stele source semantics
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.DaiJoin
 
@@ -25,7 +25,7 @@ theorem daiJoinCtorDeployment_shape {args : List Value} {deployedInitcode : Byte
     (hdeploy : config.selfDeployment daiJoinCreationBytecode args = some deployedInitcode) :
     ∃ vat dai : AccountAddress,
       args = [.address vat, .address dai] ∧ deployedInitcode = daiJoinCtorCode vat dai := by
-  simp [config, contract, constructorDecl, Solm.genSolidityConstructorDeployment] at hdeploy
+  simp [config, contract, constructorDecl, Stele.genSolidityConstructorDeployment] at hdeploy
   cases args with
   | nil =>
       simp [ABI.encodeABIValues?, ABI.encodeABIValuesFrom?, addr] at hdeploy
@@ -53,20 +53,20 @@ abbrev daiJoinCtorLocals (vat dai : AccountAddress) : Store :=
   ((∅ : Store).insert "vat_" (.address vat)).insert "dai_" (.address dai)
 
 abbrev daiJoinCtorAfterWardsState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (wardsSlot (.address evm.executionEnv.source)) ⟨1⟩
 
 abbrev daiJoinCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩ ⟨1⟩
 
 abbrev daiJoinCtorAfterVatState (evm : EVM.State) (vat : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       (EVM.word vat.val))
 
 abbrev daiJoinCtorAfterDaiState (evm : EVM.State) (dai : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
       (EVM.word dai.val))
 
 
@@ -115,8 +115,8 @@ private theorem assign_daiJoinCtorAddressStorage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some (.elem .address))
     (hloc : config.storageBackend.locate? er = some (.leaf (addrLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         (EVM.word addrValue.val))
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.address addrValue) =
@@ -148,7 +148,7 @@ private theorem assign_daiJoinCtorUint256Storage (evm : EVM.State) (locals : Sto
     (her : evalStorageRef config { contract := contract, locals := locals } evm ref = .ok er)
     (hty : storageTypeAt? contract.storage er = some uint256St)
     (hloc : config.storageBackend.locate? er = some (.leaf (wordLoc slot))) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot value
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot value
     assignStorageRef? config { contract := contract, locals := locals } evm
       .storage ref (.int (Int.ofNat value.toNat)) =
         .ok ({ contract := contract, locals := locals }, evm') := by
@@ -212,7 +212,8 @@ theorem daiJoinCtorCallerWardsSlot_eq (I : ExecutionEnv) :
 theorem daiJoinCtorBodySuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat dai : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := daiJoinCtorLocals vat dai
     let evm0 := initState σ σ₀
       (Sat256.ofUInt256 g) A I
@@ -250,18 +251,19 @@ theorem daiJoinCtorBodySuccess
   simp only [constructorDecl, nonpayable, List.cons_append, List.nil_append]
   refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
   · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign (by rw [evalExpr?]; rfl) hassignLive) ?_
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignVat) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignWards) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) (by rw [evalExpr?]; rfl) hassignLive) ?_
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm2, daiJoinCtorAfterLiveState, evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) ?_ hassignVat) ?_
   · simpa [locals] using evalExpr_daiJoinCtorLocalVat (evm := evm2) vat dai
-  refine ExecBlock.consNormal (ExecStmt.assign ?_ hassignDai) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa [evm3, daiJoinCtorAfterVatState, evm2, daiJoinCtorAfterLiveState, evm1, daiJoinCtorAfterWardsState, evm0, initState] using hperm)) ?_ hassignDai) ExecBlock.nil
   · simpa [locals] using evalExpr_daiJoinCtorLocalDai (evm := evm3) vat dai
 
-theorem daiJoinSolmCtorExecSuccess
+theorem daiJoinSteleCtorExecSuccess
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat dai : AccountAddress)
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [.address vat, .address dai] σ σ₀ g A I
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec config contract [.address vat, .address dai] σ σ₀ g A I
       (.returned { contract := contract, locals := daiJoinCtorLocals vat dai }
         (daiJoinCtorAfterDaiState
           (daiJoinCtorAfterVatState
@@ -271,7 +273,7 @@ theorem daiJoinSolmCtorExecSuccess
             vat)
           dai)
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := daiJoinCtorLocals vat dai)
@@ -280,15 +282,15 @@ theorem daiJoinSolmCtorExecSuccess
   · rfl
   · simpa [ExecTransitionBody, contract, constructorDecl] using
       ExecFuncBody.execBlockOK
-        (daiJoinCtorBodySuccess
+        (daiJoinCtorBodySuccess (hperm := by assumption)
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) vat dai hwv)
 
-theorem daiJoinSolmCtorExecReverts_nonpayable
+theorem daiJoinSteleCtorExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256} (vat dai : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [.address vat, .address dai] σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+    steleCtorExec config contract [.address vat, .address dai] σ σ₀ g A I .reverted := by
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := daiJoinCtorLocals vat dai)

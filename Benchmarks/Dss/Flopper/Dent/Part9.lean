@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dent.Part8
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -28,42 +28,42 @@ theorem flopperDentBodyCoreLotNotLower
         (dentLotWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState] using hgt
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState] using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLeSolm : (dentLotStoredWord evmSolm I).toNat ≤ (dentLotWord I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLe
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLeStele : (dentLotStoredWord evmStele I).toNat ≤ (dentLotWord I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLe
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_lotNotLower evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLeSolm
+    exact flopperDentBodyReverts_lotNotLower evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLeStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   obtain ⟨memLot, _, _, hmemLot, hreadLot, rd2201⟩ :=
@@ -97,48 +97,48 @@ theorem flopperDentBodyCoreLotOneOverflow
           dentOneWord.toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState] using hgt
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState] using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm : (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneOverflowSolm :
-      UInt256.size ≤ (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneOverflow
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele : (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneOverflowStele :
+      UInt256.size ≤ (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneOverflow
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_lotOneOverflow evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneOverflowSolm
+    exact flopperDentBodyReverts_lotOneOverflow evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneOverflowStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   obtain ⟨_, _, _, _, _, rd2273⟩ :=
@@ -168,45 +168,45 @@ theorem flopperDentBodyCoreBegLotOverflow
       UInt256.size ≤ (solcSlotWordAt ⟨4⟩ σ I).toNat * (dentLotWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState] using hgt
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState] using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm : (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegOverflowSolm :
-      UInt256.size ≤ (dentBegWord evmSolm).toNat * (dentLotWord I).toNat := by
-    simpa [evmSolm, dentBegWord, initState] using hbegOverflow
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele : (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegOverflowStele :
+      UInt256.size ≤ (dentBegWord evmStele).toNat * (dentLotWord I).toNat := by
+    simpa [evmStele, dentBegWord, initState] using hbegOverflow
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_begLotOverflow evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegOverflowSolm
+    exact flopperDentBodyReverts_begLotOverflow evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegOverflowStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   obtain ⟨_, _, _, _, _, rd2273⟩ :=
@@ -254,51 +254,51 @@ theorem flopperDentBodyCoreInsufficientDecrease
         (dentBegLotWord (initState σ σ₀ (Sat256.ofUInt256 g) A I) I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨533⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState] using hgt
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState] using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentEndWord, dentTimestampWord, initState] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm : (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hinsuffSolm : (dentLotOneWord evmSolm I).toNat < (dentBegLotWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotOneWord, dentLotStoredWord, dentBegLotWord, dentBegWord,
+        simpa [evmStele, dentTicWord, initState] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentEndWord, dentTimestampWord, initState] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele : (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hinsuffStele : (dentLotOneWord evmStele I).toNat < (dentBegLotWord evmStele I).toNat := by
+    simpa [evmStele, dentLotOneWord, dentLotStoredWord, dentBegLotWord, dentBegWord,
       initState] using hinsuff
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
         .reverted := by
-    exact flopperDentBodyReverts_insufficientDecrease evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hinsuffSolm
+    exact flopperDentBodyReverts_insufficientDecrease evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hinsuffStele
   have hdecoded :=
     flopperDentX_decoded (g := Sat256.ofUInt256 g) hsz100 hsize hreach
   obtain ⟨memLotOne, _, _, hmemLotOne, hreadLotOne, rd2322⟩ :=
@@ -340,60 +340,60 @@ theorem flopperDentBodyCoreAddOverflowCallerEq
         (dentRuntimeTtlWord I.codeOwner σ I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (rd2405 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2405⟩
       [dentBidWord I, dentLotWord I, dentIdWord I, ⟨334⟩, sel]
       memStart (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm : UInt256.ofNat evmSolm.executionEnv.source.val = dentGuyWord evmSolm I := by
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hcaller
+  have hcallerStele : UInt256.ofNat evmStele.executionEnv.source.val = dentGuyWord evmStele I := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hcaller
   have httl :=
     dentRuntimeTtlWord_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
-  have haddOverflowSolm :
+  have haddOverflowStele :
       2 ^ 48 ≤
-        (dentNow48Word evmSolm).toNat +
-          (dentTtlWord (dentAfterLotStore evmSolm I)).toNat := by
-    simpa [evmSolm, dentNow48Word, dentTimestampWord, initState, httl] using haddOverflow
+        (dentNow48Word evmStele).toNat +
+          (dentTtlWord (dentAfterLotStore evmStele I)).toNat := by
+    simpa [evmStele, dentNow48Word, dentTimestampWord, initState, httl] using haddOverflow
   by_cases hperm : I.perm = true
   swap
   · have hp : I.perm = false := by simpa using hperm
@@ -401,17 +401,17 @@ theorem flopperDentBodyCoreAddOverflowCallerEq
     obtain ⟨_, _, rd2889⟩ := flopperDentX_callerEqOkFromGuard hcaller rd2435
     have hstatic := permSplit_false hp
       (flopperDentX_toCheckedAddStartFromTailSplit rd2889)
-    have hsource := (flopperDentBodyReturns_success_callerEqSplit evmSolm I
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm).2 hp
+    have hsource := (flopperDentBodyReturns_success_callerEqSplit evmStele I
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body .reverted := by
-    exact flopperDentBodyReverts_addOverflow_callerEq evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm haddOverflowSolm
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body .reverted := by
+    exact flopperDentBodyReverts_addOverflow_callerEq (hperm := hperm) evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele haddOverflowStele
   obtain ⟨_, _, rd2435⟩ := flopperDentX_toCallerEqGuard rd2405
   obtain ⟨_, _, rd2889⟩ := flopperDentX_callerEqOkFromGuard hcaller rd2435
   have hrev :=
@@ -451,59 +451,59 @@ theorem flopperDentBodyCoreSuccessCallerEq
         (dentRuntimeTtlWord I.codeOwner σ I).toNat < 2 ^ 48)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I))
     (rd2405 : RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨2405⟩
       [dentBidWord I, dentLotWord I, dentIdWord I, ⟨334⟩, sel]
       memStart (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let packedSlot := auctionPackedSlot (dentIdWord I)
-  have hliveSolm : dentLiveWord evmSolm = ⟨1⟩ := by
-    simpa [evmSolm, dentLiveWord, initState] using hlive
-  have hguySolm : dentGuyWord evmSolm I ≠ ⟨0⟩ := by
+  have hliveStele : dentLiveWord evmStele = ⟨1⟩ := by
+    simpa [evmStele, dentLiveWord, initState] using hlive
+  have hguyStele : dentGuyWord evmStele I ≠ ⟨0⟩ := by
     intro hzero
     apply hguy
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hzero
-  have hticOkSolm :
-      (dentTimestampWord evmSolm).toNat < (dentTicWord evmSolm I).toNat ∨
-        dentTicWord evmSolm I = ⟨0⟩ := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hzero
+  have hticOkStele :
+      (dentTimestampWord evmStele).toNat < (dentTicWord evmStele I).toNat ∨
+        dentTicWord evmStele I = ⟨0⟩ := by
     cases hticOk with
     | inl hgt =>
         left
-        simpa [evmSolm, dentTimestampWord, dentTicWord, initState, packedSlot]
+        simpa [evmStele, dentTimestampWord, dentTicWord, initState, packedSlot]
           using hgt
     | inr hzero =>
         right
-        simpa [evmSolm, dentTicWord, initState, packedSlot] using hzero
-  have hendGtSolm : (dentTimestampWord evmSolm).toNat < (dentEndWord evmSolm I).toNat := by
-    simpa [evmSolm, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
-  have hbidSolm : dentBidWord I = dentBidStoredWord evmSolm I := by
-    simpa [evmSolm, dentBidStoredWord, initState] using hbid
-  have hlotLtSolm :
-      (dentLotWord I).toNat < (dentLotStoredWord evmSolm I).toNat := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotLt
-  have hbegFitSolm :
-      (dentBegWord evmSolm).toNat * (dentLotWord I).toNat < UInt256.size := by
-    simpa [evmSolm, dentBegWord, initState] using hbegFit
-  have hlotOneFitSolm :
-      (dentLotStoredWord evmSolm I).toNat * dentOneWord.toNat < UInt256.size := by
-    simpa [evmSolm, dentLotStoredWord, initState] using hlotOneFit
-  have hsuffSolm :
-      (dentBegLotWord evmSolm I).toNat ≤ (dentLotOneWord evmSolm I).toNat := by
-    simpa [evmSolm, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
+        simpa [evmStele, dentTicWord, initState, packedSlot] using hzero
+  have hendGtStele : (dentTimestampWord evmStele).toNat < (dentEndWord evmStele I).toNat := by
+    simpa [evmStele, dentTimestampWord, dentEndWord, initState, packedSlot] using hendGt
+  have hbidStele : dentBidWord I = dentBidStoredWord evmStele I := by
+    simpa [evmStele, dentBidStoredWord, initState] using hbid
+  have hlotLtStele :
+      (dentLotWord I).toNat < (dentLotStoredWord evmStele I).toNat := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotLt
+  have hbegFitStele :
+      (dentBegWord evmStele).toNat * (dentLotWord I).toNat < UInt256.size := by
+    simpa [evmStele, dentBegWord, initState] using hbegFit
+  have hlotOneFitStele :
+      (dentLotStoredWord evmStele I).toNat * dentOneWord.toNat < UInt256.size := by
+    simpa [evmStele, dentLotStoredWord, initState] using hlotOneFit
+  have hsuffStele :
+      (dentBegLotWord evmStele I).toNat ≤ (dentLotOneWord evmStele I).toNat := by
+    simpa [evmStele, dentBegLotWord, dentBegWord, dentLotOneWord, dentLotStoredWord,
       initState] using hsuff
-  have hcallerSolm : UInt256.ofNat evmSolm.executionEnv.source.val = dentGuyWord evmSolm I := by
-    simpa [evmSolm, dentGuyWord, initState, packedSlot] using hcaller
+  have hcallerStele : UInt256.ofNat evmStele.executionEnv.source.val = dentGuyWord evmStele I := by
+    simpa [evmStele, dentGuyWord, initState, packedSlot] using hcaller
   have httl :=
     dentRuntimeTtlWord_source_eq
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g)
-  have haddFitSolm :
-      (dentNow48Word evmSolm).toNat +
-          (dentTtlWord (dentAfterLotStore evmSolm I)).toNat < 2 ^ 48 := by
-    simpa [evmSolm, dentNow48Word, dentTimestampWord, initState, httl] using haddFit
+  have haddFitStele :
+      (dentNow48Word evmStele).toNat +
+          (dentTtlWord (dentAfterLotStore evmStele I)).toNat < 2 ^ 48 := by
+    simpa [evmStele, dentNow48Word, dentTimestampWord, initState, httl] using haddFit
   by_cases hperm : I.perm = true
   swap
   · have hp : I.perm = false := by simpa using hperm
@@ -511,19 +511,19 @@ theorem flopperDentBodyCoreSuccessCallerEq
     obtain ⟨_, _, rd2889⟩ := flopperDentX_callerEqOkFromGuard hcaller rd2435
     have hstatic := permSplit_false hp
       (flopperDentX_toCheckedAddStartFromTailSplit rd2889)
-    have hsource := (flopperDentBodyReturns_success_callerEqSplit evmSolm I
-        (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-        hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-        hcallerSolm).2 hp
+    have hsource := (flopperDentBodyReturns_success_callerEqSplit evmStele I
+        (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+        hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+        hcallerStele).2 hp
     exact hstatic.reEquivStaticHalt hcode hdispatch hdecode hsource
   have hbody :
-      ExecTransitionBody config contract evmSolm (dentLocals I) dentTransition.body
-        (.returned { contract := contract, locals := dentTicLocals evmSolm I }
-          (dentPostState evmSolm I) none) := by
-    exact flopperDentBodyReturns_success_callerEq evmSolm I
-      (by simpa [evmSolm, initState] using hwv) hliveSolm hguySolm hticOkSolm
-      hendGtSolm hbidSolm hlotLtSolm hbegFitSolm hlotOneFitSolm hsuffSolm
-      hcallerSolm haddFitSolm
+      ExecTransitionBody config contract evmStele (dentLocals I) dentTransition.body
+        (.returned { contract := contract, locals := dentTicLocals evmStele I }
+          (dentPostState evmStele I) none) := by
+    exact flopperDentBodyReturns_success_callerEq (hperm := hperm) evmStele I
+      (by simpa [evmStele, initState] using hwv) hliveStele hguyStele hticOkStele
+      hendGtStele hbidStele hlotLtStele hbegFitStele hlotOneFitStele hsuffStele
+      hcallerStele haddFitStele
   obtain ⟨_, _, rd2435⟩ := flopperDentX_toCallerEqGuard rd2405
   obtain ⟨_, _, rd2889⟩ := flopperDentX_callerEqOkFromGuard hcaller rd2435
   have hret :=
@@ -593,7 +593,7 @@ theorem flopperDentBodyCoreMoveSuccessTicZero
           outMove) true)
     (hdispatch : dispatchMsg contract I.calldata = some dentTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (dentTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (dentTransition.params.map Param.name)
         (transitionSignature dentTransition).paramTypes I.calldata = some (dentLocals I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   by_cases hashNoCode :

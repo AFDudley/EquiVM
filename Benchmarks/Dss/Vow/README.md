@@ -33,8 +33,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode, 5150 bytes.
 - `Vow.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold with storage layout and full public ABI surface.
-- `SpecSyntax.lean`: Solm notation presentation for representative fragments, checked by `rfl`.
+- `Spec.lean`: Stele AST benchmark scaffold with storage layout and full public ABI surface.
+- `SpecSyntax.lean`: Stele notation presentation for representative fragments, checked by `rfl`.
 - `Constructor.lean`: constructor source and EVM trace helpers.
 - `ConstructorTail.lean`: completed constructor-equivalence proof.
 - `Correct.lean`: completed runtime-equivalence theorem plus whole-contract wrapper.
@@ -62,6 +62,6 @@ Scaffold notes:
   modeled as static external calls; other interface calls are modeled as normal external calls.
 - Repeated `vat.dai` and `vat.sin` reads are intentionally repeated in the spec, matching the source
   behavior under changing external state.
-- No known Solm syntax or semantics change is required to start proving this benchmark. The likely
+- No known Stele syntax or semantics change is required to start proving this benchmark. The likely
   proof hotspots are overloaded external ABI dispatch, repeated static calls, and sequential storage
   updates around `file("flapper", ...)`, `fess`, and `cage`.

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.FlashProtocolWords
 import Benchmarks.UniswapV3.Pool.CollectProtocolPaymentsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -78,7 +78,8 @@ def flashProtocolState (evm : EVM.State) (second : Bool) (fees : UInt256) : EVM.
 theorem flashProtocolStore (locals imms : Store) (evm : EVM.State) (second : Bool)
     (fees : UInt256)
     (hf : locals.get? (flashProtocolFeesName second) = some (.int (Int.ofNat fees.toNat)))
-    (hbase : locals.get? "protocolFees" = none) :
+    (hbase : locals.get? "protocolFees" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config {contract := contract, locals := locals, immutables := imms} evm
       (flashProtocolStoreStmt second)
       (.ok {contract := contract, locals := locals, immutables := imms}
@@ -104,7 +105,7 @@ theorem flashProtocolStore (locals imms : Store) (evm : EVM.State) (second : Boo
     · simpa only [show (⟨0⟩ : UInt256).toNat = 0 from rfl,
         hp, decide_true] using hguard
     refine ExecBlock.consNormal ?_ ExecBlock.nil
-    simpa only [storeProtocolFee_uint128Word] using ExecStmt.assign
+    simpa only [storeProtocolFee_uint128Word] using ExecStmt.assign (hperm := Or.inr hperm)
       (evalExpr_uint128AddCast (evalProtocolFeesWord locals imms evm second hbase) hfee)
       (assignProtocolFee evm locals imms second
         (uint128Word (protocolFeesWord second evm.accountMap evm.executionEnv + fees)) hbase)
@@ -124,7 +125,8 @@ def flashProtocolStmts (second : Bool) : List Stmt :=
 theorem flashProtocolSource (locals imms : Store) (evm : EVM.State) (second : Bool)
     (paid : UInt256)
     (hp : locals.get? (flashPaidName second) = some (.int (Int.ofNat paid.toNat)))
-    (hslot : locals.get? "slot0" = none) (hfees : locals.get? "protocolFees" = none) :
+    (hslot : locals.get? "slot0" = none) (hfees : locals.get? "protocolFees" = none)
+    (hperm : evm.executionEnv.perm = true) :
     let divisor := poolProtocolDivisor second evm.accountMap evm.executionEnv
     ExecBlock config {contract := contract, locals := locals, immutables := imms} evm
       (flashProtocolStmts second)
@@ -137,7 +139,7 @@ theorem flashProtocolSource (locals imms : Store) (evm : EVM.State) (second : Bo
   · cases second <;>
       simpa [flashPaidName, flashProtocolName, Std.HashMap.getElem?_insert] using hp
   · simp [Std.HashMap.getElem?_insert]
-  refine ExecBlock.consNormal (flashProtocolStore _ imms evm second _ ?_ ?_) ExecBlock.nil
+  refine ExecBlock.consNormal (flashProtocolStore (hperm := by assumption) _ imms evm second _ ?_ ?_) ExecBlock.nil
   · simp [Std.HashMap.getElem?_insert]
   · cases second <;>
       simpa [flashProtocolName, flashProtocolFeesName, Std.HashMap.getElem?_insert] using hfees

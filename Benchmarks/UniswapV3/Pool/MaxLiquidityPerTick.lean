@@ -5,11 +5,11 @@ import Benchmarks.UniswapV3.Pool.Routines
 # UniswapV3Pool `maxLiquidityPerTick()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1478; reach lemma `uniswapV3PoolReachMaxLiquidityPerTickBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV3.Pool.Immutables
 
@@ -56,10 +56,12 @@ theorem uniswapV3PoolMaxLiquidityPerTickBody {σ σ₀ A I} {g : UInt256} (v : U
   have hd : dispatchMsg contract I.calldata = some maxLiquidityPerTickTransition := by
     apply uniswapV3PoolDispatch_maxLiquidityPerTick <;>
       first | exact hsel | exact selectorMismatch_of_match hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (maxLiquidityPerTickTransition.params.map Param.name)
       (transitionSignature maxLiquidityPerTickTransition).paramTypes
-      I.calldata = some (∅ : Store) := decodeCalldataWithMode_empty_ok hsz
+      I.calldata = some (∅ : Store) := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
+    exact decodeCalldataWithMode_empty_ok hsz
   exact (uniswapV3PoolMaxLiquidityPerTickX (g := Sat256.ofUInt256 g) v hcode hwv hsz hsize hsel)
     |>.reEquivExecution hcode hd hdec (uniswapV3PoolMaxLiquidityPerTickReturns v _ ∅ hwv)
       (returnEquiv_of_encode (uintCastReturnEncoding ⟨128, by decide⟩ v.maxLiquidityPerTick

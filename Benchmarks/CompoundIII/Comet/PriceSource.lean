@@ -2,7 +2,7 @@ import Benchmarks.CompoundIII.Comet.PriceDecode
 import Benchmarks.CompoundIII.Comet.StaticCallBridge
 import Benchmarks.CompoundIII.Comet.GetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -74,7 +74,7 @@ theorem pricePrefix_exec (imms : Store) (addr : AccountAddress) (evm evm' : EVM.
     ExecBlock config (priceEntry imms addr) evm pricePrefix
       (.ok (priceCallFrame imms addr z out) evm') := by
   apply ExecBlock.consNormal (ExecStmt.letDecl (pricePayload_eval _ _))
-  apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (target := addr)
+  apply ExecBlock.consNormal (lowLevelCallSourceWithPerm (hperm := Or.inl rfl) (target := addr)
     (value := 0) (calldata := pricePayload) ?_ (by simp only [evalExpr?, pure]) ?_ hc)
   · exact ExecBlock.nil
   all_goals
@@ -188,7 +188,7 @@ theorem price_call_ok (frame : Frame) (evm evm' : EVM.State) (addr : AccountAddr
       (priceRemainder_returns _ _ _ _ hhi hv))
   exact ExecStmt.internalCallReturn (callee := priceCallable)
     (locals := (∅ : Store).insert "priceFeed" (.address addr))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact priceCallable_lookup) rfl (by simpa only [hf] using hb)
 
@@ -201,7 +201,7 @@ theorem price_call_revert (frame : Frame) (evm evm' : EVM.State) (addr : Account
     ExecStmt config frame evm (.internalCall "getPrice_body" [expr] ret) .reverted := by
   apply ExecStmt.internalCallRevert (callee := priceCallable)
     (locals := (∅ : Store).insert "priceFeed" (.address addr))
-    (cfg := config) (solm := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
+    (cfg := config) (stele := frame) (evm := evm) (args := [expr]) (argVals := [.address addr])
     (by simp only [evalExprs?, he, pure, bind, EvalResult.bind])
     (by rw [hf]; exact priceCallable_lookup) rfl
   have hb : ExecFuncBody config (priceEntry frame.immutables addr) evm priceCallable.body

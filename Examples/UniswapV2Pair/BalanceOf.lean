@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -46,27 +46,27 @@ theorem balanceOfStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
 
 theorem uniswapDecode_balanceOf_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = _
   simpa [balanceOfStore, balanceOfOwnerValue, balanceOfOwnerWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
 
 theorem uniswapDecode_balanceOf_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner"] [legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
-/-- The Solm `balanceOf(address)` body returns `balanceOf[owner]`. -/
+/-- The Stele `balanceOf(address)` body returns `balanceOf[owner]`. -/
 theorem uniswapBalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (balanceOfStorageSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -165,7 +165,7 @@ theorem uniswapBalanceOfBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some balanceOfTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (balanceOfTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
         (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1079⟩ [sel]
@@ -179,7 +179,7 @@ theorem uniswapBalanceOfBodyCoreOk
         (.returned { contract := contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [balanceOfWord, balanceOfStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapBalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

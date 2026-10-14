@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.SignedAmountDeltaPrefix
 import Benchmarks.UniswapV3.Pool.AmountDeltaRoutines
 import Benchmarks.UniswapV3.Pool.SafeCast256Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -12,7 +12,7 @@ theorem signedAmountDeltaCallSource (imms : Store) (evm : EVM.State) (second : B
       (.internalCall (amountDeltaName second) (signedAmountDeltaCallArgs a) (signedAmountDeltaCallName a))
       (.ok (signedAmountDeltaCallFrame imms second a) evm) := by
   exact internalCallFunctionReturn (callee := amountDeltaFunction second)
-    (calleeSolm := amountDeltaReturnFrame imms second (signedAmountDeltaUnsigned a))
+    (calleeStele := amountDeltaReturnFrame imms second (signedAmountDeltaUnsigned a))
     (locals := amountDeltaLocals (signedAmountDeltaUnsigned a))
     (value := some [.int (Int.ofNat (amountDeltaResult second (signedAmountDeltaUnsigned a)).toNat)])
     (evalSignedAmountDeltaArgs imms evm second a hfit) (amountDeltaLookup second)
@@ -40,7 +40,7 @@ theorem signedAmountDeltaCastSource (imms : Store) (evm : EVM.State) (second : B
       .ok (.int (Int.ofNat (amountDeltaResult second (signedAmountDeltaUnsigned a)).toNat)) :=
     evalExpr_var_get Std.HashMap.getElem?_insert_self
   exact internalCallFunctionReturn (callee := safeCast256Function)
-    (calleeSolm := safeCast256ReadyFrame imms (amountDeltaResult second (signedAmountDeltaUnsigned a)))
+    (calleeStele := safeCast256ReadyFrame imms (amountDeltaResult second (signedAmountDeltaUnsigned a)))
     (locals := safeCast256Locals (amountDeltaResult second (signedAmountDeltaUnsigned a)))
     (value := some [.int (Int.ofNat (amountDeltaResult second (signedAmountDeltaUnsigned a)).toNat)])
     (by simp only [evalExprs?, he, bind, EvalResult.bind, pure]) safeCast256Lookup (safeCast256Bind _)
@@ -59,7 +59,7 @@ theorem signedAmountDeltaAssignSource (imms : Store) (evm : EVM.State) (second :
       (.ok (signedAmountDeltaReturnFrame imms second a) evm) := by
   have hc : (signedAmountDeltaCastFrame imms second a).locals.get? "__cond4" = some (.int 0) := by
     signed_amount_delta_get
-  apply ExecStmt.assign (value := .int (signedAmountDeltaResult second a)) ?_
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (signedAmountDeltaResult second a)) ?_
     (assignLocalVarBase_frame hc)
   have he : evalExpr? config (signedAmountDeltaCastFrame imms second a) evm
       (.var (signedAmountDeltaCastName a)) =

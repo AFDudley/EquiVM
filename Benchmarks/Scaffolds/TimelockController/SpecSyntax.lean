@@ -1,8 +1,8 @@
 import Benchmarks.Scaffolds.TimelockController.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# TimelockController spec in the Solidity-faithful Solm frontend
+# TimelockController spec in the Solidity-faithful Stele frontend
 
 The whole TimelockControllerBench benchmark spec, written with `solidity%` and proven
 definitionally equal to the AST spec in `Benchmarks/OpenZeppelinBench/TimelockController/Spec.lean`.
@@ -19,7 +19,7 @@ Notes mirroring the AST spec:
 * Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.TimelockController.Syntax
 

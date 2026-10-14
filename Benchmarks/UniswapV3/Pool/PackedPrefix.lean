@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.PackedStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 
 -- LIBRARY CANDIDATE: repeated writes at the same account and slot retain the last value.

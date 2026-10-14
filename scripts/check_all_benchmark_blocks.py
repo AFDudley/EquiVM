@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import re
 import subprocess
 import sys
@@ -43,6 +44,13 @@ def benchmark_inputs(path: Path) -> tuple[str, str, Path | None]:
     if not layout.exists():
         layout = path.with_name("Immutables.lean")
     return code_term, module_name(path), layout if layout.exists() else None
+
+
+def benchmark_uses_vyper_suffix(path: Path) -> bool:
+    builds = sorted(path.parent.glob("*.build.json"))
+    build_data = [json.loads(p.read_text(encoding="utf-8")) for p in builds]
+    return any(b.get("compiler", {}).get("kind") == "vyper" and b.get("immutables")
+               for b in build_data)
 
 
 def run(args: list[str], *, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -99,8 +107,9 @@ def main() -> int:
     build_targets = []
     for path in paths:
         _, bytecode_import, layout = benchmark_inputs(path)
+        vyper_suffix = benchmark_uses_vyper_suffix(path)
         build_targets.append(bytecode_import)
-        if layout:
+        if layout and not vyper_suffix:
             build_targets.append(module_name(layout))
     print(f"Building imports for {len(paths)} benchmark runtimes", flush=True)
     build = run(["lake", "build", *build_targets], timeout=3600)
@@ -111,6 +120,7 @@ def main() -> int:
     shards: list[Path] = []
     for path in paths:
         code_term, bytecode_import, layout = benchmark_inputs(path)
+        vyper_suffix = benchmark_uses_vyper_suffix(path)
         hex_path = path.with_name("runtime.hex")
         if read_bytecode(path, code_term) != read_bytecode(hex_path):
             raise ValueError(f"Lean bytecode differs from runtime.hex: {path}")
@@ -123,7 +133,9 @@ def main() -> int:
                    "--bytecode-import", bytecode_import,
                    "--shard-size", str(args.shard_size),
                    "--output", str(output)]
-        if layout:
+        if vyper_suffix:
+            command.append("--runtime-suffix")
+        elif layout:
             # The layout's declaration namespace can differ from its module path.
             layout_source = layout.read_text(encoding="utf-8")
             match = re.search(r"^namespace ([\w.]+)", layout_source, re.MULTILINE)

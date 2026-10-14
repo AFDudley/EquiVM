@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.ModuleGuardCall
 import Benchmarks.Safe.Main.GuardRefinement
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 
@@ -10,7 +10,7 @@ theorem safeModuleGuardFinish {σ σ₀ σ' : AccountMap} {g : UInt256} {A : Sub
     {aw : UInt256} {k C : Nat} {R : List UInt256}
     (hcode : I.code = safeBytecode)
     (hdispatch : selectorDispatchMsg contract I.calldata = some setmoduleguardTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (setmoduleguardTransition.params.map Param.name)
       (transitionSignature setmoduleguardTransition).paramTypes
       I.calldata = some (guardArgs .moduleGuard guard))

@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.FlashUpdates
 import Benchmarks.UniswapV3.Pool.FlashFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -70,7 +70,7 @@ theorem flashSettlementX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       change ExecBlock _ _ _ (flashTransition.body.drop 23) _
       rw [← List.take_append_drop 2 (flashTransition.body.drop 23)]
       apply execBlock_append_ok hsourceUpdates
-      exact flashFinishSource locals2 (immStore v) evm2 recipient amount0 amount1 _ _
+      exact flashFinishSource (hperm := (congrArg ExecutionEnv.perm hs2.env).trans hperm) locals2 (immStore v) evm2 recipient amount0 amount1 _ _
         hcore2.recipient hcore2.amount0 hcore2.amount1 hp0 hp1 hcore2.slot0
 
 end Benchmarks.UniswapV3.Pool

@@ -1,6 +1,6 @@
 import Benchmarks.CompoundIII.Comet.ApprovePayload
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -23,7 +23,7 @@ theorem approveCall_source {frame : Frame} {evm evm' : EVM.State}
       .ok [.address manager, .int amount.toNat] := by
     simp only [evalExprs?, hm, hn, bind, EvalResult.bind, pure]
   cases z with
-  | false => exact ExecStmt.externalCallFailure ha (by simp only [evalExpr?, pure]) he ht
-  | true => exact ExecStmt.externalCallSuccess ha (by simp only [evalExpr?, pure]) he ht rfl
+  | false => exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ha (by simp only [evalExpr?, pure]) he ht
+  | true => exact ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ha (by simp only [evalExpr?, pure]) he ht rfl
 
 end Benchmarks.CompoundIII.Comet

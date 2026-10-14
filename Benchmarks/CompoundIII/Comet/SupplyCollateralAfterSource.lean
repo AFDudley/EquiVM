@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.SupplyCollateralPrefixSource
 import Benchmarks.CompoundIII.Comet.InternalBlockComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -11,7 +11,8 @@ theorem supplyCollateralTail_source {sender dst asset amount out}
     (frame : Frame) (evm : EVM.State) (balance next : UInt256)
     (hf : SupplyCollateralArgs frame sender dst asset amount out) (hv : AssetValid out)
     (hb : frame.locals.get? "dstCollateral" = some (.int balance.toNat))
-    (hn : frame.locals.get? "dstCollateralNew" = some (.int next.toNat)) :
+    (hn : frame.locals.get? "dstCollateralNew" = some (.int next.toNat))
+    (hperm : evm.executionEnv.perm = true) :
     internalBlockResult config frame evm supplyCollateralTail
       (assetMembershipResult evm dst (calldataWord out 0) balance next) := by
   have hc := assetMembership_call frame evm dst out balance next
@@ -34,6 +35,7 @@ theorem supplyCollateralTail_source {sender dst asset amount out}
     have hargs : SupplyCollateralArgs final sender dst asset amount out :=
       hf.insert "__c3" .unit (by decide)
     refine ⟨final, ExecBlock.consNormal hc (ExecBlock.consNormal (ExecStmt.emit
+      (hperm := (congrArg ExecutionEnv.perm (assetMembershipResult_executionEnv he)).trans hperm)
       (vals := [.address sender, .address dst, .address asset, .int amount.toNat]) ?_) .nil)⟩
     change evalExprs? config final evm' _ = _
     simp only [evalExprs?, evalExpr?, hargs.sender, hargs.dst, hargs.asset, hargs.amount,
@@ -66,10 +68,11 @@ theorem supplyCollateralAfterAsset_source {sender dst asset amount out}
     simp only [supplyCollateralOutcome, he]
     exact execBlock_append_term hp (by intro _ _ h; cases h)
   | ok evm' =>
+    have hperm := supplyCollateralPrefixOutcome_result_perm he
     have hp := supplyCollateralPrefix_result hp he
     simp only [supplyCollateralOutcome, he]
     apply internalBlockResult.prependBlock (hp := hp)
-    apply supplyCollateralTail_source _ evm' _ _ (hf.ready evm) hv
+    apply supplyCollateralTail_source (hperm := hperm) _ evm' _ _ (hf.ready evm) hv
     · simp only [supplyCollateralReadyFrame, Std.HashMap.get?_eq_getElem?,
         Std.HashMap.getElem?_insert]; rfl
     · simp only [supplyCollateralReadyFrame, Std.HashMap.get?_eq_getElem?,

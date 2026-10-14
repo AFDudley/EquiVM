@@ -7,11 +7,11 @@ import Benchmarks.CompoundIII.Comet.RuntimeBlocks_014
 # CometWithExtendedAssetList `storeFrontPriceFactor()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 1321; reach lemma `cometWithExtendedAssetListReachStoreFrontPriceFactorBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 open cometWithExtendedAssetListBlocks
@@ -59,7 +59,7 @@ theorem cometWithExtendedAssetListStoreFrontPriceFactorBody {σ σ₀ A I} {g : 
     runtimeRefinementFor config contract σ σ₀ g A I (immStore v) := by
   have hsz : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 7) rfl hsel
-  exact immutableGetter_refines (t := storeFrontPriceFactorTransition) hcode hsz
+  exact immutableGetter_refines (t := storeFrontPriceFactorTransition) hcode hsz (cometDecode_empty hsz)
     (cometSelectorDispatch ⟨7, by decide⟩ hsel) rfl rfl rfl
     (immStore_get_storeFrontPriceFactor v) (uint256ReturnEncoding v.storeFrontPriceFactor)
     (storeFrontPriceFactorX v hcode hsz hsize hsel)

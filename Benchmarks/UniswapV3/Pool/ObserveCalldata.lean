@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.LegacyArrayDecode
 import Benchmarks.UniswapV3.Pool.ObserveSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 attribute [local instance] Classical.propDecidable
 
@@ -19,7 +19,7 @@ structure ObserveCalldataValid (cd : ByteArray) : Prop where
   payload : observeDataStart cd + 32 * observeCount cd ≤ cd.size
 
 theorem observeDecode (cd : ByteArray) :
-    decodeCalldataWithMode config.abiDecodeMode (observeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (observeTransition.params.map Param.name)
       (transitionSignature observeTransition).paramTypes cd =
       if ObserveCalldataValid cd then
         some (observeLocals (oracleObserveCleanAgos (observeRawAgos cd))) else none := by
@@ -52,13 +52,13 @@ theorem observeDecode (cd : ByteArray) :
   split_ifs <;> simp_all <;> omega
 
 theorem observeDecodeValid {cd : ByteArray} (h : ObserveCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (observeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (observeTransition.params.map Param.name)
       (transitionSignature observeTransition).paramTypes cd =
       some (observeLocals (oracleObserveCleanAgos (observeRawAgos cd))) := by
   rw [observeDecode, if_pos h]
 
 theorem observeDecodeInvalid {cd : ByteArray} (h : ¬ ObserveCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (observeTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (observeTransition.params.map Param.name)
       (transitionSignature observeTransition).paramTypes cd = none := by
   rw [observeDecode, if_neg h]
 

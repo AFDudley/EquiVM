@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SignedNormalizeRange
 import Benchmarks.UniswapV4PoolManager.WordLocals
 import Benchmarks.UniswapV4PoolManager.PoolCheckSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -21,7 +21,7 @@ theorem signedToInt128Body {f : Frame} {evm : EVM.State} {n : Int}
   have hx0 : f0.locals.get? "x" = some (.int n) := by
     simp only [f0, wordLocal_get, beq_iff_eq, String.reduceEq, ↓reduceIte, hx]
   have h1 : ExecStmt config f0 evm signedToInt128Function.body[1]! (.ok f1 evm) :=
-    ExecStmt.assign (evalExpr_cast_int (intType := .sint ⟨128, by decide⟩) (evalLocalValue hx0))
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_cast_int (intType := .sint ⟨128, by decide⟩) (evalLocalValue hx0))
       (assignLocalValue (store_get_self _ _ _))
   have hx1 : f1.locals.get? "x" = some (.int n) :=
     (store_get_ne _ _ (by decide : ("y" == "x") = false)).trans hx0

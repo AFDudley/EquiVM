@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapWriteStoreSource
 import Benchmarks.UniswapV3.Pool.SwapWriteStoreTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
@@ -72,7 +72,7 @@ theorem swapWriteX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
         (.assign .storage ⟨"slot0", [.field "sqrtPriceX96"]⟩
           (.field (.var "state") "sqrtPriceX96"))
         (.ok frame (swapSlotFieldState evm false s.price)) :=
-      ExecStmt.assign
+      ExecStmt.assign (hperm := Or.inr ((congrArg ExecutionEnv.perm hsource.env).trans hperm))
         (evalExpr_structField (name := "sqrtPriceX96") (evalExpr_var_get hsget) rfl)
         (by simpa only [wordOfInt_ofNat_toNat] using
           assignSwapSlotField_frame evm false (Int.ofNat s.price.toNat) hf hbase)
@@ -101,7 +101,7 @@ theorem swapWriteX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       have hget (name : Ident) (hn : name ≠ "__c16") :
           f.locals.get? name = frame.locals.get? name :=
         resumeAfterInternalCall_get _ _ _ _ hn
-      have hstores := swapWriteStoresSource (evm := oracleWriteState a evm) s index cardinality
+      have hstores := swapWriteStoresSource (hperm := (congrArg ExecutionEnv.perm hsrc2.env).trans hperm) (evm := oracleWriteState a evm) s index cardinality
         (show f.contract = contract from hf) ((hget "state" (by decide)).trans hsget)
         ((hget "slot0" (by decide)).trans hbase)
         (show f.locals.get? "__c16" = some (.tuple

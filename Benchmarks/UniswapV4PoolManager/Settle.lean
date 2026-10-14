@@ -8,11 +8,11 @@ import Benchmarks.UniswapV4PoolManager.RuntimeBlocks_006
 # PoolManager `settle()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 10885; reach lemma `poolManagerReachSettleBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.UniswapV4PoolManager.Immutables
 
@@ -32,9 +32,10 @@ theorem poolManagerSettleBody {σ σ₀ A I} {g : UInt256} (v : PoolManagerImmut
     apply poolManagerDispatch_settle <;> first
     | exact hsel
     | exact selectorNe_of_selIs hsel (by decide +kernel)
-  have hdec : decodeCalldataWithMode config.abiDecodeMode (settleTransition.params.map Param.name)
-      (transitionSignature settleTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldataWithMode_empty_ok hsz
+  have hdec : config.externalABI.decodeCalldata? (settleTransition.params.map Param.name)
+      (transitionSignature settleTransition).paramTypes I.calldata = some ∅ := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+    exact decodeCalldataWithMode_empty_ok hsz
   obtain ⟨k, C, rdEntry⟩ := poolManagerReachSettleBody (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) v hcode hsz hsize hsel
   change RD (deployedRuntime v) I (Sat256.ofUInt256 g)

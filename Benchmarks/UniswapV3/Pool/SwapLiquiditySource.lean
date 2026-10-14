@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapCrossFlags
 import Benchmarks.UniswapV3.Pool.LiquidityDeltaSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -48,7 +48,7 @@ theorem swapLiquidityNegSource {frame : Frame} {evm : EVM.State}
   cases zeroForOne
   · exact ExecStmt.iteFalse ez .nil
   · apply ExecStmt.iteTrue ez
-    apply ExecBlock.consNormal (ExecStmt.assign _ (assignLocalVarBase_frame hn)) .nil
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) _ (assignLocalVarBase_frame hn)) .nil
     have en := evalExpr_var_get (cfg := config) (evm := evm) hn
     simp only [evalExpr?, en, evalBinaryOp?, castValue?, EvalResult.ofOption,
       bind, EvalResult.bind, pure]
@@ -81,7 +81,7 @@ theorem swapLiquidityAssignValueSource {frame : Frame} {evm : EVM.State}
     (hr : frame.locals.get? "__c14" = some (.int (Int.ofNat value.toNat))) :
     ExecStmt config frame evm swapInitializedBody[4]!
       (.ok (swapStateFrame frame {s with liquidity := value}) evm) :=
-  ExecStmt.assign (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
+  ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalExpr_var_get hr) (assignLocalField_frame hs rfl rfl)
 
 theorem SwapStateData.Fits.liquidity {s : SwapStateData} (hs : s.Fits) (value : UInt256)
     (hv : value.toNat < 2 ^ 128) : SwapStateData.Fits {s with liquidity := value} :=

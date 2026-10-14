@@ -2,7 +2,7 @@ import Benchmarks.Safe.Main.ExecTransactionDecodeSteps
 import Benchmarks.Safe.Main.CalldataBytesDecoder
 import Benchmarks.Safe.Main.MemoryBytesDecodeValid
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

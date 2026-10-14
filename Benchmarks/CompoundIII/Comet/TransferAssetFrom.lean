@@ -6,11 +6,11 @@ import Benchmarks.CompoundIII.Comet.TransferAssetFromSource
 # CometWithExtendedAssetList `transferAssetFrom(address,address,address,uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 916; reach lemma `cometWithExtendedAssetListReachTransferAssetFromBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables
 
@@ -26,7 +26,7 @@ theorem cometWithExtendedAssetListTransferAssetFromBody {σ σ₀ A I} {g : UInt
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (cometWithExtendedAssetListSelBytes 53) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some transferAssetFromTransition :=
     cometSelectorDispatch ⟨53, by decide⟩ hsel
-  have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  have hdecode : config.externalABI.decodeCalldata?
       (transferAssetFromTransition.params.map Param.name)
       (transitionSignature transferAssetFromTransition).paramTypes I.calldata =
       decodeCalldata ["src", "dst", "asset", "amount"]

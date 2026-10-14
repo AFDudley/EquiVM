@@ -2,7 +2,7 @@ import Benchmarks.UniswapV4PoolManager.SwapStepDeltaWords
 import Benchmarks.UniswapV4PoolManager.Amount0Source
 import Benchmarks.UniswapV4PoolManager.Amount1Source
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -49,7 +49,7 @@ theorem amountDeltaAssignSource {f : Frame} {evm : EVM.State} {a b liquidity : U
   by_cases hfit : amountDeltaFits a b liquidity use0 roundUp
   · rw [if_pos hfit] at hc ⊢
     exact ExecBlock.consNormal hc (ExecBlock.consNormal
-      (ExecStmt.assign wordLocal_eval (assignLocalValue ((store_get_ne _ _ hne).trans hr))) ExecBlock.nil)
+      (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) wordLocal_eval (assignLocalValue ((store_get_ne _ _ hne).trans hr))) ExecBlock.nil)
   · rw [if_neg hfit] at hc ⊢
     exact ExecBlock.consRevert hc
 

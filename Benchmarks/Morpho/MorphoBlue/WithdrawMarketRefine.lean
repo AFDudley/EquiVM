@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.WithdrawMarketReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -63,6 +63,8 @@ theorem morphoWithdrawMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g
         (halfWord_bound _ _) hc (Nat.lt_of_not_ge hf) rd2)
   have hass := morphoMarketSubtractAssign p l1 imms evm ⟨1, by decide⟩ "__c6" shares hl1.toMarketLocals hs1
     (by simpa only [hs.env, ← hs.accounts] using hf)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hperm, if_true] at hass
   obtain ⟨k3, C3, rd3⟩ := morphoCheckedSub128Ok (v := v) (by change R.length + 16 + 6 ≤ 1024; omega)
     (by rw [morphoPatchedValidJumps v]; jump_dest) (halfWord_bound _ _) hc hf rd2
   obtain ⟨k4, C4, rd4⟩ := morphoStoreUint128High (v := v) (by change R.length + 14 + 7 ≤ 1024; omega)
@@ -107,6 +109,8 @@ theorem morphoWithdrawMarketRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g
     (by rw [morphoPatchedValidJumps v]; jump_dest) (halfWord_bound _ _) hca hfa rd7
   have hass2 := morphoMarketSubtractAssign p l2 imms e1 ⟨0, by decide⟩ "__c7" assets hl2.toMarketLocals ha2
     (by simpa only [heq.env, ← heq.accounts] using hfa)
+  simp only [show e1.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm heq.env).trans hperm, if_true] at hass2
   let e2 := storeMarketField e1 p.id ⟨0, by decide⟩ (UInt256.sub (marketFieldWord e1.accountMap e1.executionEnv p.id 0) assets)
   let σ2 := storeMarketFieldAccounts σ1 ee p.id ⟨0, by decide⟩ (UInt256.sub (marketFieldWord σ1 ee p.id 0) assets)
   have heq2 : SourceState s0 ee σ2 e2 := by

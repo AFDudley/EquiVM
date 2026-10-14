@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.Amount1Words
 import Benchmarks.UniswapV4PoolManager.FullMathSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -26,7 +26,7 @@ theorem amount1Tail {f : Frame} {evm : EVM.State} {a b liquidity : UInt256} {rou
   have he := evalWordAdd
     (evalLocalValue (cfg := config) (f := f) (evm := evm) ha)
     (evalBoolWord (evalAndBool (evalLocalValue hr) hgt))
-  exact ExecFuncBody.execBlockRet (ExecBlock.consNormal (ExecStmt.assign he (assignLocalValue ha))
+  exact ExecFuncBody.execBlockRet (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he (assignLocalValue ha))
     (ABlock.start.returns wordLocal_eval))
 
 end Benchmarks.UniswapV4PoolManager

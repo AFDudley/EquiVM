@@ -3,7 +3,7 @@ import Benchmarks.UniswapV4PoolManager.PoolSwapScanComputeTrace
 import Benchmarks.UniswapV4PoolManager.PoolSwapAccountingTrace
 import Benchmarks.UniswapV4PoolManager.PoolSwapFinishTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 structure PoolSwapActiveWords (aw step state params : UInt256) : Prop where

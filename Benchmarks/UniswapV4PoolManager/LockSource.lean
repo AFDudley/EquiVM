@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.TransientSource
 import Benchmarks.UniswapV4PoolManager.CallComposition
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -9,7 +9,7 @@ def lockSetFunction (unlocked : Bool) : FunctionDecl := if unlocked then contrac
 abbrev deltaCountReadFunction : FunctionDecl := contract.functions[6]!
 
 def lockSetPost (evm : EVM.State) (unlocked : Bool) : EVM.State :=
-  Solm.EVM.transientStore evm evm.executionEnv.codeOwner lockSlot unlocked.toUInt256
+  Stele.EVM.transientStore evm evm.executionEnv.codeOwner lockSlot unlocked.toUInt256
 
 theorem lockSetFunction_lookup (unlocked : Bool) :
     lookupCallable? contract (lockSetFunction unlocked).name = some (lockSetFunction unlocked).toCallable := by
@@ -32,7 +32,7 @@ theorem lockSetBody {f : Frame} {evm : EVM.State} (hf : f.contract = contract) (
   · rw [if_pos hp]
     exact .execBlockStatic (ExecBlock.consStatic (ExecStmt.assignTransientStatic he hw hp))
   · rw [if_neg hp]
-    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign he hw) ExecBlock.nil)
+    exact .execBlockOK (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (Bool.eq_true_of_not_eq_false hp)) he hw) ExecBlock.nil)
 
 theorem lockSetCall {f : Frame} {evm : EVM.State} (hf : f.contract = contract) (unlocked : Bool) (retVar : Ident) :
     ExecStmt config f evm (.internalCall (lockSetFunction unlocked).name [] retVar)

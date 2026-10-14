@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Pot.FileDsr
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -77,7 +77,7 @@ theorem fileVowData_value_masked (I : ExecutionEnv) :
 
 
 theorem potDecode_fileVow_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
       (transitionSignature fileVowTransition).paramTypes I.calldata =
         some (fileVowLocals I) := by
   simpa [config, fileVowTransition, bytes32, bytes32Width, addr, fileVowLocals,
@@ -87,7 +87,7 @@ theorem potDecode_fileVow_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
 
 theorem potDecode_fileVow_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
       (transitionSignature fileVowTransition).paramTypes I.calldata = none := by
   simpa [config, fileVowTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -115,7 +115,7 @@ theorem fileVowLocals_get_vow (I : ExecutionEnv) :
   rw [fileVowLocals, store_get_ne _ _ (by decide), store_get_ne _ _ (by decide)]
   simp
 
-/-! ### Solm-side expression evaluation -/
+/-! ### Stele-side expression evaluation -/
 
 theorem evalExpr_fileVowAddr {evm : EVM.State} {I : ExecutionEnv} {locals : Store}
     (h : locals.get? "addr" = some (.address (fileVowData I))) :
@@ -176,7 +176,7 @@ theorem evalStorageRef_fileVow_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_fileVow_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fileVowLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -184,7 +184,7 @@ theorem evalExpr_fileVow_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := fileVowLocals I })
+      (stele := { contract := contract, locals := fileVowLocals I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -201,18 +201,18 @@ theorem evalExpr_fileVow_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_fileVow_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := fileVowLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := fileVowLocals I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (relyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := fileVowLocals I })
+      (stele := { contract := contract, locals := fileVowLocals I })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -224,7 +224,7 @@ theorem evalExpr_fileVow_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := storageLocLoad_uint256 evm (relyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -232,19 +232,19 @@ theorem evalExpr_fileVow_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) == Value.int 1) = false := beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
 
 theorem assign_fileVowStorage (evm : EVM.State) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨6⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩)
         (fileVowDataMaskedWord I))
     assignStorageRef? config { contract := contract, locals := fileVowLocals I } evm
       .storage vowRef (.address (fileVowData I)) =
@@ -264,7 +264,7 @@ theorem assign_fileVowStorage (evm : EVM.State) (I : ExecutionEnv) :
     storageLocStore_address_offset0 evm ⟨6⟩ (fileVowDataMaskedWord I)
       (fileVowDataMaskedWord_canonical I)
 
-/-! ### Solm-side transition body results -/
+/-! ### Stele-side transition body results -/
 
 theorem potFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -272,11 +272,11 @@ theorem potFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hwhat : fileVowWhat I = fileVowBytes) :
     let locals := fileVowLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨6⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨6⟩)
         (fileVowDataMaskedWord I))
-    ExecTransitionBody config contract evm0 locals fileVowTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileVowTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals fileVowTransition.body .staticViolation) := by
   intro locals evm0 evm1
@@ -286,7 +286,7 @@ theorem potFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     simpa [locals] using evalExpr_fileVow_auth_true evm0 I
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -314,24 +314,25 @@ theorem potFileVowSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hcond
       (execBlock_singleton h))
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign haddr hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) haddr hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic haddr hassign (by simp [evm0, initState]; exact hpf)))
 
 theorem potFileVowSourceBody {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
     (hauth : relyAuthWord σ I = ⟨1⟩)
-    (hwhat : fileVowWhat I = fileVowBytes) :
+    (hwhat : fileVowWhat I = fileVowBytes)
+    (hperm : I.perm = true) :
     let locals := fileVowLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩
-      (setAddressOffset0Word (Solm.EVM.storageLoad evm0 I.codeOwner ⟨6⟩)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩
+      (setAddressOffset0Word (Stele.EVM.storageLoad evm0 I.codeOwner ⟨6⟩)
         (fileVowDataMaskedWord I))
     ExecTransitionBody config contract evm0 locals fileVowTransition.body
       (.returned { contract := contract, locals := locals } evm1 none) :=
-  (potFileVowSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1
+  (potFileVowSourceBodySplit (σ₀ := σ₀) (A := A) (g := g) hwv hauth hwhat).1 hperm
 
 theorem potFileVowSourceBodyStatic {σ σ₀ A I} {g : UInt256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -357,13 +358,13 @@ theorem potFileVowSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     simpa [locals] using evalExpr_fileVow_auth_false evm0 I
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileVowTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.ite (.binary .eq (.var "what") vowParamLit)
@@ -385,7 +386,7 @@ theorem potFileVowSourceBodyUnrecognized {σ σ₀ A I} {g : UInt256}
     simpa [locals] using evalExpr_fileVow_auth_true evm0 I
       (by simp [evm0, initState])
       (by
-        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+        simpa [evm0, relyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
           State.lookupAccount] using hauth)
   have hcond :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -766,7 +767,7 @@ theorem potFileVowBodyCoreOk
     (hwhat : fileVowWhat I = fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -776,17 +777,17 @@ theorem potFileVowBodyCoreOk
   let locals := fileVowLocals I
   let stored := setAddressOffset0Word (solcSlotWord σ I ⟨6⟩) data
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner ⟨6⟩ stored
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
-  have hstoredSolm :
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner ⟨6⟩ stored
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hstoredStele :
       stored = setAddressOffset0Word (solcSlotWord σ I ⟨6⟩) data := by
     rfl
   have hbody :
       ExecTransitionBody config contract evm0 locals fileVowTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
-    simpa [evm0, evm1, locals, stored, data, hstoredSolm, solcSlotWord, initState] using
-      (potFileVowSourceBody (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hwhat)
+    simpa [evm0, evm1, locals, stored, data, hstoredStele, solcSlotWord, initState] using
+      (potFileVowSourceBody (hperm := hperm) (σ := σ)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := potFileVowX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   obtain ⟨_, _, hauthd⟩ := potFileVowX_authorized (I := I) hauth hdecoded
   have hmatch : calldataWord I.calldata 4 = ABI.bytesToWord fileVowBytes :=
@@ -814,7 +815,7 @@ theorem potFileVowBodyCoreStatic
     (hwhat : fileVowWhat I = fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -837,7 +838,7 @@ theorem potFileVowBodyCoreUnauthorized
     (hauth : relyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -845,12 +846,12 @@ theorem potFileVowBodyCoreUnauthorized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileVowLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I ≠ ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileVowTransition.body .reverted := by
     simpa [evm0, locals] using
       (potFileVowSourceBodyAuthReverts (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele)
   obtain ⟨_, _, hdecoded⟩ := potFileVowX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   exact (potFileVowX_unauthorized (I := I) hauth hdecoded)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -864,7 +865,7 @@ theorem potFileVowBodyCoreUnrecognized
     (hwhat : fileVowWhat I ≠ fileVowBytes)
     (hdispatch : dispatchMsg contract I.calldata = some fileVowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileVowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileVowTransition.params.map Param.name)
         (transitionSignature fileVowTransition).paramTypes I.calldata = some (fileVowLocals I))
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨637⟩ [sel]
@@ -872,12 +873,12 @@ theorem potFileVowBodyCoreUnrecognized
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let locals := fileVowLocals I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hauthSolm : relyAuthWord σ I = ⟨1⟩ := hauth
+  have hauthStele : relyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
       ExecTransitionBody config contract evm0 locals fileVowTransition.body .reverted := by
     simpa [evm0, locals] using
       (potFileVowSourceBodyUnrecognized (σ := σ)
-        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthSolm hwhat)
+        (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hauthStele hwhat)
   obtain ⟨_, _, hdecoded⟩ := potFileVowX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
   obtain ⟨_, _, hauthd⟩ := potFileVowX_authorized (I := I) hauth hdecoded
   have hneq : calldataWord I.calldata 4 ≠ ABI.bytesToWord fileVowBytes :=

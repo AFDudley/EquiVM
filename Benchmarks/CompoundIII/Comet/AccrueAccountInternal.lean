@@ -4,7 +4,7 @@ import Benchmarks.CompoundIII.Comet.UserBasicLoadEvm
 import Benchmarks.CompoundIII.Comet.MemoryAllocate
 import Benchmarks.CompoundIII.Comet.RuntimeBlocks_001
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.CompoundIII.Comet.Immutables cometWithExtendedAssetListBlocks
 
 namespace Benchmarks.CompoundIII.Comet
@@ -54,7 +54,7 @@ theorem cometAccrueAccountUpdate {v : CometWithExtendedAssetListImmutables}
     (by change 9 ≤ 1024; decide) (by decide)
     (by rw [cometWithExtendedAssetListPatchedValidJumps v]; jump_dest) r2
   have hread : solcSlotWordAt (userBasicSlot addr) σ ee =
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr) := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (userBasicSlot addr) := by
     simpa only [hs.env] using (hs.storageRead (userBasicSlot addr)).symm
   rw [hread] at hm3 r3
   have r4 := cometWithExtendedAssetList_block_5416 (immWords := wordsOf (immStore v))

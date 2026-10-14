@@ -1,8 +1,8 @@
 import Benchmarks.Dss.GemJoin.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# GemJoin spec in the Solidity-faithful Solm frontend
+# GemJoin spec in the Solidity-faithful Stele frontend
 
 The whole GemJoin benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/Dss/GemJoin/Spec.lean`.  The `extCodeSize` guards on storage receivers
@@ -10,7 +10,7 @@ AST spec in `Benchmarks/Dss/GemJoin/Spec.lean`.  The `extCodeSize` guards on sto
 `{view}` call on the local `gem_`.  Transition order matches `contract.transitions`.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Dss.GemJoin.Syntax
 

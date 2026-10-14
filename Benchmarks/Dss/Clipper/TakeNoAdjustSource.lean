@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.TakeSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -121,7 +121,7 @@ theorem clipperTakeNoAdjustLetTabNew (v : ClipperImmutables)
       clipperEvalTakeTabSubOweAtOwe v evmLoc evmRead I price slice owe0 owe howeTab
   simpa [oweFrame, tabNewFrame, clipperTakeLocalsNoAdjustTabNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := oweFrame) (evm := evmRead) (name := "tabNew")
+      (cfg := config) (stele := oweFrame) (evm := evmRead) (name := "tabNew")
       (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
       (value := .int (Int.ofNat tabNew.toNat)) hrhs)
 
@@ -222,7 +222,7 @@ theorem clipperTakeNoAdjustLetLotNew (v : ClipperImmutables)
         tabNew hsliceLot
   simpa [tabNewFrame, lotNewFrame, clipperTakeLocalsNoAdjustLotNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := tabNewFrame) (evm := evmRead) (name := "lotNew")
+      (cfg := config) (stele := tabNewFrame) (evm := evmRead) (name := "lotNew")
       (ty := some uint256)
       (expr := wrap256 (.binary .sub (.var "lot") (.var "slice")))
       (value := .int (Int.ofNat lotNew.toNat)) hrhs)
@@ -259,7 +259,7 @@ theorem clipperTakeNoAdjustAssignTabFromTabNew (v : ClipperImmutables)
         (.int (Int.ofNat tabNew.toNat)) = .ok (tabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, lotNewFrame, tabFrame,
       clipperTakeLocalsNoAdjustTabAssigned, pure, bind, EvalResult.bind]
-  simpa [lotNewFrame, tabFrame] using ExecStmt.assign hrhs hassign
+  simpa [lotNewFrame, tabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakeNoAdjustAssignLotFromLotNew (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -293,7 +293,7 @@ theorem clipperTakeNoAdjustAssignLotFromLotNew (v : ClipperImmutables)
         (.int (Int.ofNat lotNew.toNat)) = .ok (lotFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, tabFrame, lotFrame,
       clipperTakeLocalsNoAdjustLotAssigned, pure, bind, EvalResult.bind]
-  simpa [tabFrame, lotFrame] using ExecStmt.assign hrhs hassign
+  simpa [tabFrame, lotFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakePostNoAdjustSubBlock (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -504,7 +504,7 @@ theorem clipperTakeNoAdjustVatFluxBuyerCallFailureBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsNoAdjustLotAssigned evmLoc evmRead I price slice owe0 owe
               tabNew lotNew))
@@ -547,7 +547,7 @@ theorem clipperTakeNoAdjustVatFluxBuyerCallSuccessBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts, clipperTakeLocalsNoAdjustFluxBuyerRet, collapseReturns] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsNoAdjustLotAssigned evmLoc evmRead I price slice owe0 owe
               tabNew lotNew))

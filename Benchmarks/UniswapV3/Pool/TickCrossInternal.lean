@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.TickCrossSource
 import Benchmarks.UniswapV3.Pool.TickCrossTrace
 import Benchmarks.UniswapV3.Pool.TickCrossStaticTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
@@ -44,9 +44,9 @@ theorem tickCrossInternalX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
       simp only [tickCrossResult, hs'.env, ← hs'.accounts]
     refine Or.inr ⟨?_, hs', k', C', ?_, HeapMemory.twoWordHash hm _ _⟩
     · exact internalCallFunctionReturn (callee := tickCrossFunction)
-        (calleeSolm := tickCrossResultFrame (immStore v) a evm)
+        (calleeStele := tickCrossResultFrame (immStore v) a evm)
         (value := some [.int (tickCrossResult evm a)]) he hl (tickCrossBind a)
-        (by rw [hc]; exact tickCrossReturns (immStore v) evm a)
+        (by rw [hc]; exact tickCrossReturns (hperm := by simpa only [hs.env] using hp) (immStore v) evm a)
     · simpa only [tickUpdateMemoryWords_eq hm.active, ← hv] using r'
 
 end Benchmarks.UniswapV3.Pool

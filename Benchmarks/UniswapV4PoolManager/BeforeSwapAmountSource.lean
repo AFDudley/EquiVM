@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.SignedArithmetic
 import Benchmarks.UniswapV4PoolManager.ValueLocals
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -56,11 +56,11 @@ theorem beforeSwapAmountSource {f : Frame} {evm : State} {amount delta : UInt256
     by_cases hvalid : beforeSwapDirectionValid amount (amount+delta)
     · rw [if_pos hvalid]
       exact ExecBlock.consNormal (ExecStmt.letDecl hinput)
-        (ExecBlock.consNormal (ExecStmt.assign hadd (assignLocalValue ha1))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hadd (assignLocalValue ha1))
           (execBlock_singleton (ExecStmt.requireTrue (hguard.trans (by rw [decide_eq_true hvalid])))))
     · rw [if_neg hvalid]
       exact ExecBlock.consNormal (ExecStmt.letDecl hinput)
-        (ExecBlock.consNormal (ExecStmt.assign hadd (assignLocalValue ha1))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hadd (assignLocalValue ha1))
           (ExecBlock.consRevert (ExecStmt.requireFalse (hguard.trans (by rw [decide_eq_false hvalid])))))
   · rw [if_neg hfit] at hadd
     rw [beforeSwapAmountResult, if_neg hfit]

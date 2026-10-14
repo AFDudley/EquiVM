@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AuthorizationSigSourceDecode
 import Benchmarks.Morpho.MorphoBlue.StateBlock
 import Benchmarks.Morpho.MorphoBlue.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
@@ -91,7 +91,7 @@ theorem morphoAuthorizationNonceSourceStart (evm : EVM.State) (v : MorphoImmutab
   exact p0.letStep (hl.evalNonce (immStore v) evm hb.2.2)
 
 def storeAuthorizationNonce (evm : EVM.State) (a : AuthorizationWords) (value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (authorizationNonceSlot a) value
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (authorizationNonceSlot a) value
 
 theorem AuthorizationLocals.assignNonce {a cd locals} (hl : AuthorizationLocals a cd locals)
     (imms : Store) (evm : EVM.State) (hc : a.Canonical) (value : UInt256) :

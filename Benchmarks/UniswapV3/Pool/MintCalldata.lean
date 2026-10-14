@@ -2,7 +2,7 @@ import Benchmarks.UniswapV3.Pool.LegacyScalarsBytes
 import Benchmarks.UniswapV3.Pool.LegacyBytesDecode
 import Benchmarks.UniswapV3.Pool.MintModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -32,7 +32,7 @@ theorem mintDecodedArgs_fits (cd : ByteArray) : (mintDecodedArgs cd).Fits := by
     normalizeSint_bounds ⟨24, by decide⟩ (Int.ofNat (calldataWord cd 68).toNat), uint128Word_lt _⟩
 
 theorem mintDecode (cd : ByteArray) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes cd =
       if MintCalldataValid cd then some (mintLocals (mintDecodedArgs cd)) else none := by
   change decodeCalldataWithMode .legacySolc05 ["recipient", "tickLower", "tickUpper", "amount", "data"]
@@ -83,12 +83,12 @@ theorem mintDecode (cd : ByteArray) :
   simp only [mintLocals, mintDecodedArgs, positionTick, uint128Word]
 
 theorem mintDecodeValid {cd : ByteArray} (h : MintCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes cd =
       some (mintLocals (mintDecodedArgs cd)) := by rw [mintDecode, if_pos h]
 
 theorem mintDecodeInvalid {cd : ByteArray} (h : ¬ MintCalldataValid cd) :
-    decodeCalldataWithMode config.abiDecodeMode (mintTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes cd = none := by rw [mintDecode, if_neg h]
 
 end Benchmarks.UniswapV3.Pool

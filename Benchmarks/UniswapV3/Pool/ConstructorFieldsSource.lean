@@ -1,6 +1,6 @@
 import Benchmarks.UniswapV3.Pool.ConstructorModel
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 10000
 
@@ -22,7 +22,7 @@ theorem constructorDecodeSource (original : AccountAddress) (evm : EVM.State)
   simp only [evalExpr?, evalConstructorData, bind, EvalResult.bind]
   have hd := constructorParameterDecode out hlen
   simp only [constructorParameterTypes] at hd
-  rw [show config.abiDecodeMode = .legacySolc05 from rfl, hd]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .legacySolc05 from rfl, hd]
   rfl
 
 theorem constructorFieldsSource (original : AccountAddress) (evm : EVM.State) (out : ByteArray) :
@@ -48,7 +48,7 @@ theorem constructorSpacingSource (original : AccountAddress) (evm : EVM.State) (
     simp only [constructorFieldsFrame, constructorDecodedFrame, constructorCallFrame,
       constructorReadyFrame, Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert]
     rfl
-  refine ExecBlock.consNormal (ExecStmt.assign
+  refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (evalConstructorParameter _ original evm out 4 _ rfl) (assignLocalVarBase_frame hget)) ?_
   refine ExecBlock.consNormal (ExecStmt.setImmutable (value := .int (constructorUnsignedSpacing out))
     (ty := .int (.uint ⟨256, by decide⟩)) ?_ rfl ?_) ExecBlock.nil
@@ -96,6 +96,6 @@ theorem constructorRevertsShort (evm evm' : EVM.State) (out : ByteArray)
   simp only [evalExpr?, evalConstructorData, bind, EvalResult.bind]
   have hd := constructorParameterDecodeShort out hshort
   simp only [constructorParameterTypes] at hd
-  rw [show config.abiDecodeMode = .legacySolc05 from rfl, hd]
+  rw [show config.externalABI.decodeValue? = decodeReturnValueWithMode? .legacySolc05 from rfl, hd]
 
 end Benchmarks.UniswapV3.Pool

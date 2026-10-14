@@ -4,7 +4,7 @@ import Benchmarks.Dss.Clipper.TakeCallbackEquiv
 import Benchmarks.Dss.Clipper.TakeDynamicRemove
 import Benchmarks.Dss.Clipper.TakeDynamicPostDog
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -17,14 +17,14 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
     (hdec :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (List.map Param.name takeTransition.params)
         (transitionSignature takeTransition).paramTypes I.calldata =
       some (clipperTakeStore I))
-    (hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
-    (hstoppedSolmLt :
+    (hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
+    (hstoppedSteleLt :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
-    (husrSolm :
+    (husrStele :
       clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ≠ ⟨0⟩)
     {evmPrice evmVat evmCb : EVM.State} {outVat : ByteArray}
     {callbackFrame : Frame} {price tab lot : UInt256}
@@ -49,7 +49,7 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
       (true, evmVat, outVat) true)
     (hcallback :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLock := Solm.EVM.storageStore evm0
+      let evmLock := Stele.EVM.storageStore evm0
         evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
       let slice := clipperMinWord
         (clipperTakeSalesLotEVMWord evmPrice I) (clipperTakeAmtWord I)
@@ -77,17 +77,18 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
         clipperTakeAfterMoveStmts) .reverted)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLock := Solm.EVM.storageStore evm0
+      let evmLock := Stele.EVM.storageStore evm0
         evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
       ExecStmt config
         { contract := contract, locals := clipperTakeLocalsTic evmLock I, immutables := immStore v }
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
-        (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice)) :
+        (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract
       σ σ₀ g A I (immStore v) := by
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmLock := Solm.EVM.storageStore evm0
+  let evmLock := Stele.EVM.storageStore evm0
     evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
   let slice := clipperMinWord
     (clipperTakeSalesLotEVMWord evmPrice I) (clipperTakeAmtWord I)
@@ -115,10 +116,10 @@ theorem clipperTakeOweGtTabCallbackTailRevertEquivFromPostWords
     exact clipperTakeOweGtTabCallbackTailSource v evmLock evmPrice
       evmVat evmCb I price slice hsrcMul hsrcGt hsliceLot hvatCode hcallVat
       (by simpa [evm0, evmLock, slice] using hcallback) htail
-  have hbody := clipperTakeSourceRevertsOfAfterSlice
+  have hbody := clipperTakeSourceRevertsOfAfterSlice (hperm := by assumption)
     (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) (evmPrice := evmPrice)
-    v price hwv hlockedSolm hstoppedSolmLt husrSolm hmax hstatus
+    v price hwv hlockedStele hstoppedSteleLt husrStele hmax hstatus
     (by simpa [evm0, evmLock, slice] using hafter)
   exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
 

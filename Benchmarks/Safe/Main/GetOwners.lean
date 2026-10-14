@@ -3,8 +3,8 @@ import Benchmarks.Safe.Main.GetOwnersAllocation
 import Benchmarks.Safe.Main.GetOwnersLoop
 import Benchmarks.Safe.Main.GetOwnersReturn
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

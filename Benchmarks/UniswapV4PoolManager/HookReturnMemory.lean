@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.MemorySlice
 import Benchmarks.UniswapV4PoolManager.BytesDecode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 
 /-- A hook preserves the caller's saved memory and leaves a specified allocation margin. -/

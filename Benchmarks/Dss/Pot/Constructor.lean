@@ -1,17 +1,17 @@
 import Benchmarks.Dss.Pot.ConstructorSource
 import Benchmarks.Dss.Pot.ConstructorTraceReturn
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Pot constructor correctness
 
 The Pot constructor stores six slots — `wards[sender] = 1`, `vat = vat_` (slot 5), `dsr = ONE`,
 `chi = ONE`, `rho = now`, `live = 1` — matching the optimized creation bytecode's store order.  The
-EVM trace lives in `ConstructorTrace*`, the Solm source semantics in `ConstructorSource`, and this
+EVM trace lives in `ConstructorTrace*`, the Stele source semantics in `ConstructorSource`, and this
 file assembles the two through the account-map-equivalence chain.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
@@ -62,10 +62,10 @@ theorem potConstructorCorrect :
           storageStore_accountMap, hslot]
       have hOldVat :
           solcSlotWord σWards I ⟨5⟩ =
-            Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
+            Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨5⟩ := by
         rw [← hMapWards]
         simp [evm1s, evm0s, potCtorAfterWardsState, initState,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord, storageStore_executionEnv]
       have hee1 : evm1s.executionEnv = I := by
         simp only [evm1s, evm0s, potCtorAfterWardsState, storageStore_executionEnv, initState]
@@ -94,7 +94,7 @@ theorem potConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s, evm5s, evm6s, potCtorPostState] using
-            potSolmCtorExecSuccess
+            potSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_
@@ -105,7 +105,7 @@ theorem potConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (potSolmCtorExecReverts_nonpayable
+        (potSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat hwv)
         ?_

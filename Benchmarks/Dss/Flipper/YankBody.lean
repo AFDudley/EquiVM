@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.YankCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -43,9 +43,9 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
     by_cases hauthEvm : solcSlotWordAt callerSlot σ I = ⟨1⟩
     · obtain ⟨_, _, hafterAuth⟩ := flipperYankX_authOk (I := I) hauthEvm hdecoded
       by_cases hguyEvm : bidGuyWord (yankId I) σ I = ⟨0⟩
-      · have hguySolm : bidGuyWord (yankId I) σ I = ⟨0⟩ := by
+      · have hguyStele : bidGuyWord (yankId I) σ I = ⟨0⟩ := by
           simpa [← hguyEq] using hguyEvm
-        have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+        have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
           rw [← hcallerWord]
           exact hauthEvm
         have hbody :
@@ -55,7 +55,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
           simpa using
             (flipperYankSourceBodyGuyZero
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-              hwv hauthSolm hguySolm)
+              hwv hauthStele hguyStele)
         exact (flipperYankX_guyZero (I := I) hguyEvm hafterAuth)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · obtain ⟨_, _, hafterGuy⟩ := flipperYankX_guyNonzero (I := I) hguyEvm hafterAuth
@@ -66,7 +66,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
           by_cases hcatZero :
               Reasoning.Theory.extCodeSizeWord σ
                 (flipperCatTargetWord σ I) = ⟨0⟩
-          · have hcatZeroSolm :
+          · have hcatZeroStele :
                 Reasoning.Theory.extCodeSizeWord σ
                     (flipperCatTargetWord σ I) = ⟨0⟩ :=
               hcatZero
@@ -76,14 +76,14 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                     (flipperCatAddress σ I)).option 0
                     (fun acc => acc.code.size))).toNat = 0 :=
               flipperCatCode_zero_of_codeSize_zero
-                (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hcatZeroSolm
-            have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+                (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hcatZeroStele
+            have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
               rw [← hcallerWord]
               exact hauthEvm
-            have hguySolm : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
+            have hguyStele : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
               intro hzero
               exact hguyEvm (by simpa [hguyEq] using hzero)
-            have hbidLtSolm :
+            have hbidLtStele :
                 (bidBidWord (yankId I) σ I).toNat <
                   (bidTabWord (yankId I) σ I).toNat := by
               simpa [← hbidEq, ← htabEq] using hbidLtEvm
@@ -94,22 +94,22 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
               simpa using
                 (flipperYankSourceBodyCatNoCode
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                  hwv hauthSolm hguySolm hbidLtSolm hnoCode)
+                  hwv hauthStele hguyStele hbidLtStele hnoCode)
             exact (flipperYankX_catNoCode (I := I) hcatZero hafterBidLt)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-          · have hcatNeSolm :
+          · have hcatNeStele :
                 Reasoning.Theory.extCodeSizeWord σ
                     (flipperCatTargetWord σ I) ≠ ⟨0⟩ :=
               hcatZero
             have hcatCode := flipperCatCode_pos_of_codeSize_ne_zero
-              (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hcatNeSolm
-            have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+              (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hcatNeStele
+            have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
               rw [← hcallerWord]
               exact hauthEvm
-            have hguySolm : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
+            have hguyStele : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
               intro hzero
               exact hguyEvm (by simpa [hguyEq] using hzero)
-            have hbidLtSolm :
+            have hbidLtStele :
                 (bidBidWord (yankId I) σ I).toNat <
                   (bidTabWord (yankId I) σ I).toNat := by
               simpa [← hbidEq, ← htabEq] using hbidLtEvm
@@ -120,7 +120,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I)) =
                       some ((yankCatCallMem σ I).readWithPadding 128 36) := by
                 simpa [yankClawArgVals, yankClawArgValsOf, initState, solcSlotWordAt,
-                  solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+                  solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
                   Account.lookupStorage, bidTabWord, bidSlotOfWord, bidBaseOfWord] using
                   yankCatCallMem_encode σ I
               have hcallCat :=
@@ -139,7 +139,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa using
                   (flipperYankSourceBodyCatCallFailure
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                    hwv hauthSolm hguySolm hbidLtSolm hcatCode hcallCat)
+                    hwv hauthStele hguyStele hbidLtStele hcatCode hcallCat)
               exact (flipperYankX_catCallDepthLimit hcatZero hdepthEq hafterBidLt)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
             · have hdepthLt : I.depth.val < 1024 := by
@@ -152,7 +152,7 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                   hcallCatEvmRaw, houtCat⟩ :=
                 flipperYankX_catPostCall hcatZero hdepthLt hafterBidLt
               let evm0Evm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-              let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+              let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
               let evmCatEvm :=
                 { evm0Evm with
                   accountMap := σ_cat
@@ -164,51 +164,51 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                     [Value.int (Int.ofNat (bidTabWord (yankId I) σ I).toNat)]
                     (zCat, evmCatEvm, outCat) true := by
                 simpa [evm0Evm, evmCatEvm] using hcallCatEvmRaw
-              obtain ⟨σ_cat_solm, A_cat_solm, hcallCatSolmRaw, hCatStateEquiv⟩ :=
+              obtain ⟨σ_cat_stele, A_cat_stele, hcallCatSteleRaw, hCatStateEquiv⟩ :=
                 typedCallViaEVM_sameInputs_stateEquiv
-                  (evm_solm := evm0Solm) hcallCatEvm
+                  (evm_stele := evm0Stele) hcallCatEvm
                   rfl
-                  (by simp [evm0Evm, evm0Solm, initState])
-                  (by simp [evm0Evm, evm0Solm, initState])
-              let evmCatSolm : EVM.State :=
-                { evm0Solm with
-                  accountMap := σ_cat_solm
-                  substate := A_cat_solm
+                  (by simp [evm0Evm, evm0Stele, initState])
+                  (by simp [evm0Evm, evm0Stele, initState])
+              let evmCatStele : EVM.State :=
+                { evm0Stele with
+                  accountMap := σ_cat_stele
+                  substate := A_cat_stele
                   }
               have hcatTargetEq :
                   EVM.address (flipperCatAddress σ I) =
                     EVM.address (flipperCatAddress σ I) := rfl
               have hcatArgsEq :
                   [Value.int (Int.ofNat (bidTabWord (yankId I) σ I).toNat)] =
-                    yankClawArgVals evm0Solm := by
-                simp [yankClawArgVals, yankClawArgValsOf, evm0Solm, initState,
-                  Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                    yankClawArgVals evm0Stele := by
+                simp [yankClawArgVals, yankClawArgValsOf, evm0Stele, initState,
+                  Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                   bidTabWord, solcSlotWordAt, solcSlotWord]
-              have hcallCatSolm :
-                  typedCallViaEVM config evm0Solm
+              have hcallCatStele :
+                  typedCallViaEVM config evm0Stele
                     (EVM.address (flipperCatAddress σ I)) "claw" 0
-                    (yankClawArgVals evm0Solm) (zCat, evmCatSolm, outCat) true := by
-                have hcallCatSolmRaw' :
-                    typedCallViaEVM config evm0Solm
+                    (yankClawArgVals evm0Stele) (zCat, evmCatStele, outCat) true := by
+                have hcallCatSteleRaw' :
+                    typedCallViaEVM config evm0Stele
                       (EVM.address (flipperCatAddress σ I)) "claw" 0
                       [Value.int (Int.ofNat (bidTabWord (yankId I) σ I).toNat)]
-                      (zCat, evmCatSolm, outCat) true := by
-                  simpa [evmCatSolm, evmCatEvm, hcatTargetEq] using hcallCatSolmRaw
+                      (zCat, evmCatStele, outCat) true := by
+                  simpa [evmCatStele, evmCatEvm, hcatTargetEq] using hcallCatSteleRaw
                 rw [← hcatArgsEq]
-                exact hcallCatSolmRaw'
+                exact hcallCatSteleRaw'
               cases zCat
-              · have hcallCatSolmFalse :
-                    typedCallViaEVM config evm0Solm
+              · have hcallCatSteleFalse :
+                    typedCallViaEVM config evm0Stele
                       (EVM.address (flipperCatAddress σ I)) "claw" 0
-                      (yankClawArgVals evm0Solm) (false, evmCatSolm, outCat) true := by
-                  simpa using hcallCatSolm
+                      (yankClawArgVals evm0Stele) (false, evmCatStele, outCat) true := by
+                  simpa using hcallCatStele
                 have hbody :
-                    ExecTransitionBody config contract evm0Solm (yankLocals I)
+                    ExecTransitionBody config contract evm0Stele (yankLocals I)
                       yankTransition.body .reverted := by
-                  simpa [evm0Solm] using
+                  simpa [evm0Stele] using
                     (flipperYankSourceBodyCatCallFailure
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                      hwv hauthSolm hguySolm hbidLtSolm hcatCode hcallCatSolmFalse)
+                      hwv hauthStele hguyStele hbidLtStele hcatCode hcallCatSteleFalse)
                 exact (flipperYankX_catCallFailure (by simpa using rd1346) houtCat)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · have rd1346True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -220,60 +220,60 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                     k1346 C1346 := by
                   simpa using rd1346
                 obtain ⟨_, _, rd1365⟩ := flipperYankX_catCallSuccessToVatStart rd1346True
-                have hcallCatSolmTrue :
-                    typedCallViaEVM config evm0Solm
+                have hcallCatSteleTrue :
+                    typedCallViaEVM config evm0Stele
                       (EVM.address (flipperCatAddress σ I)) "claw" 0
-                      (yankClawArgVals evm0Solm) (true, evmCatSolm, outCat) true := by
-                  simpa using hcallCatSolm
-                have hCatStateEquiv' : EVMStateEquiv evmCatEvm evmCatSolm := by
-                  simpa [evmCatSolm, evmCatEvm] using hCatStateEquiv
-                have hAccountsCat : Eq σ_cat σ_cat_solm := by
-                  simpa [evmCatEvm, evmCatSolm] using hCatStateEquiv'.accountMap
+                      (yankClawArgVals evm0Stele) (true, evmCatStele, outCat) true := by
+                  simpa using hcallCatStele
+                have hCatStateEquiv' : EVMStateEquiv evmCatEvm evmCatStele := by
+                  simpa [evmCatStele, evmCatEvm] using hCatStateEquiv
+                have hAccountsCat : Eq σ_cat σ_cat_stele := by
+                  simpa [evmCatEvm, evmCatStele] using hCatStateEquiv'.accountMap
                 by_cases hvatZero :
                     Reasoning.Theory.extCodeSizeWord σ_cat
                       (flipperVatTargetWord σ_cat I) = ⟨0⟩
-                · have hvatZeroSolm :
-                      Reasoning.Theory.extCodeSizeWord σ_cat_solm
-                          (flipperVatTargetWord σ_cat_solm I) = ⟨0⟩ :=
+                · have hvatZeroStele :
+                      Reasoning.Theory.extCodeSizeWord σ_cat_stele
+                          (flipperVatTargetWord σ_cat_stele I) = ⟨0⟩ :=
                     by rw [← hAccountsCat]; exact hvatZero
                   have hvatNoCode :
                       (UInt256.ofNat
-                        ((evmCatSolm.lookupAccount
-                          (flipperVatAddress evmCatSolm.accountMap
-                            evmCatSolm.executionEnv)).option
+                        ((evmCatStele.lookupAccount
+                          (flipperVatAddress evmCatStele.accountMap
+                            evmCatStele.executionEnv)).option
                           0 (fun acc => acc.code.size))).toNat = 0 := by
-                    simpa [evmCatSolm, evm0Solm, initState, State.lookupAccount] using
+                    simpa [evmCatStele, evm0Stele, initState, State.lookupAccount] using
                       extCodeSizeWord_zero_lookup_code_zero
-                        (σ := σ_cat_solm) (target := flipperVatTargetWord σ_cat_solm I)
-                        (addr := flipperVatAddress σ_cat_solm I)
-                        (flipperVatAddress_eq_target σ_cat_solm I) hvatZeroSolm
+                        (σ := σ_cat_stele) (target := flipperVatTargetWord σ_cat_stele I)
+                        (addr := flipperVatAddress σ_cat_stele I)
+                        (flipperVatAddress_eq_target σ_cat_stele I) hvatZeroStele
                   have hbody :
-                      ExecTransitionBody config contract evm0Solm (yankLocals I)
+                      ExecTransitionBody config contract evm0Stele (yankLocals I)
                         yankTransition.body .reverted := by
-                    simpa [evm0Solm] using
+                    simpa [evm0Stele] using
                       (flipperYankSourceBodyVatNoCode
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                        (evmCat := evmCatSolm) (outCat := outCat)
-                        hwv hauthSolm hguySolm hbidLtSolm hcatCode hcallCatSolmTrue
+                        (evmCat := evmCatStele) (outCat := outCat)
+                        hwv hauthStele hguyStele hbidLtStele hcatCode hcallCatSteleTrue
                         hvatNoCode)
                   exact (flipperYankX_vatNoCode hvatZero rd1365)
                     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-                · have hvatNeSolm :
-                      Reasoning.Theory.extCodeSizeWord σ_cat_solm
-                          (flipperVatTargetWord σ_cat_solm I) ≠ ⟨0⟩ :=
+                · have hvatNeStele :
+                      Reasoning.Theory.extCodeSizeWord σ_cat_stele
+                          (flipperVatTargetWord σ_cat_stele I) ≠ ⟨0⟩ :=
                     by rw [← hAccountsCat]; exact hvatZero
-                  have hvatCodeSolm :
+                  have hvatCodeStele :
                       0 <
                         (UInt256.ofNat
-                          ((evmCatSolm.lookupAccount
-                            (flipperVatAddress evmCatSolm.accountMap
-                              evmCatSolm.executionEnv)).option
+                          ((evmCatStele.lookupAccount
+                            (flipperVatAddress evmCatStele.accountMap
+                              evmCatStele.executionEnv)).option
                             0 (fun acc => acc.code.size))).toNat := by
-                    simpa [evmCatSolm, evm0Solm, initState, State.lookupAccount] using
+                    simpa [evmCatStele, evm0Stele, initState, State.lookupAccount] using
                       extCodeSizeWord_ne_zero_lookup_code_pos
-                        (σ := σ_cat_solm) (target := flipperVatTargetWord σ_cat_solm I)
-                        (addr := flipperVatAddress σ_cat_solm I)
-                        (flipperVatAddress_eq_target σ_cat_solm I) hvatNeSolm
+                        (σ := σ_cat_stele) (target := flipperVatTargetWord σ_cat_stele I)
+                        (addr := flipperVatAddress σ_cat_stele I)
+                        (flipperVatAddress_eq_target σ_cat_stele I) hvatNeStele
                   obtain ⟨σ_vat, zVat, outVat, A_vat, k1482, C1482, rd1482,
                       hcallVatEvmRaw, houtVat⟩ :=
                     flipperYankX_vatPostCall (Acur := A_cat) hvatZero hdepthLt rd1365
@@ -288,46 +288,46 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                         (yankFluxArgValsOf evmCatEvm (yankId I))
                         (zVat, evmVatEvm, outVat) true := by
                     simpa [evmCatEvm, evmVatEvm] using hcallVatEvmRaw
-                  obtain ⟨σ_vat_solm, A_vat_solm, hcallVatSolmRaw, hVatStateEquiv⟩ :=
+                  obtain ⟨σ_vat_stele, A_vat_stele, hcallVatSteleRaw, hVatStateEquiv⟩ :=
                     typedCallViaEVM_sameInputs_stateEquiv
-                      (evm_solm := evmCatSolm) hcallVatEvm hCatStateEquiv'.accountMap
-                      (by simp [evmCatEvm, evmCatSolm, evm0Evm, evm0Solm, initState])
+                      (evm_stele := evmCatStele) hcallVatEvm hCatStateEquiv'.accountMap
+                      (by simp [evmCatEvm, evmCatStele, evm0Evm, evm0Stele, initState])
                       hCatStateEquiv'.executionEnv
-                  let evmVatSolm : EVM.State :=
-                    { evmCatSolm with
-                      accountMap := σ_vat_solm
-                      substate := A_vat_solm
+                  let evmVatStele : EVM.State :=
+                    { evmCatStele with
+                      accountMap := σ_vat_stele
+                      substate := A_vat_stele
                       }
                   have hvatTargetEq :
                       EVM.address (flipperVatAddress σ_cat I) =
                         EVM.address
-                          (flipperVatAddress evmCatSolm.accountMap
-                            evmCatSolm.executionEnv) := by
+                          (flipperVatAddress evmCatStele.accountMap
+                            evmCatStele.executionEnv) := by
                     have haddr : flipperVatAddress σ_cat I =
-                        flipperVatAddress σ_cat_solm I := by rw [← hAccountsCat]
+                        flipperVatAddress σ_cat_stele I := by rw [← hAccountsCat]
                     rw [haddr]
-                    simp [evmCatSolm, evm0Solm, initState]
+                    simp [evmCatStele, evm0Stele, initState]
                   have hfluxArgsEq :
                       yankFluxArgValsOf evmCatEvm (yankId I) =
-                        yankFluxArgValsOf evmCatSolm (yankId I) := by
-                    simp [yankFluxArgValsOf, Solm.EVM.storageLoad, State.lookupAccount,
+                        yankFluxArgValsOf evmCatStele (yankId I) := by
+                    simp [yankFluxArgValsOf, Stele.EVM.storageLoad, State.lookupAccount,
                       Account.lookupStorage, hCatStateEquiv'.executionEnv,
                       hCatStateEquiv'.accountMap]
-                  have hcallVatSolm :
-                      typedCallViaEVM config evmCatSolm
+                  have hcallVatStele :
+                      typedCallViaEVM config evmCatStele
                         (EVM.address
-                          (flipperVatAddress evmCatSolm.accountMap
-                            evmCatSolm.executionEnv)) "flux" 0
-                        (yankFluxArgValsOf evmCatSolm (yankId I))
-                        (zVat, evmVatSolm, outVat) true := by
-                    have hcallVatSolmRaw' :
-                        typedCallViaEVM config evmCatSolm
+                          (flipperVatAddress evmCatStele.accountMap
+                            evmCatStele.executionEnv)) "flux" 0
+                        (yankFluxArgValsOf evmCatStele (yankId I))
+                        (zVat, evmVatStele, outVat) true := by
+                    have hcallVatSteleRaw' :
+                        typedCallViaEVM config evmCatStele
                           (EVM.address (flipperVatAddress σ_cat I)) "flux" 0
                           (yankFluxArgValsOf evmCatEvm (yankId I))
-                          (zVat, evmVatSolm, outVat) true := by
-                      simpa [evmVatSolm, evmVatEvm] using hcallVatSolmRaw
-                    rw [hvatTargetEq, hfluxArgsEq] at hcallVatSolmRaw'
-                    exact hcallVatSolmRaw'
+                          (zVat, evmVatStele, outVat) true := by
+                      simpa [evmVatStele, evmVatEvm] using hcallVatSteleRaw
+                    rw [hvatTargetEq, hfluxArgsEq] at hcallVatSteleRaw'
+                    exact hcallVatSteleRaw'
                   cases zVat
                   · have rd1482False : RD flipperBytecode I (Sat256.ofUInt256 g)
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1482⟩
@@ -337,24 +337,24 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                         (yankVatFluxCallMem σ σ_cat I) (UInt256.ofNat 9) outVat
                         σ_vat k1482 C1482 := by
                       simpa using rd1482
-                    have hcallVatSolmFalse :
-                        typedCallViaEVM config evmCatSolm
+                    have hcallVatSteleFalse :
+                        typedCallViaEVM config evmCatStele
                           (EVM.address
-                            (flipperVatAddress evmCatSolm.accountMap
-                              evmCatSolm.executionEnv)) "flux" 0
-                          (yankFluxArgValsOf evmCatSolm (yankId I))
-                          (false, evmVatSolm, outVat) true := by
-                      simpa using hcallVatSolm
+                            (flipperVatAddress evmCatStele.accountMap
+                              evmCatStele.executionEnv)) "flux" 0
+                          (yankFluxArgValsOf evmCatStele (yankId I))
+                          (false, evmVatStele, outVat) true := by
+                      simpa using hcallVatStele
                     have hbody :
-                        ExecTransitionBody config contract evm0Solm (yankLocals I)
+                        ExecTransitionBody config contract evm0Stele (yankLocals I)
                           yankTransition.body .reverted := by
-                      simpa [evm0Solm] using
+                      simpa [evm0Stele] using
                         (flipperYankSourceBodyVatCallFailure
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                          (evmCat := evmCatSolm) (evmVat := evmVatSolm)
+                          (evmCat := evmCatStele) (evmVat := evmVatStele)
                           (outCat := outCat) (outVat := outVat)
-                          hwv hauthSolm hguySolm hbidLtSolm hcatCode
-                          hcallCatSolmTrue hvatCodeSolm hcallVatSolmFalse)
+                          hwv hauthStele hguyStele hbidLtStele hcatCode
+                          hcallCatSteleTrue hvatCodeStele hcallVatSteleFalse)
                     exact (flipperYankX_vatCallFailure rd1482False houtVat)
                       |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
                   · have rd1482True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -367,68 +367,68 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                       simpa using rd1482
                     obtain ⟨_, _, rd1501⟩ :=
                       flipperYankX_vatCallSuccessToMoveStart rd1482True
-                    have hcallVatSolmTrue :
-                        typedCallViaEVM config evmCatSolm
+                    have hcallVatSteleTrue :
+                        typedCallViaEVM config evmCatStele
                           (EVM.address
-                            (flipperVatAddress evmCatSolm.accountMap
-                              evmCatSolm.executionEnv)) "flux" 0
-                          (yankFluxArgValsOf evmCatSolm (yankId I))
-                          (true, evmVatSolm, outVat) true := by
-                      simpa using hcallVatSolm
-                    have hVatStateEquiv' : EVMStateEquiv evmVatEvm evmVatSolm := by
-                      simpa [evmVatEvm, evmVatSolm] using hVatStateEquiv
-                    have hAccountsVat : Eq σ_vat σ_vat_solm := by
-                      simpa [evmVatEvm, evmVatSolm] using hVatStateEquiv'.accountMap
+                            (flipperVatAddress evmCatStele.accountMap
+                              evmCatStele.executionEnv)) "flux" 0
+                          (yankFluxArgValsOf evmCatStele (yankId I))
+                          (true, evmVatStele, outVat) true := by
+                      simpa using hcallVatStele
+                    have hVatStateEquiv' : EVMStateEquiv evmVatEvm evmVatStele := by
+                      simpa [evmVatEvm, evmVatStele] using hVatStateEquiv
+                    have hAccountsVat : Eq σ_vat σ_vat_stele := by
+                      simpa [evmVatEvm, evmVatStele] using hVatStateEquiv'.accountMap
                     by_cases hmoveZero :
                         Reasoning.Theory.extCodeSizeWord σ_vat
                           (flipperVatTargetWord σ_vat I) = ⟨0⟩
-                    · have hmoveZeroSolm :
-                          Reasoning.Theory.extCodeSizeWord σ_vat_solm
-                              (flipperVatTargetWord σ_vat_solm I) = ⟨0⟩ :=
+                    · have hmoveZeroStele :
+                          Reasoning.Theory.extCodeSizeWord σ_vat_stele
+                              (flipperVatTargetWord σ_vat_stele I) = ⟨0⟩ :=
                         by rw [← hAccountsVat]; exact hmoveZero
                       have hmoveNoCode :
                           (UInt256.ofNat
-                            ((evmVatSolm.lookupAccount
-                              (flipperVatAddress evmVatSolm.accountMap
-                                evmVatSolm.executionEnv)).option
+                            ((evmVatStele.lookupAccount
+                              (flipperVatAddress evmVatStele.accountMap
+                                evmVatStele.executionEnv)).option
                               0 (fun acc => acc.code.size))).toNat = 0 := by
-                        simpa [evmVatSolm, evmCatSolm, evm0Solm, initState,
+                        simpa [evmVatStele, evmCatStele, evm0Stele, initState,
                           State.lookupAccount] using
                           extCodeSizeWord_zero_lookup_code_zero
-                            (σ := σ_vat_solm)
-                            (target := flipperVatTargetWord σ_vat_solm I)
-                            (addr := flipperVatAddress σ_vat_solm I)
-                            (flipperVatAddress_eq_target σ_vat_solm I) hmoveZeroSolm
+                            (σ := σ_vat_stele)
+                            (target := flipperVatTargetWord σ_vat_stele I)
+                            (addr := flipperVatAddress σ_vat_stele I)
+                            (flipperVatAddress_eq_target σ_vat_stele I) hmoveZeroStele
                       have hbody :
-                          ExecTransitionBody config contract evm0Solm (yankLocals I)
+                          ExecTransitionBody config contract evm0Stele (yankLocals I)
                             yankTransition.body .reverted := by
-                        simpa [evm0Solm] using
+                        simpa [evm0Stele] using
                           (flipperYankSourceBodyMoveNoCode
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                            (evmCat := evmCatSolm) (evmVat := evmVatSolm)
+                            (evmCat := evmCatStele) (evmVat := evmVatStele)
                             (outCat := outCat) (outVat := outVat)
-                            hwv hauthSolm hguySolm hbidLtSolm hcatCode
-                            hcallCatSolmTrue hvatCodeSolm hcallVatSolmTrue hmoveNoCode)
+                            hwv hauthStele hguyStele hbidLtStele hcatCode
+                            hcallCatSteleTrue hvatCodeStele hcallVatSteleTrue hmoveNoCode)
                       exact (flipperYankX_moveNoCode hmoveZero rd1501)
                         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-                    · have hmoveNeSolm :
-                          Reasoning.Theory.extCodeSizeWord σ_vat_solm
-                              (flipperVatTargetWord σ_vat_solm I) ≠ ⟨0⟩ :=
+                    · have hmoveNeStele :
+                          Reasoning.Theory.extCodeSizeWord σ_vat_stele
+                              (flipperVatTargetWord σ_vat_stele I) ≠ ⟨0⟩ :=
                         by rw [← hAccountsVat]; exact hmoveZero
-                      have hmoveCodeSolm :
+                      have hmoveCodeStele :
                           0 <
                             (UInt256.ofNat
-                              ((evmVatSolm.lookupAccount
-                                (flipperVatAddress evmVatSolm.accountMap
-                                  evmVatSolm.executionEnv)).option
+                              ((evmVatStele.lookupAccount
+                                (flipperVatAddress evmVatStele.accountMap
+                                  evmVatStele.executionEnv)).option
                                 0 (fun acc => acc.code.size))).toNat := by
-                        simpa [evmVatSolm, evmCatSolm, evm0Solm, initState,
+                        simpa [evmVatStele, evmCatStele, evm0Stele, initState,
                           State.lookupAccount] using
                           extCodeSizeWord_ne_zero_lookup_code_pos
-                            (σ := σ_vat_solm)
-                            (target := flipperVatTargetWord σ_vat_solm I)
-                            (addr := flipperVatAddress σ_vat_solm I)
-                            (flipperVatAddress_eq_target σ_vat_solm I) hmoveNeSolm
+                            (σ := σ_vat_stele)
+                            (target := flipperVatTargetWord σ_vat_stele I)
+                            (addr := flipperVatAddress σ_vat_stele I)
+                            (flipperVatAddress_eq_target σ_vat_stele I) hmoveNeStele
                       obtain ⟨σ_move, zMove, outMove, A_move, k1615,
                           C1615, rd1615, hcallMoveEvmRaw, houtMove⟩ :=
                         flipperYankX_movePostCall (Acur := A_vat)
@@ -444,50 +444,50 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                             (yankMoveArgValsOf evmVatEvm (yankId I))
                             (zMove, evmMoveEvm, outMove) true := by
                         simpa [evmVatEvm, evmMoveEvm] using hcallMoveEvmRaw
-                      obtain ⟨σ_move_solm, A_move_solm, hcallMoveSolmRaw,
+                      obtain ⟨σ_move_stele, A_move_stele, hcallMoveSteleRaw,
                           hMoveStateEquiv⟩ :=
                         typedCallViaEVM_sameInputs_stateEquiv
-                          (evm_solm := evmVatSolm) hcallMoveEvm hVatStateEquiv'.accountMap
+                          (evm_stele := evmVatStele) hcallMoveEvm hVatStateEquiv'.accountMap
                           (by
-                            simp [evmVatEvm, evmVatSolm, evmCatEvm, evmCatSolm,
-                              evm0Evm, evm0Solm, initState])
+                            simp [evmVatEvm, evmVatStele, evmCatEvm, evmCatStele,
+                              evm0Evm, evm0Stele, initState])
                           hVatStateEquiv'.executionEnv
-                      let evmMoveSolm : EVM.State :=
-                        { evmVatSolm with
-                          accountMap := σ_move_solm
-                          substate := A_move_solm
+                      let evmMoveStele : EVM.State :=
+                        { evmVatStele with
+                          accountMap := σ_move_stele
+                          substate := A_move_stele
                           }
                       have hmoveTargetEq :
                           EVM.address (flipperVatAddress σ_vat I) =
                             EVM.address
-                              (flipperVatAddress evmVatSolm.accountMap
-                                evmVatSolm.executionEnv) := by
+                              (flipperVatAddress evmVatStele.accountMap
+                                evmVatStele.executionEnv) := by
                         have haddr : flipperVatAddress σ_vat I =
-                            flipperVatAddress σ_vat_solm I :=
+                            flipperVatAddress σ_vat_stele I :=
                           by rw [← hAccountsVat]
                         rw [haddr]
-                        simp [evmVatSolm, evmCatSolm, evm0Solm, initState]
+                        simp [evmVatStele, evmCatStele, evm0Stele, initState]
                       have hmoveArgsEq :
                           yankMoveArgValsOf evmVatEvm (yankId I) =
-                            yankMoveArgValsOf evmVatSolm (yankId I) := by
-                        simp [yankMoveArgValsOf, Solm.EVM.storageLoad, State.lookupAccount,
+                            yankMoveArgValsOf evmVatStele (yankId I) := by
+                        simp [yankMoveArgValsOf, Stele.EVM.storageLoad, State.lookupAccount,
                           Account.lookupStorage, hVatStateEquiv'.executionEnv,
                           hVatStateEquiv'.accountMap]
-                      have hcallMoveSolm :
-                          typedCallViaEVM config evmVatSolm
+                      have hcallMoveStele :
+                          typedCallViaEVM config evmVatStele
                             (EVM.address
-                              (flipperVatAddress evmVatSolm.accountMap
-                                evmVatSolm.executionEnv)) "move" 0
-                            (yankMoveArgValsOf evmVatSolm (yankId I))
-                            (zMove, evmMoveSolm, outMove) true := by
-                        have hcallMoveSolmRaw' :
-                            typedCallViaEVM config evmVatSolm
+                              (flipperVatAddress evmVatStele.accountMap
+                                evmVatStele.executionEnv)) "move" 0
+                            (yankMoveArgValsOf evmVatStele (yankId I))
+                            (zMove, evmMoveStele, outMove) true := by
+                        have hcallMoveSteleRaw' :
+                            typedCallViaEVM config evmVatStele
                               (EVM.address (flipperVatAddress σ_vat I)) "move" 0
                               (yankMoveArgValsOf evmVatEvm (yankId I))
-                              (zMove, evmMoveSolm, outMove) true := by
-                          simpa [evmMoveSolm, evmMoveEvm] using hcallMoveSolmRaw
-                        rw [hmoveTargetEq, hmoveArgsEq] at hcallMoveSolmRaw'
-                        exact hcallMoveSolmRaw'
+                              (zMove, evmMoveStele, outMove) true := by
+                          simpa [evmMoveStele, evmMoveEvm] using hcallMoveSteleRaw
+                        rw [hmoveTargetEq, hmoveArgsEq] at hcallMoveSteleRaw'
+                        exact hcallMoveSteleRaw'
                       cases zMove
                       · have rd1615False : RD flipperBytecode I (Sat256.ofUInt256 g)
                             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -498,26 +498,26 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                             (yankVatMoveCallMem σ σ_cat σ_vat I) (UInt256.ofNat 9)
                             outMove σ_move k1615 C1615 := by
                           simpa using rd1615
-                        have hcallMoveSolmFalse :
-                            typedCallViaEVM config evmVatSolm
+                        have hcallMoveSteleFalse :
+                            typedCallViaEVM config evmVatStele
                               (EVM.address
-                                (flipperVatAddress evmVatSolm.accountMap
-                                  evmVatSolm.executionEnv)) "move" 0
-                              (yankMoveArgValsOf evmVatSolm (yankId I))
-                              (false, evmMoveSolm, outMove) true := by
-                          simpa using hcallMoveSolm
+                                (flipperVatAddress evmVatStele.accountMap
+                                  evmVatStele.executionEnv)) "move" 0
+                              (yankMoveArgValsOf evmVatStele (yankId I))
+                              (false, evmMoveStele, outMove) true := by
+                          simpa using hcallMoveStele
                         have hbody :
-                            ExecTransitionBody config contract evm0Solm (yankLocals I)
+                            ExecTransitionBody config contract evm0Stele (yankLocals I)
                               yankTransition.body .reverted := by
-                          simpa [evm0Solm] using
+                          simpa [evm0Stele] using
                             (flipperYankSourceBodyMoveCallFailure
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                              (evmCat := evmCatSolm) (evmVat := evmVatSolm)
-                              (evmMove := evmMoveSolm)
+                              (evmCat := evmCatStele) (evmVat := evmVatStele)
+                              (evmMove := evmMoveStele)
                               (outCat := outCat) (outVat := outVat) (outMove := outMove)
-                              hwv hauthSolm hguySolm hbidLtSolm hcatCode
-                              hcallCatSolmTrue hvatCodeSolm hcallVatSolmTrue
-                              hmoveCodeSolm hcallMoveSolmFalse)
+                              hwv hauthStele hguyStele hbidLtStele hcatCode
+                              hcallCatSteleTrue hvatCodeStele hcallVatSteleTrue
+                              hmoveCodeStele hcallMoveSteleFalse)
                         exact (flipperYankX_moveCallFailure rd1615False houtMove)
                           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
                       · have rd1615True : RD flipperBytecode I (Sat256.ofUInt256 g)
@@ -538,62 +538,62 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
                             (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             (k := k1635) (C := C1635)
                             (out := outMove) rd1635
-                        have hcallMoveSolmTrue :
-                            typedCallViaEVM config evmVatSolm
+                        have hcallMoveSteleTrue :
+                            typedCallViaEVM config evmVatStele
                               (EVM.address
-                                (flipperVatAddress evmVatSolm.accountMap
-                                  evmVatSolm.executionEnv)) "move" 0
-                              (yankMoveArgValsOf evmVatSolm (yankId I))
-                              (true, evmMoveSolm, outMove) true := by
-                          simpa using hcallMoveSolm
+                                (flipperVatAddress evmVatStele.accountMap
+                                  evmVatStele.executionEnv)) "move" 0
+                              (yankMoveArgValsOf evmVatStele (yankId I))
+                              (true, evmMoveStele, outMove) true := by
+                          simpa using hcallMoveStele
                         let locals3 : Store :=
                           (((yankLocals I).insert "_clawRet" (collapseReturns [])).insert
                             "_fluxRet" (collapseReturns [])).insert "_moveRet"
                             (collapseReturns [])
                         have hbodySplit :
-                            (ExecTransitionBody config contract evm0Solm (yankLocals I)
+                            (I.perm = true → ExecTransitionBody config contract evm0Stele (yankLocals I)
                               yankTransition.body
                               (.returned { contract := contract, locals := locals3 }
-                                (bidDeletedEVM evmMoveSolm (yankId I)) none)) ∧
-                            (I.perm = false → ExecTransitionBody config contract evm0Solm
+                                (bidDeletedEVM evmMoveStele (yankId I)) none)) ∧
+                            (I.perm = false → ExecTransitionBody config contract evm0Stele
                               (yankLocals I) yankTransition.body .staticViolation) := by
-                          simpa [evm0Solm, locals3] using
+                          simpa [evm0Stele, locals3] using
                             (flipperYankSourceBodySuccessSplit
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                              (evmCat := evmCatSolm) (evmVat := evmVatSolm)
-                              (evmMove := evmMoveSolm)
+                              (evmCat := evmCatStele) (evmVat := evmVatStele)
+                              (evmMove := evmMoveStele)
                               (outCat := outCat) (outVat := outVat) (outMove := outMove)
-                              hwv hauthSolm hguySolm hbidLtSolm hcatCode
-                              hcallCatSolmTrue hvatCodeSolm hcallVatSolmTrue
-                              hmoveCodeSolm hcallMoveSolmTrue)
-                        rcases hretSplit with ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+                              hwv hauthStele hguyStele hbidLtStele hcatCode
+                              hcallCatSteleTrue hvatCodeStele hcallVatSteleTrue
+                              hmoveCodeStele hcallMoveSteleTrue)
+                        rcases hretSplit with ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
                         swap
                         · exact hstatic.reEquivStaticHalt
                             hcode hdispatch hdecode (hbodySplit.2 hperm)
-                        have hMoveStateEquiv' : EVMStateEquiv evmMoveEvm evmMoveSolm := by
-                          simpa [evmMoveEvm, evmMoveSolm] using hMoveStateEquiv
-                        have hMoveAccounts : Eq σ_move σ_move_solm := by
-                          simpa [evmMoveEvm, evmMoveSolm] using hMoveStateEquiv'.accountMap
+                        have hMoveStateEquiv' : EVMStateEquiv evmMoveEvm evmMoveStele := by
+                          simpa [evmMoveEvm, evmMoveStele] using hMoveStateEquiv
+                        have hMoveAccounts : Eq σ_move σ_move_stele := by
+                          simpa [evmMoveEvm, evmMoveStele] using hMoveStateEquiv'.accountMap
                         have hcollapsed :
                             Eq (yankBidDeleteAccountMap I σ_move (yankId I))
-                              (bidDeleteCollapsedAccountMap I.codeOwner σ_move_solm
+                              (bidDeleteCollapsedAccountMap I.codeOwner σ_move_stele
                                 (yankId I)) := by
                           simpa [yankBidDeleteAccountMap] using
                             congrArg (fun m => bidDeleteCollapsedAccountMap I.codeOwner m
                               (yankId I)) hMoveAccounts
                         have hdeleted :
                             Eq
-                              (bidDeleteCollapsedAccountMap I.codeOwner σ_move_solm
+                              (bidDeleteCollapsedAccountMap I.codeOwner σ_move_stele
                                 (yankId I))
-                              (bidDeletedEVM evmMoveSolm (yankId I)).accountMap := by
+                              (bidDeletedEVM evmMoveStele (yankId I)).accountMap := by
                           exact bidDeleteCollapsedAccountMap_eq_bidDeletedEVM
-                            evmMoveSolm (yankId I)
+                            evmMoveStele (yankId I)
                         have haccounts :
                             Eq (yankBidDeleteAccountMap I σ_move (yankId I))
-                              (bidDeletedEVM evmMoveSolm (yankId I)).accountMap :=
+                              (bidDeletedEVM evmMoveStele (yankId I)).accountMap :=
                           Eq.trans hcollapsed hdeleted
                         exact hret.reEquivExecutionGen hcode hdispatch hdecode
-                          hbodySplit.1
+                          (hbodySplit.1 hperm)
                           haccounts
                           (by
                             rw [show yankTransition.returnType = [] by rfl]
@@ -602,14 +602,14 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
               (bidTabWord (yankId I) σ I).toNat ≤
                 (bidBidWord (yankId I) σ I).toNat := by
             omega
-          have hgeSolm :
+          have hgeStele :
               (bidTabWord (yankId I) σ I).toNat ≤
                 (bidBidWord (yankId I) σ I).toNat := by
             simpa [← hbidEq, ← htabEq] using hgeEvm
-          have hguySolm : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
+          have hguyStele : bidGuyWord (yankId I) σ I ≠ ⟨0⟩ := by
             intro hzero
             exact hguyEvm (by simpa [hguyEq] using hzero)
-          have hauthSolm : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
+          have hauthStele : solcSlotWordAt callerSlot σ I = ⟨1⟩ := by
             rw [← hcallerWord]
             exact hauthEvm
           have hbody :
@@ -619,20 +619,20 @@ theorem flipperYankBodyCore {σ σ₀ A I} {g : UInt256}
             simpa using
               (flipperYankSourceBodyNotDent
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hguySolm hgeSolm)
+                hwv hauthStele hguyStele hgeStele)
           exact (flipperYankX_bidNotLt (I := I) hgeEvm hafterGuy)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm (by rw [hcallerWord, hsolm])
+    · have hauthStele : solcSlotWordAt callerSlot σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm (by rw [hcallerWord, hstele])
       let locals : Store := yankLocals I
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody : ExecTransitionBody config contract evm0 locals yankTransition.body .reverted := by
         have hguard := flipperAuthGuardEval_false
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-          (locals := locals) (by simp [locals, yankLocals]) hauthSolm
+          (locals := locals) (by simp [locals, yankLocals]) hauthStele
         have hblock := nonpayableSecondRequireReverts
-          (cfg := config) (solm := { contract := contract, locals := locals })
+          (cfg := config) (stele := { contract := contract, locals := locals })
           (evm := evm0)
           (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
           (rest :=

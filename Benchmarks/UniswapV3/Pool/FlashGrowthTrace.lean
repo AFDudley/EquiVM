@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.FlashGrowthSource
 import Benchmarks.UniswapV3.Pool.FullMathTrace
 import Benchmarks.UniswapV3.Pool.RuntimeBlocks_026
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -94,7 +94,7 @@ theorem flashGrowthX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
   · exact Or.inl ⟨rdBad, flashGrowthReverts locals (immStore v) evm second _ fees liquidity
       hp hf hl hbad⟩
   · refine Or.inr ⟨SourceState.addFeeGrowth hs second _,
-      flashGrowthReturns locals (immStore v) evm second _ fees liquidity hp hf hl hbase hgood, ?_⟩
+      flashGrowthReturns (hperm := (congrArg ExecutionEnv.perm hs.env).trans hperm) locals (immStore v) evm second _ fees liquidity hp hf hl hbase hgood, ?_⟩
     exact flashGrowthStoreX (v := v) second rdReturn hperm
       (by simp only [flashUpdateRest, List.length_cons]; omega)
 

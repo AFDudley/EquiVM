@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.BitmapFlipPrefix
 import Benchmarks.UniswapV3.Pool.BitmapStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -43,7 +43,8 @@ theorem bitmapFlipAssign (imms : Store) (evm : EVM.State) (tick spacing : Int) :
     storageLoad_codeOwner_eq_solcSlotWordAt evm evm.executionEnv _ rfl] using ha
 
 theorem bitmapFlipReturns (imms : Store) (evm : EVM.State) (tick spacing : Int)
-    (hn : spacing ≠ 0) (hr : tick.tmod spacing = 0) :
+    (hn : spacing ≠ 0) (hr : tick.tmod spacing = 0)
+    (hperm : evm.executionEnv.perm = true) :
     ExecFuncBody config (bitmapFlipFrame imms tick spacing) evm bitmapFlipFunction.body
       (.returned (bitmapFlipReadyFrame imms tick spacing)
         (flipBitmap evm (bitmapWordPos (tick.tdiv spacing)) (bitmapFlipMask tick spacing)) none) := by
@@ -51,7 +52,7 @@ theorem bitmapFlipReturns (imms : Store) (evm : EVM.State) (tick spacing : Int)
   rw [← List.take_append_drop 5 bitmapFlipFunction.body]
   apply execBlock_append_ok (bitmapFlipReadySource imms evm tick spacing hn hr)
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalBitmapFlipValue imms evm tick spacing)
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalBitmapFlipValue imms evm tick spacing)
       (bitmapFlipAssign imms evm tick spacing)) ExecBlock.nil
 
 theorem bitmapFlipStatic (imms : Store) (evm : EVM.State) (tick spacing : Int)

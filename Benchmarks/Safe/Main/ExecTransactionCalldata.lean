@@ -1,7 +1,7 @@
 import Benchmarks.Safe.Main.ExecTransactionInput
 import Benchmarks.Safe.Main.BoundedCalldataBytes
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Safe.Main
 

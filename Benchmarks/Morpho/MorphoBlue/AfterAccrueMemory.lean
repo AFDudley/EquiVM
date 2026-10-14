@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueFunctionRefine
 import Benchmarks.Morpho.MorphoBlue.SafeTransferSourceAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -32,7 +32,7 @@ theorem morphoAfterAccrueMemoryBody (base : Nat) (accrued : Bool) (fee : UInt256
     have hmem1 : frame1.locals.get? "__memory" = some (.int (Int.ofNat (base + 160))) := store_get_self _ _ _
     have hs1 : ExecStmt config frame evm
         (.assign .localVar ⟨"__memory", []⟩ (.binary .add (.var "__memory") (.intLit 160))) (.ok frame1 evm) :=
-      ExecStmt.assign (safeTransferMemoryAdd_eval hm 160) (assignLocalWord hm)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (safeTransferMemoryAdd_eval hm 160) (assignLocalWord hm)
     have hfee1 : evalExpr? config frame1 evm (.var "__fee") = .ok (.int (Int.ofNat fee.toNat)) := by
       simp only [evalExpr?, frame1, store_get_ne _ _ (show ("__memory" == "__fee") = false by decide), hf, EvalResult.ofOption]
     have hefee := evalWordNeZero hfee1
@@ -47,7 +47,7 @@ theorem morphoAfterAccrueMemoryBody (base : Nat) (accrued : Bool) (fee : UInt256
       have hmem2 : frame2.locals.get? "__memory" = some (.int (Int.ofNat (base + 160 + 64))) := store_get_self _ _ _
       have hs2 : ExecStmt config frame1 evm
           (.assign .localVar ⟨"__memory", []⟩ (.binary .add (.var "__memory") (.intLit 64))) (.ok frame2 evm) :=
-        ExecStmt.assign (safeTransferMemoryAdd_eval hmem1 64) (assignLocalWord hmem1)
+        ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (safeTransferMemoryAdd_eval hmem1 64) (assignLocalWord hmem1)
       have htrue : evalExpr? config frame1 evm (.binary .ne (.var "__fee") (.intLit 0)) = .ok (.bool true) := by
         simpa only [decide_eq_true hz] using hefee
       refine ⟨frame2, ExecFuncBody.execBlockRet (ExecBlock.consNormal

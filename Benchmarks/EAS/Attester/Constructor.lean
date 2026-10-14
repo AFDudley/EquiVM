@@ -1,5 +1,5 @@
 import Benchmarks.EAS.Attester.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # EAS Attester constructor correctness stub
@@ -9,7 +9,7 @@ is the template patched with the constructor's final immutables (`deployedRuntim
 are well typed.  Proof left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Benchmarks.EAS.Attester.Immutables
+open Stele ABI Ethereum Ethereum.EVM Benchmarks.EAS.Attester.Immutables
 open Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.EAS.Attester

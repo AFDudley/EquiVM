@@ -3,7 +3,7 @@ import Benchmarks.UniswapV3.Pool.SwapWriteGuard
 import Benchmarks.UniswapV3.Pool.SwapFeeGrowthStoreTrace
 import Benchmarks.UniswapV3.Pool.SwapProtocolMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables Benchmarks.UniswapV3.Pool.Immutables
 open uniswapV3PoolBlocks
 namespace Benchmarks.UniswapV3.Pool
@@ -109,7 +109,7 @@ theorem swapPoolFeesX {σ : AccountMap} {ee : ExecutionEnv} {g : Sat256}
         (swapLoopWords a p exactWord cache snap dataStart dataLength ret R)
         mem aw' rdata (swapPoolFeesMap σ ee (!a.zeroForOne) s) k' C' ∧
         HeapMemory mem aw' free := by
-  refine ⟨swapPoolFeesSource evm a.zeroForOne s hf hz hsget hg hp hfit,
+  refine ⟨swapPoolFeesSource (hperm := (congrArg ExecutionEnv.perm hsource.env).trans hperm) evm a.zeroForOne s hf hz hsget hg hp hfit,
     SourceState.swapPoolFees hsource (!a.zeroForOne) s, ?_⟩
   cases hzero : a.zeroForOne
   · have r1 := uniswapV3Pool_block_4338_taken (immWords := wordsOf (immStore v))

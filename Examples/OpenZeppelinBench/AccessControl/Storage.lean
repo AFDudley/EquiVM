@@ -2,7 +2,7 @@ import Reasoning.ABIViews
 import Examples.OpenZeppelinBench.AccessControl.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -18,7 +18,7 @@ Helpers for the `_roles` nested mapping layout and full-slot/low-byte storage lo
 theorem accessControlStorageLocLoad_bytes32 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (bytes32Loc slot)
       = .fixedBytes ⟨31, by decide⟩
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
   simpa [bytes32Loc] using storageLocLoad_bytes32 evm slot
 
 

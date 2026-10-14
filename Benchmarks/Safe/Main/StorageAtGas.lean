@@ -2,8 +2,8 @@ import Benchmarks.Safe.Main.Common
 import Benchmarks.Safe.Main.Blocks.Runtime_018
 import Reasoning.WordArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
-open safeRuntimeBlocks
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Benchmarks.Safe.Main.RuntimeBlocks
 
 namespace Benchmarks.Safe.Main
 

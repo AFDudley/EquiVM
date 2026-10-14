@@ -1,17 +1,17 @@
 import Benchmarks.Dss.Cat.ConstructorSource
 import Benchmarks.Dss.Cat.ConstructorTraceReturn
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Cat constructor correctness
 
 The Cat constructor stores three slots — `wards[sender] = 1`, `vat = vat_` (address slot 3),
 `live = 1` (scalar slot 2) — matching the optimized creation bytecode's store order.  The EVM trace
-lives in `ConstructorTrace*`, the Solm source semantics in `ConstructorSource`, and this file
+lives in `ConstructorTrace*`, the Stele source semantics in `ConstructorSource`, and this file
 assembles the two through equal account maps.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -56,8 +56,8 @@ theorem catConstructorCorrect :
           storageStore_accountMap, storageStore_executionEnv, hslot]
       have hOldVat :
           solcSlotWord σWards I ⟨3⟩ =
-            Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩ := by
-        simpa [evm1s, evm0s, catCtorAfterWardsState, initState, Solm.EVM.storageLoad,
+            Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩ := by
+        simpa [evm1s, evm0s, catCtorAfterWardsState, initState, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage, solcSlotWord, storageStore_executionEnv,
           hAccountsWards]
       have hee1 : evm1s.executionEnv = I := by
@@ -68,7 +68,7 @@ theorem catConstructorCorrect :
         have hbase := congrArg
           (fun accounts => sstoreAccountMap I.codeOwner accounts ⟨3⟩
             (setAddressOffset0Word
-              (Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩)
+              (Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨3⟩)
               (EVM.word vat.val)))
           hAccountsWards
         simpa [σVat, evm2s, catCtorAfterVatState, storageStore_accountMap,
@@ -81,7 +81,7 @@ theorem catConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, catCtorPostState] using
-            catSolmCtorExecSuccess
+            catSteleCtorExecSuccess (hperm := hperm)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_
@@ -92,7 +92,7 @@ theorem catConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (catSolmCtorExecReverts_nonpayable
+        (catSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat hwv)
         ?_

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.FileUintSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -1435,9 +1435,9 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
     have hauthWord : clipperRelyAuthWord σ I = clipperRelyAuthWord σ I := rfl
     have hlockWord : solcSlotWord σ I ⟨13⟩ = solcSlotWord σ I ⟨13⟩ := rfl
     by_cases hauthEvm : clipperRelyAuthWord σ I = ⟨1⟩
-    · have hauthSolm : clipperRelyAuthWord σ I = ⟨1⟩ := hauthEvm
+    · have hauthStele : clipperRelyAuthWord σ I = ⟨1⟩ := hauthEvm
       by_cases hlockedEvm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩
-      · have hlockedSolm : solcSlotWord σ I ⟨13⟩ = ⟨0⟩ := hlockedEvm
+      · have hlockedStele : solcSlotWord σ I ⟨13⟩ = ⟨0⟩ := hlockedEvm
         by_cases hperm : I.perm = true
         swap
         · have hstaticPerm : I.perm = false := by simpa using hperm
@@ -1449,21 +1449,21 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
           have hstatic := permSplit_false hstaticPerm
             (clipperFileUintX_lockStoreSplit v hpatch rdLock)
           exact hstatic.reEquivStaticHalt hcode hdispatch hdecode
-            ((clipperFileUintBufSourceBodySplit v hwv hauthSolm hlockedSolm).2 hstaticPerm)
+            ((clipperFileUintBufSourceBodySplit v hwv hauthStele hlockedStele).2 hstaticPerm)
         by_cases hbuf : clipperFileUintWhat I = clipperFileUintBufBytes
         · have hbufWord :
               calldataWord I.calldata 4 = ABI.bytesToWord clipperFileUintBufBytes := by
             rw [← clipperFileUintWhatWord_eq (I := I) (by omega), hbuf]
-          let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-          let evm2 := clipperFileUintWordPostState evmSolm ⟨5⟩ data
+          let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+          let evm2 := clipperFileUintWordPostState evmStele ⟨5⟩ data
           have hbody :
-              ExecTransitionBody config contract evmSolm locals
+              ExecTransitionBody config contract evmStele locals
                 fileUintTransition.body
                 (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-            simpa [evmSolm, evm2, locals, data] using
-              (clipperFileUintBufSourceBody
+            simpa [evmStele, evm2, locals, data] using
+              (clipperFileUintBufSourceBody (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                hauthSolm hlockedSolm hbuf)
+                hauthStele hlockedStele hbuf)
           have hret := clipperFileUintX_bufOk (v := v) hpatch hperm hauthEvm
             hlockedEvm hbufWord hreachBody
           have haccounts :
@@ -1471,7 +1471,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                   (sstoreAccountMap I.codeOwner
                     (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) ⟨5⟩ data)
                   ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-            simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+            simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
           exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
         · have hnotBufWord :
               calldataWord I.calldata 4 ≠ ABI.bytesToWord clipperFileUintBufBytes :=
@@ -1481,16 +1481,16 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
           · have htailWord :
                 calldataWord I.calldata 4 = ABI.bytesToWord clipperFileUintTailBytes := by
               rw [← clipperFileUintWhatWord_eq (I := I) (by omega), htail]
-            let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            let evm2 := clipperFileUintWordPostState evmSolm ⟨6⟩ data
+            let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+            let evm2 := clipperFileUintWordPostState evmStele ⟨6⟩ data
             have hbody :
-                ExecTransitionBody config contract evmSolm locals
+                ExecTransitionBody config contract evmStele locals
                   fileUintTransition.body
                   (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-              simpa [evmSolm, evm2, locals, data] using
-                (clipperFileUintTailSourceBody
+              simpa [evmStele, evm2, locals, data] using
+                (clipperFileUintTailSourceBody (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                  hauthSolm hlockedSolm hbuf htail)
+                  hauthStele hlockedStele hbuf htail)
             have hret := clipperFileUintX_tailOk (v := v) hpatch hperm hauthEvm
               hlockedEvm hnotBufWord htailWord hreachBody
             have haccounts :
@@ -1498,7 +1498,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                     (sstoreAccountMap I.codeOwner
                       (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) ⟨6⟩ data)
                     ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-              simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+              simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
             exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
 
           · have hnotTailWord :
@@ -1509,16 +1509,16 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
             · have hcuspWord :
                   calldataWord I.calldata 4 = ABI.bytesToWord clipperFileUintCuspBytes := by
                 rw [← clipperFileUintWhatWord_eq (I := I) (by omega), hcusp]
-              let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-              let evm2 := clipperFileUintWordPostState evmSolm ⟨7⟩ data
+              let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+              let evm2 := clipperFileUintWordPostState evmStele ⟨7⟩ data
               have hbody :
-                  ExecTransitionBody config contract evmSolm locals
+                  ExecTransitionBody config contract evmStele locals
                     fileUintTransition.body
                     (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-                simpa [evmSolm, evm2, locals, data] using
-                  (clipperFileUintCuspSourceBody
+                simpa [evmStele, evm2, locals, data] using
+                  (clipperFileUintCuspSourceBody (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                    hauthSolm hlockedSolm hbuf htail hcusp)
+                    hauthStele hlockedStele hbuf htail hcusp)
               have hret := clipperFileUintX_cuspOk (v := v) hpatch hperm hauthEvm
                 hlockedEvm hnotBufWord hnotTailWord hcuspWord hreachBody
               have haccounts :
@@ -1526,7 +1526,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                       (sstoreAccountMap I.codeOwner
                         (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) ⟨7⟩ data)
                       ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-                simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+                simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
               exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
 
             · have hnotCuspWord :
@@ -1537,16 +1537,16 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
               · have hchipWord :
                     calldataWord I.calldata 4 = ABI.bytesToWord clipperFileUintChipBytes := by
                   rw [← clipperFileUintWhatWord_eq (I := I) (by omega), hchip]
-                let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                let evm2 := clipperFileUintChipPostState evmSolm data
+                let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                let evm2 := clipperFileUintChipPostState evmStele data
                 have hbody :
-                    ExecTransitionBody config contract evmSolm locals
+                    ExecTransitionBody config contract evmStele locals
                       fileUintTransition.body
                       (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-                  simpa [evmSolm, evm2, locals, data] using
-                    (clipperFileUintChipSourceBody
+                  simpa [evmStele, evm2, locals, data] using
+                    (clipperFileUintChipSourceBody (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                      hauthSolm hlockedSolm hbuf htail hcusp hchip)
+                      hauthStele hlockedStele hbuf htail hcusp hchip)
                 have hret := clipperFileUintX_chipOk (v := v) hpatch hperm hauthEvm
                   hlockedEvm hnotBufWord hnotTailWord hnotCuspWord hchipWord hreachBody
                 have haccounts :
@@ -1558,7 +1558,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                                 (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩)
                                 I ⟨8⟩) data))
                         ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-                  simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+                  simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
                 exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
 
               · have hnotChipWord :
@@ -1569,16 +1569,16 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                 · have htipWord :
                       calldataWord I.calldata 4 = ABI.bytesToWord clipperFileUintTipBytes := by
                     rw [← clipperFileUintWhatWord_eq (I := I) (by omega), htip]
-                  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                  let evm2 := clipperFileUintTipPostState evmSolm data
+                  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                  let evm2 := clipperFileUintTipPostState evmStele data
                   have hbody :
-                      ExecTransitionBody config contract evmSolm locals
+                      ExecTransitionBody config contract evmStele locals
                         fileUintTransition.body
                         (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-                    simpa [evmSolm, evm2, locals, data] using
-                      (clipperFileUintTipSourceBody
+                    simpa [evmStele, evm2, locals, data] using
+                      (clipperFileUintTipSourceBody (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                        hauthSolm hlockedSolm hbuf htail hcusp hchip htip)
+                        hauthStele hlockedStele hbuf htail hcusp hchip htip)
                   have hret := clipperFileUintX_tipOk (v := v) hpatch hperm hauthEvm
                     hlockedEvm hnotBufWord hnotTailWord hnotCuspWord hnotChipWord htipWord
                     hreachBody
@@ -1591,7 +1591,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                                   (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩)
                                   I ⟨8⟩) data))
                           ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-                    simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+                    simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
                   exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
                 · have hnotTipWord :
                       calldataWord I.calldata 4 ≠ ABI.bytesToWord clipperFileUintTipBytes :=
@@ -1602,16 +1602,16 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                         calldataWord I.calldata 4 =
                           ABI.bytesToWord clipperFileUintStoppedBytes := by
                       rw [← clipperFileUintWhatWord_eq (I := I) (by omega), hstopped]
-                    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-                    let evm2 := clipperFileUintWordPostState evmSolm ⟨14⟩ data
+                    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                    let evm2 := clipperFileUintWordPostState evmStele ⟨14⟩ data
                     have hbody :
-                        ExecTransitionBody config contract evmSolm locals
+                        ExecTransitionBody config contract evmStele locals
                           fileUintTransition.body
                           (.returned { contract := contract, locals := locals, immutables := immStore v } evm2 none) (immStore v) := by
-                      simpa [evmSolm, evm2, locals, data] using
-                        (clipperFileUintStoppedSourceBody
+                      simpa [evmStele, evm2, locals, data] using
+                        (clipperFileUintStoppedSourceBody (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                          (g := g) v hwv hauthSolm hlockedSolm hbuf htail hcusp hchip
+                          (g := g) v hwv hauthStele hlockedStele hbuf htail hcusp hchip
                           htip hstopped)
                     have hret := clipperFileUintX_stoppedOk (v := v) hpatch hperm
                       hauthEvm hlockedEvm hnotBufWord hnotTailWord hnotCuspWord
@@ -1622,7 +1622,7 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                               (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩)
                                 ⟨14⟩ data)
                             ⟨13⟩ ⟨0⟩)) = evm2.accountMap := by
-                      simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmSolm, data, initState, storageStore_accountMap, storageStore_executionEnv, Solm.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
+                      simp [clipperFileUintPostState, clipperFileUintLockedState, clipperFileUintWordPostState, clipperFileUintChipPostState, clipperFileUintTipPostState, evm2, evmStele, data, initState, storageStore_accountMap, storageStore_executionEnv, Stele.EVM.storageLoad, State.lookupAccount, Ethereum.Account.lookupStorage, solcSlotWord]
                     exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody haccounts henc
                   · have hnotStoppedWord :
                         calldataWord I.calldata 4 ≠
@@ -1630,14 +1630,14 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                       clipperFileUintWhatWord_ne_of_bytes_ne (I := I)
                         (bs := clipperFileUintStoppedBytes) (by omega) hstopped
                         (by native_decide)
-                    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
                     have hbody :
-                        ExecTransitionBody config contract evmSolm locals
+                        ExecTransitionBody config contract evmStele locals
                           fileUintTransition.body .reverted (immStore v) := by
-                      simpa [evmSolm, locals] using
-                        (clipperFileUintUnrecognizedSourceBody
+                      simpa [evmStele, locals] using
+                        (clipperFileUintUnrecognizedSourceBody (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                          (g := g) v hwv hauthSolm hlockedSolm hbuf htail hcusp hchip
+                          (g := g) v hwv hauthStele hlockedStele hbuf htail hcusp hchip
                           htip hstopped)
                     obtain ⟨_, _, rd2621⟩ := hreachBody
                     obtain ⟨_, _, rd2703⟩ :=
@@ -1661,32 +1661,32 @@ theorem clipperFileUintBody (v : ClipperImmutables) {code : ByteArray}
                         rd2960
                     have hrev := clipperFileUintX_unrecognized (v := v) hpatch rd2988
                     exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hlockedSolm : solcSlotWord σ I ⟨13⟩ ≠ ⟨0⟩ := by
-          intro hsolm
-          exact hlockedEvm (by rw [hlockWord, hsolm])
-        let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+      · have hlockedStele : solcSlotWord σ I ⟨13⟩ ≠ ⟨0⟩ := by
+          intro hstele
+          exact hlockedEvm (by rw [hlockWord, hstele])
+        let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody :
-            ExecTransitionBody config contract evmSolm locals
+            ExecTransitionBody config contract evmStele locals
               fileUintTransition.body .reverted (immStore v) := by
-          simpa [evmSolm, locals] using
+          simpa [evmStele, locals] using
             (clipperFileUintLockedSourceReverts
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-              hauthSolm hlockedSolm)
+              hauthStele hlockedStele)
         obtain ⟨_, _, rd2621⟩ := hreachBody
         obtain ⟨_, _, rd2703⟩ :=
           clipperFileUintX_authorized (v := v) hpatch hauthEvm rd2621
         have hrev := clipperFileUintX_locked (v := v) hpatch hlockedEvm rd2703
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : clipperRelyAuthWord σ I ≠ ⟨1⟩ := by
-        intro hsolm
-        exact hauthEvm (by rw [hauthWord, hsolm])
-      let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    · have hauthStele : clipperRelyAuthWord σ I ≠ ⟨1⟩ := by
+        intro hstele
+        exact hauthEvm (by rw [hauthWord, hstele])
+      let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
-          ExecTransitionBody config contract evmSolm locals
+          ExecTransitionBody config contract evmStele locals
             fileUintTransition.body .reverted (immStore v) := by
-        simpa [evmSolm, locals] using
+        simpa [evmStele, locals] using
           (clipperFileUintAuthSourceReverts
-            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv hauthSolm)
+            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv hauthStele)
       obtain ⟨_, _, rd2621⟩ := hreachBody
       have hrev := clipperFileUintX_unauthorized (v := v) hpatch hauthEvm rd2621
       exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody

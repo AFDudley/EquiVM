@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV4PoolManager.MostSignificantBit
 import Benchmarks.UniswapV4PoolManager.WordByteSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV4PoolManager
 set_option maxRecDepth 5000
 
@@ -25,7 +25,7 @@ theorem msbStageStmtExec {f : Frame} {evm : EVM.State} {x r : UInt256}
     (by simp only [evalExpr?, pure])
   have ho := evalWordOr (evalLocalValue hr) hp
   rw [u256_lor_comm r] at ho
-  exact ExecStmt.assign ho (assignLocalValue hr)
+  exact ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ho (assignLocalValue hr)
 
 theorem mostSignificantBit_guard {f : Frame} {evm : EVM.State} {x : UInt256}
     (hx : f.locals.get? "x" = some (.int (Int.ofNat x.toNat))) :

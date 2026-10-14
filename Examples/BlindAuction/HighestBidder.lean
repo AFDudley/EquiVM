@@ -1,10 +1,10 @@
 import Examples.BlindAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Data.Nat.Bitwise
 import Mathlib.Data.Nat.Digits.Defs
 import Mathlib.Data.Nat.Digits.Lemmas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -24,7 +24,7 @@ theorem blindAuctionHighestBidderBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody blindAuctionConfig blindAuctionContract evm locals highestBidderGetter.body
       (.returned { contract := blindAuctionContract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
             solcAddrMask).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
@@ -150,7 +150,7 @@ theorem blindAuctionHighestBidderBodyCore {σ σ₀ A I}
           (.returned { contract := blindAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.address (AccountAddress.ofNat (highestBidderReturnWord σ I).toNat))])) := by
-      simpa [highestBidderWord, highestBidderReturnWord, initState, Solm.EVM.storageLoad,
+      simpa [highestBidderWord, highestBidderReturnWord, initState, Stele.EVM.storageLoad,
         State.lookupAccount] using blindAuctionHighestBidderBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)

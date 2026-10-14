@@ -1,7 +1,7 @@
 import Benchmarks.UniswapV3.Pool.SwapStepFinishModel
 import Benchmarks.UniswapV3.Pool.SwapStepAmountsGet
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.UniswapV3.Pool
 set_option maxRecDepth 1000
 
@@ -41,7 +41,7 @@ theorem swapStepCapSource (imms : Store) (evm : EVM.State) (a : SwapStepArgs) :
   · simp only [swapStepCapFrame, swapStepOutput, hc, if_true]
     exact ExecStmt.iteTrue (by simpa only [hc] using he)
       (ExecBlock.consNormal
-        (ExecStmt.assign (evalSwapStepAbs _ evm a (swapStepAmountsExtraGet imms a).1)
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (evalSwapStepAbs _ evm a (swapStepAmountsExtraGet imms a).1)
           (assignLocalVarBase_frame (swapStepAmountsAmountGet imms a).2)) ExecBlock.nil)
 
 theorem swapStepCapGet_other (imms : Store) (a : SwapStepArgs) (name : Ident)

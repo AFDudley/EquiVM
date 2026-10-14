@@ -1,7 +1,7 @@
 import Benchmarks.CompoundIII.Comet.ConstructorRemainingImmsEvm
 import Benchmarks.CompoundIII.Comet.ConstructorRemainingImmsSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -60,7 +60,7 @@ theorem constructorFactory_source_ok {frame : Frame} {evm evm' : EVM.State}
       (.ok { frame with locals := (frame.locals.insert ret
         (.address (AccountAddress.ofUInt256 (calldataWord out 0)))) } evm') := by
   rw [← addressOfAddress delegate] at hc
-  exact ExecStmt.externalCallSuccess (eth := .intLit 0) (args := []) he
+  exact ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (eth := .intLit 0) (args := []) he
     (by simp only [evalExpr?, pure]) (by rfl) (constructorFactory_typed hc)
     (by rw [constructorFactory_decode hhi, if_pos hv])
 
@@ -74,10 +74,10 @@ theorem constructorFactory_source_revert {frame : Frame} {evm evm' : EVM.State}
   rw [← addressOfAddress delegate] at hc
   cases z with
   | false =>
-    exact ExecStmt.externalCallFailure he
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
       (by simp only [evalExpr?, pure]) (by rfl) (constructorFactory_typed hc)
   | true =>
-    exact ExecStmt.externalCallReturnDecodeRevert he
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) he
       (by simp only [evalExpr?, pure]) (by rfl) (constructorFactory_typed hc)
       (by rw [constructorFactory_decode hhi, if_neg (fun h ↦ hv ⟨rfl, h⟩)])
 
