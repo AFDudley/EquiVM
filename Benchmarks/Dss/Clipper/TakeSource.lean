@@ -103,7 +103,7 @@ theorem clipperTakeStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    (3 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
+    (I.perm = true → 3 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat →
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals
@@ -135,7 +135,7 @@ theorem clipperTakeStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
     exact hrest
   constructor
-  · intro hstopped
+  · intro hperm hstopped
     have hstoppedEval :
         evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evmLock
           (.binary .lt (.storage stoppedRef) (.intLit 3)) = .ok (.bool false) := by
@@ -150,7 +150,7 @@ theorem clipperTakeStoppedSourceRevertsSplit {σ σ₀ A I} {g : UInt256}
       apply hprefix
       simpa [takeTransition, nonpayable, lockPrefix, isStopped] using
         (by
-          refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+          refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
           exact ExecBlock.consRevert (ExecStmt.requireFalse hstoppedEval))
     simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert hblock
   · intro hperm
@@ -162,11 +162,12 @@ theorem clipperTakeStoppedSourceReverts {σ σ₀ A I} {g : UInt256}
     (v : ClipperImmutables) (hwv : I.weiValue = ⟨0⟩)
     (hlocked : solcSlotWord σ I ⟨13⟩ = ⟨0⟩)
     (hstopped :
-      3 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat) :
+      3 ≤ (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat)
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) :=
-  (clipperTakeStoppedSourceRevertsSplit v hwv hlocked).1 hstopped
+  (clipperTakeStoppedSourceRevertsSplit v hwv hlocked).1 hperm hstopped
 
 theorem clipperTakeInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
     (v : ClipperImmutables) (hwv : I.weiValue = ⟨0⟩)
@@ -174,7 +175,8 @@ theorem clipperTakeInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
     (hstopped :
       (solcSlotWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I ⟨14⟩).toNat < 3)
     (husr :
-      clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩) :
+      clipperTakeSalesUsrWord (sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨1⟩) I = ⟨0⟩)
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -240,7 +242,7 @@ theorem clipperTakeInactiveSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -261,7 +263,8 @@ theorem clipperTakeStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
       ExecStmt config { contract := contract, locals := clipperTakeLocalsTic evmLock I, immutables := immStore v }
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
-        .reverted) :
+        .reverted)
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -332,7 +335,7 @@ theorem clipperTakeStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -356,7 +359,8 @@ theorem clipperTakeStatusDoneTrueSourceReverts {σ σ₀ A I} {g : UInt256}
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I true price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -455,7 +459,7 @@ theorem clipperTakeStatusDoneTrueSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -483,7 +487,8 @@ theorem clipperTakeTooExpensiveSourceReverts {σ σ₀ A I} {g : UInt256}
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -587,7 +592,7 @@ theorem clipperTakeTooExpensiveSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -620,7 +625,8 @@ theorem clipperTakeOwe0MulOverflowSourceReverts {σ σ₀ A I} {g : UInt256}
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -788,7 +794,7 @@ theorem clipperTakeOwe0MulOverflowSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -1475,7 +1481,8 @@ theorem clipperTakeOweGtTabVatFluxNoCodeSourceReverts {σ σ₀ A I}
         evmLock
         (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok { contract := contract, locals := clipperTakeLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperTakeStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals takeTransition.body .reverted (immStore v) := by
@@ -1665,7 +1672,7 @@ theorem clipperTakeOweGtTabVatFluxNoCodeSourceReverts {σ σ₀ A I}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -1716,7 +1723,7 @@ theorem clipperTakeVatFluxBuyerCallFailureBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := Or.inl rfl)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsLotAssigned evmLoc evmRead I false price slice owe0 owe
               slice' tabNew lotNew))
@@ -1912,7 +1919,7 @@ theorem clipperTakeVatFluxBuyerCallSuccessBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts, clipperTakeLocalsFluxBuyerRet, collapseReturns] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := Or.inl rfl)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsLotAssigned evmLoc evmRead I false price slice owe0 owe
               slice' tabNew lotNew))

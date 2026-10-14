@@ -86,7 +86,7 @@ theorem clipperTakeCallbackFailureOfEvals
       .reverted := by
   apply ExecStmt.iteTrue hguard
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallVarFailure (cfg := config) (C := contract)
+    (checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract)
       (receiver := "who") (retVar := "_clipperCallRet") (name := "clipperCall")
       hcode htarget hargs hcall)
 
@@ -119,7 +119,7 @@ theorem clipperTakeCallbackSuccessOfEvals
         (Frame.mk contract (locals.insert "_clipperCallRet" .unit) (immStore v)) evm') := by
   apply ExecStmt.iteTrue hguard
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallVarSuccess (cfg := config) (C := contract)
+    (checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract)
       (receiver := "who") (retVar := "_clipperCallRet") (name := "clipperCall")
       hcode htarget hargs hcall (clipperTakeDecodeClipperCallVoid out))
 
@@ -148,7 +148,7 @@ theorem clipperTakeCheckedCallFailureOfEvals
     ExecBlock config (Frame.mk contract locals (immStore v)) evm
       (checkedExternalCallStmts receiver name (.intLit 0) argsExpr retVar) .reverted := by
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallFailure (cfg := config) (C := contract)
+    (checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract)
       (receiver := receiver) (retVar := retVar) (name := name)
       hcode htarget hargs hcall)
 
@@ -168,7 +168,7 @@ theorem clipperTakeCheckedCallSuccessOfEvals
       (checkedExternalCallStmts receiver name (.intLit 0) argsExpr retVar)
       (.ok (Frame.mk contract (locals.insert retVar .unit) (immStore v)) evm') := by
   simpa [checkedExternalCallStmts] using
-    (checkedExternalCallSuccess (cfg := config) (C := contract)
+    (checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract)
       (receiver := receiver) (retVar := retVar) (name := name)
       hcode htarget hargs hcall hdecode)
 
@@ -595,7 +595,8 @@ theorem clipperTakeGenericPostDogNonzeroStore
     (hid : locals.get? "id" = some (clipperTakeIdValue I))
     (hlocked : locals.get? "locked" = none)
     (hsales : locals.get? "sales" = none)
-    (htabNe : tab ≠ ⟨0⟩) (hlotNe : lot ≠ ⟨0⟩) :
+    (htabNe : tab ≠ ⟨0⟩) (hlotNe : lot ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     let evmTab := Stele.EVM.storageStore evm evm.executionEnv.codeOwner
       (clipperTakeSalesTabSlot I) tab
     let evmLot := Stele.EVM.storageStore evmTab evmTab.executionEnv.codeOwner
@@ -623,14 +624,14 @@ theorem clipperTakeGenericPostDogNonzeroStore
   have htabStmt : ExecStmt config (Frame.mk contract locals (immStore v)) evm
       (.assign .storage (salesF (.var "id") "tab") (.var "tab"))
       (.ok (Frame.mk contract locals (immStore v)) evmTab) :=
-    ExecStmt.assign htabEval (by
+    ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) htabEval (by
       simpa [evmTab] using
         clipperTakeGenericAssignSalesTab (v := v) (evm := evm) hid hsales)
   have hlotEval := clipperEvalTakeGenericVar (v := v) (evm := evmTab) hlot
   have hlotStmt : ExecStmt config (Frame.mk contract locals (immStore v)) evmTab
       (.assign .storage (salesF (.var "id") "lot") (.var "lot"))
       (.ok (Frame.mk contract locals (immStore v)) evmLot) :=
-    ExecStmt.assign hlotEval (by
+    ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hlotEval (by
       simpa [evmLot] using
         clipperTakeGenericAssignSalesLot (v := v) (evm := evmTab) hid hsales)
   have hstores := ExecBlock.consNormal htabStmt
@@ -665,7 +666,7 @@ theorem clipperTakeGenericPostDogNonzeroStore
       .ok (Frame.mk contract locals (immStore v),
         Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩) := by
     simpa using assign_clipperLocked v evmLot locals hlocked ⟨0⟩
-  have hunlock := ExecStmt.assign hzero hunlockAssign
+  have hunlock := ExecStmt.assign (hperm := Or.inr (by simpa (config := { zetaDelta := true }) only [storageStore_executionEnv] using hperm)) hzero hunlockAssign
   exact ExecBlock.consNormal hlotIte (ExecBlock.consNormal hunlock ExecBlock.nil)
 
 end Benchmarks.Dss.Clipper

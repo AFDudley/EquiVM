@@ -167,7 +167,8 @@ theorem clipperTakeDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables)
         (EVM.address (AccountAddress.ofNat (clipperTakeDogEVMWord evmVat).toNat))
         "digs" 0
         [v.ilk, .int (Int.ofNat (clipperTakeSalesTabEVMWord evmRead I).toNat)]
-        (true, evmDog, outDog) true) :
+        (true, evmDog, outDog) true)
+    (hperm : evmDog.executionEnv.perm = true) :
     let evmTab :=
       Stele.EVM.storageStore evmDog evmDog.executionEnv.codeOwner
         (clipperTakeSalesTabSlot I) tabNew
@@ -249,7 +250,8 @@ theorem clipperTakeDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables)
       ExecStmt config digsRetFrame evmDog
         (.assign .storage (salesF (.var "id") "tab") (.var "tab"))
         (.ok digsRetFrame evmTab) := by
-    exact ExecStmt.assign htabEval htabAssign
+    exact ExecStmt.assign (hperm := Or.inr (by
+      simpa only [evmTab, evmLot, storageStore_executionEnv] using hperm)) htabEval htabAssign
   have hlotEval :
       evalExpr? config digsRetFrame evmTab (.var "lot") =
         .ok (.int (Int.ofNat lotNew.toNat)) := by
@@ -267,7 +269,8 @@ theorem clipperTakeDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables)
       ExecStmt config digsRetFrame evmTab
         (.assign .storage (salesF (.var "id") "lot") (.var "lot"))
         (.ok digsRetFrame evmLot) := by
-    exact ExecStmt.assign hlotEval hlotAssign
+    exact ExecStmt.assign (hperm := Or.inr (by
+      simpa only [evmTab, evmLot, storageStore_executionEnv] using hperm)) hlotEval hlotAssign
   have hstoreBlock :
       ExecBlock config digsRetFrame evmDog
         [ .assign .storage (salesF (.var "id") "tab") (.var "tab"),
@@ -319,7 +322,8 @@ theorem clipperTakeDogDigsOweNonzeroStoreSourceOk (v : ClipperImmutables)
         (.assign .storage lockedRef (.intLit 0))
         (.ok digsRetFrame
           (Stele.EVM.storageStore evmLot evmLot.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
-    exact ExecStmt.assign hzero hassign
+    exact ExecStmt.assign (hperm := Or.inr (by
+      simpa only [evmTab, evmLot, storageStore_executionEnv] using hperm)) hzero hassign
   have htail :
       ExecBlock config digsRetFrame evmDog
         [ .ite

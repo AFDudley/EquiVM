@@ -312,7 +312,7 @@ theorem clipperTakeAssignOweFromAdjusted (v : ClipperImmutables)
         .ok (oweFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, adjustedFrame, oweFrame,
       clipperTakeLocalsChostOwe, pure, bind, EvalResult.bind]
-  simpa [adjustedFrame, oweFrame] using ExecStmt.assign hrhs hassign
+  simpa [adjustedFrame, oweFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeVarOweAtChostOwe (v : ClipperImmutables)
     (evmLoc evmRead evmEval : EVM.State) (I : ExecutionEnv)
@@ -404,7 +404,7 @@ theorem clipperTakeAssignSliceFromChostOwe (v : ClipperImmutables)
         .ok (sliceFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, oweFrame, sliceFrame,
       clipperTakeLocalsChostOweSlice, pure, bind, EvalResult.bind]
-  simpa [oweFrame, sliceFrame] using ExecStmt.assign hrhs hassign
+  simpa [oweFrame, sliceFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakeOweLtTabSliceLtLotChostNoAdjustIte (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv) (price slice : UInt256)

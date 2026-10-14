@@ -259,7 +259,7 @@ theorem clipperTakeNoAdjustAssignTabFromTabNew (v : ClipperImmutables)
         (.int (Int.ofNat tabNew.toNat)) = .ok (tabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, lotNewFrame, tabFrame,
       clipperTakeLocalsNoAdjustTabAssigned, pure, bind, EvalResult.bind]
-  simpa [lotNewFrame, tabFrame] using ExecStmt.assign hrhs hassign
+  simpa [lotNewFrame, tabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakeNoAdjustAssignLotFromLotNew (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -293,7 +293,7 @@ theorem clipperTakeNoAdjustAssignLotFromLotNew (v : ClipperImmutables)
         (.int (Int.ofNat lotNew.toNat)) = .ok (lotFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, tabFrame, lotFrame,
       clipperTakeLocalsNoAdjustLotAssigned, pure, bind, EvalResult.bind]
-  simpa [tabFrame, lotFrame] using ExecStmt.assign hrhs hassign
+  simpa [tabFrame, lotFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakePostNoAdjustSubBlock (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -504,7 +504,7 @@ theorem clipperTakeNoAdjustVatFluxBuyerCallFailureBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consRevert
-        (ExecStmt.externalCallFailure
+        (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsNoAdjustLotAssigned evmLoc evmRead I price slice owe0 owe
               tabNew lotNew))
@@ -547,7 +547,7 @@ theorem clipperTakeNoAdjustVatFluxBuyerCallSuccessBlock (v : ClipperImmutables)
   simpa [checkedExternalCallStmts, clipperTakeLocalsNoAdjustFluxBuyerRet, collapseReturns] using
     (ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consNormal
-        (ExecStmt.externalCallSuccess
+        (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
           (clipperEvalVat v evmRead
             (clipperTakeLocalsNoAdjustLotAssigned evmLoc evmRead I price slice owe0 owe
               tabNew lotNew))

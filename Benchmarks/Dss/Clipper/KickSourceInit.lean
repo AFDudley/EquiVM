@@ -537,14 +537,18 @@ theorem clipperEvalKickVarUsr (v : ClipperImmutables) (evm evmRead : EVM.State)
   rfl
 
 theorem clipperKickAssignSalesPos (v : ClipperImmutables)
-    (evm : EVM.State) (I : ExecutionEnv) :
+    (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
       (clipperKickSourceActiveState evm)
       (.assign .storage (salesF (.var "id") "pos") (.var "activePos"))
       (.ok { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
         (clipperKickSourceSalesPosState evm)) := by
-  apply ExecStmt.assign
+  apply ExecStmt.assign (hperm := Or.inr (by
+    simpa only [clipperKickSourceActiveState,
+      clipperKickSourceActiveLengthState,
+      clipperKickSourceIdState, storageStore_executionEnv] using hperm))
     (clipperEvalKickVarActivePos v evm (clipperKickSourceActiveState evm) I)
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperKickSourceSalesRef evm "pos") (ty := uint256St)
@@ -562,14 +566,19 @@ theorem clipperKickAssignSalesPos (v : ClipperImmutables)
         (clipperKickSourceSalesBaseSlot evm) (clipperKickSourceActivePosWord evm)
 
 theorem clipperKickAssignSalesTab (v : ClipperImmutables)
-    (evm : EVM.State) (I : ExecutionEnv) :
+    (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
       (clipperKickSourceSalesPosState evm)
       (.assign .storage (salesF (.var "id") "tab") (.var "tab"))
       (.ok { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
         (clipperKickSourceSalesTabState evm I)) := by
-  apply ExecStmt.assign (by
+  apply ExecStmt.assign (hperm := Or.inr (by
+    simpa only [clipperKickSourceActiveState,
+      clipperKickSourceActiveLengthState,
+      clipperKickSourceIdState,
+      clipperKickSourceSalesPosState, storageStore_executionEnv] using hperm)) (by
     simpa [clipperKickTabValue] using
       clipperEvalKickVarTab v evm (clipperKickSourceSalesPosState evm) I)
   apply assignStorageRef_storage_scalar (hbackend := rfl)
@@ -588,14 +597,20 @@ theorem clipperKickAssignSalesTab (v : ClipperImmutables)
         (clipperKickSourceSalesBaseSlot evm + ⟨1⟩) (clipperKickTabWord I)
 
 theorem clipperKickAssignSalesLot (v : ClipperImmutables)
-    (evm : EVM.State) (I : ExecutionEnv) :
+    (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
       (clipperKickSourceSalesTabState evm I)
       (.assign .storage (salesF (.var "id") "lot") (.var "lot"))
       (.ok { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
         (clipperKickSourceSalesLotState evm I)) := by
-  apply ExecStmt.assign (by
+  apply ExecStmt.assign (hperm := Or.inr (by
+    simpa only [clipperKickSourceActiveState,
+      clipperKickSourceActiveLengthState,
+      clipperKickSourceIdState,
+      clipperKickSourceSalesPosState,
+      clipperKickSourceSalesTabState, storageStore_executionEnv] using hperm)) (by
     simpa [clipperKickLotValue] using
       clipperEvalKickVarLot v evm (clipperKickSourceSalesTabState evm I) I)
   apply assignStorageRef_storage_scalar (hbackend := rfl)
@@ -646,7 +661,8 @@ theorem clipperEvalKickUsrZero (v : ClipperImmutables) (evm : EVM.State)
   native_decide
 
 theorem clipperKickAssignSalesUsr (v : ClipperImmutables)
-    (evm : EVM.State) (I : ExecutionEnv) :
+    (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
       (clipperKickSourceSalesLotState evm I)
@@ -655,7 +671,13 @@ theorem clipperKickAssignSalesUsr (v : ClipperImmutables)
         (clipperKickSourceSalesUsrState evm I)) := by
   have husr := clipperEvalKickVarUsr v evm (clipperKickSourceSalesLotState evm I) I
   rw [clipperKickUsrValue_masked I] at husr
-  apply ExecStmt.assign husr
+  apply ExecStmt.assign (hperm := Or.inr (by
+    simpa only [clipperKickSourceActiveState,
+      clipperKickSourceActiveLengthState,
+      clipperKickSourceIdState,
+      clipperKickSourceSalesPosState,
+      clipperKickSourceSalesTabState,
+      clipperKickSourceSalesLotState, storageStore_executionEnv] using hperm)) husr
   apply assignStorageRef_storage_scalar_value (hbackend := rfl)
     (er := clipperKickSourceSalesRef evm "usr") (ty := addrSt)
     (loc := addrLoc (clipperKickSourceSalesBaseSlot evm + ⟨3⟩)) (hleaf := by first | exact Or.inl ⟨_, rfl⟩ | exact Or.inr ⟨_, rfl⟩)
@@ -687,7 +709,8 @@ theorem clipperKickSourceTicWord_toNat (evm : EVM.State) :
     (lt_of_lt_of_le (Nat.mod_lt _ (by norm_num)) (by norm_num [UInt256.size]))
 
 theorem clipperKickAssignSalesTic (v : ClipperImmutables)
-    (evm : EVM.State) (I : ExecutionEnv) :
+    (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config
       { contract := contract, locals := clipperKickLocalsActivePos evm I, immutables := immStore v }
       (clipperKickSourceSalesUsrState evm I)
@@ -704,7 +727,15 @@ theorem clipperKickAssignSalesTic (v : ClipperImmutables)
     rw [clipperKickSourceTicWord_toNat]
     simpa [evmUsr] using
       clipperEvalRedoTimestamp96 v evmUsr (clipperKickLocalsActivePos evm I)
-  apply ExecStmt.assign hrhs
+  apply ExecStmt.assign (hperm := Or.inr (by
+    simpa only [evmUsr,
+      clipperKickSourceActiveState,
+      clipperKickSourceActiveLengthState,
+      clipperKickSourceIdState,
+      clipperKickSourceSalesPosState,
+      clipperKickSourceSalesTabState,
+      clipperKickSourceSalesLotState,
+      clipperKickSourceSalesUsrState, storageStore_executionEnv] using hperm)) hrhs
   apply assignStorageRef_storage_scalar (hbackend := rfl)
     (er := clipperKickSourceSalesRef evm "tic") (ty := uint96St)
     (loc := uint96Loc (clipperKickSourceSalesBaseSlot evm + ⟨3⟩)

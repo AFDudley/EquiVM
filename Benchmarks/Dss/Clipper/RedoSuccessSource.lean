@@ -280,7 +280,8 @@ theorem clipperRedoAfterTicSuccessPrefix
                 [] ]
             [],
           .assign .storage lockedRef (.intLit 0) ]
-        result) :
+        result)
+    (hperm : evmFeed.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract, locals := clipperRedoLocalsLot evmLoc evmRead I price, immutables := immStore v }
       evmStart (clipperRedoAfterTicBody) result := by
@@ -321,7 +322,7 @@ theorem clipperRedoAfterTicSuccessPrefix
       ExecStmt config topFrame evmFeed
         (.assign .storage (salesF (.var "id") "top") (.var "topNew"))
         (.ok topFrame evmTop) := by
-    exact ExecStmt.assign htopValue (by
+    exact ExecStmt.assign (hperm := Or.inr hperm) htopValue (by
       simpa [topFrame, evmTop] using
         clipperRedoAssignSalesTop v evmLoc evmRead evmFeed I price feedPrice topNew)
   have htip :
@@ -390,12 +391,13 @@ theorem clipperRedoLocalsChip_get_locked
 
 theorem clipperRedoUnlock
     (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
-    (hlocked : locals.get? "locked" = none) :
+    (hlocked : locals.get? "locked" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := immStore v } evm
       (.assign .storage lockedRef (.intLit 0))
       (.ok { contract := contract, locals := locals, immutables := immStore v }
         (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
-  exact ExecStmt.assign (by simp [evalExpr?, pure])
+  exact ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure])
     (assign_clipperLocked v evm locals hlocked ⟨0⟩)
 
 theorem clipperEvalRedoVarTip
@@ -500,7 +502,8 @@ theorem clipperRedoIncentiveInactiveTail
     (v : ClipperImmutables) (evmLoc evmRead evmTop : EVM.State)
     (I : ExecutionEnv) (price feedPrice topNew : UInt256)
     (htip : clipperRedoTipSteleWord evmTop = ⟨0⟩)
-    (hchip : clipperRedoChipSteleWord evmTop = ⟨0⟩) :
+    (hchip : clipperRedoChipSteleWord evmTop = ⟨0⟩)
+    (hperm : evmTop.executionEnv.perm = true) :
     let locals := clipperRedoLocalsChip evmLoc evmRead evmTop I price feedPrice topNew
     ExecBlock config { contract := contract, locals := locals, immutables := immStore v } evmTop
       [ .ite
@@ -548,7 +551,7 @@ theorem clipperRedoIncentiveInactiveTail
           (clipperEvalRedoIncentiveInactive v evmLoc evmRead evmTop evmTop I
             price feedPrice topNew htip hchip))
       ExecBlock.nil
-  have hunlock := clipperRedoUnlock v evmTop locals
+  have hunlock := clipperRedoUnlock (hperm := by assumption) v evmTop locals
     (by simpa [locals] using
       (clipperRedoLocalsChip_get_locked evmLoc evmRead evmTop I
         price feedPrice topNew))
@@ -569,14 +572,15 @@ theorem clipperRedoIncentiveTailOk
     (hcond : evalExpr? config frame evm clipperRedoIncentiveCond = .ok (.bool true))
     (hbody : ExecBlock config frame evm (clipperRedoIncentiveBody)
       (.ok { contract := contract, locals := afterLocals, immutables := immStore v } evmAfter))
-    (hlocked : afterLocals.get? "locked" = none) :
+    (hlocked : afterLocals.get? "locked" = none)
+    (hperm : evmAfter.executionEnv.perm = true) :
     ExecBlock config frame evm
       [ .ite clipperRedoIncentiveCond (clipperRedoIncentiveBody) [],
         .assign .storage lockedRef (.intLit 0) ]
       (.ok { contract := contract, locals := afterLocals, immutables := immStore v }
         (Stele.EVM.storageStore evmAfter evmAfter.executionEnv.codeOwner ⟨13⟩ ⟨0⟩)) := by
   exact ExecBlock.consNormal (ExecStmt.iteTrue hcond hbody) <|
-    ExecBlock.consNormal (clipperRedoUnlock v evmAfter afterLocals hlocked) ExecBlock.nil
+    ExecBlock.consNormal (clipperRedoUnlock (hperm := by assumption) v evmAfter afterLocals hlocked) ExecBlock.nil
 
 abbrev clipperRedoChostWordSource (evm : EVM.State) : UInt256 :=
   Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨9⟩
@@ -1688,7 +1692,7 @@ theorem clipperRedoSuckCallFailureSource
       evmVals
       (checkedExternalCallStmts vatExpr "suck" (.intLit 0)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet") .reverted := by
-  simpa [checkedExternalCallStmts] using checkedExternalCallFailure
+  simpa [checkedExternalCallStmts] using checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (clipperEvalRedoVatCodeGuardTrue v evmVals
       (clipperRedoLocalsCoin evmLoc evmRead evmVals I price feedPrice topNew) hcode)
     (clipperEvalVat v evmVals
@@ -1717,7 +1721,7 @@ theorem clipperRedoSuckCallSuccessSource
           locals := clipperRedoLocalsSuckRet evmLoc evmRead evmVals I
             price feedPrice topNew, immutables := immStore v }
         evmAfter) := by
-  simpa [checkedExternalCallStmts, clipperRedoLocalsSuckRet] using checkedExternalCallSuccess
+  simpa [checkedExternalCallStmts, clipperRedoLocalsSuckRet] using checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (clipperEvalRedoVatCodeGuardTrue v evmVals
       (clipperRedoLocalsCoin evmLoc evmRead evmVals I price feedPrice topNew) hcode)
     (clipperEvalVat v evmVals
@@ -1746,12 +1750,13 @@ theorem clipperRedoDoneTrueSourceRevertsOfAfterTic
       let evmLock := clipperRedoLockedState evm0
       ExecBlock config
         { contract := contract, locals := clipperRedoLocalsLot evmLock evmPrice I price, immutables := immStore v }
-        (clipperRedoPostTicState evmPrice I) (clipperRedoAfterTicBody) .reverted) :
+        (clipperRedoPostTicState evmPrice I) (clipperRedoAfterTicBody) .reverted)
+    (hperm : I.perm = true) (hpermPrice : evmPrice.executionEnv.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
   intro locals evm0
-  have hblock := clipperRedoDoneTrueSourcePrefix
+  have hblock := clipperRedoDoneTrueSourcePrefix (hperm := by assumption) (hpermPrice := by assumption)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) (evmPrice := evmPrice) v hwv hlocked hstopped husr price hstatus hafter
   simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert
@@ -1780,13 +1785,14 @@ theorem clipperRedoDoneTrueSourceOkOfAfterTic
       ExecBlock config
         { contract := contract, locals := clipperRedoLocalsLot evmLock evmPrice I price, immutables := immStore v }
         (clipperRedoPostTicState evmPrice I) (clipperRedoAfterTicBody)
-        (.ok finalFrame evmFinal)) :
+        (.ok finalFrame evmFinal))
+    (hperm : I.perm = true) (hpermPrice : evmPrice.executionEnv.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body
       (.returned finalFrame evmFinal none) (immStore v) := by
   intro locals evm0
-  have hblock := clipperRedoDoneTrueSourcePrefix
+  have hblock := clipperRedoDoneTrueSourcePrefix (hperm := by assumption) (hpermPrice := by assumption)
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := g) (evmPrice := evmPrice) v hwv hlocked hstopped husr price hstatus hafter
   simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockOK

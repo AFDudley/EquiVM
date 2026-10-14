@@ -415,10 +415,10 @@ theorem clipperTakeTabZeroContinuationEquiv
           simpa [clipperTakeAfterMoveStmts, postLocals] using
             execBlockAppendOk hdogOk hpost
         exact hsourceReverted (execBlockAppendOk hmove hafter)
-      · intro callee evmRemove hremove
+      · intro callee evmRemove hremove hpermRemove
         let resultLocals :=
           (postLocals.insert "_fluxUsrRet" .unit).insert "_removeRet2" .unit
-        have hpost := clipperTakeGenericPostDogTabZeroRemoveOk
+        have hpost := clipperTakeGenericPostDogTabZeroRemoveOk (hperm := hpermRemove)
           husr' htab' hlot' hid' hlocked' htabZero hlotNe hfluxCodeStele
             hcallFluxStele' hremove
         have hafter : ExecBlock config

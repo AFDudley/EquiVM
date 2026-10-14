@@ -290,7 +290,7 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                         ExecBlock config (Frame.mk contract (clipperKickStore I) (immStore v))
                           evmStele kickTransition.body result := by
                     intro result hafter
-                    exact clipperKickSourcePrefix v evmStele I hvalue hsrc hauthSource
+                    exact clipperKickSourcePrefix (hperm := by assumption) v evmStele I hvalue hsrc hauthSource
                       hlockedSource hstoppedSource htab hlot husr
                       (by rw [hidEq]; exact hid) hlen hafter
                   have houtcome : ClipperKickTailOutcome v code g
@@ -339,7 +339,7 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                     hidEq houtcome
                 · have hidZero : clipperKickIdWord σLock I = ⟨0⟩ := by
                     simpa using hid
-                  have hsource := clipperKickSourceRevertsId v evmStele I hvalue hsrc
+                  have hsource := clipperKickSourceRevertsId (hperm := by assumption) v evmStele I hvalue hsrc
                     hauthSource hlockedSource hstoppedSource htab hlot husr
                     (by rw [hidEq]; exact hidZero)
                   have hevm := clipperKickX_idZero (σ := σLock) v hpatch hperm
@@ -347,21 +347,21 @@ theorem clipperKickBody (v : ClipperImmutables) {code : ByteArray}
                   exact connectRevert hsource hevm
               · have husrZero : clipperKickUsrMaskedWord I = ⟨0⟩ := by
                   simpa using husr
-                have hsource := clipperKickSourceRevertsUsr v evmStele I hvalue hsrc
+                have hsource := clipperKickSourceRevertsUsr (hperm := by assumption) v evmStele I hvalue hsrc
                   hauthSource hlockedSource hstoppedSource htab hlot husrZero
                 have hevm := clipperKickX_usrZero (σ := σLock) v hpatch husrZero rd5753
                 exact connectRevert hsource hevm
-            · have hsource := clipperKickSourceRevertsLot v evmStele I hvalue hsrc
+            · have hsource := clipperKickSourceRevertsLot (hperm := by assumption) v evmStele I hvalue hsrc
                 hauthSource hlockedSource hstoppedSource htab hlot
               have hevm := clipperKickX_lotZero (σ := σLock) v hpatch hlot rd5681
               exact connectRevert hsource hevm
-          · have hsource := clipperKickSourceRevertsTab v evmStele I hvalue hsrc
+          · have hsource := clipperKickSourceRevertsTab (hperm := by assumption) v evmStele I hvalue hsrc
               hauthSource hlockedSource hstoppedSource htab
             have hevm := clipperKickX_tabZero (σ := σLock) v hpatch htab
               (by simpa [σLock] using rd5609)
             exact connectRevert hsource hevm
         · have hstoppedGe : 1 ≤ (solcSlotWord σLock I ⟨14⟩).toNat := by omega
-          have hsource := clipperKickSourceRevertsStopped v evmStele I hvalue hsrc
+          have hsource := clipperKickSourceRevertsStopped (hperm := by assumption) v evmStele I hvalue hsrc
             hauthSource hlockedSource (by rw [← hstoppedEq]; exact hstoppedGe)
           have hevm := clipperKickX_stopped (σ := σ) v hpatch hperm
             (by simpa [σLock] using hstoppedGe) rd5520

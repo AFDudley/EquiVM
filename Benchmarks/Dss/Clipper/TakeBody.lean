@@ -105,7 +105,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                       ExecTransitionBody config contract evmStele
                         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                     simpa [evmStele, σLock] using
-                      (clipperTakeInactiveSourceReverts
+                      (clipperTakeInactiveSourceReverts (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                         hlockedEvm hstoppedLt husrEvm)
                   have hrev := clipperTakeX_usrZero (v := v) (σ := σLock)
@@ -311,7 +311,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                               ExecTransitionBody config contract evmStele
                                 (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                             simpa [evmStele, σLock] using
-                              (clipperTakeStatusSourceRevertsOfStatus
+                              (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                 (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                 hstatus)
@@ -388,7 +388,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                 ExecTransitionBody config contract evmStele
                                   (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                               simpa [evmStele, σLock] using
-                                (clipperTakeStatusSourceRevertsOfStatus
+                                (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                   (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                   hstatus)
@@ -530,7 +530,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                     ExecTransitionBody config contract evmStele
                                       (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                                   simpa [evmStele, σLock] using
-                                    (clipperTakeStatusDoneTrueSourceReverts
+                                    (clipperTakeStatusDoneTrueSourceReverts (hperm := by assumption)
                                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                       (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                       priceWord hstatus)
@@ -594,7 +594,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                           (clipperTakeStore I) takeTransition.body
                                           .reverted (immStore v) := by
                                       simpa [evmStele, σLock] using
-                                        (clipperTakeStatusSourceRevertsOfStatus
+                                        (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                           (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                           hstatus)
@@ -716,7 +716,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                             (clipperTakeStore I) takeTransition.body
                                             .reverted (immStore v) := by
                                         simpa [evmStele, σLock] using
-                                          (clipperTakeStatusDoneTrueSourceReverts
+                                          (clipperTakeStatusDoneTrueSourceReverts (hperm := by assumption)
                                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                             (g := g) v hwv hlockedEvm hstoppedLt
                                             husrEvm priceWord hstatus)
@@ -822,7 +822,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               (clipperTakeStore I) takeTransition.body
                                               .reverted (immStore v) := by
                                           simpa [evmStele, σLock] using
-                                            (clipperTakeTooExpensiveSourceReverts
+                                            (clipperTakeTooExpensiveSourceReverts (hperm := by assumption)
                                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                               (g := g) v hwv hlockedEvm hstoppedLt
                                               husrEvm priceWord hmaxLt hstatus)
@@ -949,7 +949,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                                   (⟨12⟩ : UInt256)
                                                   (by rw [hbaseMem196]; norm_num) hbaseRead64
                                             exact
-                                              clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts
+                                              clipperTakeOweGtTabVatFluxNoCodeRevertEquivFromPostAccounts (hperm := by assumption)
                                                 (v := v) (hpatch := hpatch) hcode hwv hdispatch hdec
                                                 hlockedEvm hstoppedLt husrEvm
                                                 (by simpa [sliceE, lotE] using rd8686)
@@ -1118,7 +1118,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                               using Nat.le_of_not_gt howeMul
                                           have hbody := by
                                             simpa [evmStele, σLock] using
-                                              (clipperTakeOwe0MulOverflowSourceReverts
+                                              (clipperTakeOwe0MulOverflowSourceReverts (hperm := by assumption)
                                                 (σ := σ)
                                                 (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                                                 hlockedEvm hstoppedLt husrEvm priceWord hmaxLe
@@ -1157,7 +1157,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                         (clipperTakeStore I) takeTransition.body
                                         .reverted (immStore v) := by
                                     simpa [evmStele, σLock] using
-                                      (clipperTakeStatusSourceRevertsOfStatus
+                                      (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                         (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                         hstatus)
@@ -1198,7 +1198,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                                   ExecTransitionBody config contract evmStele
                                     (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                                 simpa [evmStele, σLock] using
-                                  (clipperTakeStatusSourceRevertsOfStatus
+                                  (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                     (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                     hstatus)
@@ -1316,7 +1316,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                             ExecTransitionBody config contract evmStele
                               (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                           simpa [evmStele, σLock] using
-                            (clipperTakeStatusSourceRevertsOfStatus
+                            (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                               (g := g) v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                         exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
@@ -1372,7 +1372,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                           ExecTransitionBody config contract evmStele
                             (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                         simpa [evmStele, σLock] using
-                          (clipperTakeStatusSourceRevertsOfStatus
+                          (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                             v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                       exact hrev.reEquivExecutionRevert hcode hdispatch hdec hbody
@@ -1412,7 +1412,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                         ExecTransitionBody config contract evmStele
                           (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                       simpa [evmStele, σLock] using
-                        (clipperTakeStatusSourceRevertsOfStatus
+                        (clipperTakeStatusSourceRevertsOfStatus (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                           v hwv hlockedEvm hstoppedLt husrEvm hstatus)
                     have hrev :=
@@ -1428,7 +1428,7 @@ theorem clipperTakeBody (v : ClipperImmutables) {code : ByteArray}
                     ExecTransitionBody config contract evmStele
                       (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
                   simpa [evmStele, σLock] using
-                    (clipperTakeStoppedSourceReverts
+                    (clipperTakeStoppedSourceReverts (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                       hlockedEvm hstoppedEvmGe)
                 have hrev := clipperTakeX_stoppedClosed (v := v) (σ := σLock)

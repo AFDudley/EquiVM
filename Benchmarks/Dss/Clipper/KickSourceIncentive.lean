@@ -258,7 +258,7 @@ theorem clipperKickAssignCoin (v : ClipperImmutables)
       evmTop (.var "coinNew") =
       .ok (.int (Int.ofNat (clipperKickSourceCoinWord evmTop I).toNat)) := by
     simp only [evalExpr?, clipperKickLocalsCoinNew, store_get_self, EvalResult.ofOption]
-  apply ExecStmt.assign hrhs
+  apply ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs
   simp [assignStorageRef?, updateLocalPath?, varRef, clipperKickLocalsCoin,
     pure, bind, EvalResult.bind]
 
@@ -336,7 +336,7 @@ theorem clipperKickSuckCallFailureSource (v : ClipperImmutables)
         locals := clipperKickLocalsCoin evmLock evmTop I feedPrice top, immutables := immStore v }
       evmTop (checkedExternalCallStmts vatExpr "suck" (.intLit 0)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet") .reverted := by
-  simpa [checkedExternalCallStmts] using checkedExternalCallFailure
+  simpa [checkedExternalCallStmts] using checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (clipperEvalRedoVatCodeGuardTrue v evmTop
       (clipperKickLocalsCoin evmLock evmTop I feedPrice top) hcode)
     (clipperEvalVat v evmTop
@@ -359,7 +359,7 @@ theorem clipperKickSuckCallSuccessSource (v : ClipperImmutables)
         [.storage vowRef, .var "kpr", .var "coin"] "_suckRet")
       (.ok (Frame.mk contract (clipperKickLocalsSuckRet evmLock evmTop I feedPrice top) (immStore v)) evmAfter) := by
   simpa [checkedExternalCallStmts, clipperKickLocalsSuckRet] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (clipperEvalRedoVatCodeGuardTrue v evmTop
         (clipperKickLocalsCoin evmLock evmTop I feedPrice top) hcode)
       (clipperEvalVat v evmTop

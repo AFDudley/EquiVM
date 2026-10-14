@@ -323,10 +323,10 @@ theorem clipperTakeLotZeroContinuationEquiv
         simpa [clipperTakeAfterMoveStmts] using
           execBlockAppendOk hdogOk hpost
       exact hsourceReverted (execBlockAppendOk hmove hafter)
-    · intro callee evmRemove hremove
+    · intro callee evmRemove hremove hpermRemove
       let resultLocals :=
         (clipperTakeGenericDigsAmtRet locals tabNew owe).insert "_removeRet" .unit
-      have hpost := clipperTakeGenericPostDogLotZeroOk hlot' hid' hlocked' hremove
+      have hpost := clipperTakeGenericPostDogLotZeroOk (hperm := hpermRemove) hlot' hid' hlocked' hremove
       have hafter : ExecBlock config
           (Frame.mk contract (clipperTakeGenericMoveRet locals) (immStore v)) evmMove
           (clipperTakeAfterMoveStmts)
