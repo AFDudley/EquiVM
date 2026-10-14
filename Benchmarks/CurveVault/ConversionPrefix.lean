@@ -42,7 +42,7 @@ theorem vaultConversionPrefixComputed {evm evm' : State} {locals : Store} {calle
       (callee := vaultTotalAssetsFunction) (name := "_total_assets") (args := []) (argVals := []) (retVar := "__c0")
       (by simp [evalExprs?, pure]) rfl rfl hbody
     apply ExecBlock.consNormal hcall
-    refine ExecBlock.consNormal (ExecStmt.assign (evalExpr_varUInt256 (value := total) (by
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inl rfl) (evalExpr_varUInt256 (value := total) (by
       simp [collapseReturns])) ?_)
       ExecBlock.nil
     · apply assignLocalVarBase_ok

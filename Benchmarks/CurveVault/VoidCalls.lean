@@ -56,10 +56,10 @@ theorem checkedVoidCallBridge {cfg : Config} {decl : ContractDecl} {code : ByteA
   have hcall' := hcall
   rw [← address_of_addressOfUInt256 target] at hcall'
   cases z with
-  | false => exact Or.inr ⟨checkedExternalCallFailure hg hr ha hcall', hfail rd⟩
+  | false => exact Or.inr ⟨checkedExternalCallFailure (hperm := Or.inl rfl) hg hr ha hcall', hfail rd⟩
   | true =>
     obtain ⟨aw', k'', C'', rdNext⟩ := hpass rd
     exact Or.inl ⟨evm', σ', out, aw', k'', C'',
-      checkedExternalCallSuccess hg hr ha hcall' (hdecode out), hs', rdNext⟩
+      checkedExternalCallSuccess (hperm := Or.inl rfl) hg hr ha hcall' (hdecode out), hs', rdNext⟩
 
 end Benchmarks.CurveVault
