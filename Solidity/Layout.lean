@@ -7,7 +7,8 @@ import Solm.SolidityStorage
 Derives solc's storage layout for the flattened state variables (declaration order, base-first;
 items smaller than 32 bytes packed lower-order aligned, moved to the next slot only when they do
 not fit; structs and arrays start on a slot boundary and the following item starts a new slot;
-mappings at `keccak256(h(k) . p)`; dynamic-array data at `keccak256(p)`; `bytes`/`string` in the
+mappings at `keccak256(h(k) . p)`, with `h(k)` the padded word of a value-type key and the raw
+bytes of a `string` / `bytes` key; dynamic-array data at `keccak256(p)`; `bytes`/`string` in the
 short/long form).  The result is a `Solm.StorageLayout`: a state-independent locator from
 `Solm.EvaledStorageRef` paths to `Solm.StorageAddr` (a leaf location, the header slot of a
 dynamically-sized value, or the symbolic byte of a `bytes`/`string`), which `Solm.solidityStorageBackend`
@@ -147,6 +148,12 @@ def mkLoc (slot : EVM.Word) (off size : Nat) (elem : ElemType) : Option Solm.Sto
 def mappingSlot (k : Solm.KeyValue) (p : EVM.Word) : EVM.Word :=
   Ethereum.uInt256OfByteArray (Ethereum.KEC ((Solm.keyValueToWord k).toByteArray ++ p.toByteArray))
 
+/-- `keccak256(k . p)` for a `string` / `bytes` key: the raw bytes, not padded.  The element is
+    the absolute slot `absRef v (bytesMappingSlot k p).toNat` (`storageIndex`): the shared key
+    type `Solm.KeyValue` has no bytes key. -/
+def bytesMappingSlot (b : ByteArray) (p : EVM.Word) : EVM.Word :=
+  Ethereum.uInt256OfByteArray (Ethereum.KEC (b ++ p.toByteArray))
+
 /-- `keccak256(p)`: dynamic-array / long-bytes data base. -/
 def dataSlot (p : EVM.Word) : EVM.Word := Solm.solidityBytesDataBaseSlot p
 
@@ -224,9 +231,23 @@ def catchesStorageTys : List CatchClause → List Ty
       catchesStorageTys cs
 end
 
-/-- The types of the storage pointers of the program (parameters, return variables and locals
-    located in storage), canonical, without repetition: the targets inline assembly may point at
-    an absolute slot. -/
+/-- The value types of the `string` / `bytes`-keyed mappings inside a type: their elements sit at
+    absolute slots (`absRef`, `storageIndex`). -/
+def bytesKeyValueTys (env : TypeEnv) : Nat → Ty → List Ty
+  | 0, _ => []
+  | fuel + 1, ty =>
+    match ty with
+    | .mapping k v => (if k = .string ∨ k = .bytes then [v] else []) ++ bytesKeyValueTys env fuel v
+    | .array e _ | .dynArray e => bytesKeyValueTys env fuel e
+    | .user q n =>
+      match env.struct? q n with
+      | some s => s.fields.flatMap fun f => bytesKeyValueTys env fuel f.1
+      | none => []
+    | _ => []
+
+/-- The types that may sit at an absolute slot, canonical, without repetition: the storage
+    pointers of the program (parameters, return variables and locals located in storage), which
+    inline assembly may point anywhere, and the values of `string` / `bytes`-keyed mappings. -/
 def FlatContract.storagePointerTys (fc : FlatContract) : List Ty :=
   let ofParams (here : Ident) (ps : List Param) : List Ty :=
     ps.filterMap fun p => if p.loc == some .storage then some (fc.types.canonTy here p.ty) else none
@@ -235,7 +256,8 @@ def FlatContract.storagePointerTys (fc : FlatContract) : List Ty :=
       (stmtsStorageTys (f.decl.body.getD [])).map (fc.types.canonTy f.declaredIn)
   let ofMod (md : ModDef) : List Ty :=
     ofParams md.declaredIn md.decl.params ++ (stmtsStorageTys (md.decl.body.getD [])).map (fc.types.canonTy md.declaredIn)
-  let all := fc.fns.toList.flatMap ofFn ++ fc.modifiers.toList.flatMap ofMod
+  let pointers := fc.fns.toList.flatMap ofFn ++ fc.modifiers.toList.flatMap ofMod
+  let all := pointers ++ (pointers ++ fc.storageVars.map (·.ty)).flatMap (bytesKeyValueTys fc.types 256)
   all.foldl (fun acc ty => if acc.contains ty then acc else acc ++ [ty]) []
 
 def FlatContract.layoutTable? (fc : FlatContract) : Option LayoutTable :=

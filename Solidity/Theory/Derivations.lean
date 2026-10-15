@@ -1391,6 +1391,23 @@ theorem EvalLValue.mappingBytes32 {fr fr1 : Frame} {m m1 : Machine} {x : Ident} 
       (.ok (.storage (keyRef ⟨v.key, []⟩ (.fixedBytes ⟨31, by decide⟩ bs)) vt) fr1 m1) :=
   EvalLValue.mappingIndex hx hv hmut hty hk (storageIndex_mapping_bytes32 ..)
 
+/-- `x["…"]` for `x : mapping(string => uint256)` at slot `base`: the element at the absolute slot
+    `bytesMappingSlot key base`. -/
+theorem EvalExpr.mappingStrLitU256 {fr : Frame} {m : Machine} {x : Ident} {v : FlatVar} {s : String} {base : UInt256}
+    (hx : fr.get? x = none) (hv : fc.varIn fr.here x = some v) (hmut : v.mutability = .mutable)
+    (hty : v.ty = .mapping .string u256Ty) (ha : cfg.storageBackend.locate? ⟨v.key, []⟩ = some (.anchor base))
+    (hl : cfg.Leaf (absRef u256Ty (bytesMappingSlot s.toUTF8 base).toNat) (uint256Loc (bytesMappingSlot s.toUTF8 base))) :
+    EvalExpr cfg o fc fr m (.index (.ident x) (.lit (.str s)))
+      (.ok (u256Val (loadU256 m (bytesMappingSlot s.toUTF8 base)).toNat) fr m) :=
+  EvalExpr.mappingIndexScalar hx hv hmut hty (EvalExpr.lit rfl) (storageIndex_mapping_string_lit ha) (loadIfScalar_u256 hl)
+
+theorem EvalLValue.mappingStrLit {fr : Frame} {m : Machine} {x : Ident} {v : FlatVar} {s : String} {vt : Ty} {base : UInt256}
+    (hx : fr.get? x = none) (hv : fc.varIn fr.here x = some v) (hmut : v.mutability = .mutable)
+    (hty : v.ty = .mapping .string vt) (ha : cfg.storageBackend.locate? ⟨v.key, []⟩ = some (.anchor base)) :
+    EvalLValue cfg o fc fr m (.index (.ident x) (.lit (.str s)))
+      (.ok (.storage (absRef vt (bytesMappingSlot s.toUTF8 base).toNat) vt) fr m) :=
+  EvalLValue.mappingIndex hx hv hmut hty (EvalExpr.lit rfl) (storageIndex_mapping_string_lit ha)
+
 /-- `x[k]` for `x : mapping(address => S)` with a struct `S`: a storage reference to the struct. -/
 theorem EvalExpr.mappingAddrStruct {fr fr1 : Frame} {m m1 : Machine} {x : Ident} {v : FlatVar} {k : Expr}
     {a : EVM.Address} {q : Option Ident} {n : Ident}

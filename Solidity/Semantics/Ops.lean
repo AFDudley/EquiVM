@@ -722,6 +722,13 @@ is a `uint8`, a contract an `address`, a value type its underlying type, a struc
 A backend `.revert` is a corrupt `bytes`/`string` encoding (`Panic(0x22)`); a backend `.error` is
 an ill-formed program. -/
 
+/-- The element type recorded for a mapping key.  `string` / `bytes` keys have none; the backend
+    never reads a mapping's key type (`Solm/SolidityStorage.lean` matches `.mapping _ _`), so they
+    are recorded as `bytes32`. -/
+def mappingKeyElem (env : TypeEnv) : Ty → Option ElemType
+  | .string | .bytes => some (.bytes ⟨31, by decide⟩)
+  | k => leafElemType env k
+
 def storageTypeOfFuel (env : TypeEnv) : Nat → Ty → Option Solm.StorageType
   | 0, _ => none
   | fuel + 1, ty =>
@@ -732,7 +739,7 @@ def storageTypeOfFuel (env : TypeEnv) : Nat → Ty → Option Solm.StorageType
       | .bytes => some .bytes
       | .string => some .string
       | .mapping k v => do
-        let ke ← leafElemType env k
+        let ke ← mappingKeyElem env k
         let vt ← storageTypeOfFuel env fuel v
         pure (.mapping ke vt)
       | .array e n => (storageTypeOfFuel env fuel e).map (.array · n)
@@ -783,13 +790,17 @@ def writeBytesStorage (cfg : Config) (evm : EVM.State) (er : Solm.EvaledStorageR
     (st : Solm.StorageType) (data : ByteArray) : Op EVM.State :=
   liftStorage (cfg.storageBackend.write er st (.bytes data) evm)
 
+/-- The bytes of a `bytes` / `string` value: a literal, a memory object, or a storage string read
+    through the backend. -/
+def valueBytes (cfg : Config) (evm : EVM.State) (h : Heap) : Value → Op ByteArray
+  | .strLit s => pure s
+  | .memRef id => match h.get? id with | some (.bytes _ d) => pure d | _ => Op.stuck
+  | .storageRef er ty => match storageTyOf ty with | some st => readBytesStorage cfg evm er st | none => Op.stuck
+  | _ => Op.stuck
+
 /-- The bytes of a `bytes` / `string` argument of `keccak256`, `sha256`, `ripemd160` or `concat`: a
     literal, a memory object, or a storage value (solc copies it to memory). -/
-def bytesOf (cfg : Config) (m : Machine) : Value → Op ByteArray
-  | .strLit s => pure s
-  | .memRef id => match m.heap.get? id with | some (.bytes _ d) => pure d | _ => Op.stuck
-  | .storageRef er ty => match storageTyOf ty with | some st => readBytesStorage cfg m.evm er st | none => Op.stuck
-  | _ => Op.stuck
+def bytesOf (cfg : Config) (m : Machine) (v : Value) : Op ByteArray := valueBytes cfg m.evm m.heap v
 
 /-- `bytesN(d)`: the first `N` bytes, zero-padded on the right when shorter. -/
 def fixedOfBytes (k : Fin 32) (d : ByteArray) : List UInt8 :=
@@ -813,6 +824,12 @@ def elemRef (er : Solm.EvaledStorageRef) (i : Nat) : Solm.EvaledStorageRef :=
 
 def fieldRef (er : Solm.EvaledStorageRef) (f : Ident) : Solm.EvaledStorageRef :=
   { er with steps := er.steps ++ [.field f] }
+
+/-- The slot of a mapping, dynamic array or `bytes` / `string` reference (`StorageAddr.anchor`). -/
+def anchorOf (cfg : Config) (er : Solm.EvaledStorageRef) : Option EVM.Word :=
+  match cfg.storageBackend.locate? er with
+  | some (.anchor s) => some s
+  | _ => none
 
 def keyRef (er : Solm.EvaledStorageRef) (k : Solm.KeyValue) : Solm.EvaledStorageRef :=
   { er with steps := er.steps ++ [.mindex k] }
@@ -915,9 +932,17 @@ def storageIndex (cfg : Config) (env : TypeEnv) (evm : EVM.State) (h : Heap) (er
     (ty : Ty) (idx : Value) : Op (Solm.EvaledStorageRef × Ty) := do
   match ty with
   | .mapping k v =>
-    let some (idx', _) := implicitConv env h idx k | Op.stuck
-    let some key := keyOf idx' | Op.stuck
-    pure (keyRef er key, v)
+    let some (idx', h') := implicitConv env h idx k | Op.stuck
+    match k with
+    -- a `string` / `bytes` key (a literal is allocated by the conversion): the element is the
+    -- absolute slot `keccak256(key ++ slot)` of the raw bytes (the shared key type has no bytes key)
+    | .string | .bytes => do
+      let b ← valueBytes cfg evm h' idx'
+      let some slot := anchorOf cfg er | Op.stuck
+      pure (absRef v (bytesMappingSlot b slot).toNat, v)
+    | _ =>
+      let some key := keyOf idx' | Op.stuck
+      pure (keyRef er key, v)
   | .dynArray e =>
     let some i := natOperand idx | Op.stuck
     let n ← storageLength cfg env evm er ty

@@ -353,13 +353,21 @@ modifier, a loop, an internal call).
 
 ## Deferred language features
 
-`mapping(string => …)` / `mapping(bytes => …)` keys (decided 2026-10-03, to do after the branch is
-merged): add a `bytes` constructor to `Solm.KeyValue` (`Solm/Syntax/Basic.lean`) rather than
-reusing `fixedBytes`.  Then `storageIndex` (`Semantics/Ops.lean`) reads the key bytes from a
-literal, a memory/calldata object or a loaded storage string, and `follow` (`Layout.lean`) hashes by
-the mapping's declared key type as solc does: `keccak256(h(k) ++ slot)` with `h` = the 32-byte
-padded word for value types and the raw bytes for `string`/`bytes`.  No new rules or proof cases;
-`keyValueToWord` and the few exhaustive matches on `KeyValue` in Sol⁻ need the new case.
+Done 2026-10-11, inside `Solidity/` only (the shared `Solm.KeyValue` has no bytes key, so nothing
+outside `Solidity/` changes or rebuilds): `mapping(string => …)` / `mapping(bytes => …)` keys.
+`storageIndex` (`Semantics/Ops.lean`) takes the key bytes of a literal (allocated by the
+conversion), a memory / calldata object or a storage string (`valueBytes`, which `bytesOf` now
+wraps), the mapping's slot from the backend (`anchorOf`: `follow` locates a mapping path as
+`.anchor`), and makes the element the absolute slot `absRef v (bytesMappingSlot key slot).toNat`
+(`Layout.lean`: `keccak256(key ++ slot)` of the raw bytes, the pseudo variable of the value type
+`v`, which `storagePointerTys` now also collects from `bytesKeyValueTys` of the state variables
+and storage pointers).  The mapping's storage type records a `bytes32` key (`mappingKeyElem`: the
+backend never reads a mapping's key type).  No new rules or proof cases.  Facts (an `.anchor`
+hypothesis for the mapping's slot): `storageIndex_mapping_string/bytes_lit`,
+`storageIndex_mapping_string/bytes_mem`; builders `EvalExpr.mappingStrLitU256`,
+`EvalLValue.mappingStrLit`.  Every other key type solc admits (integers, `bool`, `address`,
+`bytesN`, enums, contracts, user-defined value types) was already covered (`keyOf`).  Fixture
+`Keys.sol`, scenario `Keys` (pre-states through `absRef` paths).
 
 Changed 2026-10-05 (calldata words; `using` on contract types; fixture `Calldata`).
 - A `calldata` array or struct parameter keeps its words: the call is decoded with every raw leaf

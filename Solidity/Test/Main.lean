@@ -31,6 +31,7 @@ import Solidity.Test.Scenarios.Builtins
 import Solidity.Test.Scenarios.Udvt
 import Solidity.Test.Scenarios.Calldata
 import Solidity.Test.Scenarios.Yul
+import Solidity.Test.Scenarios.Keys
 import Solidity.Test.Scenarios.Lazy
 import Solidity.Test.Scenarios.BaseCall
 import Solidity.Test.Scenarios.Ecrecover
@@ -243,7 +244,7 @@ def scenarios : List Scenario :=
     Libs.scenarioQual, Scopes.scenario, Scopes.scenarioBoundaries, Scopes.scenarioTop,
     Scopes.scenarioOrder, Scopes.scenarioNest,
     Scopes.scenarioQual, Scopes.scenarioQualBoundaries ] ++
-    Recv.scenarios ++ Builtins.scenarios ++ Udvt.scenarios ++ Calldata.scenarios ++ Lazy.scenarios ++ Yul.scenarios
+    Recv.scenarios ++ Builtins.scenarios ++ Udvt.scenarios ++ Calldata.scenarios ++ Lazy.scenarios ++ Yul.scenarios ++ [Keys.scenario]
 
 def runDiff (only : Option String := none) : IO Bool := do
   let mut ok := true

@@ -1385,6 +1385,37 @@ theorem storageIndex_mapping_u256_lit (cfg : Config) (env : TypeEnv) (evm : EVM.
     storageIndex cfg env evm h er (.mapping u256Ty v) (.literal k hd) = some (.ok (keyRef er (.int k), v)) := by
   simp [storageIndex, implicitConv_literal_u256 env h k hd (Int.natCast_nonneg k) (by exact_mod_cast hk), keyOf]
 
+/-- `m["…"]` for `m : mapping(string => …)` at slot `slot`: the element at the absolute slot
+    `keccak256(key ++ slot)` of the literal's bytes. -/
+theorem storageIndex_mapping_string_lit {cfg : Config} {env : TypeEnv} {evm : EVM.State} {h : Heap}
+    {er : Solm.EvaledStorageRef} {v : Ty} {s : ByteArray} {slot : EVM.Word}
+    (ha : cfg.storageBackend.locate? er = some (.anchor slot)) :
+    storageIndex cfg env evm h er (.mapping .string v) (.strLit s) =
+      some (.ok (absRef v (bytesMappingSlot s slot).toNat, v)) := by
+  simp [storageIndex, implicitConv, valueBytes, Heap.alloc, Heap.get?, anchorOf, ha]
+
+theorem storageIndex_mapping_bytes_lit {cfg : Config} {env : TypeEnv} {evm : EVM.State} {h : Heap}
+    {er : Solm.EvaledStorageRef} {v : Ty} {s : ByteArray} {slot : EVM.Word}
+    (ha : cfg.storageBackend.locate? er = some (.anchor slot)) :
+    storageIndex cfg env evm h er (.mapping .bytes v) (.strLit s) =
+      some (.ok (absRef v (bytesMappingSlot s slot).toNat, v)) := by
+  simp [storageIndex, implicitConv, valueBytes, Heap.alloc, Heap.get?, anchorOf, ha]
+
+/-- `m[k]` for `m : mapping(string => …)` and a memory string `k`. -/
+theorem storageIndex_mapping_string_mem {cfg : Config} {env : TypeEnv} {evm : EVM.State} {h : Heap}
+    {er : Solm.EvaledStorageRef} {v : Ty} {id : ℕ} {s : Bool} {d : ByteArray} {slot : EVM.Word}
+    (ha : cfg.storageBackend.locate? er = some (.anchor slot)) (hget : h.get? id = some (.bytes s d)) :
+    storageIndex cfg env evm h er (.mapping .string v) (.memRef id) =
+      some (.ok (absRef v (bytesMappingSlot d slot).toNat, v)) := by
+  simp [storageIndex, implicitConv, valueBytes, anchorOf, ha, hget]
+
+theorem storageIndex_mapping_bytes_mem {cfg : Config} {env : TypeEnv} {evm : EVM.State} {h : Heap}
+    {er : Solm.EvaledStorageRef} {v : Ty} {id : ℕ} {s : Bool} {d : ByteArray} {slot : EVM.Word}
+    (ha : cfg.storageBackend.locate? er = some (.anchor slot)) (hget : h.get? id = some (.bytes s d)) :
+    storageIndex cfg env evm h er (.mapping .bytes v) (.memRef id) =
+      some (.ok (absRef v (bytesMappingSlot d slot).toNat, v)) := by
+  simp [storageIndex, implicitConv, valueBytes, anchorOf, ha, hget]
+
 theorem directMember_index (fc : FlatContract) (fr : Frame) (e i : Expr) : directMember fc fr (.index e i) = false := rfl
 theorem directMember_member (fc : FlatContract) (fr : Frame) (e : Expr) (f : Ident)
     (h : fnRefContract fc fr e = none) : directMember fc fr (.member e f) = false := by
@@ -2459,7 +2490,7 @@ theorem explicitConv_bytes20_address (env : TypeEnv) (h : Heap) (bs : List UInt8
 /-- The bytes of a memory `bytes` / `string` argument. -/
 theorem bytesOf_memBytes {cfg : Config} {m : Machine} {id : ℕ} {s : Bool} {d : ByteArray}
     (hget : m.heap.get? id = some (.bytes s d)) : bytesOf cfg m (.memRef id) = some (.ok d) := by
-  simp [bytesOf, hget]
+  simp [bytesOf, valueBytes, hget]
 
 @[simp] theorem bytesOf_strLit (cfg : Config) (m : Machine) (s : ByteArray) :
     bytesOf cfg m (.strLit s) = some (.ok s) := rfl
