@@ -124,11 +124,11 @@ theorem boSpec (o : Oracle) {σ σ₀ g A I} (hsel : selIs I (selBytes 3)) (hwv 
 theorem balanceOfCorrect {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = erc20Runtime) (hsize : I.calldata.size < UInt256.size) (hwv : I.weiValue = ⟨0⟩)
     (hsel : selIs I (selBytes 3)) :
-    runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := by
+    runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size := size_ge_of_sel rfl hsel
   have hdec : decodeArgs erc20Cfg erc20Flat.types fnBalanceOf.decl I.calldata = none →
       Reverted erc20Runtime (initState σ σ₀ (Sat256.ofUInt256 g) A I) ByteArray.empty →
-      runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := fun hd h =>
+      runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := fun hd h =>
     Reverted.specDecodingFailed hcode h (erc20Dispatch_balanceOf hsel) erc20Flat_fns4 (Or.inr hwv)
       (decodeCallArgs_none_of_decodeArgs hd)
   by_cases hsz36 : 36 ≤ I.calldata.size

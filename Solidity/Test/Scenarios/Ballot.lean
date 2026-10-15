@@ -14,18 +14,18 @@ def V1 : Nat := 0xA11CE
 def V2 : Nat := 0xB0B
 def V3 : Nat := 0xF00D
 
-def voter (a : Nat) (f : String) (n : Nat) : Solm.EvaledStorageRef × Nat :=
+def voter (a : Nat) (f : String) (n : Nat) : Stele.EvaledStorageRef × Nat :=
   (⟨"voters", [.mindex (.address (addr a)), .field f]⟩, n)
 def weight (a n : Nat) := voter a "weight" n
 def voted (a : Nat) := voter a "voted" 1
 def delegateTo (a b : Nat) := voter a "delegate" b
 def voteOf (a n : Nat) := voter a "vote" n
-def chair (a : Nat) : Solm.EvaledStorageRef × Nat := (⟨"chairperson", []⟩, a)
-def len (n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"proposals", []⟩, n)
-def pname (i c : Nat) : Solm.EvaledStorageRef × Nat := (⟨"proposals", [.aindex (.int i), .field "name"]⟩, c <<< 248)
-def votes (i n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"proposals", [.aindex (.int i), .field "voteCount"]⟩, n)
+def chair (a : Nat) : Stele.EvaledStorageRef × Nat := (⟨"chairperson", []⟩, a)
+def len (n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"proposals", []⟩, n)
+def pname (i c : Nat) : Stele.EvaledStorageRef × Nat := (⟨"proposals", [.aindex (.int i), .field "name"]⟩, c <<< 248)
+def votes (i n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"proposals", [.aindex (.int i), .field "voteCount"]⟩, n)
 
-def b32 (c : Nat) : Solm.Value := .fixedBytes ⟨31, by decide⟩ (wordBytes (c <<< 248)).toList
+def b32 (c : Nat) : Stele.Value := .fixedBytes ⟨31, by decide⟩ (wordBytes (c <<< 248)).toList
 
 def creation : ByteArray := bytesOfHex Fixtures.ballotCreationHex
 def runtime : ByteArray := bytesOfHex Fixtures.ballotRuntimeHex

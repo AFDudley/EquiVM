@@ -15,12 +15,12 @@ def V2 : Nat := 0xB0B
 
 def max256 : Nat := 2 ^ 256 - 1
 
-def bene (a : Nat) : Solm.EvaledStorageRef × Nat := (⟨"beneficiary", []⟩, a)
-def endTime (t : Nat) : Solm.EvaledStorageRef × Nat := (⟨"auctionEndTime", []⟩, t)
-def bidder (a : Nat) : Solm.EvaledStorageRef × Nat := (⟨"highestBidder", []⟩, a)
-def bid (n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"highestBid", []⟩, n)
-def pend (a n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"pendingReturns", [.mindex (.address (addr a))]⟩, n)
-def ended : Solm.EvaledStorageRef × Nat := (⟨"ended", []⟩, 1)
+def bene (a : Nat) : Stele.EvaledStorageRef × Nat := (⟨"beneficiary", []⟩, a)
+def endTime (t : Nat) : Stele.EvaledStorageRef × Nat := (⟨"auctionEndTime", []⟩, t)
+def bidder (a : Nat) : Stele.EvaledStorageRef × Nat := (⟨"highestBidder", []⟩, a)
+def bid (n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"highestBid", []⟩, n)
+def pend (a n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"pendingReturns", [.mindex (.address (addr a))]⟩, n)
+def ended : Stele.EvaledStorageRef × Nat := (⟨"ended", []⟩, 1)
 
 def stamp (t : Nat) : Ethereum.BlockHeader := { (default : Ethereum.BlockHeader) with timestamp := t }
 

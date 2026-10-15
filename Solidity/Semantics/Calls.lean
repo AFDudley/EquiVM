@@ -3,7 +3,7 @@ import Solidity.Semantics.Ops
 /-!
 # EVM bridges for external calls and creation
 
-Mirrors `Solm.callViaEVM` / `delegateCallViaEVM` / `newViaEVM`, but deterministic given the
+Mirrors `Stele.callViaEVM` / `delegateCallViaEVM` / `newViaEVM`, but deterministic given the
 oracle (gas and the untracked substate fields come from `Oracle`, advancing `tick`) and with the
 input log series and created accounts pinned to the current ones, so both thread through sub-calls
 exactly as in the EVM (a failed callee leaves them unchanged, since `Θ` returns its input substate).  The static flag
@@ -96,7 +96,7 @@ inductive delegateCallViaEVM (o : Oracle) (m : Machine) (target : EVM.Address) (
 
 /-- Contract creation (`new`) via `Λ`: `(address, machine, success, returndata)`. -/
 inductive newViaEVM (cfg : Config) (o : Oracle) (m : Machine) (name : Ident) (value : Nat)
-    (args : List Solm.Value) (salt : Option ByteArray) : (EVM.Address × Machine × Bool × EVM.Bytes) → Prop where
+    (args : List Stele.Value) (salt : Option ByteArray) : (EVM.Address × Machine × Bool × EVM.Bytes) → Prop where
   | created :
       cfg.creationCode name args = .some initCode →
       valueWord = EVM.Word.ofNat value →

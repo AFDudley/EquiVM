@@ -15,7 +15,7 @@ def E : Nat := 0xE0A
 
 /-- The callee: `Pow` deployed at `P`. -/
 def withPow : List (EVM.Address × Ethereum.Account) := [(addr P, account (code := powBytecode))]
-def stored (n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"stored", []⟩, n)
+def stored (n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"stored", []⟩, n)
 
 def creation : ByteArray := bytesOfHex Fixtures.callerCreationHex
 def runtime : ByteArray := bytesOfHex Fixtures.callerRuntimeHex

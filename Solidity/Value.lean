@@ -1,6 +1,6 @@
 import Solidity.Arith
-import Solm.Syntax
-import Solm.Value
+import Stele.Syntax
+import Stele.Value
 
 /-!
 # Runtime values, memory and locals
@@ -8,7 +8,7 @@ import Solm.Value
 Values carry their static type (widths, enum/contract/value-type names); integer literals stay
 exact until they meet a typed operand.  Reference types live in a heap (`memRef`):
 memory-to-memory assignment aliases, storage/calldata copies allocate.  `storageRef` is a storage pointer
-(`T storage x`).  At the ABI and storage boundaries values convert to/from `Solm.Value` (the value
+(`T storage x`).  At the ABI and storage boundaries values convert to/from `Stele.Value` (the value
 type of the shared ABI coder and storage backend; a raw `bool` word of the decoder is
 `.tuple [.unit, .int w]`).
 -/
@@ -35,7 +35,7 @@ inductive Value where
       type, as `ty.wrap` made it. -/
   | wrapped (q : Option Ident) (ty : Ident) (v : Value)
   | memRef (id : Nat)
-  | storageRef (er : Solm.EvaledStorageRef) (ty : Ty)
+  | storageRef (er : Stele.EvaledStorageRef) (ty : Ty)
   /-- A calldata word of static type `ty` not yet validated (validated on access).  `mem`: the
       word sits in a memory copy of a calldata array (`cleanRaw`), only an enum out of range,
       which solc's cleanup makes `Panic(0x21)` when it is used. -/
@@ -199,7 +199,7 @@ where
 
 /-! ## ABI boundary -/
 
-def scalarToAbi : Value → Option Solm.Value
+def scalarToAbi : Value → Option Stele.Value
   | .uint _ n => some (.int n)
   | .sint _ i => some (.int i)
   | .literal i _ => some (.int i)
@@ -213,7 +213,7 @@ def scalarToAbi : Value → Option Solm.Value
   | _ => none
 
 /-- Typed reconstruction of a value of an elementary type from its ABI/storage value. -/
-def elemOfAbi : Ty → Solm.Value → Option Value
+def elemOfAbi : Ty → Stele.Value → Option Value
   | .uint w, .int i => if 0 ≤ i ∧ i < 2 ^ w.val then some (.uint w i.toNat) else none
   | .int w, .int i => if -(2 ^ (w.val - 1) : Int) ≤ i ∧ i < 2 ^ (w.val - 1) then some (.sint w i) else none
   | .bool, .bool b => some (.bool b)
@@ -224,11 +224,11 @@ def elemOfAbi : Ty → Solm.Value → Option Value
   | _, _ => none
 
 /-- A value of the value type `q.n` from the ABI/storage value of its underlying type. -/
-def wrappedOfAbi (env : TypeEnv) (q : Option Ident) (n : Ident) (sv : Solm.Value) : Option Value :=
+def wrappedOfAbi (env : TypeEnv) (q : Option Ident) (n : Ident) (sv : Stele.Value) : Option Value :=
   (env.valueType? q n).bind fun t => (elemOfAbi t.underlying sv).map (.wrapped q n)
 
 /-- Typed reconstruction of a scalar from its ABI/storage value. -/
-def scalarOfAbi (env : TypeEnv) : Ty → Solm.Value → Option Value
+def scalarOfAbi (env : TypeEnv) : Ty → Stele.Value → Option Value
   | .uint w, .int i => if 0 ≤ i ∧ i < 2 ^ w.val then some (.uint w i.toNat) else none
   | .int w, .int i => if -(2 ^ (w.val - 1) : Int) ≤ i ∧ i < 2 ^ (w.val - 1) then some (.sint w i) else none
   | .bool, .bool b => some (.bool b)
@@ -248,7 +248,7 @@ def scalarOfAbi (env : TypeEnv) : Ty → Solm.Value → Option Value
   | _, _ => none
 
 /-- Deep copy of a value into the ABI domain (memory structs become tuples). -/
-def toAbi (h : Heap) : Nat → Value → Option Solm.Value
+def toAbi (h : Heap) : Nat → Value → Option Stele.Value
   | 0, _ => none
   | fuel + 1, v =>
     match v with
@@ -264,7 +264,7 @@ def toAbi (h : Heap) : Nat → Value → Option Solm.Value
 
 /-- Typed reconstruction from an ABI value, allocating reference types in memory (a value decoded
     to memory: every word is validated; the decoder's raw `bool` words included). -/
-def ofAbi (env : TypeEnv) : Nat → Ty → Solm.Value → Heap → Option (Value × Heap)
+def ofAbi (env : TypeEnv) : Nat → Ty → Stele.Value → Heap → Option (Value × Heap)
   | 0, _, _, _ => none
   | fuel + 1, ty, sv, h =>
     match ty, sv with
@@ -297,7 +297,7 @@ def ofAbi (env : TypeEnv) : Nat → Ty → Solm.Value → Heap → Option (Value
       pure (.memRef id, h'')
     | ty, sv => (scalarOfAbi env ty sv).map (·, h)
 where
-  ofArray (fuel : Nat) (e : Ty) (vs : List Solm.Value) (h : Heap) (fixed : Bool) : Option (Value × Heap) := do
+  ofArray (fuel : Nat) (e : Ty) (vs : List Stele.Value) (h : Heap) (fixed : Bool) : Option (Value × Heap) := do
     let (elems, h') ← vs.foldlM (fun (acc, h) sv => do
       let (v, h') ← ofAbi env fuel e sv h
       pure (acc ++ [v], h')) (([] : List Value), h)
@@ -306,7 +306,7 @@ where
 
 /-- Reconstruction of a calldata array or struct parameter (decoded with `rawAbiTypeOf`): the
     raw leaves keep their words (`Value.raw`), validated when they are read. -/
-def ofAbiRaw (env : TypeEnv) : Nat → Ty → Solm.Value → Heap → Option (Value × Heap)
+def ofAbiRaw (env : TypeEnv) : Nat → Ty → Stele.Value → Heap → Option (Value × Heap)
   | 0, _, _, _ => none
   | fuel + 1, ty, sv, h =>
     if isRawLeaf env ty then
@@ -328,7 +328,7 @@ def ofAbiRaw (env : TypeEnv) : Nat → Ty → Solm.Value → Heap → Option (Va
         pure (.memRef id, h'')
       | _, _ => none
 where
-  ofArray (fuel : Nat) (e : Ty) (vs : List Solm.Value) (h : Heap) (fixed : Bool) : Option (Value × Heap) := do
+  ofArray (fuel : Nat) (e : Ty) (vs : List Stele.Value) (h : Heap) (fixed : Bool) : Option (Value × Heap) := do
     let (elems, h') ← vs.foldlM (fun (acc, h) sv => do
       let (v, h') ← ofAbiRaw env fuel e sv h
       pure (acc ++ [v], h')) (([] : List Value), h)

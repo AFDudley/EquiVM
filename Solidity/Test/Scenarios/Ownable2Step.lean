@@ -12,8 +12,8 @@ open Solidity.Test
 def O : Nat := 0xA11CE
 def N : Nat := 0xB0B
 
-def owner (a : Nat) : Solm.EvaledStorageRef × Nat := (⟨"_owner", []⟩, a)
-def pending (a : Nat) : Solm.EvaledStorageRef × Nat := (⟨"_pendingOwner", []⟩, a)
+def owner (a : Nat) : Stele.EvaledStorageRef × Nat := (⟨"_owner", []⟩, a)
+def pending (a : Nat) : Stele.EvaledStorageRef × Nat := (⟨"_pendingOwner", []⟩, a)
 
 def creation : ByteArray := bytesOfHex Fixtures.ownable2StepCreationHex
 def runtime : ByteArray := bytesOfHex Fixtures.ownable2StepRuntimeHex

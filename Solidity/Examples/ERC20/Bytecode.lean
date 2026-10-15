@@ -6,7 +6,7 @@ import Reasoning.JumpDest
 # ERC20 — the optimized runtime and creation bytecode, and the trusted keccak facts
 
 `solc 0.8.35+commit.47b9dedd --optimize --optimize-runs 200 --evm-version shanghai --bin
---bin-runtime Solm/Examples/ERC20/ERC20.sol` (legacy pipeline).  The selector and event-topic
+--bin-runtime Stele/Examples/ERC20/ERC20.sol` (legacy pipeline).  The selector and event-topic
 facts are the contract's declared keccak values: `solidity-diff --selectors` checks the selectors,
 the `ERC20/optimized` scenario compares the logs with the EVM's.
 -/

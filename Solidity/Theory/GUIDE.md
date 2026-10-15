@@ -1,7 +1,7 @@
 # Proving a Solidity contract against its bytecode — the recipe
 
-This is the workflow an agent follows to prove `runtimeEquivalenceFor` (and
-`typedConstructorEquivalenceFor`) for a contract on the trace stack (`Reasoning/Trace.lean`,
+This is the workflow an agent follows to prove `runtimeRefinementFor` (and
+`typedConstructorRefinementFor`) for a contract on the trace stack (`Reasoning/Trace.lean`,
 `SolcTrace.lean`, `SolcIdioms.lean`) and the Solidity coupling layer (`Solidity/Theory/`).
 `STRUCTURE.md` in this directory lists every lemma by file; this file says in which order to use
 them.  The usage examples in `Usage.lean` (compiled with the library) show the builders applied to
@@ -104,10 +104,10 @@ Close the case with `Returned.specExecutionW o hcode h hspec hw henc` (`henc` by
 encoding lemma of the return shape) or `Reverted.specRevert o hcode h hspec`.  Dispatch-level
 reverts have their own bridges: `Reverted.specNonPayable`, `specNoDispatch`,
 `specDecodingFailed`, `specFallbackNonPayable`, `specUndispatched`.  Constructors use
-`Returned.specCtorW` / `Reverted.specCtorRevert` (conclusion `typedConstructorEquivalenceFor`; the
+`Returned.specCtorW` / `Reverted.specCtorRevert` (conclusion `typedConstructorRefinementFor`; the
 immutables' fit is automatic without immutables) with `solidityCtorExec` and `ExecCtorChain.*`.
-The capstone is `contractEquivalence.of_constant hctor hrt` for a contract without immutables
-(`contractEquivalenceWF.of_runtime` otherwise: the runtime proof is stated for every well-typed
+The capstone is `contractRefinement.of_constant hctor hrt` for a contract without immutables
+(`contractRefinementWF.of_runtime` otherwise: the runtime proof is stated for every well-typed
 immutables store, `m.immutables` read by `EvalExpr.immutableMachine`).
 
 ## 2. Assembling the contract theorem
@@ -116,7 +116,7 @@ Case-split on the selector bytes (`I.calldata.extract 0 4`) and `I.calldata.size
 each function on the conditions that choose the path (balance checks, overflow bounds, custom-error
 guards).  The EVM side of the dispatcher is shared (`Run.dispatchNoMatch`,
 `Run.solcDispatch{NonPayable,Short,NoMatch}Revert`).  Combine the cases into the ∀-closed
-`runtimeEquivalence*` statements of `Solidity/Equiv.lean` and `Behaviors.lean`.
+`runtimeRefinement*` statements of `Solidity/Refine.lean` and `Behaviors.lean`.
 
 ## 3. Rules that save hours
 

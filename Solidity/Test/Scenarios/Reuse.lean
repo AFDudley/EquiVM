@@ -9,7 +9,7 @@ namespace Solidity.Test.Reuse
 
 open Solidity.Test
 
-def sv (n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"s", []⟩, n)
+def sv (n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"s", []⟩, n)
 
 def creation : ByteArray := bytesOfHex Fixtures.reuseCreationHex
 def runtime : ByteArray := bytesOfHex Fixtures.reuseRuntimeHex

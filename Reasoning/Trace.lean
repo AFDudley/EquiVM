@@ -26,7 +26,7 @@ It reuses Reach's `evm_run`/`evm_ov`/`mem_cost` macros and its bytecode-shape de
 (`pushAt`, `armWellFormed`, …); none of the `RD` lemmas are used.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Trace
 

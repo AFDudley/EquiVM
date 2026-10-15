@@ -8,7 +8,7 @@ import Solidity.Value
 import Solidity.Errors
 import Solidity.Events
 import Solidity.Semantics
-import Solidity.Equiv
+import Solidity.Refine
 import Solidity.Behaviors
 import Solidity.Setup
 import Solidity.Interp

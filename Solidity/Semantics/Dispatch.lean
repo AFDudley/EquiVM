@@ -1,5 +1,5 @@
 import Solidity.Semantics.Exec
-import Solm.Semantics.Dispatch
+import Stele.Semantics.Dispatch
 
 /-!
 # Message dispatch and constructor execution
@@ -29,13 +29,13 @@ def selectorDispatch (fc : FlatContract) (calldata : ByteArray) : Option Dispatc
 def argNames (n : Nat) : List Ident := (List.range n).map fun i => s!"#{i}"
 
 def decodeCalldataValues? (types : List ABIType) (calldata : ByteArray)
-    (mode : ABI.DecodeMode := .modern) : Option (List Solm.Value) :=
+    (mode : ABI.DecodeMode := .modern) : Option (List Stele.Value) :=
   (ABI.decodeCalldata (argNames types.length) types calldata mode).bind fun st => (argNames types.length).mapM st.get?
 
 /-- ABI-decode the calldata arguments of `d` (positional).  A `calldata` array or struct is
     decoded with its words unvalidated (`paramDecodeTys`): solc validates them when they are
     read. -/
-def decodeArgs (cfg : Config) (env : TypeEnv) (d : FnDecl) (calldata : ByteArray) : Option (List Solm.Value) := do
+def decodeArgs (cfg : Config) (env : TypeEnv) (d : FnDecl) (calldata : ByteArray) : Option (List Stele.Value) := do
   let tys ← paramDecodeTys env d.params
   decodeCalldataValues? tys calldata cfg.abiDecodeMode
 
@@ -57,7 +57,7 @@ def returnAbiTys (env : TypeEnv) (d : FnDecl) : Option (List ABIType) :=
 /-- Outcome of a message call: return values (as ABI values) and the machine, a revert, or a halt
     (inline assembly `return` / `stop`: the raw return data). -/
 inductive TopResult where
-  | returned (m : Machine) (vs : List Solm.Value)
+  | returned (m : Machine) (vs : List Stele.Value)
   | reverted (data : ByteArray)
   | halted (m : Machine) (data : ByteArray)
 
@@ -78,7 +78,7 @@ def payableOrNoValue (d : FnDecl) (I : Ethereum.ExecutionEnv) : Prop :=
   d.mutability = .payable ∨ I.weiValue = ⟨0⟩
 
 /-- Convention for `fallback` output: raw bytes when it returns `bytes`, ABI-void otherwise. -/
-def fallbackConvention (d : FnDecl) : Solm.ReturnConvention :=
+def fallbackConvention (d : FnDecl) : Stele.ReturnConvention :=
   match d.returns with
   | [{ ty := .bytes, .. }] => .rawBytes
   | _ => .abi []
@@ -94,7 +94,7 @@ variable (cfg : Config) (o : Oracle) (fc : FlatContract)
 /-- Execution of one message call at fixed transaction inputs, with `immutables` the values the
     contract was deployed with (`imm_<name>` locals). -/
 inductive solidityExec (immutables : Store) (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate)
-    (I : Ethereum.ExecutionEnv) : TopResult → Solm.ReturnConvention → Prop where
+    (I : Ethereum.ExecutionEnv) : TopResult → Stele.ReturnConvention → Prop where
   | call :
       selectorDispatch fc I.calldata = some e → fc.fns[e.fn]? = some fn →
       payableOrNoValue fn.decl I → returnAbiTys fc.types fn.decl = some retTys →
@@ -274,7 +274,7 @@ inductive ExecCtorChain (tbl : List (Ident × List Value)) : Store → Machine �
 
 /-- Construction at fixed inputs, in solc's (legacy) order: the initializers (base-first), the
     arguments of every constructor (most derived first), the constructor bodies (base-first). -/
-inductive solidityCtorExec (args : List Solm.Value) (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate)
+inductive solidityCtorExec (args : List Stele.Value) (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate)
     (I : Ethereum.ExecutionEnv) : CtorResult → Prop where
   | run :
       ctorPayable fc I → immZero fc = some imms0 →

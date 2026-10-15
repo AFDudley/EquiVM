@@ -15,16 +15,16 @@ open Solidity.Test Ethereum
 
 def runtime : ByteArray := bytesOfHex Fixtures.keysRuntimeHex
 
-def str (s : String) : Solm.Value := .bytes s.toUTF8
-def bs (xs : List Nat) : Solm.Value := .bytes ⟨(xs.map UInt8.ofNat).toArray⟩
+def str (s : String) : Stele.Value := .bytes s.toUTF8
+def bs (xs : List Nat) : Stele.Value := .bytes ⟨(xs.map UInt8.ofNat).toArray⟩
 def u256 : Ty := .uint ⟨256, by decide⟩
 /-- `m[k]` of the `string` / `bytes`-keyed mapping at `slot`: the element of type `vty` at the
     absolute slot `keccak256(k ++ slot)`. -/
-def bkey (vty : Ty) (slot : UInt256) (k : ByteArray) : Solm.EvaledStorageRef :=
+def bkey (vty : Ty) (slot : UInt256) (k : ByteArray) : Stele.EvaledStorageRef :=
   absRef vty (bytesMappingSlot k slot).toNat
 def bl (xs : List Nat) : ByteArray := ⟨(xs.map UInt8.ofNat).toArray⟩
-def A (n : Nat) : Solm.Value := .address (addr n)
-def b4 (xs : List Nat) : Solm.Value := .fixedBytes ⟨3, by decide⟩ (xs.map UInt8.ofNat)
+def A (n : Nat) : Stele.Value := .address (addr n)
+def b4 (xs : List Nat) : Stele.Value := .fixedBytes ⟨3, by decide⟩ (xs.map UInt8.ofNat)
 def longS : String := "a very long key that does not fit in thirty-two bytes"
 
 /-- A short `string` / `bytes` storage word: the bytes left-aligned, `2 * length` in the low byte. -/
@@ -32,15 +32,15 @@ def shortStr (s : String) : UInt256 :=
   let b := s.toUTF8.toList
   .ofNat (bytesToNatBE (b ++ List.replicate (31 - b.length) 0 ++ [UInt8.ofNat (2 * b.length)]))
 
-def mk (sig : String) (args : List Solm.Value) (tag : String := "") (refs : List (Solm.EvaledStorageRef × Nat) := [])
+def mk (sig : String) (args : List Stele.Value) (tag : String := "") (refs : List (Stele.EvaledStorageRef × Nat) := [])
     (storage : List (UInt256 × UInt256) := []) : Case :=
   { name := s!"{sig} {tag}", code := runtime, call := some (sig, args), refs := refs, storage := storage,
     expect := .success }
 
-def byName (k : String) (v : Nat) : Solm.EvaledStorageRef × Nat := (bkey u256 ⟨0⟩ k.toUTF8, v)
-def seen (xs : List Nat) : Solm.EvaledStorageRef × Nat := (bkey .bool ⟨1⟩ (bl xs), 1)
+def byName (k : String) (v : Nat) : Stele.EvaledStorageRef × Nat := (bkey u256 ⟨0⟩ k.toUTF8, v)
+def seen (xs : List Nat) : Stele.EvaledStorageRef × Nat := (bkey .bool ⟨1⟩ (bl xs), 1)
 /-- `nested["a"][0x01]`: the inner mapping sits at `keccak256("a" ++ 2)`. -/
-def nestedA1 (v : Nat) : Solm.EvaledStorageRef × Nat := (bkey u256 (bytesMappingSlot "a".toUTF8 ⟨2⟩) (bl [1]), v)
+def nestedA1 (v : Nat) : Stele.EvaledStorageRef × Nat := (bkey u256 (bytesMappingSlot "a".toUTF8 ⟨2⟩) (bl [1]), v)
 
 def cases : List Case :=
   [ mk "setByName(string,uint256)" [str "alice", .int 7],

@@ -550,7 +550,7 @@ def structObj (cfg : Config) (env : TypeEnv) (m : Machine) (sd : StructInfo) (vs
     storage is copied to memory first, as solc does; a calldata object is read through the
     encoder's checks (`prepareArgs`). -/
 def abiArgsAbi (cfg : Config) (env : TypeEnv) (m : Machine) (_tys : List ABIType) (vs : List Value) :
-    Op (List Solm.Value × Machine) := do
+    Op (List Stele.Value × Machine) := do
   let (vs, h) ← prepareArgs env m.evm.executionEnv.calldata fuelDefault m.heap vs
   let m := { m with heap := h }
   match vs.mapM (toAbi m.heap fuelDefault) with
@@ -571,7 +571,7 @@ def typeArgs : Expr → Option (List Ty)
   | .tuple es => es.mapM fun | some (.typeExpr t) => some t | _ => none
   | _ => none
 
-def ofAbiList (env : TypeEnv) (tys : List Ty) (svs : List Solm.Value) (h : Heap) : Option (List Value × Heap) := do
+def ofAbiList (env : TypeEnv) (tys : List Ty) (svs : List Stele.Value) (h : Heap) : Option (List Value × Heap) := do
   if tys.length ≠ svs.length then none
   (tys.zip svs).foldlM (fun (acc, h) (ty, sv) => do
     let (v, h') ← ofAbi env fuelDefault ty sv h
@@ -988,7 +988,7 @@ inductive EvalExpr : Frame → Machine → Expr → Res Value → Prop where
       EvalExpr fr m (.call (.member (.ident "abi") "encode") [] (.positional es)) (.ok v fr1 m3)
   | abiEncodePacked : EvalExprs fr m es (.ok vs fr1 m1) → vs.mapM (abiTyOfValue fc.types m1.heap) = some tys →
       abiArgsAbi cfg fc.types m1 tys vs = some (.ok (svs, m2)) →
-      (tys.zip svs).mapM (fun (t, sv) => Solm.encodePackedValue? t sv) = some parts →
+      (tys.zip svs).mapM (fun (t, sv) => Stele.encodePackedValue? t sv) = some parts →
       allocBytes m2 false parts.flatten.toByteArray = (v, m3) →
       EvalExpr fr m (.call (.member (.ident "abi") "encodePacked") [] (.positional es)) (.ok v fr1 m3)
   | abiEncodeWithSelector : EvalExprs fr m (sel :: es) (.ok (sv :: vs) fr1 m1) → selectorArg fc.types m1.heap sv = some sb →

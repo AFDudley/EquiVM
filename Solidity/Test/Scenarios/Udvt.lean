@@ -31,20 +31,20 @@ def usingRuntime : ByteArray := bytesOfHex Fixtures.udvtUsingRuntimeHex
 
 def MAX : Nat := 2 ^ 256 - 1
 def M128 : Int := 2 ^ 128 - 1
-def A (n : Nat) : Solm.Value := .address (addr n)
+def A (n : Nat) : Stele.Value := .address (addr n)
 
 /-- `bytesN` with `N = k + 1`: the low `N` bytes of `n`. -/
-def fb (k : Fin 32) (n : Nat) : Solm.Value := .fixedBytes k ((wordBytes n).toList.drop (31 - k.val))
-def tag (n : Nat) : Solm.Value := fb ⟨3, by decide⟩ n
-def arr (xs : List Int) : Solm.Value := .array (xs.map (.int ·))
+def fb (k : Fin 32) (n : Nat) : Stele.Value := .fixedBytes k ((wordBytes n).toList.drop (31 - k.val))
+def tag (n : Nat) : Stele.Value := fb ⟨3, by decide⟩ n
+def arr (xs : List Int) : Stele.Value := .array (xs.map (.int ·))
 
 def tU (n : Nat) (h : 0 < n ∧ n ≤ 256 ∧ n % 8 = 0 := by decide) : ABI.ABIType := .elem (.int (.uint ⟨n, h⟩))
 def tI (n : Nat) (h : 0 < n ∧ n ≤ 256 ∧ n % 8 = 0 := by decide) : ABI.ABIType := .elem (.int (.sint ⟨n, h⟩))
-def encOf (tys : List ABI.ABIType) (vs : List Solm.Value) : ByteArray :=
+def encOf (tys : List ABI.ABIType) (vs : List Stele.Value) : ByteArray :=
   ((ABI.encodeABIValues? tys vs).map fun bs => (⟨bs.toArray⟩ : ByteArray)).getD .empty
 def words (ws : List Nat) : ByteArray := ws.foldl (fun b w => b ++ wordBytes w) ByteArray.empty
 
-def mk (code : ByteArray) (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def mk (code : ByteArray) (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { name := s!"{sig} {tag}", code := code, call := some (sig, args) }
 
 /-- A call with the argument words as given (not necessarily canonical). -/
@@ -53,23 +53,23 @@ def rawCall (code : ByteArray) (sig : String) (ws : List Nat) (tag : String := "
 
 /-! ## Udvt -/
 
-def r (base : String) (v : Nat) : Solm.EvaledStorageRef × Nat := (⟨base, []⟩, v)
-def tagKey (n : Nat) : Solm.KeyValue := .fixedBytes ⟨3, by decide⟩ ((wordBytes n).toList.drop 28)
+def r (base : String) (v : Nat) : Stele.EvaledStorageRef × Nat := (⟨base, []⟩, v)
+def tagKey (n : Nat) : Stele.KeyValue := .fixedBytes ⟨3, by decide⟩ ((wordBytes n).toList.drop 28)
 
 /-- `price = 9`, `delta = -4`, `flag = true`, `who = 0xB0B`, `tag = 0x11223344`, `wide = 2^200`. -/
-def scalars : List (Solm.EvaledStorageRef × Nat) :=
+def scalars : List (Stele.EvaledStorageRef × Nat) :=
   [r "price" 9, r "delta" (2 ^ 64 - 4), r "flag" 1, r "who" 0xB0B, r "tag" 0x11223344, r "wide" (2 ^ 200)]
 
 /-- `prices = [11, 22, 33]`. -/
-def priceList : List (Solm.EvaledStorageRef × Nat) :=
+def priceList : List (Stele.EvaledStorageRef × Nat) :=
   [(⟨"prices", []⟩, 3), (⟨"prices", [.aindex (.int 0)]⟩, 11), (⟨"prices", [.aindex (.int 1)]⟩, 22),
    (⟨"prices", [.aindex (.int 2)]⟩, 33)]
 
-def quoteOf (bid ask : Nat) : List (Solm.EvaledStorageRef × Nat) :=
+def quoteOf (bid ask : Nat) : List (Stele.EvaledStorageRef × Nat) :=
   [(⟨"quote", [.field "bid"]⟩, bid), (⟨"quote", [.field "ask"]⟩, ask), (⟨"quote", [.field "maker"]⟩, 0xB0B),
    (⟨"quote", [.field "live"]⟩, 1)]
 
-def mkU (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk udvtRuntime sig args tag
+def mkU (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk udvtRuntime sig args tag
 
 def cases : List Case :=
   [ { mkU "setSome(uint128,int64,bool)" [.int 5, .int (-3), .bool true] with expect := .success },
@@ -153,7 +153,7 @@ def boundaries : List Case :=
 
 /-! ## UdvtAbi -/
 
-def mkA (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk abiRuntime sig args tag
+def mkA (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk abiRuntime sig args tag
 
 def triple (p d : Int) (f : Nat) : ByteArray := words [(p % 2 ^ 256).toNat, (d % 2 ^ 256).toNat, f]
 
@@ -190,7 +190,7 @@ def abiBoundaries : List Case :=
     { mkA "flagAt(bool[],uint256)" [.array [], .int 0] "empty" with expect := .revert } ]
 
 def arrRuntime : ByteArray := bytesOfHex Fixtures.udvtArrRuntimeHex
-def mkR (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk arrRuntime sig args tag
+def mkR (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk arrRuntime sig args tag
 
 /-- Arrays whose elements are read one at a time. -/
 def arrayCases : List Case :=
@@ -216,8 +216,8 @@ def arrayCases : List Case :=
 /-! ## UdvtCall -/
 
 def ORACLE : Nat := 0x0AC1E
-def feed (n : Nat) : Solm.Value := fb ⟨7, by decide⟩ n
-def mkC (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def feed (n : Nat) : Stele.Value := fb ⟨7, by decide⟩ n
+def mkC (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { mk callRuntime sig args tag with accounts := [(addr ORACLE, account (code := oracleRuntime))] }
 
 def callCases : List Case :=
@@ -235,8 +235,8 @@ def callBoundaries : List Case :=
 
 /-! ## UDer -/
 
-def mkD (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk derRuntime sig args tag
-def b32 (n : Nat) : Solm.Value := fb ⟨31, by decide⟩ n
+def mkD (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk derRuntime sig args tag
+def b32 (n : Nat) : Stele.Value := fb ⟨31, by decide⟩ n
 
 def derCases : List Case :=
   [ { mkD "ids(uint32)" [.int 7] with expect := .success },
@@ -279,7 +279,7 @@ def immCases : List Case :=
 
 /-! ## UdvtUsing -/
 
-def mkG (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk usingRuntime sig args tag
+def mkG (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk usingRuntime sig args tag
 
 def usingCases : List Case :=
   [ { mkG "bump(uint128)" [.int 5] with expect := .success },

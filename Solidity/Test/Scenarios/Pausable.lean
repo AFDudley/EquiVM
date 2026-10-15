@@ -9,7 +9,7 @@ namespace Solidity.Test.Pausable
 
 open Solidity.Test
 
-def paused : List (Solm.EvaledStorageRef × Nat) := [(⟨"_paused", []⟩, 1)]
+def paused : List (Stele.EvaledStorageRef × Nat) := [(⟨"_paused", []⟩, 1)]
 
 def creation : ByteArray := bytesOfHex Fixtures.pausableCreationHex
 def runtime : ByteArray := bytesOfHex Fixtures.pausableRuntimeHex

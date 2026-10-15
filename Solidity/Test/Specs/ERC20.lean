@@ -3,7 +3,7 @@ import Solidity.Notation
 /-!
 # ERC20 in the Solidity spec language
 
-Transcribed from `Solm/Examples/ERC20/ERC20.sol` (`from`/`to` are Lean keywords, hence «from»/«to»).
+Transcribed from `Stele/Examples/ERC20/ERC20.sol` (`from`/`to` are Lean keywords, hence «from»/«to»).
 Harness input only.
 -/
 

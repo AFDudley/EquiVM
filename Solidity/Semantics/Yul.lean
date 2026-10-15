@@ -303,7 +303,7 @@ def yulIdent (fc : FlatContract) (st : YulState) (x : Ident) : Option YulVal :=
       | some v => if v.mutability == .constant then constWord fc.types v else none
       | none => none
 
-def slotOff (cfg : Config) (er : Solm.EvaledStorageRef) : Option (Nat × Nat) :=
+def slotOff (cfg : Config) (er : Stele.EvaledStorageRef) : Option (Nat × Nat) :=
   match cfg.storageBackend.locate? er with
   | some (.leaf loc) => some (loc.slot.toNat, loc.offset.val)
   | some (.anchor s) => some (s.toNat, 0)
@@ -422,8 +422,8 @@ def yulEnv (o : Oracle) (st : YulState) (f : YulBuiltin) (vs : List YulVal) : Op
   | .prevrandao, [] | .difficulty, [] => some (wn ee.header.prevRandao.toNat, st)
   | .blockhash, [.word n] => some (wn (st.m.evm.blockHash (W n)).toNat, st)
   | .returndatasize, [] => st.mem.rdata.map fun d => (wn d.size, st)
-  | .sload, [.word k] => some (ww (Solm.EVM.storageLoad st.m.evm st.m.this (W k)), st)
-  | .tload, [.word k] => some (ww (Solm.EVM.transientLoad st.m.evm st.m.this (W k)), st)
+  | .sload, [.word k] => some (ww (Stele.EVM.storageLoad st.m.evm st.m.this (W k)), st)
+  | .tload, [.word k] => some (ww (Stele.EVM.transientLoad st.m.evm st.m.this (W k)), st)
   | .mload, [p] => (loadWord st p).map (·, st)
   | .keccak256, [p, .word n] => (readBytes st p n).map fun bs => (wn (hashWord bs).toNat, st)
   | .create, [.word v, p, .word n] => do
@@ -489,8 +489,8 @@ def yulEffect (st : YulState) : YulExpr → Option YulOut
     | .stop, [] => some (.halted st1.m .empty)
     | .mstore, [p, v] => (storeWord fc.types st1 p v).map .done
     | .mstore8, [p, .word v] => (writeCell fc.types st1 p (.byte (v % 256).toUInt8)).map .done
-    | .sstore, [.word k, .word v] => some (.done (setEvm st1 (Solm.EVM.storageStore st1.m.evm st1.m.this (W k) (W v))))
-    | .tstore, [.word k, .word v] => some (.done (setEvm st1 (Solm.EVM.transientStore st1.m.evm st1.m.this (W k) (W v))))
+    | .sstore, [.word k, .word v] => some (.done (setEvm st1 (Stele.EVM.storageStore st1.m.evm st1.m.this (W k) (W v))))
+    | .tstore, [.word k, .word v] => some (.done (setEvm st1 (Stele.EVM.transientStore st1.m.evm st1.m.this (W k) (W v))))
     | .calldatacopy, [dst, .word src, .word n] =>
       (writeBytes fc.types st1 dst (cdBytes st1.m.evm.executionEnv.calldata src n)).map .done
     | .returndatacopy, [dst, .word src, .word n] => do

@@ -27,13 +27,13 @@ def targetCreation : ByteArray := bytesOfHex Fixtures.targetCreationHex
 def implRuntime : ByteArray := bytesOfHex Fixtures.implRuntimeHex
 
 def MAX : Nat := 2 ^ 256 - 1
-def A (n : Nat) : Solm.Value := .address (addr n)
-def b32 (n : Nat) : Solm.Value := .fixedBytes ⟨31, by decide⟩ (wordBytes n).toList
-def bs (xs : List Nat) : Solm.Value := .bytes ⟨(xs.map UInt8.ofNat).toArray⟩
-def arr (xs : List Nat) : Solm.Value := .array (xs.map (.int ·))
-def ints (xs : List Int) : List Solm.Value := xs.map (.int ·)
+def A (n : Nat) : Stele.Value := .address (addr n)
+def b32 (n : Nat) : Stele.Value := .fixedBytes ⟨31, by decide⟩ (wordBytes n).toList
+def bs (xs : List Nat) : Stele.Value := .bytes ⟨(xs.map UInt8.ofNat).toArray⟩
+def arr (xs : List Nat) : Stele.Value := .array (xs.map (.int ·))
+def ints (xs : List Int) : List Stele.Value := xs.map (.int ·)
 
-def mk (code : ByteArray) (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def mk (code : ByteArray) (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { name := s!"{sig} {tag}", code := code, call := some (sig, args) }
 
 def ok (c : Case) : Case := { c with expect := .success }
@@ -172,10 +172,10 @@ def S : Nat := 0x5EED
 def callAccounts : List (EVM.Address × Account) :=
   [ (addr T, account (balance := 3) (code := targetRuntime)), (addr I, account (code := implRuntime)) ]
 
-def enc (sig : String) (args : List Nat) : Solm.Value :=
+def enc (sig : String) (args : List Nat) : Stele.Value :=
   bs ((selectorOfSig sig ++ (args.foldl (fun b w => b ++ wordBytes w) ByteArray.empty)).toList.map (·.toNat))
 
-def mkC (sig : String) (args : List Solm.Value) (tag : String := "") (value : Nat := 0) (funds : Nat := 0) : Case :=
+def mkC (sig : String) (args : List Stele.Value) (tag : String := "") (value : Nat := 0) (funds : Nat := 0) : Case :=
   let c := mk callRuntime sig args tag
   { c with accounts := callAccounts, value := value, balance := funds + value, storage := [(⟨0⟩, .ofNat I)] }
 

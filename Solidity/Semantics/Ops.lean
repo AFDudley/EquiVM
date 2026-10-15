@@ -1,5 +1,5 @@
 import Solidity.Semantics.Types
-import Solm.Semantics.ValueOps
+import Stele.Semantics.ValueOps
 
 /-!
 # Pure helpers shared by the relational rules and the interpreter
@@ -53,7 +53,7 @@ def envMember (m : Machine) (obj member : Ident) : Option Value :=
 
 /-! ## Keys and truth values -/
 
-def keyOf : Value → Option Solm.KeyValue
+def keyOf : Value → Option Stele.KeyValue
   | .uint _ n => some (.int n)
   | .sint _ i => some (.int i)
   | .literal i _ => some (.int i)
@@ -700,7 +700,7 @@ def cdTop (env : TypeEnv) (cd : ByteArray) (ty : Ty) (off : Nat) : Option Value 
 /-- The arguments of a call from their decoded ABI values: a `calldata` array or struct with
     dynamic content stays in the calldata (`cdTop`), one with static content keeps its raw words,
     everything else is validated and copied to memory. -/
-def ofAbiParams (env : TypeEnv) (cd : ByteArray) (ps : List Param) (svs : List Solm.Value) (h : Heap) :
+def ofAbiParams (env : TypeEnv) (cd : ByteArray) (ps : List Param) (svs : List Stele.Value) (h : Heap) :
     Option (List Value × Heap) := do
   if ps.length ≠ svs.length then none
   (ps.zip svs).foldlM (fun (acc, h) (p, sv) => do
@@ -723,13 +723,13 @@ A backend `.revert` is a corrupt `bytes`/`string` encoding (`Panic(0x22)`); a ba
 an ill-formed program. -/
 
 /-- The element type recorded for a mapping key.  `string` / `bytes` keys have none; the backend
-    never reads a mapping's key type (`Solm/SolidityStorage.lean` matches `.mapping _ _`), so they
+    never reads a mapping's key type (`Stele/SolidityStorage.lean` matches `.mapping _ _`), so they
     are recorded as `bytes32`. -/
 def mappingKeyElem (env : TypeEnv) : Ty → Option ElemType
   | .string | .bytes => some (.bytes ⟨31, by decide⟩)
   | k => leafElemType env k
 
-def storageTypeOfFuel (env : TypeEnv) : Nat → Ty → Option Solm.StorageType
+def storageTypeOfFuel (env : TypeEnv) : Nat → Ty → Option Stele.StorageType
   | 0, _ => none
   | fuel + 1, ty =>
     match leafElemType env ty with
@@ -751,28 +751,28 @@ def storageTypeOfFuel (env : TypeEnv) : Nat → Ty → Option Solm.StorageType
       | _ => none
 
 /-- The Sol⁻ storage type of a Solidity type. -/
-def storageTypeOf (env : TypeEnv) (ty : Ty) : Option Solm.StorageType := storageTypeOfFuel env 256 ty
+def storageTypeOf (env : TypeEnv) (ty : Ty) : Option Stele.StorageType := storageTypeOfFuel env 256 ty
 
 /-- The `bytes`/`string` storage types (the only representation-sensitive leaves). -/
-def storageTyOf : Ty → Option Solm.StorageType
+def storageTyOf : Ty → Option Stele.StorageType
   | .bytes => some .bytes
   | .string => some .string
   | _ => none
 
 /-- A backend result as an `Op`. -/
-def liftStorage {α} : Solm.EvalResult α → Op α
+def liftStorage {α} : Stele.EvalResult α → Op α
   | .ok a => pure a
   | .revert => Op.panic .storageBytes
   | .error _ => Op.stuck
 
-def readScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (ty : Ty) :
+def readScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (ty : Ty) :
     Option Value := do
   let st ← storageTypeOf env ty
   match cfg.storageBackend.read er st evm with
   | .ok sv => scalarOfAbi env ty sv
   | _ => none
 
-def writeScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (ty : Ty)
+def writeScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (ty : Ty)
     (v : Value) : Option EVM.State := do
   let st ← storageTypeOf env ty
   let sv ← scalarToAbi v
@@ -780,14 +780,14 @@ def writeScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.Eval
   | .ok evm' => some evm'
   | _ => none
 
-def readBytesStorage (cfg : Config) (evm : EVM.State) (er : Solm.EvaledStorageRef) (st : Solm.StorageType) :
+def readBytesStorage (cfg : Config) (evm : EVM.State) (er : Stele.EvaledStorageRef) (st : Stele.StorageType) :
     Op ByteArray := do
   match ← liftStorage (cfg.storageBackend.read er st evm) with
   | .bytes b => pure b
   | _ => Op.stuck
 
-def writeBytesStorage (cfg : Config) (evm : EVM.State) (er : Solm.EvaledStorageRef)
-    (st : Solm.StorageType) (data : ByteArray) : Op EVM.State :=
+def writeBytesStorage (cfg : Config) (evm : EVM.State) (er : Stele.EvaledStorageRef)
+    (st : Stele.StorageType) (data : ByteArray) : Op EVM.State :=
   liftStorage (cfg.storageBackend.write er st (.bytes data) evm)
 
 /-- The bytes of a `bytes` / `string` value: a literal, a memory object, or a storage string read
@@ -808,7 +808,7 @@ def fixedOfBytes (k : Fin 32) (d : ByteArray) : List UInt8 :=
   bs ++ List.replicate (k.val + 1 - bs.length) 0
 
 /-- `bytesN(b)` with `b` in storage: the location, its type and `N - 1`. -/
-def storageBytesConv? (v : Value) (ty : Ty) : Option (Solm.EvaledStorageRef × Ty × Fin 32) :=
+def storageBytesConv? (v : Value) (ty : Ty) : Option (Stele.EvaledStorageRef × Ty × Fin 32) :=
   match v, ty with
   | .storageRef er sty, .fixedBytes k => some (er, sty, k)
   | _, _ => none
@@ -819,29 +819,29 @@ def concatParts (cfg : Config) (m : Machine) (vs : List Value) : Op (List ByteAr
     | .fixedBytes _ bs => pure ⟨bs.toArray⟩
     | v => bytesOf cfg m v
 
-def elemRef (er : Solm.EvaledStorageRef) (i : Nat) : Solm.EvaledStorageRef :=
+def elemRef (er : Stele.EvaledStorageRef) (i : Nat) : Stele.EvaledStorageRef :=
   { er with steps := er.steps ++ [.aindex (.int i)] }
 
-def fieldRef (er : Solm.EvaledStorageRef) (f : Ident) : Solm.EvaledStorageRef :=
+def fieldRef (er : Stele.EvaledStorageRef) (f : Ident) : Stele.EvaledStorageRef :=
   { er with steps := er.steps ++ [.field f] }
 
 /-- The slot of a mapping, dynamic array or `bytes` / `string` reference (`StorageAddr.anchor`). -/
-def anchorOf (cfg : Config) (er : Solm.EvaledStorageRef) : Option EVM.Word :=
+def anchorOf (cfg : Config) (er : Stele.EvaledStorageRef) : Option EVM.Word :=
   match cfg.storageBackend.locate? er with
   | some (.anchor s) => some s
   | _ => none
 
-def keyRef (er : Solm.EvaledStorageRef) (k : Solm.KeyValue) : Solm.EvaledStorageRef :=
+def keyRef (er : Stele.EvaledStorageRef) (k : Stele.KeyValue) : Stele.EvaledStorageRef :=
   { er with steps := er.steps ++ [.mindex k] }
 
 /-- Length of a storage array / `bytes` / `string`. -/
-def storageLength (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (ty : Ty) :
+def storageLength (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (ty : Ty) :
     Op Nat := do
   let some st := storageTypeOf env ty | Op.stuck
   liftStorage (cfg.storageBackend.length er st evm)
 
 /-- Length of the dynamic storage array of element type `e` at `er`. -/
-def dynArrayLength (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (e : Ty) :
+def dynArrayLength (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (e : Ty) :
     Option Nat :=
   match storageLength cfg env evm er (.dynArray e) with
   | some (.ok n) => some n
@@ -851,7 +851,7 @@ def dynArrayLength (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.E
 
 /-- Read a storage value of type `ty` (reference types are copied into fresh memory objects). -/
 def readStorageDeep (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.State) (h : Heap)
-    (er : Solm.EvaledStorageRef) (ty : Ty) : Op (Value × Heap) := do
+    (er : Stele.EvaledStorageRef) (ty : Ty) : Op (Value × Heap) := do
   if isValueType env ty then
     Op.ofOpt ((readScalar cfg env evm er ty).map (·, h))
   else
@@ -860,16 +860,16 @@ def readStorageDeep (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.State
     Op.ofOpt (ofAbi env fuel ty sv h)
 
 /-- `delete` / zeroing of a storage value of type `ty` (mappings are skipped). -/
-def clearStorage (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (ty : Ty) :
+def clearStorage (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (ty : Ty) :
     Op EVM.State := do
   let some st := storageTypeOf env ty | Op.stuck
   liftStorage (cfg.storageBackend.clear er st evm)
 
 /-- The storage value of a memory object, literal or scalar `v` for a slot of type `ty`: memory
-    structs become `Solm.Value.struct` by field name, arrays and `bytes` are copied, scalars are
+    structs become `Stele.Value.struct` by field name, arrays and `bytes` are copied, scalars are
     converted to the slot's type; an element of a calldata array copied to storage is validated
     (solc reverts with empty data; an enum of a memory copy out of range is `Panic(0x21)`). -/
-def toStorage (env : TypeEnv) (h : Heap) : Nat → Ty → Value → Op Solm.Value
+def toStorage (env : TypeEnv) (h : Heap) : Nat → Ty → Value → Op Stele.Value
   | 0, _, _ => Op.stuck
   | fuel + 1, ty, v =>
     match v with
@@ -909,7 +909,7 @@ def toStorage (env : TypeEnv) (h : Heap) : Nat → Ty → Value → Op Solm.Valu
 /-- The storage value of `v` for a slot of type `ty`, reading a storage source (storage → storage
     copy) or decoding a calldata object with dynamic content first. -/
 def storageValueOf (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.State) (h : Heap) (ty : Ty) :
-    Value → Op Solm.Value
+    Value → Op Stele.Value
   | .storageRef er' ty' => do
     let (mv, h') ← readStorageDeep cfg env fuel evm h er' ty'
     toStorage env h' fuel ty mv
@@ -920,7 +920,7 @@ def storageValueOf (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.State)
 
 /-- Write a (memory or scalar) value of type `ty` into storage. -/
 def writeStorageDeep (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.State) (h : Heap)
-    (er : Solm.EvaledStorageRef) (ty : Ty) (v : Value) : Op EVM.State := do
+    (er : Stele.EvaledStorageRef) (ty : Ty) (v : Value) : Op EVM.State := do
   let some st := storageTypeOf env ty | Op.stuck
   let sv ← storageValueOf cfg env fuel evm h ty v
   liftStorage (cfg.storageBackend.write er st sv evm)
@@ -928,8 +928,8 @@ def writeStorageDeep (cfg : Config) (env : TypeEnv) (fuel : Nat) (evm : EVM.Stat
 /-! ## Indexing and members -/
 
 /-- Storage element of `er : ty` at index/key `idx`: bounds-checked (`Panic 0x32`). -/
-def storageIndex (cfg : Config) (env : TypeEnv) (evm : EVM.State) (h : Heap) (er : Solm.EvaledStorageRef)
-    (ty : Ty) (idx : Value) : Op (Solm.EvaledStorageRef × Ty) := do
+def storageIndex (cfg : Config) (env : TypeEnv) (evm : EVM.State) (h : Heap) (er : Stele.EvaledStorageRef)
+    (ty : Ty) (idx : Value) : Op (Stele.EvaledStorageRef × Ty) := do
   match ty with
   | .mapping k v =>
     let some (idx', h') := implicitConv env h idx k | Op.stuck
@@ -956,8 +956,8 @@ def storageIndex (cfg : Config) (env : TypeEnv) (evm : EVM.State) (h : Heap) (er
     if i < n then pure (elemRef er i, .fixedBytes ⟨0, by decide⟩) else Op.panic .outOfBounds
   | _ => Op.stuck
 
-def storageField (env : TypeEnv) (er : Solm.EvaledStorageRef) (ty : Ty) (f : Ident) :
-    Option (Solm.EvaledStorageRef × Ty) := do
+def storageField (env : TypeEnv) (er : Stele.EvaledStorageRef) (ty : Ty) (f : Ident) :
+    Option (Stele.EvaledStorageRef × Ty) := do
   let .user q n := ty | none
   let s ← env.struct? q n
   let (fty, _) ← s.fields.find? (·.2 == f)
@@ -1193,7 +1193,7 @@ def prepareArgs (env : TypeEnv) (cd : ByteArray) (fuel : Nat) (h : Heap) (vs : L
 /-! ## Reading and assigning -/
 
 /-- The value of a storage reference: scalars are loaded, reference types stay references. -/
-def loadIfScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Solm.EvaledStorageRef) (ty : Ty) :
+def loadIfScalar (cfg : Config) (env : TypeEnv) (evm : EVM.State) (er : Stele.EvaledStorageRef) (ty : Ty) :
     Option Value :=
   if isValueType env ty then readScalar cfg env evm er ty else some (.storageRef er ty)
 
@@ -1291,7 +1291,7 @@ def declare (cfg : Config) (env : TypeEnv) (fr : Frame) (m : Machine) (ty : Ty) 
     pure (fr.bind name ty loc v, { m with heap := h' })
 
 /-- Storage array `push`. -/
-def storagePush (cfg : Config) (env : TypeEnv) (m : Machine) (er : Solm.EvaledStorageRef) (e : Ty)
+def storagePush (cfg : Config) (env : TypeEnv) (m : Machine) (er : Stele.EvaledStorageRef) (e : Ty)
     (v : Option Value) : Op Machine := do
   let some st := storageTypeOf env (.dynArray e) | Op.stuck
   let sv ← match v with
@@ -1301,7 +1301,7 @@ def storagePush (cfg : Config) (env : TypeEnv) (m : Machine) (er : Solm.EvaledSt
   pure { m with evm := evm' }
 
 /-- Storage array `pop` (`Panic 0x31` on empty). -/
-def storagePop (cfg : Config) (env : TypeEnv) (m : Machine) (er : Solm.EvaledStorageRef) (e : Ty) :
+def storagePop (cfg : Config) (env : TypeEnv) (m : Machine) (er : Stele.EvaledStorageRef) (e : Ty) :
     Op Machine := do
   let n ← storageLength cfg env m.evm er (.dynArray e)
   if n = 0 then Op.panic .popEmpty
@@ -1316,12 +1316,12 @@ def pushedByte (env : TypeEnv) (h : Heap) (v : Value) : Option UInt8 :=
   | _ => none
 
 /-- `b.push(x)` / `b.push()` on storage `bytes`. -/
-def bytesPush (cfg : Config) (m : Machine) (er : Solm.EvaledStorageRef) (b : UInt8) : Op Machine := do
+def bytesPush (cfg : Config) (m : Machine) (er : Stele.EvaledStorageRef) (b : UInt8) : Op Machine := do
   let evm' ← liftStorage (cfg.storageBackend.push er .bytes (some (.fixedBytes ⟨0, by decide⟩ [b])) m.evm)
   pure { m with evm := evm' }
 
 /-- `b.pop()` on storage `bytes` (`Panic 0x31` on empty). -/
-def bytesPop (cfg : Config) (m : Machine) (er : Solm.EvaledStorageRef) : Op Machine := do
+def bytesPop (cfg : Config) (m : Machine) (er : Stele.EvaledStorageRef) : Op Machine := do
   let n ← liftStorage (cfg.storageBackend.length er .bytes m.evm)
   if n = 0 then Op.panic .popEmpty
   let evm' ← liftStorage (cfg.storageBackend.pop er .bytes m.evm)
@@ -1345,17 +1345,17 @@ def abiTyOfValue (env : TypeEnv) (h : Heap) : Value → Option ABIType
 /-- Convert arguments to declared parameter types and into the ABI domain.  A calldata object is
     read through the encoder's checks first (`prepareArgs`). -/
 def abiArgs (cfg : Config) (env : TypeEnv) (m : Machine) (tys : List Ty) (vs : List Value) :
-    Op (List Solm.Value × Machine) := do
+    Op (List Stele.Value × Machine) := do
   if tys.length ≠ vs.length then Op.stuck
   let (vs, h) ← prepareArgs env m.evm.executionEnv.calldata fuelDefault m.heap vs
   let m := { m with heap := h }
   (tys.zip vs).foldlM (fun (acc, m) (ty, v) => do
     let (v', m') ← coerce cfg env m v ty (some .memory)
     let some sv := toAbi m'.heap fuelDefault v' | Op.stuck
-    pure (acc ++ [sv], m')) (([] : List Solm.Value), m)
+    pure (acc ++ [sv], m')) (([] : List Stele.Value), m)
 
 /-- Bind ABI-decoded values to parameters, allocating reference types. -/
-def bindParams (env : TypeEnv) (fr : Frame) (h : Heap) (params : List Param) (vs : List Solm.Value) :
+def bindParams (env : TypeEnv) (fr : Frame) (h : Heap) (params : List Param) (vs : List Stele.Value) :
     Option (Frame × Heap) := do
   if params.length ≠ vs.length then none
   (params.zip vs).foldlM (fun (fr, h) (p, sv) => do

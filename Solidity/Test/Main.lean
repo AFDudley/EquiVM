@@ -79,7 +79,7 @@ structure SpecEntry where
   target : String
   selectors : List (String × String)
   /-- Sol⁻ storage layout to compare against, with sample paths. -/
-  solmLayout : Option (Solm.StorageLayout × List Solm.EvaledStorageRef) := none
+  steleLayout : Option (Stele.StorageLayout × List Stele.EvaledStorageRef) := none
 
 def sortPairs (xs : List (String × String)) : List (String × String) :=
   xs.mergeSort fun a b => decide (a.1 ≤ b.1)
@@ -101,7 +101,7 @@ def checkSelectors (e : SpecEntry) : IO Bool := do
 
 /-! ## Layout -/
 
-def addrStr : Option Solm.StorageAddr → String
+def addrStr : Option Stele.StorageAddr → String
   | none => "none"
   | some (.leaf l) =>
     s!"slot={l.slot.toNat} off={l.offset.val} size={l.size.val} bit={repr l.bitOffset} ty={repr l.type}"
@@ -111,7 +111,7 @@ def addrStr : Option Solm.StorageAddr → String
 /-- Same address (ours first): leaves field by field, anchors by slot, bytes by header and index.
     One exception: a byte of a `bytes`/`string` value is a `bytes1` here and a `uint8` in the Sol⁻
     hand layouts. -/
-def sameAddr : Option Solm.StorageAddr → Option Solm.StorageAddr → Bool
+def sameAddr : Option Stele.StorageAddr → Option Stele.StorageAddr → Bool
   | none, none => true
   | some (.leaf a), some (.leaf b) =>
     a.slot == b.slot && a.offset.val == b.offset.val && a.size.val == b.size.val &&
@@ -121,7 +121,7 @@ def sameAddr : Option Solm.StorageAddr → Option Solm.StorageAddr → Bool
   | _, _ => false
 
 def checkLayout (e : SpecEntry) : IO Bool := do
-  let some (solm, refs) := e.solmLayout | return true
+  let some (stele, refs) := e.steleLayout | return true
   match elabProgram e.program e.target with
   | .error err =>
     IO.println s!"[{e.name}] elaboration error: {err}"
@@ -131,21 +131,21 @@ def checkLayout (e : SpecEntry) : IO Bool := do
     let mut ok := true
     for ref in refs do
       let ours := Solidity.layout table ref
-      let theirs := solm ref
+      let theirs := stele ref
       let same := sameAddr ours theirs
       ok := ok && same
       unless same do
-        IO.println s!"  {ref.base}{repr ref.steps}: ours={addrStr ours} solm={addrStr theirs}"
+        IO.println s!"  {ref.base}{repr ref.steps}: ours={addrStr ours} stele={addrStr theirs}"
     IO.println s!"[{e.name}] layout ({refs.length} paths): {if ok then "OK" else "MISMATCH"}"
     return ok
 
 /-! ## The examples -/
 
-def kAddr (n : Nat) : Solm.KeyValue := .address (.ofNat n)
-def idx (n : Nat) : Solm.KeyValue := .int n
-def b32 (n : Nat) : Solm.KeyValue := .fixedBytes ⟨31, by decide⟩ ((List.replicate 31 0) ++ [n.toUInt8])
+def kAddr (n : Nat) : Stele.KeyValue := .address (.ofNat n)
+def idx (n : Nat) : Stele.KeyValue := .int n
+def b32 (n : Nat) : Stele.KeyValue := .fixedBytes ⟨31, by decide⟩ ((List.replicate 31 0) ++ [n.toUInt8])
 
-def ref (base : String) (steps : List Solm.EvaledStorageRefStep := []) : Solm.EvaledStorageRef :=
+def ref (base : String) (steps : List Stele.EvaledStorageRefStep := []) : Stele.EvaledStorageRef :=
   { base := base, steps := steps }
 
 def specs : List SpecEntry :=
@@ -155,29 +155,29 @@ def specs : List SpecEntry :=
       selectors := Pow.SoliditySpec.selectors },
     { name := "Caller", program := Caller.SoliditySpec.program, target := "Caller",
       selectors := Caller.SoliditySpec.selectors,
-      solmLayout := some (callerConfig.storageBackend.locate?, [ref "stored"]) },
+      steleLayout := some (callerConfig.storageBackend.locate?, [ref "stored"]) },
     { name := "Reuse", program := Reuse.SoliditySpec.program, target := "C",
       selectors := Reuse.SoliditySpec.selectors,
-      solmLayout := some (cConfig.storageBackend.locate?, [ref "s"]) },
+      steleLayout := some (cConfig.storageBackend.locate?, [ref "s"]) },
     { name := "CtorStore", program := CtorStore.SoliditySpec.program, target := "CtorStore",
       selectors := CtorStore.SoliditySpec.selectors,
-      solmLayout := some (ctorStoreConfig.storageBackend.locate?, [ref "stored"]) },
+      steleLayout := some (ctorStoreConfig.storageBackend.locate?, [ref "stored"]) },
     { name := "CtorTruth", program := CtorTruth.SoliditySpec.program, target := "CtorTruth",
       selectors := CtorTruth.SoliditySpec.selectors },
     { name := "ERC20", program := ERC20.SoliditySpec.program, target := "ERC20",
       selectors := ERC20.SoliditySpec.selectors,
-      solmLayout := some (erc20Config.storageBackend.locate?,
+      steleLayout := some (erc20Config.storageBackend.locate?,
         [ ref "balanceOf" [.mindex (kAddr 0x1234)], ref "allowance" [.mindex (kAddr 1), .mindex (kAddr 2)],
           ref "totalSupply" ]) },
     { name := "StringStoreLite", program := StringStoreLite.SoliditySpec.program,
       target := "StringStoreLite", selectors := StringStoreLite.SoliditySpec.selectors,
-      solmLayout := some (stringStoreLiteConfig.storageBackend.locate?,
+      steleLayout := some (stringStoreLiteConfig.storageBackend.locate?,
         [ ref "current", ref "current" [.aindex (idx 0)], ref "current" [.aindex (idx 5)] ]) },
     { name := "TinyImmutable", program := TinyImmutable.SoliditySpec.program, target := "TinyImmutable",
       selectors := TinyImmutable.SoliditySpec.selectors },
     { name := "Ballot", program := Ballot.SoliditySpec.program, target := "Ballot",
       selectors := Ballot.SoliditySpec.selectors,
-      solmLayout := some (ballotConfig.storageBackend.locate?,
+      steleLayout := some (ballotConfig.storageBackend.locate?,
         [ ref "chairperson",
           ref "voters" [.mindex (kAddr 7), .field "weight"], ref "voters" [.mindex (kAddr 7), .field "voted"],
           ref "voters" [.mindex (kAddr 7), .field "delegate"], ref "voters" [.mindex (kAddr 7), .field "vote"],
@@ -185,12 +185,12 @@ def specs : List SpecEntry :=
           ref "proposals" [.aindex (idx 3), .field "voteCount"] ]) },
     { name := "SimpleAuction", program := SimpleAuction.SoliditySpec.program, target := "SimpleAuction",
       selectors := SimpleAuction.SoliditySpec.selectors,
-      solmLayout := some (simpleAuctionConfig.storageBackend.locate?,
+      steleLayout := some (simpleAuctionConfig.storageBackend.locate?,
         [ ref "beneficiary", ref "auctionEndTime", ref "highestBidder", ref "highestBid",
           ref "pendingReturns" [.mindex (kAddr 9)], ref "ended" ]) },
     { name := "BlindAuction", program := BlindAuction.SoliditySpec.program, target := "BlindAuction",
       selectors := BlindAuction.SoliditySpec.selectors,
-      solmLayout := some (blindAuctionConfig.storageBackend.locate?,
+      steleLayout := some (blindAuctionConfig.storageBackend.locate?,
         [ ref "beneficiary", ref "biddingEnd", ref "revealEnd", ref "ended",
           ref "bids" [.mindex (kAddr 5)],
           ref "bids" [.mindex (kAddr 5), .aindex (idx 2), .field "blindedBid"],
@@ -198,19 +198,19 @@ def specs : List SpecEntry :=
           ref "highestBidder", ref "highestBid", ref "pendingReturns" [.mindex (kAddr 5)] ]) },
     { name := "Ownable2Step", program := OpenZeppelinBench.Ownable2Step.SoliditySpec.program,
       target := "Ownable2StepBench", selectors := OpenZeppelinBench.Ownable2Step.SoliditySpec.selectors,
-      solmLayout := some (OpenZeppelinBench.Ownable2Step.config.storageBackend.locate?,
+      steleLayout := some (OpenZeppelinBench.Ownable2Step.config.storageBackend.locate?,
         [ref "_owner", ref "_pendingOwner"]) },
     { name := "AccessControl", program := OpenZeppelinBench.AccessControl.SoliditySpec.program,
       target := "AccessControlBench", selectors := OpenZeppelinBench.AccessControl.SoliditySpec.selectors,
-      solmLayout := some (OpenZeppelinBench.AccessControl.config.storageBackend.locate?,
+      steleLayout := some (OpenZeppelinBench.AccessControl.config.storageBackend.locate?,
         [ ref "_roles" [.mindex (b32 1), .field "adminRole"],
           ref "_roles" [.mindex (b32 1), .field "hasRole", .mindex (kAddr 3)] ]) },
     { name := "Pausable", program := OpenZeppelinBench.Pausable.SoliditySpec.program,
       target := "PausableBench", selectors := OpenZeppelinBench.Pausable.SoliditySpec.selectors,
-      solmLayout := some (OpenZeppelinBench.Pausable.config.storageBackend.locate?, [ref "_paused"]) },
+      steleLayout := some (OpenZeppelinBench.Pausable.config.storageBackend.locate?, [ref "_paused"]) },
     { name := "ERC6909", program := OpenZeppelinBench.ERC6909.SoliditySpec.program,
       target := "ERC6909Bench", selectors := OpenZeppelinBench.ERC6909.SoliditySpec.selectors,
-      solmLayout := some (OpenZeppelinBench.ERC6909.config.storageBackend.locate?,
+      steleLayout := some (OpenZeppelinBench.ERC6909.config.storageBackend.locate?,
         [ ref "_balances" [.mindex (kAddr 1), .mindex (idx 7)],
           ref "_operatorApprovals" [.mindex (kAddr 1), .mindex (kAddr 2)],
           ref "_allowances" [.mindex (kAddr 1), .mindex (kAddr 2), .mindex (idx 7)] ]) } ]

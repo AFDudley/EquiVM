@@ -20,10 +20,10 @@ def S : Nat := 0xA11CE
 def T : Nat := 0xB0B
 def F : Nat := 0xF00D
 
-def key (a : Nat) : Solm.EvaledStorageRefStep := .mindex (.address (addr a))
-def bal (a n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"balanceOf", [key a]⟩, n)
-def alw (o s n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"allowance", [key o, key s]⟩, n)
-def sup (n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"totalSupply", []⟩, n)
+def key (a : Nat) : Stele.EvaledStorageRefStep := .mindex (.address (addr a))
+def bal (a n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"balanceOf", [key a]⟩, n)
+def alw (o s n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"allowance", [key o, key s]⟩, n)
+def sup (n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"totalSupply", []⟩, n)
 
 def max256 : Nat := 2 ^ 256 - 1
 

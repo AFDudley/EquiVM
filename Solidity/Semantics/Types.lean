@@ -20,12 +20,12 @@ namespace Solidity
 
 structure Config where
   /-- Storage operations (`storageBackend` of the derived layout table by default). -/
-  storageBackend : Solm.StorageBackend
+  storageBackend : Stele.StorageBackend
   abiDecodeMode : ABI.DecodeMode := .modern
   /-- Init code (creation bytecode ++ encoded constructor arguments) for `new C(args)`. -/
-  creationCode : Ident → List Solm.Value → Option EVM.Bytes := fun _ _ => none
+  creationCode : Ident → List Stele.Value → Option EVM.Bytes := fun _ _ => none
   /-- Init code for deploying this contract itself. -/
-  selfDeployment : EVM.Bytes → List Solm.Value → Option EVM.Bytes
+  selfDeployment : EVM.Bytes → List Stele.Value → Option EVM.Bytes
   /-- `type(C).creationCode` and `type(C).runtimeCode`. -/
   typeCreationCode : Ident → Option EVM.Bytes := fun _ => none
   typeRuntimeCode : Ident → Option EVM.Bytes := fun _ => none
@@ -87,7 +87,7 @@ abbrev ExprResult := Res Value
 
 inductive LValue where
   | local (name : Ident)
-  | storage (er : Solm.EvaledStorageRef) (ty : Ty)
+  | storage (er : Stele.EvaledStorageRef) (ty : Ty)
   | memField (obj : Nat) (field : Ident)
   | memIndex (obj : Nat) (i : Nat)
 
@@ -136,7 +136,7 @@ end Frame
 
 def retName (i : Nat) (p : Param) : Ident := p.name.getD s!"#ret{i}"
 
-/-- The machine `Ξ` starts from (identical to `solmExec`'s initial state). -/
+/-- The machine `Ξ` starts from (identical to `steleExec`'s initial state). -/
 def initEvm (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate)
     (I : Ethereum.ExecutionEnv) : EVM.State :=
   { (default : EVM.State) with

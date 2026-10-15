@@ -72,7 +72,7 @@ theorem tsSpec (o : Oracle) {σ σ₀ g A I} (hsel : selIs I (selBytes 1)) (hwv 
 theorem totalSupplyCorrect {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = erc20Runtime) (hsize : I.calldata.size < UInt256.size) (hwv : I.weiValue = ⟨0⟩)
     (hsel : selIs I (selBytes 1)) :
-    runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := by
+    runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := by
   have hw : WorldEquiv ⟨A.createdAccounts, σ, A.logSeries⟩ (initMachine σ σ₀ g A I ∅) := WorldEquiv.init ∅ {}
   have hword : solcSlotWord σ I ⟨2⟩ = loadU256 (initMachine σ σ₀ g A I ∅) ⟨2⟩ := hw.sload rfl ⟨2⟩
   refine Returned.specExecutionW default hcode (tsRun hcode hwv hsize hsel) (tsSpec default hsel hwv) hw ?_

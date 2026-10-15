@@ -14,10 +14,10 @@ def Rc : Nat := 0xB0B
 def Op : Nat := 0xF00D
 def max256 : Nat := 2 ^ 256 - 1
 
-def bal (a id n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"_balances", [.mindex (.address (addr a)), .mindex (.int id)]⟩, n)
-def opr (a b : Nat) : Solm.EvaledStorageRef × Nat := (⟨"_operatorApprovals", [.mindex (.address (addr a)), .mindex (.address (addr b))]⟩, 1)
-def alw (a b id n : Nat) : Solm.EvaledStorageRef × Nat := (⟨"_allowances", [.mindex (.address (addr a)), .mindex (.address (addr b)), .mindex (.int id)]⟩, n)
-def iface (n : Nat) : Solm.Value := .fixedBytes ⟨3, by decide⟩ ((wordBytes (n <<< 224)).toList.take 4)
+def bal (a id n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"_balances", [.mindex (.address (addr a)), .mindex (.int id)]⟩, n)
+def opr (a b : Nat) : Stele.EvaledStorageRef × Nat := (⟨"_operatorApprovals", [.mindex (.address (addr a)), .mindex (.address (addr b))]⟩, 1)
+def alw (a b id n : Nat) : Stele.EvaledStorageRef × Nat := (⟨"_allowances", [.mindex (.address (addr a)), .mindex (.address (addr b)), .mindex (.int id)]⟩, n)
+def iface (n : Nat) : Stele.Value := .fixedBytes ⟨3, by decide⟩ ((wordBytes (n <<< 224)).toList.take 4)
 
 def transferSig := "transfer(address,uint256,uint256)"
 def transferFromSig := "transferFrom(address,address,uint256,uint256)"

@@ -17,10 +17,10 @@ def runtime : ByteArray := bytesOfHex Fixtures.diamondRuntimeHex
 def MAX : Int := 2 ^ 256 - 1
 
 /-- Storage as the constructor leaves it for `(x, y) = (3, 4)`, with `log` replaced by `lg`. -/
-def st (lg : Nat) (a := 5) (l := 14) (r := 10) (d := 4) : List (Solm.EvaledStorageRef × Nat) :=
+def st (lg : Nat) (a := 5) (l := 14) (r := 10) (d := 4) : List (Stele.EvaledStorageRef × Nat) :=
   [(⟨"a", []⟩, a), (⟨"log", []⟩, lg), (⟨"l", []⟩, l), (⟨"r", []⟩, r), (⟨"sides", []⟩, 4), (⟨"d", []⟩, d)]
 
-def mk (sig : String) (args : List Solm.Value) (tag : String := "") (lg : Nat := 0) : Case :=
+def mk (sig : String) (args : List Stele.Value) (tag : String := "") (lg : Nat := 0) : Case :=
   { name := s!"{sig} {tag}", code := runtime, call := some (sig, args), refs := st lg }
 
 def ctor (x y : Int) (value : Nat := 0) : Case :=

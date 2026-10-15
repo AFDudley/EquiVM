@@ -20,7 +20,7 @@ Struct fields in storage need no shape of their own: they are slot arithmetic on
 (see `Storage.lean` for the packed-word facts).
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Trace
 

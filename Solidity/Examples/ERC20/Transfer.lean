@@ -364,11 +364,11 @@ theorem trSpecRevert (o : Oracle) {σ σ₀ g A I} {d : ByteArray} (hsel : selIs
 theorem transferCorrect {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = erc20Runtime) (hsize : I.calldata.size < UInt256.size) (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩) (hsel : selIs I (selBytes 4)) :
-    runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := by
+    runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size := size_ge_of_sel rfl hsel
   have hdec : decodeArgs erc20Cfg erc20Flat.types fnTransfer.decl I.calldata = none →
       Reverted erc20Runtime (initState σ σ₀ (Sat256.ofUInt256 g) A I) ByteArray.empty →
-      runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := fun hd h =>
+      runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := fun hd h =>
     Reverted.specDecodingFailed hcode h (erc20Dispatch_transfer hsel) erc20Flat_fns1 (Or.inr hwv)
       (decodeCallArgs_none_of_decodeArgs hd)
   by_cases hsz68 : 68 ≤ I.calldata.size

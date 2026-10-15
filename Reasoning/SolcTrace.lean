@@ -18,7 +18,7 @@ the trace-level lemmas are restated.  Compared with their `RD` originals they
   arbitrary `s0`/world/memory wherever the shape allows it.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Trace
 

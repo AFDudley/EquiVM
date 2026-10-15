@@ -1,4 +1,4 @@
-import Solidity.Equiv
+import Solidity.Refine
 import Solidity.Theory.Body
 import Reasoning.SolcIdioms
 
@@ -7,7 +7,7 @@ import Reasoning.SolcIdioms
 
 The terminal facts of `Reasoning.Trace` (`Returned`, `Reverted`) at a transaction's `initState`
 give the `Ξ`-level outcome with the final world and the exact revert data; paired with a
-`solidityExec` derivation they discharge one case of `runtimeEquivalenceFor` (accounts, return
+`solidityExec` derivation they discharge one case of `runtimeRefinementFor` (accounts, return
 data, revert data and logs).  Also here: the bridges from solc's revert payloads
 (`solcPanicPayload`, `solcErrorStringPayload`) to the spec's (`panicData`, `errorStringData`),
 the exact `LogEntry` of a value-type event, and the dispatcher-level cases (non-payable, short
@@ -51,11 +51,11 @@ theorem initMachine_evm {σ σ₀ g A I} (imms : Store) (h : Heap) :
 
 /-- The `uint256` word at `slot`. -/
 abbrev loadU256 (m : Machine) (slot : UInt256) : UInt256 :=
-  Solm.EVM.storageLoad m.evm m.evm.executionEnv.codeOwner slot
+  Stele.EVM.storageLoad m.evm m.evm.executionEnv.codeOwner slot
 
 /-- The machine after storing `w` into the `uint256` slot `slot`. -/
 abbrev storeU256 (m : Machine) (slot w : UInt256) : Machine :=
-  { m with evm := Solm.EVM.storageStore m.evm m.evm.executionEnv.codeOwner slot w }
+  { m with evm := Stele.EVM.storageStore m.evm m.evm.executionEnv.codeOwner slot w }
 
 attribute [simp] storageStore_executionEnv
 
@@ -69,7 +69,7 @@ attribute [simp] storageStore_executionEnv
   congrArg ExecutionEnv.codeOwner (storageStore_executionEnv ..)
 @[simp] theorem storeU256_substate (m : Machine) (slot w : UInt256) :
     (storeU256 m slot w).evm.substate = m.evm.substate := by
-  show (Solm.EVM.storageStore m.evm _ slot w).substate = _
+  show (Stele.EVM.storageStore m.evm _ slot w).substate = _
   rw [storageStore_substate]
 @[simp] theorem storeU256_logSeries (m : Machine) (slot w : UInt256) :
     (storeU256 m slot w).evm.substate.logSeries = m.evm.substate.logSeries := by
@@ -105,11 +105,11 @@ theorem sstore {w : World} {m : Machine} (h : WorldEquiv w m) {owner : AccountAd
     WorldEquiv { w with accounts := sstoreAccountMap owner w.accounts slot val } (storeU256 m slot val) := by
   subst hown
   refine ⟨?_, ?_, ?_⟩
-  · show w.created = (Solm.EVM.storageStore m.evm _ slot val).substate.createdAccounts
+  · show w.created = (Stele.EVM.storageStore m.evm _ slot val).substate.createdAccounts
     rw [storageStore_createdAccounts]; exact h.created
-  · show sstoreAccountMap _ w.accounts slot val = (Solm.EVM.storageStore m.evm _ slot val).accountMap
+  · show sstoreAccountMap _ w.accounts slot val = (Stele.EVM.storageStore m.evm _ slot val).accountMap
     rw [storageStore_accountMap, h.accounts]
-  · show w.logs = (Solm.EVM.storageStore m.evm _ slot val).substate.logSeries
+  · show w.logs = (Stele.EVM.storageStore m.evm _ slot val).substate.logSeries
     rw [storageStore_substate]; exact h.logs
 
 /-- `SLOAD` on the trace side reads the spec machine's word. -/
@@ -278,7 +278,7 @@ theorem Returned.specExecution {cfg fc imms σ σ₀ A I} {g : UInt256} {code ou
     (hAccounts : w.accounts = m.evm.accountMap)
     (hLogs : w.logs = m.evm.substate.logSeries)
     (henc : returnDataEquiv out vs conv) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Returned.xi hcode h with hoog | ⟨g', A', hxi, hcA, hlogs⟩
   · exact .outOfGas hoog
   · exact .execution hxi ⟨o, hspec, .success rfl rfl hAccounts (hlogs.trans hLogs) (hcA.trans hCreated) henc⟩
@@ -290,7 +290,7 @@ theorem Returned.specExecutionW {cfg fc imms σ σ₀ A I} {g : UInt256} {code o
     (h : Returned code (initState σ σ₀ (Sat256.ofUInt256 g) A I) w out)
     (hspec : solidityExec cfg o fc imms σ σ₀ g A I (.returned m vs) conv)
     (hw : WorldEquiv w m) (henc : returnDataEquiv out vs conv) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Returned.specExecution o hcode h hspec hw.created hw.accounts hw.logs henc
 
 /-- A returned run + a spec run that inline assembly ended (`return` / `stop`) with the same raw
@@ -301,7 +301,7 @@ theorem Returned.specHalt {cfg fc imms σ σ₀ A I} {g : UInt256} {code out : B
     (h : Returned code (initState σ σ₀ (Sat256.ofUInt256 g) A I) w out)
     (hspec : solidityExec cfg o fc imms σ σ₀ g A I (.halted m out) conv)
     (hw : WorldEquiv w m) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Returned.xi hcode h with hoog | ⟨g', A', hxi, hcA, hlogs⟩
   · exact .outOfGas hoog
   · exact .execution hxi ⟨o, hspec, .halt rfl rfl hw.accounts (hlogs.trans hw.logs) (hcA.trans hw.created)⟩
@@ -311,7 +311,7 @@ theorem Reverted.specRevert {cfg fc imms σ σ₀ A I} {g : UInt256} {code d : B
     (o : Oracle) (hcode : I.code = code)
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) d)
     (hspec : solidityExec cfg o fc imms σ σ₀ g A I (.reverted d) conv) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Reverted.xi hcode h with hoog | ⟨g', hxi⟩
   · exact .outOfGas hoog
   · exact .execution hxi ⟨o, hspec, .revert rfl rfl⟩
@@ -321,7 +321,7 @@ theorem Reverted.specNoDispatch {cfg fc imms σ σ₀ A I} {g : UInt256} {code :
     (hcode : I.code = code)
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) ByteArray.empty)
     (hd : dispatches fc I.calldata = false) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Reverted.xi hcode h with hoog | ⟨g', hxi⟩
   · exact .outOfGas hoog
   · exact .noDispatch hd hxi
@@ -333,7 +333,7 @@ theorem decodeCallArgs_none_of_decodeArgs {cfg : Config} {env : TypeEnv} {d : Fn
 
 /-- Arguments whose typed reconstruction fails (an enum value out of range) are rejected. -/
 theorem decodeCallArgs_none_of_ofAbiParams {cfg : Config} {env : TypeEnv} {d : FnDecl} {cd : ByteArray}
-    {svs : List Solm.Value} (h : decodeArgs cfg env d cd = some svs)
+    {svs : List Stele.Value} (h : decodeArgs cfg env d cd = some svs)
     (hof : ofAbiParams env cd d.params svs {} = none) : decodeCallArgs cfg env d cd = none := by
   simp [decodeCallArgs, h, hof]
 
@@ -345,7 +345,7 @@ theorem Reverted.specDecodingFailed {cfg fc imms σ σ₀ A I} {g : UInt256} {co
     (he : selectorDispatch fc I.calldata = some e) (hfn : fc.fns[e.fn]? = some fn)
     (hpay : payableOrNoValue fn.decl I)
     (hdec : decodeCallArgs cfg fc.types fn.decl I.calldata = none) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Reverted.xi hcode h with hoog | ⟨g', hxi⟩
   · exact .outOfGas hoog
   · exact .decodingFailed he hfn hpay hdec hxi (Or.inl rfl)
@@ -360,16 +360,16 @@ theorem Reverted.specDecodingPanic {cfg fc imms σ σ₀ A I} {g : UInt256} {cod
     (hpay : payableOrNoValue fn.decl I)
     (hdec : decodeCallArgs cfg fc.types fn.decl I.calldata = none)
     (hmem : hasDynamicMemoryParam fc.types fn.decl = true) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms := by
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms := by
   rcases Reverted.xi hcode h with hoog | ⟨g', hxi⟩
   · exact .outOfGas hoog
   · exact .decodingFailed he hfn hpay hdec hxi (Or.inr ⟨hmem, rfl⟩)
 
 /-! ## Constructors
 
-`constructorEquivalenceFor` is indexed by the immutables the spec deployed, which an out-of-gas run
-does not determine; the bridges therefore conclude `typedConstructorEquivalenceFor` (what
-`constructorEquivalence` quantifies), whose fit side condition `ctorImmutablesFit` is automatic
+`constructorRefinementFor` is indexed by the immutables the spec deployed, which an out-of-gas run
+does not determine; the bridges therefore conclude `typedConstructorRefinementFor` (what
+`typedConstructorRefinement` quantifies), whose fit side condition `ctorImmutablesFit` is automatic
 for a contract without immutables. -/
 
 /-- The initcode returning the runtime code + a successful spec construction. -/
@@ -383,7 +383,7 @@ theorem Returned.specCtor {cfg fc args σ σ₀ A I} {g : UInt256} {code out : B
     (hLogs : w.logs = m.evm.substate.logSeries)
     (hout : out = runtimeCodeOf imms)
     (hfit : ctorImmutablesFit fc (.ok m imms) := by exact ctorImmutablesFit_noImmutables (by rfl)) :
-    typedConstructorEquivalenceFor cfg fc args σ σ₀ g A I runtimeCodeOf := by
+    typedConstructorRefinementFor cfg fc args σ σ₀ g A I runtimeCodeOf := by
   rcases Returned.xi hcode h with hoog | ⟨g', A', hxi, hcA, hlogs⟩
   · exact .outOfGas hoog
   · exact .execution hxi ⟨o, hspec, .success rfl rfl hAccounts (hlogs.trans hLogs) (hcA.trans hCreated) hout⟩ hfit
@@ -396,7 +396,7 @@ theorem Returned.specCtorW {cfg fc args σ σ₀ A I} {g : UInt256} {code out : 
     (hspec : solidityCtorExec cfg o fc args σ σ₀ g A I (.ok m imms))
     (hw : WorldEquiv w m) (hout : out = runtimeCodeOf imms)
     (hfit : ctorImmutablesFit fc (.ok m imms) := by exact ctorImmutablesFit_noImmutables (by rfl)) :
-    typedConstructorEquivalenceFor cfg fc args σ σ₀ g A I runtimeCodeOf :=
+    typedConstructorRefinementFor cfg fc args σ σ₀ g A I runtimeCodeOf :=
   Returned.specCtor o hcode h hspec hw.created hw.accounts hw.logs hout hfit
 
 /-- The initcode reverting + a spec construction reverting with the same data. -/
@@ -405,7 +405,7 @@ theorem Reverted.specCtorRevert {cfg fc args σ σ₀ A I} {g : UInt256} {code d
     (o : Oracle) (hcode : I.code = code)
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) d)
     (hspec : solidityCtorExec cfg o fc args σ σ₀ g A I (.reverted d)) :
-    typedConstructorEquivalenceFor cfg fc args σ σ₀ g A I runtimeCodeOf := by
+    typedConstructorRefinementFor cfg fc args σ σ₀ g A I runtimeCodeOf := by
   rcases Reverted.xi hcode h with hoog | ⟨g', hxi⟩
   · exact .outOfGas hoog
   · exact .execution hxi ⟨o, hspec, .revert rfl rfl⟩ trivial
@@ -542,7 +542,7 @@ theorem mkLogEntry_addr_addr_u256 (this : EVM.Address) (ev : EventInfo) (a b : E
     simp [ABI.encodeABIValues?, ABI.abiTupleHeadSize?, ABI.staticABIEncodedSize?, ABI.isDynamicABIType,
       ABI.encodeABIValuesFrom?, ABI.encodeABIValue?, ABI.encodeABIWord?, hn']
   rw [show EVM.word n = UInt256.ofNat n from rfl] at henc
-  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Solm.valueToWord, henc, EVM.Word.ofNat,
+  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Stele.valueToWord, henc, EVM.Word.ofNat,
     word_toBytesBE_toByteArray_eq_toByteArray]
 
 /-- The log entry of an `(address, uint256)` event with no indexed argument (`LOG1`). -/
@@ -574,7 +574,7 @@ theorem mkLogEntry_addr_addr_indexed (this : EVM.Address) (ev : EventInfo) (a b 
       some { address := this,
              topics := #[hashWord ev.sigStr.toUTF8, UInt256.ofNat a.toNat, UInt256.ofNat b.toNat],
              data := ByteArray.empty } := by
-  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Solm.valueToWord, EVM.Word.ofNat,
+  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Stele.valueToWord, EVM.Word.ofNat,
     ABI.encodeABIValues?, ABI.abiTupleHeadSize?, ABI.encodeABIValuesFrom?]
 
 /-- The log entry of a `(bytes32 indexed, address indexed, address indexed)` event (`LOG4`, no data). -/
@@ -589,7 +589,7 @@ theorem mkLogEntry_bytes32_addr_addr_indexed (this : EVM.Address) (ev : EventInf
              topics := #[hashWord ev.sigStr.toUTF8, UInt256.ofNat (fromBytesBigEndian bs), UInt256.ofNat a.toNat,
                UInt256.ofNat b.toNat],
              data := ByteArray.empty } := by
-  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Solm.valueToWord, EVM.Word.ofNat, hlen,
+  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Stele.valueToWord, EVM.Word.ofNat, hlen,
     ABI.encodeABIValues?, ABI.abiTupleHeadSize?, ABI.encodeABIValuesFrom?]
 
 /-! ## Events with value-type arguments -/
@@ -620,7 +620,7 @@ def abiTy : LogVal → ABI.ABIType
   | .bool _ => .elem .bool
   | .bytes32 _ => .elem (.bytes ⟨31, by decide⟩)
 
-def value : LogVal → Solm.Value
+def value : LogVal → Stele.Value
   | .addr a => .address a
   | .u256 n => .int n
   | .bool b => .bool b
@@ -653,11 +653,11 @@ theorem isDynamic_abiTy (v : LogVal) : ABI.isDynamicABIType v.abiTy = false := b
 
 theorem topicOf_eq (v : LogVal) (h : v.wf) : topicOf v.abiTy v.value = some v.word := by
   cases v with
-  | addr a => simp [abiTy, value, word, topicOf, topicWordOf, Solm.valueToWord, EVM.Word.ofNat]
+  | addr a => simp [abiTy, value, word, topicOf, topicWordOf, Stele.valueToWord, EVM.Word.ofNat]
   | u256 n =>
-    simp [abiTy, value, word, topicOf, topicWordOf, Solm.valueToWord, wordOfInt_nonneg]
+    simp [abiTy, value, word, topicOf, topicWordOf, Stele.valueToWord, wordOfInt_nonneg]
     rfl
-  | bool b => simp [abiTy, value, word, topicOf, topicWordOf, Solm.valueToWord]
+  | bool b => simp [abiTy, value, word, topicOf, topicWordOf, Stele.valueToWord]
   | bytes32 bs =>
     have hl : bs.length = 32 := h
     simp [abiTy, value, word, topicOf, topicWordOf, hl, EVM.Word.ofNat]
@@ -750,8 +750,8 @@ def solValue : LogVal → Value
 end LogVal
 
 /-- One step of `abiArgs`: coerce to the parameter type, then `toAbi`. -/
-def abiArgStep (cfg : Config) (env : TypeEnv) (accm : List Solm.Value × Machine) (tv : Ty × Value) :
-    Op (List Solm.Value × Machine) := do
+def abiArgStep (cfg : Config) (env : TypeEnv) (accm : List Stele.Value × Machine) (tv : Ty × Value) :
+    Op (List Stele.Value × Machine) := do
   let r ← coerce cfg env accm.2 tv.2 tv.1 (some .memory)
   match toAbi r.2.heap fuelDefault r.1 with
   | some sv => pure (accm.1 ++ [sv], r.2)
@@ -766,11 +766,11 @@ theorem abiArgs_eq_foldlM (cfg : Config) (env : TypeEnv) (m : Machine) (tys : Li
   rw [hf]
   rfl
 
-theorem abiArgStep_static (cfg : Config) (env : TypeEnv) (acc : List Solm.Value) (m : Machine) (v : LogVal) :
+theorem abiArgStep_static (cfg : Config) (env : TypeEnv) (acc : List Stele.Value) (m : Machine) (v : LogVal) :
     abiArgStep cfg env (acc, m) (v.ty, v.solValue) = some (.ok (acc ++ [v.value], m)) := by
   cases v <;> simp [abiArgStep, LogVal.ty, LogVal.solValue, LogVal.value, coerce, fuelDefault]
 
-theorem abiArgs_static_fold (cfg : Config) (env : TypeEnv) : ∀ (xs : List LogArg) (acc : List Solm.Value) (m : Machine),
+theorem abiArgs_static_fold (cfg : Config) (env : TypeEnv) : ∀ (xs : List LogArg) (acc : List Stele.Value) (m : Machine),
     ((xs.map (·.val.ty)).zip (xs.map (·.val.solValue))).foldlM (abiArgStep cfg env) (acc, m) =
       some (.ok (acc ++ xs.map (·.val.value), m))
   | [], acc, m => by simp
@@ -814,7 +814,7 @@ def abiHeadTail (hs : ℕ) : List (Bool × List UInt8) → List UInt8 → List U
   | (false, enc) :: rest, head, tail => abiHeadTail hs rest (head ++ enc) tail
 
 theorem encodeABIValuesFrom?_of_encs :
-    ∀ (xs : List (ABI.ABIType × Solm.Value × List UInt8)) (hs : ℕ) (head tail : List UInt8),
+    ∀ (xs : List (ABI.ABIType × Stele.Value × List UInt8)) (hs : ℕ) (head tail : List UInt8),
     (∀ x ∈ xs, ABI.encodeABIValue? x.1 x.2.1 = some x.2.2) →
     ABI.encodeABIValuesFrom? (xs.map (·.1)) (xs.map (·.2.1)) hs head tail =
       some ((abiHeadTail hs (xs.map fun x => (ABI.isDynamicABIType x.1, x.2.2)) head tail).1 ++
@@ -830,7 +830,7 @@ theorem encodeABIValuesFrom?_of_encs :
       exact encodeABIValuesFrom?_of_encs xs hs _ _ (fun y hy => h y (by simp [hy]))
 
 /-- `encodeABIValues?` from the per-element encodings and the tuple head size. -/
-theorem encodeABIValues?_of_encs (xs : List (ABI.ABIType × Solm.Value × List UInt8)) (hs : ℕ)
+theorem encodeABIValues?_of_encs (xs : List (ABI.ABIType × Stele.Value × List UInt8)) (hs : ℕ)
     (hhs : ABI.abiTupleHeadSize? (xs.map (·.1)) = some hs)
     (h : ∀ x ∈ xs, ABI.encodeABIValue? x.1 x.2.1 = some x.2.2) :
     ABI.encodeABIValues? (xs.map (·.1)) (xs.map (·.2.1)) =
@@ -880,12 +880,12 @@ theorem mkLogEntry_addr_indexed_string (this : EVM.Address) (ev : EventInfo) (a 
     mkLogEntry this ev [.address a, .bytes b] =
       some { address := this, topics := #[hashWord ev.sigStr.toUTF8, UInt256.ofNat a.toNat],
              data := (ABI.natBytes 32 ++ (ABI.natBytes b.size ++ ABI.padRightToWord b.toList)).toByteArray } := by
-  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Solm.valueToWord, EVM.Word.ofNat, encodeABIValues_string]
+  simp [mkLogEntry, hparams, htys, hanon, topicOf, topicWordOf, Stele.valueToWord, EVM.Word.ofNat, encodeABIValues_string]
 
 /-! ## Arrays of static elements in the ABI (events, `abi.encode`) -/
 
 theorem encodeABIStaticArrayElems?_of_encs (t : ABI.ElemType) :
-    ∀ (xs : List (Solm.Value × List UInt8)), (∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) →
+    ∀ (xs : List (Stele.Value × List UInt8)), (∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) →
     ABI.encodeABIStaticArrayElems? (.elem t) (xs.map (·.1)) = some (xs.flatMap (·.2))
   | [], _ => by simp [ABI.encodeABIStaticArrayElems?]
   | x :: xs, h => by
@@ -893,7 +893,7 @@ theorem encodeABIStaticArrayElems?_of_encs (t : ABI.ElemType) :
       encodeABIStaticArrayElems?_of_encs t xs (fun y hy => h y (by simp [hy]))]
     simp
 
-theorem encodeABIArrayElems?_static (t : ABI.ElemType) (xs : List (Solm.Value × List UInt8))
+theorem encodeABIArrayElems?_static (t : ABI.ElemType) (xs : List (Stele.Value × List UInt8))
     (h : ∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) :
     ABI.encodeABIArrayElems? (.elem t) (xs.map (·.1)) = some (xs.flatMap (·.2)) := by
   rw [ABI.encodeABIArrayElems?]
@@ -901,7 +901,7 @@ theorem encodeABIArrayElems?_static (t : ABI.ElemType) (xs : List (Solm.Value ×
   exact encodeABIStaticArrayElems?_of_encs t xs h
 
 /-- `T[]` with static `T`: the length word, then the elements. -/
-theorem encodeABIValue?_dynArray_static (t : ABI.ElemType) (xs : List (Solm.Value × List UInt8))
+theorem encodeABIValue?_dynArray_static (t : ABI.ElemType) (xs : List (Stele.Value × List UInt8))
     (h : ∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) :
     ABI.encodeABIValue? (.dynamicArray (.elem t)) (.array (xs.map (·.1))) =
       some (ABI.natBytes xs.length ++ xs.flatMap (·.2)) := by
@@ -909,7 +909,7 @@ theorem encodeABIValue?_dynArray_static (t : ABI.ElemType) (xs : List (Solm.Valu
   simp
 
 /-- `T[n]` with static `T`: just the elements. -/
-theorem encodeABIValue?_array_static (t : ABI.ElemType) (n : ℕ) (xs : List (Solm.Value × List UInt8))
+theorem encodeABIValue?_array_static (t : ABI.ElemType) (n : ℕ) (xs : List (Stele.Value × List UInt8))
     (hn : xs.length = n) (h : ∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) :
     ABI.encodeABIValue? (.array (.elem t) n) (.array (xs.map (·.1))) = some (xs.flatMap (·.2)) := by
   rw [ABI.encodeABIValue?]
@@ -917,7 +917,7 @@ theorem encodeABIValue?_array_static (t : ABI.ElemType) (n : ℕ) (xs : List (So
   exact encodeABIArrayElems?_static t xs h
 
 /-- The topic of an indexed `T[]` argument: the hash of the in-place element encoding. -/
-theorem topicOf_dynArray_static (t : ABI.ElemType) (xs : List (Solm.Value × List UInt8))
+theorem topicOf_dynArray_static (t : ABI.ElemType) (xs : List (Stele.Value × List UInt8))
     (h : ∀ x ∈ xs, ABI.encodeABIValue? (.elem t) x.1 = some x.2) :
     topicOf (.dynamicArray (.elem t)) (.array (xs.map (·.1))) = some (hashWord (xs.flatMap (·.2)).toByteArray) := by
   simp [topicOf, encodeABIArrayElems?_static t xs h]
@@ -934,14 +934,14 @@ theorem encodeABIValue?_address (a : EVM.Address) :
   rfl
 
 theorem mapM_toAbi_u256 (h : Heap) (fuel : ℕ) : ∀ (ns : List ℕ),
-    (ns.map u256Val).mapM (toAbi h (fuel + 1)) = some (ns.map fun (n : ℕ) => Solm.Value.int n)
+    (ns.map u256Val).mapM (toAbi h (fuel + 1)) = some (ns.map fun (n : ℕ) => Stele.Value.int n)
   | [] => rfl
   | n :: ns => by simp [List.mapM_cons, toAbi_uint, mapM_toAbi_u256 h fuel ns]
 
 /-- A memory `uint256[]` as an ABI argument. -/
 theorem toAbi_memArray_u256 {h : Heap} {id : ℕ} {ety : Ty} {ns : List ℕ} {fx : Bool} (fuel : ℕ)
     (hget : h.get? id = some (.array ety (ns.map u256Val) fx)) :
-    toAbi h (fuel + 2) (.memRef id) = some (.array (ns.map fun (n : ℕ) => Solm.Value.int n)) := by
+    toAbi h (fuel + 2) (.memRef id) = some (.array (ns.map fun (n : ℕ) => Stele.Value.int n)) := by
   rw [toAbi]
   simp only [hget]
   rw [mapM_toAbi_u256 h fuel ns]
@@ -957,12 +957,12 @@ theorem hasCdRaw_memArray_u256 {h : Heap} {id : ℕ} {ety : Ty} {ns : List ℕ} 
 
 theorem abiArgs_memArray_u256 {cfg : Config} {env : TypeEnv} {m : Machine} {id : ℕ} {ety : Ty} {ns : List ℕ}
     {fx : Bool} (hget : m.heap.get? id = some (.array ety (ns.map u256Val) fx)) :
-    abiArgs cfg env m [.dynArray u256Ty] [.memRef id] = some (.ok ([.array (ns.map fun (n : ℕ) => Solm.Value.int n)], m)) := by
+    abiArgs cfg env m [.dynArray u256Ty] [.memRef id] = some (.ok ([.array (ns.map fun (n : ℕ) => Stele.Value.int n)], m)) := by
   simp [abiArgs, prepareArgs, coerce, implicitConv, fuelDefault, toAbi_memArray_u256 1022 hget,
     prepareArg_of_noRaw (hasRaw_memArray_u256 1022 hget), hasCdRaw_memArray_u256 1022 hget]
 
 theorem encodeABIStaticArrayElems?_u256 : ∀ (ns : List ℕ), (∀ n ∈ ns, n < 2 ^ 256) →
-    ABI.encodeABIStaticArrayElems? (.elem (.int (.uint ⟨256, by decide⟩))) (ns.map fun (n : ℕ) => Solm.Value.int n) =
+    ABI.encodeABIStaticArrayElems? (.elem (.int (.uint ⟨256, by decide⟩))) (ns.map fun (n : ℕ) => Stele.Value.int n) =
       some (ns.flatMap fun (n : ℕ) => EVM.Word.toBytesBE (UInt256.ofNat n))
   | [], _ => by simp [ABI.encodeABIStaticArrayElems?]
   | n :: ns, h => by
@@ -972,7 +972,7 @@ theorem encodeABIStaticArrayElems?_u256 : ∀ (ns : List ℕ), (∀ n ∈ ns, n 
 
 /-- `uint256[]`: the length word, then the words. -/
 theorem encodeABIValue?_dynArray_u256 (ns : List ℕ) (hns : ∀ n ∈ ns, n < 2 ^ 256) :
-    ABI.encodeABIValue? (.dynamicArray (.elem (.int (.uint ⟨256, by decide⟩)))) (.array (ns.map fun (n : ℕ) => Solm.Value.int n)) =
+    ABI.encodeABIValue? (.dynamicArray (.elem (.int (.uint ⟨256, by decide⟩)))) (.array (ns.map fun (n : ℕ) => Stele.Value.int n)) =
       some (ABI.natBytes ns.length ++ ns.flatMap fun (n : ℕ) => EVM.Word.toBytesBE (UInt256.ofNat n)) := by
   rw [ABI.encodeABIValue?, ABI.encodeABIArrayElems?]
   simp [ABI.isDynamicABIType, encodeABIStaticArrayElems?_u256 ns hns]
@@ -982,12 +982,12 @@ theorem mkLogEntry_u256Array (this : EVM.Address) (ev : EventInfo) (ns : List �
     (hparams : ev.decl.params = [{ ty := .dynArray u256Ty, indexed := false, name := n1 }])
     (htys : ev.sig.paramTypes = [.dynamicArray (.elem (.int (.uint ⟨256, by decide⟩)))])
     (hanon : ev.decl.anonymous = false) (hns : ∀ n ∈ ns, n < 2 ^ 256) :
-    mkLogEntry this ev [.array (ns.map fun (n : ℕ) => Solm.Value.int n)] =
+    mkLogEntry this ev [.array (ns.map fun (n : ℕ) => Stele.Value.int n)] =
       some { address := this, topics := #[hashWord ev.sigStr.toUTF8],
              data := (ABI.natBytes 32 ++ (ABI.natBytes ns.length ++
                ns.flatMap fun (n : ℕ) => EVM.Word.toBytesBE (UInt256.ofNat n))).toByteArray } := by
   have hall : ABI.encodeABIValues? [.dynamicArray (.elem (.int (.uint ⟨256, by decide⟩)))]
-      [.array (ns.map fun (n : ℕ) => Solm.Value.int n)] =
+      [.array (ns.map fun (n : ℕ) => Stele.Value.int n)] =
       some (ABI.natBytes 32 ++ (ABI.natBytes ns.length ++ ns.flatMap fun (n : ℕ) => EVM.Word.toBytesBE (UInt256.ofNat n))) := by
     rw [ABI.encodeABIValues?]
     simp [ABI.abiTupleHeadSize?, ABI.encodeABIValuesFrom?, ABI.isDynamicABIType, encodeABIValue?_dynArray_u256 ns hns]
@@ -1128,7 +1128,7 @@ theorem Reverted.specCtorNonPayable {cfg fc args σ σ₀ A I} {g : UInt256} {co
     (hcode : I.code = code)
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) ByteArray.empty)
     (hnp : ¬ ctorPayable fc I) :
-    typedConstructorEquivalenceFor cfg fc args σ σ₀ g A I runtimeCodeOf :=
+    typedConstructorRefinementFor cfg fc args σ σ₀ g A I runtimeCodeOf :=
   Reverted.specCtorRevert default hcode h (solidityCtorExec.nonPayable hnp)
 
 /-- A returned run of the `receive` function. -/
@@ -1139,7 +1139,7 @@ theorem Returned.specReceive {cfg fc imms σ σ₀ A I} {g : UInt256} {code out 
     (hcd : I.calldata.size = 0) (hrecv : fc.receive? = some fid) (hfn : fc.fns[fid]? = some fn)
     (hcall : CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I imms) fn [] (.ok rets m'))
     (hw : WorldEquiv w m') (henc : returnDataEquiv out [] (.abi [])) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Returned.specExecutionW o hcode h (solidityExec.receive hcd hrecv hfn hcall) hw henc
 
 /-- A reverted run of the `receive` function. -/
@@ -1149,13 +1149,13 @@ theorem Reverted.specReceiveRevert {cfg fc imms σ σ₀ A I} {g : UInt256} {cod
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) d)
     (hcd : I.calldata.size = 0) (hrecv : fc.receive? = some fid) (hfn : fc.fns[fid]? = some fn)
     (hcall : CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I imms) fn [] (.reverted d)) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Reverted.specRevert o hcode h (solidityExec.receiveReverted hcd hrecv hfn hcall)
 
 /-- A returned run of the `fallback` function. -/
 theorem Returned.specFallback {cfg fc imms σ σ₀ A I} {g : UInt256} {code out : ByteArray}
     {w : World} {m' : Machine} {fid : FnId} {fn : FnDef} {vs rets : List Value} {h0 : Heap}
-    {abiOut : List Solm.Value}
+    {abiOut : List Stele.Value}
     (o : Oracle) (hcode : I.code = code)
     (h : Returned code (initState σ σ₀ (Sat256.ofUInt256 g) A I) w out)
     (hsel : selectorDispatch fc I.calldata = none) (hrecv : fc.receive? = none ∨ I.calldata.size ≠ 0)
@@ -1164,7 +1164,7 @@ theorem Returned.specFallback {cfg fc imms σ σ₀ A I} {g : UInt256} {code out
     (hcall : CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I imms h0) fn vs (.ok rets m'))
     (hout : rets.mapM (toAbi m'.heap fuelDefault) = some abiOut)
     (hw : WorldEquiv w m') (henc : returnDataEquiv out abiOut (fallbackConvention fn.decl)) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Returned.specExecutionW o hcode h (solidityExec.fallback hsel hrecv hfb hfn hpay hargs hcall hout) hw henc
 
 /-- A reverted run of the `fallback` function. -/
@@ -1176,7 +1176,7 @@ theorem Reverted.specFallbackRevert {cfg fc imms σ σ₀ A I} {g : UInt256} {co
     (hfb : fc.fallback? = some fid) (hfn : fc.fns[fid]? = some fn) (hpay : payableOrNoValue fn.decl I)
     (hargs : fallbackArgs fn.decl I.calldata {} = some (vs, h0))
     (hcall : CallFn cfg o fc (rootFrame fc) (initMachine σ σ₀ g A I imms h0) fn vs (.reverted d)) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Reverted.specRevert o hcode h (solidityExec.fallbackReverted hsel hrecv hfb hfn hpay hargs hcall)
 
 /-- The spec rejects a non-payable call carrying value. -/
@@ -1187,7 +1187,7 @@ theorem Reverted.specNonPayable {cfg fc imms σ σ₀ A I} {g : UInt256} {code :
     (he : selectorDispatch fc I.calldata = some e) (hfn : fc.fns[e.fn]? = some fn)
     (hne : fn.decl.mutability ≠ .payable) (hwv : I.weiValue ≠ ⟨0⟩)
     (hret : returnAbiTys fc.types fn.decl = some retTys) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Reverted.specRevert default hcode h (solidityExec.nonPayable he hfn hne hwv hret)
 
 /-- The spec rejects value sent to a non-payable `fallback`. -/
@@ -1198,7 +1198,7 @@ theorem Reverted.specFallbackNonPayable {cfg fc imms σ σ₀ A I} {g : UInt256}
     (hsel : selectorDispatch fc I.calldata = none) (hrecv : fc.receive? = none ∨ I.calldata.size ≠ 0)
     (hfb : fc.fallback? = some fid) (hfn : fc.fns[fid]? = some fn)
     (hne : fn.decl.mutability ≠ .payable) (hwv : I.weiValue ≠ ⟨0⟩) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Reverted.specRevert default hcode h (solidityExec.fallbackNonPayable hsel hrecv hfb hfn hne hwv)
 
 /-- No entry point accepts the calldata (no selector match, no applicable `receive`, no `fallback`). -/
@@ -1207,7 +1207,7 @@ theorem Reverted.specUndispatched {cfg fc imms σ σ₀ A I} {g : UInt256} {code
     (h : Reverted code (initState σ σ₀ (Sat256.ofUInt256 g) A I) ByteArray.empty)
     (hsel : selectorDispatch fc I.calldata = none) (hrecv : fc.receive? = none ∨ I.calldata.size ≠ 0)
     (hfb : fc.fallback? = none) :
-    runtimeEquivalenceFor cfg fc σ σ₀ g A I imms :=
+    runtimeRefinementFor cfg fc σ σ₀ g A I imms :=
   Reverted.specNoDispatch hcode h (dispatches_eq_false hsel hrecv hfb)
 
 end Solidity

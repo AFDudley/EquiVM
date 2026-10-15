@@ -22,7 +22,7 @@ def topRuntime : ByteArray := bytesOfHex Fixtures.pTopRuntimeHex
 
 def MAX : Int := 2 ^ 256 - 1
 
-def mk (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def mk (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { name := s!"{sig} {tag}", code := runtime, call := some (sig, args) }
 
 def call1 (sig : String) (xs : List Int) : List Case := xs.map fun a => mk sig [.int a] s!"{a}"
@@ -64,7 +64,7 @@ def boundaries : List Case :=
 
 /-- Storage of `PTop` as its constructor leaves it for `(a, mid) = (3, 9)`: `PBase.x`, `shared`,
     `PMid.x`, `mid`, `top`, `derivedInit`. -/
-def topRefs : List (Solm.EvaledStorageRef × Nat) :=
+def topRefs : List (Stele.EvaledStorageRef × Nat) :=
   [(⟨"PBase.x", []⟩, 9), (⟨"shared", []⟩, 10), (⟨"PMid.x", []⟩, 6), (⟨"mid", []⟩, 15), (⟨"top", []⟩, 9),
    (⟨"derivedInit", []⟩, 16)]
 
@@ -92,7 +92,7 @@ def nestCases : List Case :=
 
 def qualRuntime : ByteArray := bytesOfHex Fixtures.sTopRuntimeHex
 
-def mkQ (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def mkQ (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { name := s!"{sig} {tag}", code := qualRuntime, call := some (sig, args), refs := [(⟨"bx", []⟩, 4)] }
 
 def qualCases : List Case :=

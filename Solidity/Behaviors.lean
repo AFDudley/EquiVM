@@ -1,7 +1,7 @@
-import Solidity.Equiv
+import Solidity.Refine
 
 /-!
-# Behavioural corollaries of runtime equivalence
+# Behavioural corollaries of runtime refinement
 
 Every result the bytecode can produce is either out-of-gas or captured by the spec: a spec
 execution (under some oracle) that agrees on accounts, return/revert data, logs and created
@@ -27,12 +27,12 @@ def rejectData (fc : FlatContract) (I : Ethereum.ExecutionEnv) (out : ByteArray)
 
 def capturedBySpec (cfg : Config) (fc : FlatContract) (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256)
     (A : Ethereum.Substate) (I : Ethereum.ExecutionEnv) (r : EVMResult) (immutables : Store := ∅) : Prop :=
-  (∃ (o : Oracle) (res : TopResult) (conv : Solm.ReturnConvention),
+  (∃ (o : Oracle) (res : TopResult) (conv : Stele.ReturnConvention),
       solidityExec cfg o fc immutables σ σ₀ g A I res conv ∧ execResultsEquiv r res conv) ∨
   (specRejects cfg fc I ∧ ∃ g' out, r = .ok (.revert g' out) ∧ rejectData fc I out)
 
-theorem runtimeEquivalenceFor_captured {cfg fc σ σ₀ g A I immutables}
-    (h : runtimeEquivalenceFor cfg fc σ σ₀ g A I immutables) :
+theorem runtimeRefinementFor_captured {cfg fc σ σ₀ g A I immutables}
+    (h : runtimeRefinementFor cfg fc σ σ₀ g A I immutables) :
     Ethereum.EVM.Ξ σ σ₀ g A I = .error .OutOfGass ∨
       capturedBySpec cfg fc σ σ₀ g A I (Ethereum.EVM.Ξ σ σ₀ g A I) immutables := by
   cases h with
@@ -47,20 +47,20 @@ theorem runtimeEquivalenceFor_captured {cfg fc σ σ₀ g A I immutables}
     · exact Or.inr ⟨_, _, h1, h2, hm, ho⟩
   | outOfGas hΞ => exact Or.inl hΞ
 
-/-- Under runtime equivalence, every admissible execution of the bytecode is out-of-gas or
+/-- Under runtime refinement, every admissible execution of the bytecode is out-of-gas or
     captured by the spec. -/
-theorem runtimeEquivalence_behaviors_included {cfg bytecode fc immutables}
-    (h : runtimeEquivalence cfg bytecode fc immutables)
+theorem runtimeRefinement_behaviors_included {cfg bytecode fc immutables}
+    (h : runtimeRefinement cfg bytecode fc immutables)
     (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate) (I : Ethereum.ExecutionEnv)
     (hcode : I.code = bytecode) (hsize : I.calldata.size < Ethereum.UInt256.size) (hperm : I.perm = true) :
     Ethereum.EVM.Ξ σ σ₀ g A I = .error .OutOfGass ∨
       capturedBySpec cfg fc σ σ₀ g A I (Ethereum.EVM.Ξ σ σ₀ g A I) immutables := by
   cases h with
-  | intro hrun => exact runtimeEquivalenceFor_captured (hrun σ σ₀ g A I hcode hsize hperm)
+  | intro hrun => exact runtimeRefinementFor_captured (hrun σ σ₀ g A I hcode hsize hperm)
 
 /-- The bytecode never crashes: the only exception it can raise is out-of-gas. -/
-theorem runtimeEquivalence_no_crash {cfg bytecode fc immutables}
-    (h : runtimeEquivalence cfg bytecode fc immutables)
+theorem runtimeRefinement_no_crash {cfg bytecode fc immutables}
+    (h : runtimeRefinement cfg bytecode fc immutables)
     (σ σ₀ : Ethereum.AccountMap) (g : Ethereum.UInt256) (A : Ethereum.Substate) (I : Ethereum.ExecutionEnv)
     (hcode : I.code = bytecode) (hsize : I.calldata.size < Ethereum.UInt256.size) (hperm : I.perm = true)
     (e : Ethereum.EVM.ExecutionException) (hΞ : Ethereum.EVM.Ξ σ σ₀ g A I = .error e) : e = .OutOfGass := by

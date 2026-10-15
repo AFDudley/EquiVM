@@ -31,7 +31,7 @@ theorem ctorPayable_erc20 {I : ExecutionEnv} : ctorPayable erc20Flat I ↔ I.wei
 
 /-- Only a single in-range `uint256` deploys; the deployed code is the creation code followed by
     the argument word. -/
-theorem deployment_shape {args : List Solm.Value} {dep : ByteArray}
+theorem deployment_shape {args : List Stele.Value} {dep : ByteArray}
     (h : erc20Cfg.selfDeployment erc20Creation args = some dep) :
     ∃ w : UInt256, args = [.int (Int.ofNat w.toNat)] ∧ dep = erc20Creation ++ UInt256.toByteArray w := by
   have h : (ABI.encodeABIValues? [abiU256] args).bind (fun enc => some (erc20Creation ++ enc.toByteArray)) =
@@ -50,7 +50,7 @@ theorem deployment_shape {args : List Solm.Value} {dep : ByteArray}
           simpa [EVM.twoPow, UInt256.size] using h1
         have hw : (EVM.word i.toNat).toNat = i.toNat := ulit_toNat' _ hlt'
         refine ⟨EVM.word i.toNat, ?_, ?_⟩
-        · rw [hw]; exact congrArg (fun x => [Solm.Value.int x]) (Int.toNat_of_nonneg hbounds.1).symm
+        · rw [hw]; exact congrArg (fun x => [Stele.Value.int x]) (Int.toNat_of_nonneg hbounds.1).symm
         · rw [← h, word_toBytesBE_toByteArray_eq_toByteArray]
       · simp at h
     | _ =>
@@ -383,8 +383,8 @@ theorem ctorSpec (o : Oracle) {σ σ₀ g A I} (w : UInt256) (hwv : I.weiValue =
 
 /-! ## The coupled result -/
 
-theorem erc20Constructor : constructorEquivalence erc20Cfg erc20Creation erc20Flat (constCode erc20Runtime) := by
-  refine constructorEquivalence.intro ?_
+theorem erc20Constructor : typedConstructorRefinement erc20Cfg erc20Creation erc20Flat (constCode erc20Runtime) := by
+  refine typedConstructorRefinement.intro ?_
   intro σ σ₀ g A I args dep hdeploy hcode _hcalldata hperm
   obtain ⟨w, hargs, hdep⟩ := deployment_shape hdeploy
   subst hargs

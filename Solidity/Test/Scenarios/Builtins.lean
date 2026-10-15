@@ -31,19 +31,19 @@ def retBadRuntime : ByteArray := bytesOfHex Fixtures.retBadRuntimeHex
 def strRuntime : ByteArray := bytesOfHex Fixtures.storeStrRuntimeHex
 
 def MAX : Int := 2 ^ 256 - 1
-def A : Solm.Value := .address (addr 0xA11CE)
+def A : Stele.Value := .address (addr 0xA11CE)
 
 /-- `bytesN` with `N = k + 1`: the low `N` bytes of `n`. -/
-def fb (k : Fin 32) (n : Nat) : Solm.Value := .fixedBytes k ((wordBytes n).toList.drop (31 - k.val))
+def fb (k : Fin 32) (n : Nat) : Stele.Value := .fixedBytes k ((wordBytes n).toList.drop (31 - k.val))
 def bytesN (n : Nat) : ByteArray := ⟨((List.range n).map fun i => UInt8.ofNat (i + 1)).toArray⟩
-def str (n : Nat) : Solm.Value := .bytes ⟨((List.range n).map fun i => UInt8.ofNat (97 + i % 26)).toArray⟩
+def str (n : Nat) : Stele.Value := .bytes ⟨((List.range n).map fun i => UInt8.ofNat (97 + i % 26)).toArray⟩
 def w (n : Int) : ByteArray := wordBytes (n % 2 ^ 256).toNat
 
 def tU (n : Nat) (h : 0 < n ∧ n ≤ 256 ∧ n % 8 = 0 := by decide) : ABI.ABIType := .elem (.int (.uint ⟨n, h⟩))
-def encOf (tys : List ABI.ABIType) (vs : List Solm.Value) : ByteArray :=
+def encOf (tys : List ABI.ABIType) (vs : List Stele.Value) : ByteArray :=
   ((ABI.encodeABIValues? tys vs).map fun bs => (⟨bs.toArray⟩ : ByteArray)).getD .empty
 
-def mk (code : ByteArray) (sig : String) (args : List Solm.Value) (tag : String := "") : Case :=
+def mk (code : ByteArray) (sig : String) (args : List Stele.Value) (tag : String := "") : Case :=
   { name := s!"{sig} {tag}", code := code, call := some (sig, args) }
 
 /-! ## Env -/
@@ -61,12 +61,12 @@ def others : List (EVM.Address × Account) :=
   [(addr 0xB0B, account (balance := 77) (code := hashRuntime)), (addr 0xE0A, account (balance := 5)),
    (addr 0xE0B, account), (addr 0xE0C, account (nonce := 0))]
 
-def who : List (String × Solm.Value) :=
+def who : List (String × Stele.Value) :=
   [("contract", .address (addr 0xB0B)), ("funded", .address (addr 0xE0A)), ("nonce", .address (addr 0xE0B)),
    ("empty", .address (addr 0xE0C)), ("absent", .address (addr 0xDEAD)), ("self", .address (addr 0xC0FFEE)),
    ("sender", A), ("precompile", .address (addr 2))]
 
-def mkE (sig : String) (args : List Solm.Value) (tag : String := "") (number : Nat := 5) : Case :=
+def mkE (sig : String) (args : List Stele.Value) (tag : String := "") (number : Nat := 5) : Case :=
   { mk envRuntime sig args tag with
     header := hdr number, blocks := blocksN number, origin := some (addr 0x0816),
     gasPrice := 3, accounts := others, balance := 9 }
@@ -88,7 +88,7 @@ def envBoundaries : List Case :=
 
 /-! ## Hash -/
 
-def mkH (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk hashRuntime sig args tag
+def mkH (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk hashRuntime sig args tag
 
 def hashCases : List Case :=
   [ { mkH "hashAll(bytes)" [.bytes (bytesN 5)] with expect := .success },
@@ -128,12 +128,12 @@ def ripCases : List Case :=
 
 /-! ## AbiC -/
 
-def mkA (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk abiRuntime sig args tag
+def mkA (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk abiRuntime sig args tag
 
 def tP : ABI.ABIType := .tuple [tU 128, .elem .bool]
 def tQ : ABI.ABIType := .tuple [tU 256, .string, .dynamicArray (tU 8)]
-def vP : Solm.Value := .tuple [.int 9, .bool true]
-def vQ : Solm.Value := .tuple [.int 5, str 33, .array [.int 1, .int 2, .int 3]]
+def vP : Stele.Value := .tuple [.int 9, .bool true]
+def vQ : Stele.Value := .tuple [.int 5, str 33, .array [.int 1, .int 2, .int 3]]
 
 def abiCases : List Case :=
   [ { mkA "enc(uint256,int8,address,bool,bytes4,uint8)" [.int 7, .int (-3), A, .bool true, fb 3 0x12345678, .int 2]
@@ -187,7 +187,7 @@ def fixedCases : List Case :=
 
 /-! ## TypeInfo -/
 
-def mkT (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk typeRuntime sig args tag
+def mkT (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk typeRuntime sig args tag
 
 def typeCases : List Case :=
   [ { mkT "names()" [] with expect := .success }, { mkT "ids()" [] with expect := .success },
@@ -199,7 +199,7 @@ def typeCases : List Case :=
 
 /-! ## Conv -/
 
-def mkC (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk convRuntime sig args tag
+def mkC (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk convRuntime sig args tag
 
 def convCases : List Case :=
   [ { mkC "ints(uint256,int256)" [.int 300, .int (-200)] with expect := .success },
@@ -245,7 +245,7 @@ def convBoundaries : List Case :=
 
 /-! ## MemOps -/
 
-def mkM (sig : String) (args : List Solm.Value) (tag : String := "") : Case := mk memRuntime sig args tag
+def mkM (sig : String) (args : List Stele.Value) (tag : String := "") : Case := mk memRuntime sig args tag
 
 /-- Slot of `blob` holding `n < 32` bytes `1, 2, …, n` (short form). -/
 def shortBlob (n : Nat) : UInt256 := word (natOfBytes (bytesN n ++ ⟨(List.replicate (31 - n) (0 : UInt8)).toArray⟩) * 256 + 2 * n)
@@ -302,7 +302,7 @@ def blobStorage (slot n : Nat) : List (UInt256 × UInt256) :=
 
 /-- `sname` of `a` bytes (slot 0), `sblob` of `b` bytes (slot 1), `rec = R(9, <a bytes>)` (slots 2, 3)
     and `nums = [7, 8]` (slot 4). -/
-def mkS (sig : String) (args : List Solm.Value) (a b : Nat) : Case :=
+def mkS (sig : String) (args : List Stele.Value) (a b : Nat) : Case :=
   { mk strRuntime sig args s!"{a} {b}" with
     storage := blobStorage 0 a ++ blobStorage 1 b ++ [(word 2, word 9)] ++ blobStorage 3 a ++
       [(word 4, word 2), (word (natOfBytes (Ethereum.KEC (wordBytes 4))), word 7),

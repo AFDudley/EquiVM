@@ -43,12 +43,12 @@ theorem noDispatch_of_noMatch {I : ExecutionEnv} (hnm : ∀ i, i < 6 → (selByt
 /-- `callvalue ≠ 0`: the dispatcher reverts; the spec refuses the value or rejects the call. -/
 theorem nonPayableCorrect {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = erc20Runtime) (hwv : I.weiValue ≠ ⟨0⟩) :
-    runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I := by
+    runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I := by
   have hX := revertNonPayable (σ := σ) (σ₀ := σ₀) (A := A)
     (g := Sat256.ofUInt256 g) hcode hwv
   have rev : ∀ {e fn retTys}, selectorDispatch erc20Flat I.calldata = some e → erc20Flat.fns[e.fn]? = some fn →
       fn.decl.mutability ≠ .payable → returnAbiTys erc20Flat.types fn.decl = some retTys →
-      runtimeEquivalenceFor erc20Cfg erc20Flat σ σ₀ g A I :=
+      runtimeRefinementFor erc20Cfg erc20Flat σ σ₀ g A I :=
     fun he hfn hne hret => Reverted.specNonPayable hcode hX he hfn hne hwv hret
   by_cases h0 : selIs I (selBytes 0)
   · exact rev (erc20Dispatch_approve h0) erc20Flat_fns2 (by decide) rfl
@@ -68,7 +68,7 @@ theorem nonPayableCorrect {σ σ₀ A I} {g : UInt256}
 /-! ## Runtime -/
 
 /-- Every message call to the deployed runtime refines the Solidity specification. -/
-theorem erc20RuntimeCorrect : runtimeEquivalence erc20Cfg erc20Runtime erc20Flat := by
+theorem erc20RuntimeCorrect : runtimeRefinement erc20Cfg erc20Runtime erc20Flat := by
   refine ⟨fun σ σ₀ g A I hcode hsize hperm => ?_⟩
   by_cases hwv : I.weiValue = ⟨0⟩
   · by_cases h0 : selIs I (selBytes 0)
@@ -94,7 +94,7 @@ theorem erc20RuntimeCorrect : runtimeEquivalence erc20Cfg erc20Runtime erc20Flat
 
 /-- Deployment and every message call of the optimizer-ON ERC20 bytecode refine the Solidity
     specification `ERC20.SoliditySpec.program`: accounts, created set, logs, return and revert data. -/
-theorem erc20Correct : contractEquivalence erc20Cfg erc20Creation erc20Flat :=
-  contractEquivalence.of_constant erc20Constructor erc20RuntimeCorrect
+theorem erc20Correct : contractRefinement erc20Cfg erc20Creation erc20Flat :=
+  contractRefinement.of_constant erc20Constructor erc20RuntimeCorrect
 
 end ERC20.Opt

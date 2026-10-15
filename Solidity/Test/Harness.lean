@@ -1,6 +1,6 @@
 import Solidity.Interp
 import Solidity.Setup
-import Solidity.Equiv
+import Solidity.Refine
 
 /-!
 # Differential test harness
@@ -79,19 +79,19 @@ structure Case where
   value : Nat := 0
   /-- Raw calldata, or an external call `(signature, arguments)` encoded by `runCase`. -/
   calldata : ByteArray := .empty
-  call : Option (String × List Solm.Value) := none
+  call : Option (String × List Stele.Value) := none
   /-- Other accounts (the contract itself is added by `pre`). -/
   accounts : List (EVM.Address × Account) := []
   /-- Storage of the contract under test: raw slots, and layout paths resolved by `runCase`. -/
   storage : List (UInt256 × UInt256) := []
-  refs : List (Solm.EvaledStorageRef × Nat) := []
+  refs : List (Stele.EvaledStorageRef × Nat) := []
   balance : Nat := 0
   gas : Nat := 10000000
   header : BlockHeader := default
   /-- Earlier blocks (`blockhash`). -/
   blocks : ProcessedBlocks := #[]
   /-- Constructor case: ABI arguments; the spec's returned code must be the runtime. -/
-  ctorArgs : Option (List Solm.Value × ByteArray) := none
+  ctorArgs : Option (List Stele.Value × ByteArray) := none
   expect : Expect := .any
   /-- A documented mismatch (e.g. a hand-written pinned initcode); must still mismatch. -/
   known : Option String := none
@@ -118,7 +118,7 @@ def runEVM (c : Case) (code : ByteArray) : EVMResult :=
   Ethereum.EVM.Ξ c.pre c.pre (.ofNat c.gas) default (c.env code)
 
 inductive SpecOutcome where
-  | run (res : TopResult) (conv : Solm.ReturnConvention)
+  | run (res : TopResult) (conv : Stele.ReturnConvention)
   | ctor (res : CtorResult)
   | rejected
   | stuck
@@ -151,7 +151,7 @@ def accountMapEquivB (σ τ : AccountMap) : Bool :=
   let ys := τ.toList
   xs.length == ys.length && (xs.zip ys).all fun p => p.1.1 == p.2.1 && accountEquivB p.1.2 p.2.2
 
-def returnDataEquivB (out : ByteArray) (vs : List Solm.Value) : Solm.ReturnConvention → Bool
+def returnDataEquivB (out : ByteArray) (vs : List Stele.Value) : Stele.ReturnConvention → Bool
   | .abi tys => ABI.encodeReturnValues? tys vs == some out
   | .rawBytes => match vs with
     | [.bytes b] => b == out
@@ -184,7 +184,7 @@ def compareStates (d : Diff) (σ' : AccountMap) (A' : Substate) (m : Machine) : 
     |>.add (A'.logSeries == m.evm.substate.logSeries)
         s!"logs differ\n    evm:  {describeLogs A'.logSeries}\n    spec: {describeLogs m.evm.substate.logSeries}"
 
-def compareRun (r : EVMResult) (res : TopResult) (conv : Solm.ReturnConvention) : Diff :=
+def compareRun (r : EVMResult) (res : TopResult) (conv : Stele.ReturnConvention) : Diff :=
   match r, res with
   | .ok (.success (σ', _, A') out), .returned m vs =>
     compareStates {} σ' A' m
@@ -339,7 +339,7 @@ def Rng.word (r : Rng) : Nat × Rng :=
   | _ => r1.pick [0xA11CE, 0xB0B, 0xF00D, 0xBE, 0xC0FFEE] 0
 
 /-- A value that fits a storage location (bools stay 0/1). -/
-def Rng.fitting (r : Rng) (loc : Solm.StorageLoc) : Nat × Rng :=
+def Rng.fitting (r : Rng) (loc : Stele.StorageLoc) : Nat × Rng :=
   let (w, r1) := r.word
   match loc.type with
   | .bool => (w % 2, r1)
