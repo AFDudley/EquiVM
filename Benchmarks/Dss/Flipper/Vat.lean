@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -10,9 +10,9 @@ def vatWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem flipperDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flipperReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -63,7 +63,7 @@ theorem flipperVatBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (vatWord σ I).toNat))])) := by
     simpa [vatTransition, vatWord, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       flipperAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef))

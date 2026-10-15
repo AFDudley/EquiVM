@@ -6,7 +6,7 @@ Regression for outgoing calls larger than 2^64 bytes. The source ABI encoder adm
 requests, and the updated EVMLean read preserves them without a size precondition.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester.ReadLimitAudit
 

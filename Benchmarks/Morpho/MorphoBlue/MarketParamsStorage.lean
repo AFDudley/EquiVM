@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.MarketParamsCommon
 import Benchmarks.Morpho.MorphoBlue.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -51,15 +51,15 @@ theorem evalMarketParamsStruct {cfg : Config} {frame : Frame} {evm : EVM.State}
   rfl
 
 def storeAddressWord (evm : EVM.State) (slot value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) value)
 
 def storeMarketParams (evm : EVM.State) (id : UInt256) (p : MarketParamsWords) : EVM.State :=
   let s1 := storeAddressWord evm (marketParamsFieldSlot id 0) p.loanToken
   let s2 := storeAddressWord s1 (marketParamsFieldSlot id 1) p.collateralToken
   let s3 := storeAddressWord s2 (marketParamsFieldSlot id 2) p.oracle
   let s4 := storeAddressWord s3 (marketParamsFieldSlot id 3) p.irm
-  Solm.EVM.storageStore s4 s4.executionEnv.codeOwner (marketParamsFieldSlot id 4) p.lltv
+  Stele.EVM.storageStore s4 s4.executionEnv.codeOwner (marketParamsFieldSlot id 4) p.lltv
 
 theorem writeMarketParamsAddress (evm : EVM.State) (id value : UInt256) (i : Fin 4)
     (hc : value.toNat < EVM.addressModulus) :

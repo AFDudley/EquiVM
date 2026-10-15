@@ -1,16 +1,16 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 import Benchmarks.Dss.Dog.Immutables
 
 /-!
 # MakerDAO/Sky DSS Dog benchmark spec
 
-Faithful Solm benchmark spec for upstream `dss/src/dog.sol`.
+Faithful Stele benchmark spec for upstream `dss/src/dog.sol`.
 Events are omitted, matching the existing event-bearing DSS benchmarks.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
@@ -486,8 +486,7 @@ def contract : ContractDecl :=
 
 def config : Config :=
   { storageBackend := solidityStorageBackend storageLayout
-    externalABI := externalABI
-    abiDecodeMode := DecodeMode.legacySolc05
+    externalABI := (externalABI).withMode DecodeMode.legacySolc05
     selfDeployment := genSolidityConstructorDeployment constructorDecl.params }
 
 end Benchmarks.Dss.Dog

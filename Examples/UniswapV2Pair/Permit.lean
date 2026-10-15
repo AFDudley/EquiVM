@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.PermitCoupling
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -72,7 +72,8 @@ theorem uniswapPermitBodyCoreOk_afterNonce
             locals := permitAfterApproveStore evmS I
               (permitStructHashValue σ I) (permitDigestValue σ I) recoveredValue })
           (permitApprovePostState evmCallS I)) := by
-    exact uniswapPermitAfterNonceSuccessAt (base := evmS) (cur := evmNonceS)
+    exact uniswapPermitAfterNonceSuccessAt
+      (hperm := by simpa [evmNonceS, evmS, permitAfterNonceState, initState] using hperm) (base := evmS) (cur := evmNonceS)
       (cur' := evmCallS) (I := I) (structHash := permitStructHashValue σ I)
       (digest := permitDigestValue σ I) (recovered := recoveredValue) (out := o)
       (by simpa [evmS, evmNonceS] using hstruct)
@@ -86,7 +87,7 @@ theorem uniswapPermitBodyCoreOk_afterNonce
             locals := permitAfterApproveStore evmS I
               (permitStructHashValue σ I) (permitDigestValue σ I) recoveredValue })
           (permitApprovePostState evmCallS I)) := by
-    exact uniswapPermitBlockAfterNonce (evm := evmS) (I := I) hrest
+    exact uniswapPermitBlockAfterNonce (hperm := by assumption) (evm := evmS) (I := I) hrest
   have hblock :
       ExecBlock config { contract := contract, locals := permitStore I } evmS
         permitTransition.body
@@ -193,7 +194,8 @@ theorem uniswapPermitBodyCoreOk_afterNonce_short
             locals := permitAfterApproveStore evmS I
               (permitStructHashValue σ I) (permitDigestValue σ I) recoveredValue })
           (permitApprovePostState evmCallS I)) := by
-    exact uniswapPermitAfterNonceSuccessAt (base := evmS) (cur := evmNonceS)
+    exact uniswapPermitAfterNonceSuccessAt
+      (hperm := by simpa [evmNonceS, evmS, permitAfterNonceState, initState] using hperm) (base := evmS) (cur := evmNonceS)
       (cur' := evmCallS) (I := I) (structHash := permitStructHashValue σ I)
       (digest := permitDigestValue σ I) (recovered := recoveredValue) (out := o)
       (by simpa [evmS, evmNonceS] using hstruct)
@@ -207,7 +209,7 @@ theorem uniswapPermitBodyCoreOk_afterNonce_short
             locals := permitAfterApproveStore evmS I
               (permitStructHashValue σ I) (permitDigestValue σ I) recoveredValue })
           (permitApprovePostState evmCallS I)) := by
-    exact uniswapPermitBlockAfterNonce (evm := evmS) (I := I) hrest
+    exact uniswapPermitBlockAfterNonce (hperm := by assumption) (evm := evmS) (I := I) hrest
   have hblock :
       ExecBlock config { contract := contract, locals := permitStore I } evmS
         permitTransition.body
@@ -252,9 +254,10 @@ theorem uniswapPermitBodyRevertsAfterNonce {evm : EVM.State} {I : ExecutionEnv}
       ¬ (permitDeadlineWord I).toNat < (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hrest : ExecBlock config
       { contract := contract, locals := permitAfterNonceLoadStore evm I }
-      (permitAfterNonceState evm I) permitAfterNonceBody .reverted) :
+      (permitAfterNonceState evm I) permitAfterNonceBody .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body .reverted := by
-  have hafterNonce := uniswapPermitBlockAfterNonce (evm := evm) (I := I) hrest
+  have hafterNonce := uniswapPermitBlockAfterNonce (hperm := by assumption) (evm := evm) (I := I) hrest
   have hblock := uniswapPermitBlockAfterDeadline (evm := evm) (I := I)
     hwv hnotExpired hafterNonce
   exact ExecFuncBody.execBlockRevert hblock
@@ -289,7 +292,8 @@ theorem uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce
       (permitAfterNonceState (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
       (AccountAddress.ofNat 1) "ecrecover" 0
       [permitDigestValue σ I, permitVValue I, permitRValue I, permitSValue I]
-      (false, evmCallS, o) false) :
+      (false, evmCallS, o) false)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmNonceS := permitAfterNonceState evmS I
@@ -304,7 +308,7 @@ theorem uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce
       hcall
   have hbody : ExecTransitionBody config contract evmS (permitStore I)
       permitTransition.body .reverted := by
-    exact uniswapPermitBodyRevertsAfterNonce
+    exact uniswapPermitBodyRevertsAfterNonce (hperm := by assumption)
       (evm := evmS) (I := I)
       (by simp only [evmS, initState]; exact hwv)
       (by simpa [evmS, initState] using hnotExpired)
@@ -353,7 +357,8 @@ theorem uniswapPermitBodyCoreRevert_zero_afterNonce
     (ho32 : 32 ≤ o.size) (hoSize : o.size < UInt256.size)
     (hzero :
       UInt256.land (UInt256.ofNat (fromByteArrayBigEndian (o.extract 0 32))) solcAddrMask =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmNonceS := permitAfterNonceState evmS I
@@ -374,7 +379,7 @@ theorem uniswapPermitBodyCoreRevert_zero_afterNonce
       hcall hdec hzeroSource
   have hbody : ExecTransitionBody config contract evmS (permitStore I)
       permitTransition.body .reverted := by
-    exact uniswapPermitBodyRevertsAfterNonce
+    exact uniswapPermitBodyRevertsAfterNonce (hperm := by assumption)
       (evm := evmS) (I := I)
       (by simp only [evmS, initState]; exact hwv)
       (by simpa [evmS, initState] using hnotExpired)
@@ -428,7 +433,8 @@ theorem uniswapPermitBodyCoreRevert_mismatch_afterNonce
         ⟨0⟩)
     (hmismatch :
       UInt256.land (UInt256.ofNat (fromByteArrayBigEndian (o.extract 0 32))) solcAddrMask ≠
-        permitOwnerMaskedWord I) :
+        permitOwnerMaskedWord I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmNonceS := permitAfterNonceState evmS I
@@ -458,7 +464,7 @@ theorem uniswapPermitBodyCoreRevert_mismatch_afterNonce
       hcall hdec rfl hnzAddr hneValue
   have hbody : ExecTransitionBody config contract evmS (permitStore I)
       permitTransition.body .reverted := by
-    exact uniswapPermitBodyRevertsAfterNonce
+    exact uniswapPermitBodyRevertsAfterNonce (hperm := by assumption)
       (evm := evmS) (I := I)
       (by simp only [evmS, initState]; exact hwv)
       (by simpa [evmS, initState] using hnotExpired)
@@ -510,7 +516,8 @@ theorem uniswapPermitBodyCoreRevert_zero_afterNonce_short
     (hzero :
       UInt256.land (UInt256.ofNat (fromByteArrayBigEndian (o.readWithPadding 0 32)))
           solcAddrMask =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmNonceS := permitAfterNonceState evmS I
@@ -531,7 +538,7 @@ theorem uniswapPermitBodyCoreRevert_zero_afterNonce_short
       hcall hdec hzeroSource
   have hbody : ExecTransitionBody config contract evmS (permitStore I)
       permitTransition.body .reverted := by
-    exact uniswapPermitBodyRevertsAfterNonce
+    exact uniswapPermitBodyRevertsAfterNonce (hperm := by assumption)
       (evm := evmS) (I := I)
       (by simp only [evmS, initState]; exact hwv)
       (by simpa [evmS, initState] using hnotExpired)
@@ -587,7 +594,8 @@ theorem uniswapPermitBodyCoreRevert_mismatch_afterNonce_short
     (hmismatch :
       UInt256.land (UInt256.ofNat (fromByteArrayBigEndian (o.readWithPadding 0 32)))
           solcAddrMask ≠
-        permitOwnerMaskedWord I) :
+        permitOwnerMaskedWord I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmNonceS := permitAfterNonceState evmS I
@@ -617,7 +625,7 @@ theorem uniswapPermitBodyCoreRevert_mismatch_afterNonce_short
       hcall hdec rfl hnzAddr hneValue
   have hbody : ExecTransitionBody config contract evmS (permitStore I)
       permitTransition.body .reverted := by
-    exact uniswapPermitBodyRevertsAfterNonce
+    exact uniswapPermitBodyRevertsAfterNonce (hperm := by assumption)
       (evm := evmS) (I := I)
       (by simp only [evmS, initState]; exact hwv)
       (by simpa [evmS, initState] using hnotExpired)
@@ -635,7 +643,7 @@ theorem uniswapPermitBodyReverts_expired (evm : EVM.State) (I : ExecutionEnv)
   refine ExecFuncBody.execBlockRevert ?_
   simpa [permitTransition] using
     (nonpayableSecondRequireReverts
-      (cfg := config) (solm := { contract := contract, locals := permitStore I })
+      (cfg := config) (stele := { contract := contract, locals := permitStore I })
       (evm := evm)
       hwv
       (evalExpr_permit_deadline_ge_now_false evm I hexpired))
@@ -777,7 +785,7 @@ theorem uniswapPermitBody_depthOk
             [permitDigestValue σ I, permitVValue I, permitRValue I, permitSValue I]
             (false, evmCallS, o) false := by
           simpa [evmS, hz] using hcall
-        exact uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce
+        exact uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce (hperm := by assumption)
           hcode hwv hsz228 hexpired hdispatch (hfailure hz)
           (by simpa [evmS] using hstructSource)
           (by simpa [evmS] using hdigestSource)
@@ -795,7 +803,7 @@ theorem uniswapPermitBody_depthOk
           let recovered :=
             UInt256.ofNat (fromByteArrayBigEndian (o.readWithPadding 0 32))
           by_cases hzero : UInt256.land recovered solcAddrMask = ⟨0⟩
-          · exact uniswapPermitBodyCoreRevert_zero_afterNonce_short
+          · exact uniswapPermitBodyCoreRevert_zero_afterNonce_short (hperm := by assumption)
               hcode hwv hsz228 hexpired hdispatch
               (by simpa [evmS] using hstructSource)
               (by simpa [evmS] using hdigestSource)
@@ -811,7 +819,7 @@ theorem uniswapPermitBody_depthOk
                 hcallTrue hAccountsCall henv hshort hoSize
                 (by simpa [recovered] using hzero)
                 (by simpa [recovered] using hmatch)
-            · exact uniswapPermitBodyCoreRevert_mismatch_afterNonce_short
+            · exact uniswapPermitBodyCoreRevert_mismatch_afterNonce_short (hperm := by assumption)
                 hcode hwv hsz228 hexpired hdispatch
                 (by simpa [evmS] using hstructSource)
                 (by simpa [evmS] using hdigestSource)
@@ -823,7 +831,7 @@ theorem uniswapPermitBody_depthOk
           have hdecodedLong := hlongDecoded hzTrue ho32
           let recovered := UInt256.ofNat (fromByteArrayBigEndian (o.extract 0 32))
           by_cases hzero : UInt256.land recovered solcAddrMask = ⟨0⟩
-          · exact uniswapPermitBodyCoreRevert_zero_afterNonce
+          · exact uniswapPermitBodyCoreRevert_zero_afterNonce (hperm := by assumption)
               hcode hwv hsz228 hexpired hdispatch
               (by simpa [evmS] using hstructSource)
               (by simpa [evmS] using hdigestSource)
@@ -839,7 +847,7 @@ theorem uniswapPermitBody_depthOk
                 hcallTrue hAccountsCall henv ho32 hoSize
                 (by simpa [recovered] using hzero)
                 (by simpa [recovered] using hmatch)
-            · exact uniswapPermitBodyCoreRevert_mismatch_afterNonce
+            · exact uniswapPermitBodyCoreRevert_mismatch_afterNonce (hperm := by assumption)
                 hcode hwv hsz228 hexpired hdispatch
                 (by simpa [evmS] using hstructSource)
                 (by simpa [evmS] using hdigestSource)
@@ -904,7 +912,7 @@ theorem uniswapPermitBody_depthLimit
       let evmCallS : EVM.State :=
         { evmNonceS with
           substate := (evmNonceS.addAccessedAccount (AccountAddress.ofNat 1)).substate }
-      have hdepthSolm : evmNonceS.executionEnv.depth = 1024 := by
+      have hdepthStele : evmNonceS.executionEnv.depth = 1024 := by
         simpa [evmNonceS, evmS, permitAfterNonceState, storageStore_executionEnv, initState]
           using hdepth
       have hcall : typedCallViaEVM config evmNonceS (AccountAddress.ofNat 1) "ecrecover" 0
@@ -918,8 +926,8 @@ theorem uniswapPermitBody_depthLimit
               permitSValue I])
             (callPerm := false)
             (uniswapEcrecoverEncode_eq σ I hsz228)
-            hdepthSolm)
-      exact uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce
+            hdepthStele)
+      exact uniswapPermitBodyCoreRevert_ecrecoverFailure_afterNonce (hperm := by assumption)
         hcode hwv hsz228 hexpired hdispatch hrev
         (by simpa [evmS, evmNonceS] using hstructSource)
         (by simpa [evmS, evmNonceS] using hdigestSource)

@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Clipper.KickSourceFinish
 import Benchmarks.Dss.Clipper.KickTailEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -179,11 +179,11 @@ theorem clipperKickInitializedState_accounts_eq
   let σUsr := sstoreAccountMap I.codeOwner σLot slot usrVal
   have hsourceSlot : clipperKickSourceSalesBaseSlot evm + ⟨3⟩ = slot := by
     simp [slot, clipperKickPackedSlot, hbase, u256_add_comm]
-  have hold : Solm.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
+  have hold : Stele.EVM.storageLoad evmLot evmLot.executionEnv.codeOwner
       (clipperKickSourceSalesBaseSlot evm + ⟨3⟩) = old := by
     have hread := slotWord_eq_of_accounts_eq evmLot I slot henvLot hLot
     simpa [old, hsourceSlot] using hread.symm
-  have hold' : Solm.EVM.storageLoad evmLot I.codeOwner slot = old := by
+  have hold' : Stele.EVM.storageLoad evmLot I.codeOwner slot = old := by
     simpa [henvLot, hsourceSlot] using hold
   have henvUsr : evmUsr.executionEnv = I := by
     dsimp only [evmUsr]
@@ -199,7 +199,7 @@ theorem clipperKickInitializedState_accounts_eq
     rw [clipperKickSourceSalesLotState, storageStore_executionEnv]
     dsimp only [evmTab] at haccLot
     exact haccLot
-  have husrRead : Solm.EVM.storageLoad evmUsr evmUsr.executionEnv.codeOwner
+  have husrRead : Stele.EVM.storageLoad evmUsr evmUsr.executionEnv.codeOwner
       (clipperKickSourceSalesBaseSlot evm + ⟨3⟩) = usrVal := by
     dsimp only [evmUsr]
     rw [clipperKickSourceSalesUsrState, storageStore_executionEnv]
@@ -219,7 +219,7 @@ theorem clipperKickInitializedState_accounts_eq
             clipperSalesUint96Mask)
           (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩))
         (UInt256.land
-          (Solm.EVM.storageLoad evmUsr evmUsr.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmUsr evmUsr.executionEnv.codeOwner
             (clipperKickSourceSalesBaseSlot evm + ⟨3⟩)) solcAddrMask) =
         clipperKickPackedWord σ I := by
     rw [clipperKickSalesUint96Mask_idempotent, htime, husrRead]
@@ -236,7 +236,7 @@ theorem clipperKickInitializedState_accounts_eq
             clipperSalesUint96Mask)
           (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩))
         (UInt256.land
-          (Solm.EVM.storageLoad (clipperKickSourceSalesUsrState evm I)
+          (Stele.EVM.storageLoad (clipperKickSourceSalesUsrState evm I)
             I.codeOwner slot) solcAddrMask) =
         clipperKickPackedWord σ I := by
     simpa [evmUsr, henvUsr, hsourceSlot] using hpacked
@@ -276,7 +276,7 @@ theorem clipperKickUnlockedState_accounts_eq
     (henv : evm.executionEnv = I)
     (hAccounts : σ = evm.accountMap) :
     sstoreAccountMap I.codeOwner σ ⟨13⟩ ⟨0⟩ =
-      (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩).accountMap := by
+      (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨13⟩ ⟨0⟩).accountMap := by
   simpa [storageStore_accountMap, henv] using
     congrArg (fun m => sstoreAccountMap I.codeOwner m ⟨13⟩ ⟨0⟩) hAccounts
 

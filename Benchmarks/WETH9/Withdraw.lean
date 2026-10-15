@@ -2,14 +2,14 @@ import Benchmarks.WETH9.WithdrawBody
 
 /-! # WETH9 `withdraw(uint256)` refinement -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
 
 namespace Benchmarks.WETH9
 
-/-- `withdraw(uint256 wad)` refines its Solm transition.  Non-payable; requires
+/-- `withdraw(uint256 wad)` refines its Stele transition.  Non-payable; requires
     `balanceOf[caller] ≥ wad`, decrements it, and forwards `wad` to `caller` via an external `CALL`,
     reverting if the transfer fails. -/
 theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
@@ -21,12 +21,12 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
   have hdisp := weth9SelectorDispatchWithdraw hsel
   set gs := Sat256.ofUInt256 g with hgs
   set evmS := initState σ σ₀ gs A I with hevmS
-  -- Solm-side facts, reused across the call branches
+  -- Stele-side facts, reused across the call branches
   have hsrcS : evmS.executionEnv = I := rfl
   have hwvS' : evmS.executionEnv.weiValue = I.weiValue := rfl
-  have hstoreLoadS : Solm.EVM.storageLoad evmS I.codeOwner (callerBalSlot I)
+  have hstoreLoadS : Stele.EVM.storageLoad evmS I.codeOwner (callerBalSlot I)
       = solcSlotWord σ I (callerBalSlot I) := by
-    simp [evmS, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, initState,
+    simp [evmS, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, initState,
       Ethereum.Account.lookupStorage]
   by_cases hwv : I.weiValue = ⟨0⟩
   · by_cases hsz36 : 36 ≤ I.calldata.size
@@ -37,7 +37,7 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
       by_cases hle : (withdrawWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat
       · -- `balanceOf[caller] ≥ wad`: store + external call
         have hleLoadS : (withdrawWadWord I).toNat ≤
-            (Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner (callerBalSlot I)).toNat := by
+            (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner (callerBalSlot I)).toNat := by
           rw [show evmS.executionEnv.codeOwner = I.codeOwner from rfl, hstoreLoadS]; exact hle
         by_cases hperm : I.perm = true
         swap
@@ -75,7 +75,7 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
             apply callViaEVM.callNotMade rfl rfl
             rintro ⟨_, hdepthNe⟩
             exact hdepthNe (by rw [hZeroEnv]; exact hdepthEq)
-          have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSFail I ByteArray.empty
+          have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail I ByteArray.empty
             hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcall)
           exact weth9ReEquivExecRev hcode hrev hdisp hdec hbody
         · have hdepthLt : I.depth.val < 1024 :=
@@ -110,7 +110,7 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
                   exact congrArg (fun accounts => {evmS with accountMap := accounts}) hMap
                 _ = evmSZero := by
                   rw [hevmSZero]
-                  unfold withdrawStoreState Solm.EVM.storageStore
+                  unfold withdrawStoreState Stele.EVM.storageStore
                   cases evmS.lookupAccount evmS.executionEnv.codeOwner <;>
                     simp [Option.option, State.setAccount]
             set evmSCall : EVM.State :=
@@ -122,11 +122,11 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [← hZeroState, hevmSCall, hevmECall] using hcallE
             cases z
             · -- call failed: revert
-              have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSCall I o
+              have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSCall I o
                 hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcallS)
               exact weth9ReEquivExecRev hcode (weth9WithdrawFailureTail hosz rd1470) hdisp hdec hbody
             · -- call succeeded: return
-              have hbody := weth9WithdrawBodyReturns_success evmS evmSCall I o
+              have hbody := weth9WithdrawBodyReturns_success (hperm := by assumption) evmS evmSCall I o
                 hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcallS)
               refine weth9ReEquivExecGen hcode (weth9WithdrawSuccessTail hperm rd1470) hdisp hdec
                 hbody ?_ (returnEquiv.fallthrough (dvs := []) rfl rfl (by native_decide))
@@ -144,13 +144,13 @@ theorem weth9WithdrawBodyCore {σ σ₀ A I} {g : UInt256}
               rw [wordOfInt_ofNat_toNat, show evmSZero.executionEnv.codeOwner = I.codeOwner from by
                 rw [hZeroEnv]] at hvalueBal
               exact hbalance (by rw [hStoreMap]; exact hvalueBal)
-            have hbody := weth9WithdrawBodyReverts_callFailure evmS evmSFail I ByteArray.empty
+            have hbody := weth9WithdrawBodyReverts_callFailure (hperm := by assumption) evmS evmSFail I ByteArray.empty
               hsrcS (by rw [hwvS']; exact hwv) hleLoadS (by rw [← hevmSZero]; exact hcall)
             exact weth9ReEquivExecRev hcode hrev hdisp hdec hbody
       · -- `balanceOf[caller] < wad`: `require` reverts
         have hlt : (solcSlotWord σ I (callerBalSlot I)).toNat < (withdrawWadWord I).toNat := by
           omega
-        have hltS : (Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner (callerBalSlot I)).toNat
+        have hltS : (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner (callerBalSlot I)).toNat
             < (withdrawWadWord I).toNat := by
           rw [show evmS.executionEnv.codeOwner = I.codeOwner from rfl, hstoreLoadS]
           exact hlt

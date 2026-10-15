@@ -1,15 +1,15 @@
 import Benchmarks.Dss.DaiJoin.ConstructorSource
 import Benchmarks.Dss.DaiJoin.ConstructorTraceReturn
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS DaiJoin constructor correctness
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 connected by the constructor-equivalence proof.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.DaiJoin
 
@@ -56,12 +56,12 @@ theorem daiJoinConstructorCorrect :
           daiJoinCtorAfterDaiState, daiJoinCtorAfterVatState, daiJoinCtorAfterLiveState,
           daiJoinCtorAfterWardsState, daiJoinCtorVatStored, daiJoinCtorDaiStored,
           storageStore_accountMap, storageStore_executionEnv, initState,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord, hslot]
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s, evm3s, evm4s] using
-            daiJoinSolmCtorExecSuccess
+            daiJoinSteleCtorExecSuccess (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat dai hwv)
         ?_
@@ -73,7 +73,7 @@ theorem daiJoinConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (daiJoinSolmCtorExecReverts_nonpayable
+        (daiJoinSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat dai hwv)
         ?_

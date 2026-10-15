@@ -1,7 +1,7 @@
 import Reasoning.Memory
 import Benchmarks.Dss.Vat.Nope
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 0
@@ -54,7 +54,7 @@ theorem vatAuthGuardEval_true {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have her := vatCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  have hload : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  have hload : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (vatCallerWardsSlot I) = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hauth
   rw [evalExpr?]
@@ -82,7 +82,7 @@ theorem vatAuthGuardEval_false {σ σ₀ A I} {g : Sat256} {locals : Store}
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have her := vatCallerWardsEvaledRef_ok (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) (locals := locals) hbase
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       (vatCallerWardsSlot I)
   have hload : w ≠ ⟨1⟩ := by
     intro hw
@@ -113,7 +113,7 @@ theorem vatLiveGuardEval_true {σ σ₀ A I} {g : Sat256} {locals : Store}
     evalExpr? config { contract := contract, locals := locals }
       (initState σ σ₀ g A I)
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-  have hload : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
+  have hload : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner
       ⟨10⟩ = ⟨1⟩ := by
     simpa [solcSlotWordAt] using hlive
   have her :
@@ -142,7 +142,7 @@ theorem vatLiveGuardEval_false {σ σ₀ A I} {g : Sat256} {locals : Store}
     evalExpr? config { contract := contract, locals := locals }
       (initState σ σ₀ g A I)
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
-  let w := Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨10⟩
+  let w := Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner ⟨10⟩
   have hload : w ≠ ⟨1⟩ := by
     intro hw
     exact hlive (by simpa [w, solcSlotWordAt] using hw)
@@ -852,7 +852,7 @@ theorem RD.vatRelyStoreOneSplit {code : ByteArray} {g : Sat256} {s0 : State}
 /-! ### Dispatch, ABI, reachability, and body proof -/
 
 theorem vatDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "usr" (.address (relyUsr I))) := by
   simpa [config, relyTransition, relyUsr] using
@@ -860,7 +860,7 @@ theorem vatDecode_rely_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vatDecode_rely_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
       (transitionSignature relyTransition).paramTypes I.calldata = none := by
   simpa [config, relyTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "usr") hsz4 hshort)
@@ -920,7 +920,7 @@ theorem vatRelyBodyCoreOk
     (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some relyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (relyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (relyTransition.params.map Param.name)
         (transitionSignature relyTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "usr" (.address (relyUsr I))))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
@@ -961,7 +961,7 @@ theorem vatRelyBodyCoreOk
     by_cases hliveEvm : solcSlotWordAt ⟨10⟩ σ I = ⟨1⟩
     ·
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (relySlotFor I) ⟨1⟩
+      let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (relySlotFor I) ⟨1⟩
       have hguardAuth := vatAuthGuardEval_true
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) (locals := locals)
@@ -1006,12 +1006,12 @@ theorem vatRelyBodyCoreOk
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardAuth) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
         exact hrest
-      have hbody :
+      have hbody (hperm : I.perm = true) :
           ExecTransitionBody config contract evm0 locals relyTransition.body
             (.returned { contract := contract, locals := locals } evm1 none) := by
         simpa [ExecTransitionBody, relyTransition, nonpayable, auth, requireLive, evm0, evm1] using
           ExecFuncBody.execBlockOK (hpre _ (ExecBlock.consNormal
-            (ExecStmt.assign (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
+            (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassign) ExecBlock.nil))
       have hliveSolc : solcSlotWord σ I ⟨10⟩ = ⟨1⟩ := by
         simpa [solcSlotWordAt] using hliveEvm
       obtain ⟨_, _, hstorePc⟩ := RD.vatLiveGuardOk
@@ -1057,7 +1057,7 @@ theorem vatRelyBodyCoreOk
       have henc : returnEquiv ByteArray.empty none relyTransition.returnType := by
         rw [show relyTransition.returnType = [] by rfl]
         exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-      exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+      exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
         haccounts henc
     ·
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -1112,7 +1112,7 @@ theorem vatRelyBodyCoreOk
         (g := Sat256.ofUInt256 g) (locals := locals)
         (by simp [locals]) hauthEvm
       have hblock := nonpayableSecondRequireReverts
-        (cfg := config) (solm := { contract := contract, locals := locals })
+        (cfg := config) (stele := { contract := contract, locals := locals })
         (evm := evm0)
         (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
         (rest := [

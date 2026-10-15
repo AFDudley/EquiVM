@@ -2,7 +2,7 @@ import Benchmarks.Auction.InitializeBody
 import Benchmarks.Auction.InitializeDecoder
 import Benchmarks.Auction.InitializerError
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -42,7 +42,7 @@ theorem initializeBodyCore {σ σ₀ A I} {g : UInt256}
             · exact hstatic.reEquivStaticHalt hcode hd hdec
                 (initializeBodyStatic (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (initializeArgs I.calldata) hwv hg hperm)
-            have hbody := initializeBody
+            have hbody := initializeBody (hperm := _hperm)
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (initializeArgs I.calldata) hwv hc hg
             exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen

@@ -1,9 +1,9 @@
 import Reasoning.ABIViews
 import Examples.OpenZeppelinBench.ERC6909.Storage
 import Examples.OpenZeppelinBench.AccessControl.SupportsInterface
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

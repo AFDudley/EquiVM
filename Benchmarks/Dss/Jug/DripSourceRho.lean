@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowB
 
@@ -306,7 +306,7 @@ theorem jugDripSourceBodyVatIlksCallFailed {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallFailure (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
+      (ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat (by simp [evalExpr?, pure]) hargs
         (by simpa [evm0] using hcall))
   simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert hblock
 
@@ -367,7 +367,7 @@ theorem jugDripSourceBodyVatIlksReturnDecodeReverts {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     exact ExecBlock.consRevert
-      (ExecStmt.externalCallReturnDecodeRevert (sendVal := 0) hvat
+      (ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec)
   simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockRevert hblock
 
@@ -464,7 +464,7 @@ theorem jugDripSourceBodyVatIlksAddOverflowReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -481,7 +481,7 @@ theorem jugDripSourceBodyVatIlksAddOverflowReverts {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_
@@ -625,7 +625,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowReverts {σ σ₀ A I} {g : UInt256}
           .intLit one ])
       (argVals := [.int (Int.ofNat fee.toNat), .int 0, .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee ⟨0⟩ jugRay)
-      (calleeSolm := { contract := contract, locals := rpowDoneLocals })
+      (calleeStele := { contract := contract, locals := rpowDoneLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -662,7 +662,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowReverts {σ σ₀ A I} {g : UInt256}
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -679,7 +679,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowReverts {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_

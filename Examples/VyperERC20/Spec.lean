@@ -1,11 +1,13 @@
 import Examples.ERC20.Spec
-import Solm.VyperLayout
+import Stele.VyperLayout
+import Stele.MetaVyperLayout
 
 /-!
-# Vyper ERC20 — Solm specification and storage layout
+# Vyper ERC20 — Stele specification and storage layout
 
-The source behavior is the same ERC20 Solm AST used by `Examples/ERC20`; the compiler-specific
-part is the Vyper storage layout.  Vyper 0.4.3's `layout` output for `ERC20.vy` is:
+The specification keeps the explicit local bindings used by the Vyper proofs. Its bodies are
+independent of the Solidity ERC20 example, while scalar types and storage declarations are shared.
+Vyper 0.4.3's `layout` output for `ERC20.vy` is:
 
 * `balanceOf`: slot 0
 * `allowance`: slot 1
@@ -15,7 +17,7 @@ For `HashMap`, Vyper derives entries as `keccak256(baseSlot ++ key)`, unlike Sol
 `keccak256(key ++ baseSlot)`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace VyperERC20
 
@@ -38,8 +40,66 @@ abbrev totalSupplyRef : StorageRef :=
 abbrev erc20StorageDecls : List StorageDecl :=
   ERC20.erc20StorageDecls
 
-abbrev erc20Contract : ContractDecl :=
-  ERC20.erc20Contract
+-- Keep the existing Vyper specification stable when the Solidity presentation changes.
+abbrev valueInUInt256 (expr : Expr) : Expr := ERC20.valueInUInt256 expr
+
+def constructorDecl : ConstructorDecl :=
+  { params := [{ name := "initialSupply", ty := uint256 }]
+    body :=
+      [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
+        .assign .storage (balanceOfRef sender) (.var "initialSupply"),
+        .assign .storage totalSupplyRef (.var "initialSupply") ] }
+
+def transferTransition : TransitionDecl :=
+  { name := "transfer"
+    params := [{ name := "to", ty := addr }, { name := "value", ty := uint256 }]
+    returnType := [(.elem .bool)]
+    body :=
+      [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
+        .letDecl "fromBalance" (some uint256) (.storage (balanceOfRef sender)),
+        .require (.binary .ge (.var "fromBalance") (.var "value")),
+        .assign .storage (balanceOfRef sender) (.binary .sub (.var "fromBalance") (.var "value")),
+        .letDecl "toBalance" (some uint256) (.storage (balanceOfRef (.var "to"))),
+        .letDecl "newToBalance" (some uint256)
+          (valueInUInt256 (.binary .add (.var "toBalance") (.var "value"))),
+        .assign .storage (balanceOfRef (.var "to")) (.var "newToBalance"),
+        .emit "Transfer" [sender, .var "to", .var "value"],
+        .return [(.boolLit true)] ] }
+
+def transferFromTransition : TransitionDecl :=
+  { name := "transferFrom"
+    params := [{ name := "from", ty := addr }, { name := "to", ty := addr },
+      { name := "value", ty := uint256 }]
+    returnType := [(.elem .bool)]
+    body :=
+      [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
+        .letDecl "currentAllowance" (some uint256) (.storage (allowanceRef (.var "from") sender)),
+        .require (.binary .ge (.var "currentAllowance") (.var "value")),
+        .letDecl "fromBalance" (some uint256) (.storage (balanceOfRef (.var "from"))),
+        .require (.binary .ge (.var "fromBalance") (.var "value")),
+        .assign .storage (allowanceRef (.var "from") sender)
+          (.binary .sub (.var "currentAllowance") (.var "value")),
+        .assign .storage (balanceOfRef (.var "from"))
+          (valueInUInt256
+            (.binary .sub (.storage (balanceOfRef (.var "from"))) (.var "value"))),
+        .letDecl "toBalance" (some uint256) (.storage (balanceOfRef (.var "to"))),
+        .letDecl "newToBalance" (some uint256)
+          (valueInUInt256 (.binary .add (.var "toBalance") (.var "value"))),
+        .assign .storage (balanceOfRef (.var "to")) (.var "newToBalance"),
+        .emit "Transfer" [.var "from", .var "to", .var "value"],
+        .return [(.boolLit true)] ] }
+
+def erc20Contract : ContractDecl :=
+  { name := "ERC20"
+    storage := erc20StorageDecls
+    ctor := constructorDecl
+    transitions :=
+      [ ERC20.approveTransition,
+        ERC20.totalSupplyTransition,
+        transferFromTransition,
+        ERC20.balanceOfTransition,
+        transferTransition,
+        ERC20.allowanceTransition ] }
 
 def erc20BalanceOfSlot (owner : KeyValue) : Ethereum.UInt256 :=
   vyperMappingSlot ⟨0⟩ owner
@@ -50,13 +110,8 @@ def erc20AllowanceOwnerSlot (owner : KeyValue) : Ethereum.UInt256 :=
 def erc20AllowanceSlot (owner spender : KeyValue) : Ethereum.UInt256 :=
   vyperMappingSlot (erc20AllowanceOwnerSlot owner) spender
 
-def erc20StorageLayout : StorageLayout := fun ref =>
-    match ref.base, ref.steps with
-    | "balanceOf", [.mindex owner] => some (.leaf (vyperUint256Loc (erc20BalanceOfSlot owner)))
-    | "allowance", [.mindex owner, .mindex spender] =>
-        some (.leaf (vyperUint256Loc (erc20AllowanceSlot owner spender)))
-    | "totalSupply", [] => some (.leaf (vyperUint256Loc ⟨2⟩))
-    | _, _ => none
+def erc20StorageLayout : StorageLayout :=
+  vyperLayout! [erc20StorageDecls]
 
 @[simp] theorem erc20BalanceOfSlot_eq (owner : KeyValue) :
     erc20BalanceOfSlot owner = vyperMappingSlot ⟨0⟩ owner :=
@@ -88,12 +143,11 @@ def erc20StorageLayout : StorageLayout := fun ref =>
 
 end VyperERC20
 
-/-- The ERC20 leaves are full-word integers. Their reads and writes use the Solidity scalar
-operations, while the handwritten Vyper locator determines the mapping slots. -/
+/-- The ERC20 leaves are full-word integers in the generated Vyper layout. -/
 def vyperERC20Config : Config :=
-  { storageBackend := solidityStorageBackend VyperERC20.erc20StorageLayout
-    externalABI := defaultExternalCallABI
-    abiDecodeMode := DecodeMode.vyper
+  { storageBackend := vyperStorageBackend VyperERC20.erc20StorageLayout
+      (vyperBounds! [VyperERC20.erc20StorageDecls])
+    externalABI := (defaultExternalCallABI).withMode DecodeMode.vyper
     selfDeployment := genSolidityConstructorDeployment VyperERC20.erc20Contract.ctor.params }
 
 @[simp] theorem vyperERC20Config_storage_totalSupply :

@@ -4,9 +4,9 @@ import Examples.Truth.Correct
 import Reasoning.Memory
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Reach
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # CtorTruth — whole-contract equivalence smoke test
@@ -17,7 +17,7 @@ the Solidity `selfDeployment` hook; the initcode proof is a direct `CODECOPY`/`R
 empty payable constructor.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 10000
 
@@ -37,7 +37,7 @@ theorem ctorTruthDispatch_unique {cd : ByteArray} {t : TransitionDecl}
   dispatch_unique rfl rfl h
 
 
-/-- With zero call value, the Solm body returns `true`. -/
+/-- With zero call value, the Stele body returns `true`. -/
 theorem ctorTruthBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody ctorTruthConfig CtorTruth.contract evm locals
@@ -84,7 +84,7 @@ theorem ctorTruthReEquiv_callvalueZero
       exact (truthX_cvz_revertB hcode' hwv hsz hsize hmatch).reEquivNoDispatch hcode'
         (ctorTruthDispatch.none_nomatch hmatch)
 
-/-- Runtime bytecode refines the Solm runtime specification. -/
+/-- Runtime bytecode refines the Stele runtime specification. -/
 theorem ctorTruthRuntimeCorrect :
     runtimeRefinement ctorTruthConfig ctorTruthRuntimeBytecode CtorTruth.contract := by
   refine ⟨fun σ σ₀ g A I hcode hsize => ?_⟩
@@ -168,7 +168,7 @@ theorem ctorTruthInitcodeRun {σ σ₀ A I} {g : Sat256}
       ctorTruthFinal_read
       (by evm_ov)]
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem ctorTruthConstructorCorrect :
     typedConstructorRefinement ctorTruthConfig ctorTruthInitcode CtorTruth.contract
       (fun _ => ctorTruthRuntimeBytecode) :=

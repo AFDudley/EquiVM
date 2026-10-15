@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.MathRoutines
 import Examples.UniswapV2Pair.MintRoutines
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -82,7 +82,7 @@ theorem evalStorageRef_mintFee_kLast (evm : EVM.State) (reserve0 reserve1 : UInt
 
 theorem evalExpr_mintFee_kLast (evm : EVM.State) (reserve0 reserve1 : UInt256) :
     evalExpr? config (mintFeeCallFrame reserve0 reserve1) evm (.storage kLastRef) =
-      .ok (uniswapUint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩)) := by
+      .ok (uniswapUint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
     (loc := wordLoc ⟨11⟩)
     (hbase := by simp [kLastRef])
@@ -183,7 +183,7 @@ theorem uniswapMintFeeCheckedCallFailure
         (perm := false))
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -207,7 +207,7 @@ theorem uniswapMintFeeCheckedCallDecodeRevert
         (perm := false))
       .reverted := by
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -275,7 +275,7 @@ theorem uniswapMintFeeCheckedCallSuccess
         (perm := false))
       (.ok (mintFeeAfterFeeToFrame reserve0 reserve1 feeTo) evmFee) := by
   simpa [checkedExternalCallStmts, mintFeeAfterFeeToFrame, mintFeeAfterFeeToStore] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)
@@ -306,10 +306,10 @@ abbrev mintFeeAfterKLastFrame
   { contract := contract, locals := mintFeeAfterKLastStore reserve0 reserve1 feeTo feeOn kLast }
 
 def mintFeeKLastClearedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩ ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨11⟩ ⟨0⟩
 
 abbrev mintFeeKLastWord (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩
 
 theorem mintFeeAfterFeeOnStore_feeOn
     (reserve0 reserve1 : UInt256) (feeTo : AccountAddress) (feeOn : Bool) :
@@ -352,7 +352,7 @@ theorem evalExpr_mintFee_afterFeeOn_kLast
     (evm : EVM.State) (reserve0 reserve1 : UInt256) (feeTo : AccountAddress) (feeOn : Bool) :
     evalExpr? config (mintFeeAfterFeeOnFrame reserve0 reserve1 feeTo feeOn) evm
       (.storage kLastRef) =
-      .ok (uniswapUint256Value (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩)) := by
+      .ok (uniswapUint256Value (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨11⟩)) := by
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
     (loc := wordLoc ⟨11⟩)
     (hbase := by simp [kLastRef])
@@ -1275,7 +1275,8 @@ theorem uniswapMintFeePositiveRootBranch_withLiquidity
         UInt256.size)
     (hfitBalance :
       mintFunctionToBalanceNewNat evm feeTo (mintFeeLiquidityWord evm rootK rootKLast) <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config
       (mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true kLast rootK rootKLast) evm
       mintFeePositiveRootBranchStmts
@@ -1327,7 +1328,7 @@ theorem uniswapMintFeePositiveRootBranch_withLiquidity
         (.ok (mintFeeAfterFeeMintFrame evm reserve0 reserve1 feeTo kLast rootK rootKLast)
           (mintFunctionPostState evm feeTo (mintFeeLiquidityWord evm rootK rootKLast))) := by
     simpa [mintFeeAfterFeeMintFrame, mintFeeAfterFeeMintStore, resumeAfterInternalCall] using
-      uniswapMintFunctionCallSuccess
+      uniswapMintFunctionCallSuccess (hperm := by assumption)
         (caller := mintFeeAfterLiquidityFrame evm reserve0 reserve1 feeTo true kLast rootK
           rootKLast)
         (evm := evm) (recipient := feeTo)

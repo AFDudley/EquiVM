@@ -2,7 +2,7 @@ import Benchmarks.Dss.Vow.Arithmetic
 import Benchmarks.Dss.Vow.Cage
 import Benchmarks.Dss.Vow.FlopAsh
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -85,7 +85,7 @@ abbrev cageLocalsAfterHealRet
 abbrev cageVatAddressOf (evm : EVM.State) : AccountAddress :=
   AccountAddress.ofNat
     (UInt256.land
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩)
       solcAddrMask).toNat
 
 def cageFlopperCageStmts : List Stmt :=
@@ -234,7 +234,7 @@ theorem cageFlopperCageCallFailure
       ExecStmt config { contract := contract, locals := locals } evm
         (.externalCall (.storage flopperRef) "cage" (.intLit 0) [] "_flopCageRet")
         .reverted := by
-    exact ExecStmt.externalCallFailure hflopper (by simp [evalExpr?, pure]) hargs hcallFlop
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflopper (by simp [evalExpr?, pure]) hargs hcallFlop
   simp only [cageFlopperCageStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
     (ExecBlock.consRevert hcallStmt)
@@ -274,7 +274,7 @@ theorem cageFlopperCageSuccess
         (.ok { contract := contract, locals := cageLocalsAfterFlopCage flapperDai }
           evmFlop) := by
     simpa [locals, cageLocalsAfterFlopCage, cageDecodeVoid_ok, collapseReturns] using
-      ExecStmt.externalCallSuccess hflopper (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hflopper (by simp [evalExpr?, pure]) hargs
         hcallFlop (cageDecodeVoid_ok outFlop)
   simp only [cageFlopperCageStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -339,7 +339,7 @@ theorem cageVatDaiCallFailure
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallDai
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallDai
   simp only [cageVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
     (ExecBlock.consRevert hcallStmt)
@@ -379,7 +379,7 @@ theorem cageVatDaiReturnDecodeFailure
         (.externalCall (.storage vatRef) "dai" (.intLit 0) [thisAddr] "vatDai"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallDai hdecDai
   simp only [cageVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -426,7 +426,7 @@ theorem cageVatDaiSuccess
         (.ok { contract := contract, locals := cageLocalsAfterVatDai flapperDai vatDai }
           evmDai) := by
     simpa [locals, cageLocalsAfterVatDai, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs
         hcallDai hdecDai
   simp only [cageVatDaiStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -491,7 +491,7 @@ theorem cageVatSinCallFailure
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallSin
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallSin
   simp only [cageVatSinStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
     (ExecBlock.consRevert hcallStmt)
@@ -531,7 +531,7 @@ theorem cageVatSinReturnDecodeFailure
         (.externalCall (.storage vatRef) "sin" (.intLit 0) [thisAddr] "vatSin"
           (perm := false))
         .reverted := by
-    exact ExecStmt.externalCallReturnDecodeRevert hvat (by simp [evalExpr?, pure])
+    exact ExecStmt.externalCallReturnDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure])
       hargs hcallSin hdecSin
   simp only [cageVatSinStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -579,7 +579,7 @@ theorem cageVatSinSuccess
         (.ok { contract := contract, locals := cageLocalsAfterVatSin flapperDai vatDai vatSin }
           evmSin) := by
     simpa [locals, cageLocalsAfterVatSin, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs
         hcallSin hdecSin
   simp only [cageVatSinStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
@@ -633,7 +633,7 @@ theorem cageMinLeft
         (args := [.var "vatDai", .var "vatSin"])
         (argVals := [.int (Int.ofNat vatDai.toNat), .int (Int.ofNat vatSin.toNat)])
         (callee := minFunction) (locals := uintBinaryLocals vatDai vatSin)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatDai })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatDai })
         (value := some [.int (Int.ofNat vatDai.toNat)])
         hargs (by rfl) hbind hbody)
   simp only [cageMinStmts]
@@ -687,7 +687,7 @@ theorem cageMinRight
         (args := [.var "vatDai", .var "vatSin"])
         (argVals := [.int (Int.ofNat vatDai.toNat), .int (Int.ofNat vatSin.toNat)])
         (callee := minFunction) (locals := uintBinaryLocals vatDai vatSin)
-        (calleeSolm := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatSin })
+        (calleeStele := { contract := contract, locals := uintBinaryLocalsZ vatDai vatSin vatSin })
         (value := some [.int (Int.ofNat vatSin.toNat)])
         hargs (by rfl) hbind hbody)
   simp only [cageMinStmts]
@@ -762,7 +762,7 @@ theorem cageVatHealCallFailure
       ExecStmt config { contract := contract, locals := locals } evm
         (.externalCall (.storage vatRef) "heal" (.intLit 0) [.var "healRad"] "_healRet")
         .reverted := by
-    exact ExecStmt.externalCallFailure hvat (by simp [evalExpr?, pure]) hargs hcallHeal
+    exact ExecStmt.externalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs hcallHeal
   simp only [cageVatHealStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
     (ExecBlock.consRevert hcallStmt)
@@ -814,7 +814,7 @@ theorem cageVatHealSuccess
         (.ok { contract := contract, locals := cageLocalsAfterHealRet flapperDai vatDai vatSin healRad }
           evmHeal) := by
     simpa [locals, cageLocalsAfterHealRet, cageDecodeVoid_ok, collapseReturns] using
-      ExecStmt.externalCallSuccess hvat (by simp [evalExpr?, pure]) hargs
+      ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvat (by simp [evalExpr?, pure]) hargs
         hcallHeal (cageDecodeVoid_ok outHeal)
   simp only [cageVatHealStmts, checkedExternalCallStmts]
   exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)

@@ -1,5 +1,5 @@
 import Benchmarks.Scaffolds.VestingWallet.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # OpenZeppelin VestingWallet benchmark correctness stub
@@ -9,7 +9,7 @@ model, and receive/SafeERC20 semantics are present. The runtime-equivalence proo
 left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace OpenZeppelinBench.VestingWallet
 

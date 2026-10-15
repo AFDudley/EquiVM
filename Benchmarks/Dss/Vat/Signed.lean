@@ -3,7 +3,7 @@ import Benchmarks.Dss.Vat.Slip
 
 namespace Benchmarks.Dss.Vat
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 
 theorem evalExpr_fold_wordWrapAdd_ok {evm : EVM.State} {locals : Store}

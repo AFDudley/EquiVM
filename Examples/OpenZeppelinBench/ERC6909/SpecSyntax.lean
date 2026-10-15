@@ -1,8 +1,8 @@
 import Examples.OpenZeppelinBench.ERC6909.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# ERC6909 spec in the Solidity-faithful Solm frontend
+# ERC6909 spec in the Solidity-faithful Stele frontend
 
 The OpenZeppelin `ERC6909Bench` spec written with `solidity%` and proven definitionally equal to
 the AST spec in `Examples/OpenZeppelinBench/ERC6909/Spec.lean`.
@@ -11,7 +11,7 @@ The AST constructor has an empty body (no callvalue guard), so the surface const
 empty `payable` one.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.ERC6909.Syntax
 

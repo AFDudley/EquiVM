@@ -11,7 +11,7 @@ import Mathlib.Data.Nat.Bitwise
 import Mathlib.Data.Nat.Digits.Defs
 import Mathlib.Data.Nat.Digits.Lemmas
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -40,7 +40,7 @@ def ballotPanicMem (panicCode : UInt256) (mem : ByteArray) : ByteArray :=
 theorem ballotProposalsLength (evm : EVM.State) :
     ballotConfig.storageBackend.length { base := "proposals" }
       (.dynamicArray proposalStructTy) evm =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
   change solidityStorageLength? ballotStorageLayout { base := "proposals" }
     (.dynamicArray proposalStructTy) evm = _
   have hloc : solidityAnchorWordLoc ⟨2⟩ = wordLoc ⟨2⟩ := rfl
@@ -54,7 +54,7 @@ end Ballot
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 /-! ## Ballot-local return routines -/
 

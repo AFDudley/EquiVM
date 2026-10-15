@@ -2,7 +2,7 @@ import Benchmarks.Dss.Flipper.TendIncreaseGuard
 import Benchmarks.Dss.Flipper.BidAccess
 import Benchmarks.Dss.Flipper.YankCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -356,6 +356,7 @@ theorem tendVatPayCallMem_encode {mem : ByteArray} (σ : AccountMap) (I : Execut
         some ((tendVatPayCallMem mem σ I).readWithPadding 128 100) := by
   rw [tendVatPayCallMem_read σ I hmemSize]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hgal :
@@ -528,6 +529,7 @@ theorem tendVatRefundCallMem_encode {mem : ByteArray} (σ : AccountMap) (I : Exe
         some ((tendVatRefundCallMem mem σ I).readWithPadding 128 100) := by
   rw [tendVatRefundCallMem_read σ I hmemSize]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hguy :
@@ -561,12 +563,12 @@ abbrev tendPayMoveArgValsOf (evm : EVM.State) (I : ExecutionEnv) : List Value :=
     .address
       (AccountAddress.ofNat
         (UInt256.land
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (bidSlotOfWord (tendId I) ⟨4⟩))
           solcAddrMask).toNat),
     .int (Int.ofNat
       (UInt256.sub (tendBid I)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidBaseOfWord (tendId I)))).toNat)]
 
 abbrev tendLocalsAfterPay (σ : AccountMap) (I : ExecutionEnv) : Store :=
@@ -728,7 +730,7 @@ theorem evalExpr_tendPayDelta {evm : EVM.State} {locals : Store} {I : ExecutionE
       (wrap256 (.binary .sub (.var "bid") (.storage (bidsF (.var "id") "bid")))) =
         .ok (.int (Int.ofNat
           (UInt256.sub (tendBid I)
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (bidBaseOfWord (tendId I)))).toNat)) := by
   have hbid := evalExpr_varUInt256 (evm := evm) (locals := locals) (name := "bid")
     (value := tendBid I) hbidLocal
@@ -738,11 +740,11 @@ theorem evalExpr_tendPayDelta {evm : EVM.State} {locals : Store} {I : ExecutionE
   simp only [evalExpr?, hbid, hstored, EvalResult.bind, bind, pure]
   change (if wordModulus = 0 then EvalResult.revert else
       .ok (Value.int ((Int.ofNat (tendBid I).toNat -
-        Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidBaseOfWord (tendId I))).toNat) % wordModulus))) =
     .ok (Value.int (Int.ofNat
       (UInt256.sub (tendBid I)
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (bidBaseOfWord (tendId I)))).toNat))
   rw [if_neg (by norm_num [wordModulus]), intModWord_sub_toNat]
 
@@ -801,7 +803,7 @@ theorem evalExpr_tendTtl {evm : EVM.State} {locals : Store} {I : ExecutionEnv}
     (hty := by simp [storageTypeAt?, contract, storageDecls, uint48St])
     (hloc := by rfl)]
   simpa [tendTtlWord, flipperUint48Offset0Word, solcSlotWordAt, solcSlotWord,
-    Solm.EVM.storageLoad, howner] using
+    Stele.EVM.storageLoad, howner] using
     congrArg EvalResult.ok (flipperStorageLocLoad_uint48_offset0 evm ⟨5⟩)
 
 theorem evalExpr_tendTicNew {evm : EVM.State} {I : ExecutionEnv}
@@ -1324,7 +1326,7 @@ theorem flipperTendX_payPostCall
       (by rfl)
       ?_ ?_
     · simpa [tendPayMoveArgValsOf, initState, solcSlotWordAt, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         bidGalWord, bidSlotOfWord, bidBidWord, bidBaseOfWord, solcAddressSlotWord]
         using tendVatPayCallMem_encode σ I hmemSize
     · simpa [initState] using hΘ

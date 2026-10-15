@@ -1,8 +1,8 @@
 import Examples.OpenZeppelinBench.Pausable.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Pausable spec in the Solidity-faithful Solm frontend
+# Pausable spec in the Solidity-faithful Stele frontend
 
 The `PausableBench` spec written with `solidity%`, proven definitionally equal to the AST spec in
 `Examples/OpenZeppelinBench/Pausable/Spec.lean`.
@@ -11,7 +11,7 @@ The AST constructor has no callvalue guard, so the surface constructor is marked
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace OpenZeppelinBench.Pausable.Syntax
 

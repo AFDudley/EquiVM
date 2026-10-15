@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Benchmarks.Dss.Vat.HealBase
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -767,7 +767,7 @@ theorem vatHealFinishSuccess
     (hperm : I.perm = true)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hbody :
       ExecTransitionBody config contract
@@ -820,7 +820,7 @@ theorem vatHealAllSuccess
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hsinNewEvm :
       UInt256.sub (solcSlotWordAt (healSinSlot I) σ I) (healRad I) = sinNew)
@@ -879,112 +879,112 @@ theorem vatHealAllSuccess
           (healDaiSlot I) daiNew)
         healViceSlot viceNew) k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSinSolm := Solm.EVM.storageStore evm0Solm evm0Solm.executionEnv.codeOwner
+  let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmSinStele := Stele.EVM.storageStore evm0Stele evm0Stele.executionEnv.codeOwner
     (healSinSlot I) sinNew
-  let evmDaiSolm := Solm.EVM.storageStore evmSinSolm evmSinSolm.executionEnv.codeOwner
+  let evmDaiStele := Stele.EVM.storageStore evmSinStele evmSinStele.executionEnv.codeOwner
     (healDaiSlot I) daiNew
-  let evmViceSolm := Solm.EVM.storageStore evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+  let evmViceStele := Stele.EVM.storageStore evmDaiStele evmDaiStele.executionEnv.codeOwner
     healViceSlot viceNew
-  have hmapSinSolm :
-      Eq evmSinSolm.accountMap
+  have hmapSinStele :
+      Eq evmSinStele.accountMap
         (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) := by
-    dsimp [evmSinSolm, evm0Solm]
+    dsimp [evmSinStele, evm0Stele]
     rw [storageStore_accountMap]
     simpa [initState] using
       rfl
-  have hdaiEnoughSolmLoad :
+  have hdaiEnoughSteleLoad :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
           (healDaiSlot I)).toNat := by
     have htmp := hdaiEnoughEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapSinSolm] at htmp
-    simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-  have hdaiNewSolmLoad :
+    rw [← hmapSinStele] at htmp
+    simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+  have hdaiNewSteleLoad :
       UInt256.sub
-          (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
             (healDaiSlot I)) (healRad I) = daiNew := by
     have htmp := hdaiNewEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapSinSolm] at htmp
-    simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-  have hmapDaiSolm :
-      Eq evmDaiSolm.accountMap
+    rw [← hmapSinStele] at htmp
+    simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+  have hmapDaiStele :
+      Eq evmDaiStele.accountMap
         (sstoreAccountMap I.codeOwner
           (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
           (healDaiSlot I) daiNew) := by
-    dsimp [evmDaiSolm]
+    dsimp [evmDaiStele]
     rw [storageStore_accountMap]
-    simpa [evmSinSolm, evm0Solm, storageStore_executionEnv, initState] using
+    simpa [evmSinStele, evm0Stele, storageStore_executionEnv, initState] using
       congrArg (fun accounts =>
-        sstoreAccountMap I.codeOwner accounts (healDaiSlot I) daiNew) hmapSinSolm
-  have hviceEnoughSolmLoad :
+        sstoreAccountMap I.codeOwner accounts (healDaiSlot I) daiNew) hmapSinStele
+  have hviceEnoughSteleLoad :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner
           healViceSlot).toNat := by
-    have howner : evmSinSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+    have howner : evmSinStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmSinStele, evm0Stele, storageStore_executionEnv, initState]
     have htmp := hviceEnoughEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapDaiSolm] at htmp
-    simpa [howner, evmDaiSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+    rw [← hmapDaiStele] at htmp
+    simpa [howner, evmDaiStele, Stele.EVM.storageLoad, storageStore_executionEnv,
       State.lookupAccount, Account.lookupStorage] using htmp
-  have hviceNewSolmLoad :
+  have hviceNewSteleLoad :
       UInt256.sub
-          (Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner
             healViceSlot) (healRad I) = viceNew := by
-    have howner : evmSinSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+    have howner : evmSinStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmSinStele, evm0Stele, storageStore_executionEnv, initState]
     have htmp := hviceNewEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapDaiSolm] at htmp
-    simpa [howner, evmDaiSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+    rw [← hmapDaiStele] at htmp
+    simpa [howner, evmDaiStele, Stele.EVM.storageLoad, storageStore_executionEnv,
       State.lookupAccount, Account.lookupStorage] using htmp
-  have hmapViceSolm :
-      Eq evmViceSolm.accountMap
+  have hmapViceStele :
+      Eq evmViceStele.accountMap
         (sstoreAccountMap I.codeOwner
           (sstoreAccountMap I.codeOwner
             (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
             (healDaiSlot I) daiNew)
           healViceSlot viceNew) := by
-    dsimp [evmViceSolm]
+    dsimp [evmViceStele]
     rw [storageStore_accountMap]
-    simpa [evmDaiSolm, evmSinSolm, evm0Solm, storageStore_executionEnv, initState] using
+    simpa [evmDaiStele, evmSinStele, evm0Stele, storageStore_executionEnv, initState] using
       congrArg (fun accounts =>
-        sstoreAccountMap I.codeOwner accounts healViceSlot viceNew) hmapDaiSolm
-  have hdebtEnoughSolmLoad :
+        sstoreAccountMap I.codeOwner accounts healViceSlot viceNew) hmapDaiStele
+  have hdebtEnoughSteleLoad :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evmViceSolm evmViceSolm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evmViceStele evmViceStele.executionEnv.codeOwner
           healDebtSlot).toNat := by
-    have howner : evmDaiSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmDaiSolm, evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+    have howner : evmDaiStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmDaiStele, evmSinStele, evm0Stele, storageStore_executionEnv, initState]
     have htmp := hdebtEnoughEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapViceSolm] at htmp
-    simpa [howner, evmViceSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+    rw [← hmapViceStele] at htmp
+    simpa [howner, evmViceStele, Stele.EVM.storageLoad, storageStore_executionEnv,
       State.lookupAccount, Account.lookupStorage] using htmp
-  have hdebtNewSolmLoad :
+  have hdebtNewSteleLoad :
       UInt256.sub
-          (Solm.EVM.storageLoad evmViceSolm evmViceSolm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evmViceStele evmViceStele.executionEnv.codeOwner
             healDebtSlot) (healRad I) = debtNew := by
-    have howner : evmDaiSolm.executionEnv.codeOwner = I.codeOwner := by
-      simp [evmDaiSolm, evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+    have howner : evmDaiStele.executionEnv.codeOwner = I.codeOwner := by
+      simp [evmDaiStele, evmSinStele, evm0Stele, storageStore_executionEnv, initState]
     have htmp := hdebtNewEvm
     simp [solcSlotWordAt, solcSlotWord] at htmp
-    rw [← hmapViceSolm] at htmp
-    simpa [howner, evmViceSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+    rw [← hmapViceStele] at htmp
+    simpa [howner, evmViceStele, Stele.EVM.storageLoad, storageStore_executionEnv,
       State.lookupAccount, Account.lookupStorage] using htmp
-  have hsinNewSolmLoad :
+  have hsinNewSteleLoad :
       UInt256.sub
-          (Solm.EVM.storageLoad evm0Solm evm0Solm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm0Stele evm0Stele.executionEnv.codeOwner
             (healSinSlot I)) (healRad I) = sinNew := by
-    simpa [evm0Solm, initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinNewEvm
-  have hsinEnoughSolmLoad :
+    simpa [evm0Stele, initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinNewEvm
+  have hsinEnoughSteleLoad :
       (healRad I).toNat ≤
-        (Solm.EVM.storageLoad evm0Solm evm0Solm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm0Stele evm0Stele.executionEnv.codeOwner
           (healSinSlot I)).toNat := by
-    simpa [evm0Solm, initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm
+    simpa [evm0Stele, initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm
   have hbody :
       ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -992,31 +992,31 @@ theorem vatHealAllSuccess
         (.returned { contract := contract, locals := healLocalsDebtNew I sinNew daiNew viceNew debtNew }
           (healPostState (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             I sinNew daiNew viceNew debtNew) none) := by
-    simpa [evm0Solm] using
-      vatHealSourceSuccessNamed
-        (evm := evm0Solm) (I := I)
-        (by simpa [evm0Solm, initState] using hwv)
-        (by simp [evm0Solm, initState])
-        hsinNewSolmLoad
-        hsinEnoughSolmLoad
-        hdaiNewSolmLoad
-        hdaiEnoughSolmLoad
-        hviceNewSolmLoad
-        hviceEnoughSolmLoad
-        hdebtNewSolmLoad
-        hdebtEnoughSolmLoad
+    simpa [evm0Stele] using
+      vatHealSourceSuccessNamed (hperm := by assumption)
+        (evm := evm0Stele) (I := I)
+        (by simpa [evm0Stele, initState] using hwv)
+        (by simp [evm0Stele, initState])
+        hsinNewSteleLoad
+        hsinEnoughSteleLoad
+        hdaiNewSteleLoad
+        hdaiEnoughSteleLoad
+        hviceNewSteleLoad
+        hviceEnoughSteleLoad
+        hdebtNewSteleLoad
+        hdebtEnoughSteleLoad
   exact vatHealFinishSuccess hcode hperm hdispatch hdecode hbody hdebtOk
 
 
 theorem vatDecode_heal_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I) := by
   simpa [config, healTransition, healLocals, healRad, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "rad") hsz36)
 
 theorem vatDecode_heal_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
       (transitionSignature healTransition).paramTypes I.calldata = none := by
   simpa [config, healTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "rad")
@@ -1128,7 +1128,7 @@ theorem vatHealBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some healTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (healTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (healTransition.params.map Param.name)
         (transitionSignature healTransition).paramTypes I.calldata = some (healLocals I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1597⟩ [sel]
@@ -1136,12 +1136,12 @@ theorem vatHealBodyCoreOk
     runtimeRefinementFor config contract σ σ₀ g A I := by
   obtain ⟨_, _, hroutine⟩ := RD.vatHealDecodeToRoutine hreach hsz36 hsize
   by_cases hsinEvm : (solcSlotWordAt (healSinSlot I) σ I).toNat < (healRad I).toNat
-  · have hsinSolm :
-        (Solm.EVM.storageLoad
+  · have hsinStele :
+        (Stele.EVM.storageLoad
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
             (healSinSlot I)).toNat < (healRad I).toNat := by
-      simpa [initState, solcSlotWordAt, Solm.EVM.storageLoad] using hsinEvm
+      simpa [initState, solcSlotWordAt, Stele.EVM.storageLoad] using hsinEvm
     have hbody :
         ExecTransitionBody config contract
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -1150,7 +1150,7 @@ theorem vatHealBodyCoreOk
         (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
         (by simpa [initState] using hwv)
         (by simp [initState])
-        hsinSolm
+        hsinStele
     have hrev := RD.vatHealSinSubUnderflow
       (σ := σ) (σ₀ := σ₀) (A := A)
       (I := I) (g := g) (sel := sel) (rad := healRad I) hroutine hsinEvm
@@ -1168,50 +1168,50 @@ theorem vatHealBodyCoreOk
         (vatHealSourceStatic (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
           (by simpa [initState] using hwv)
           (by simp [initState])
-          (by simpa [initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
+          (by simpa [initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
           (by simpa [initState] using hpf))
     by_cases hdaiEvm :
         (solcSlotWordAt (healDaiSlot I)
           (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) I).toNat <
           (healRad I).toNat
-    · have hsinNewSolm :
+    · have hsinNewStele :
           UInt256.sub (solcSlotWordAt (healSinSlot I) σ I) (healRad I) = sinNew := rfl
-      let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmSinSolm := Solm.EVM.storageStore evm0Solm evm0Solm.executionEnv.codeOwner
+      let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+      let evmSinStele := Stele.EVM.storageStore evm0Stele evm0Stele.executionEnv.codeOwner
         (healSinSlot I)
-        (UInt256.sub (Solm.EVM.storageLoad evm0Solm evm0Solm.executionEnv.codeOwner
+        (UInt256.sub (Stele.EVM.storageLoad evm0Stele evm0Stele.executionEnv.codeOwner
           (healSinSlot I)) (healRad I))
-      have hmapSinSolm :
-          Eq evmSinSolm.accountMap
+      have hmapSinStele :
+          Eq evmSinStele.accountMap
             (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) := by
-        have hsinNewSolmRaw :
+        have hsinNewSteleRaw :
             UInt256.sub
                 (Option.option ⟨0⟩ (fun acc : Account => acc.storage.getD (healSinSlot I) ⟨0⟩)
                   (σ.get? I.codeOwner))
                 (healRad I) = sinNew := by
-          simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewSolm
-        dsimp [evmSinSolm, evm0Solm]
+          simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewStele
+        dsimp [evmSinStele, evm0Stele]
         rw [storageStore_accountMap]
-        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageLoad,
+        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageLoad,
           State.lookupAccount, Account.lookupStorage]
-        rw [hsinNewSolmRaw]
-      have hdaiSolm :
-          (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+        rw [hsinNewSteleRaw]
+      have hdaiStele :
+          (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
               (healDaiSlot I)).toNat < (healRad I).toNat := by
         have htmp := hdaiEvm
         simp [solcSlotWordAt, solcSlotWord] at htmp
-        rw [← hmapSinSolm] at htmp
-        simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
+        rw [← hmapSinStele] at htmp
+        simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
       have hbody :
           ExecTransitionBody config contract
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (healLocals I) healTransition.body .reverted := by
-        exact vatHealSourceDaiUnderflow
+        exact vatHealSourceDaiUnderflow (hperm := by assumption)
           (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
           (by simpa [initState] using hwv)
           (by simp [initState])
-          (by simpa [initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
-          hdaiSolm
+          (by simpa [initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
+          hdaiStele
       have hrev := RD.vatHealDaiSubUnderflow
         (σ := σ) (σ₀ := σ₀) (A := A)
         (I := I) (g := g) (sel := sel) (rad := healRad I) (sinNew := sinNew)
@@ -1234,84 +1234,84 @@ theorem vatHealBodyCoreOk
             (sstoreAccountMap I.codeOwner
               (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
               (healDaiSlot I) daiNew) I).toNat < (healRad I).toNat
-      · have hsinNewSolm :
+      · have hsinNewStele :
             UInt256.sub (solcSlotWordAt (healSinSlot I) σ I) (healRad I) = sinNew := rfl
-        have hdaiNewSolm :
+        have hdaiNewStele :
             UInt256.sub
                 (solcSlotWordAt (healDaiSlot I)
                   (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) I)
                 (healRad I) = daiNew := rfl
-        let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-        let evmSinSolm := Solm.EVM.storageStore evm0Solm evm0Solm.executionEnv.codeOwner
+        let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+        let evmSinStele := Stele.EVM.storageStore evm0Stele evm0Stele.executionEnv.codeOwner
           (healSinSlot I)
-          (UInt256.sub (Solm.EVM.storageLoad evm0Solm evm0Solm.executionEnv.codeOwner
+          (UInt256.sub (Stele.EVM.storageLoad evm0Stele evm0Stele.executionEnv.codeOwner
             (healSinSlot I)) (healRad I))
-        let evmDaiSolm := Solm.EVM.storageStore evmSinSolm
-          evmSinSolm.executionEnv.codeOwner (healDaiSlot I)
-          (UInt256.sub (Solm.EVM.storageLoad evmSinSolm
-            evmSinSolm.executionEnv.codeOwner (healDaiSlot I)) (healRad I))
-        have hmapSinSolm :
-            Eq evmSinSolm.accountMap
+        let evmDaiStele := Stele.EVM.storageStore evmSinStele
+          evmSinStele.executionEnv.codeOwner (healDaiSlot I)
+          (UInt256.sub (Stele.EVM.storageLoad evmSinStele
+            evmSinStele.executionEnv.codeOwner (healDaiSlot I)) (healRad I))
+        have hmapSinStele :
+            Eq evmSinStele.accountMap
               (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) := by
-          have hsinNewSolmRaw :
+          have hsinNewSteleRaw :
               UInt256.sub
                   (Option.option ⟨0⟩ (fun acc : Account => acc.storage.getD (healSinSlot I) ⟨0⟩)
                     (σ.get? I.codeOwner))
                   (healRad I) = sinNew := by
-            simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewSolm
-          dsimp [evmSinSolm, evm0Solm]
+            simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewStele
+          dsimp [evmSinStele, evm0Stele]
           rw [storageStore_accountMap]
-          simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageLoad,
+          simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageLoad,
             State.lookupAccount, Account.lookupStorage]
-          rw [hsinNewSolmRaw]
-        have hdaiEnoughSolmLoad :
+          rw [hsinNewSteleRaw]
+        have hdaiEnoughSteleLoad :
             (healRad I).toNat ≤
-              (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+              (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
                 (healDaiSlot I)).toNat := by
           have htmp := hdaiEnoughEvm
           simp [solcSlotWordAt, solcSlotWord] at htmp
-          rw [← hmapSinSolm] at htmp
-          simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-        have hdaiNewSolmLoad :
+          rw [← hmapSinStele] at htmp
+          simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+        have hdaiNewSteleLoad :
             UInt256.sub
-                (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+                (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
                   (healDaiSlot I)) (healRad I) = daiNew := by
-          have htmp := hdaiNewSolm
+          have htmp := hdaiNewStele
           simp [solcSlotWordAt, solcSlotWord] at htmp
-          rw [← hmapSinSolm] at htmp
-          simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-        have hmapDaiSolm :
-            Eq evmDaiSolm.accountMap
+          rw [← hmapSinStele] at htmp
+          simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+        have hmapDaiStele :
+            Eq evmDaiStele.accountMap
               (sstoreAccountMap I.codeOwner
                 (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
                 (healDaiSlot I) daiNew) := by
-          dsimp [evmDaiSolm]
+          dsimp [evmDaiStele]
           rw [storageStore_accountMap]
-          rw [hdaiNewSolmLoad]
-          simpa [evmSinSolm, evm0Solm, storageStore_executionEnv, initState] using
+          rw [hdaiNewSteleLoad]
+          simpa [evmSinStele, evm0Stele, storageStore_executionEnv, initState] using
             congrArg (fun accounts =>
-              sstoreAccountMap I.codeOwner accounts (healDaiSlot I) daiNew) hmapSinSolm
-        have hviceSolm :
-            (Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+              sstoreAccountMap I.codeOwner accounts (healDaiSlot I) daiNew) hmapSinStele
+        have hviceStele :
+            (Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner
                 healViceSlot).toNat < (healRad I).toNat := by
-          have howner : evmSinSolm.executionEnv.codeOwner = I.codeOwner := by
-            simp [evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+          have howner : evmSinStele.executionEnv.codeOwner = I.codeOwner := by
+            simp [evmSinStele, evm0Stele, storageStore_executionEnv, initState]
           have htmp := hviceEvm
           simp [solcSlotWordAt, solcSlotWord] at htmp
-          rw [← hmapDaiSolm] at htmp
-          simpa [howner, evmDaiSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+          rw [← hmapDaiStele] at htmp
+          simpa [howner, evmDaiStele, Stele.EVM.storageLoad, storageStore_executionEnv,
             State.lookupAccount, Account.lookupStorage] using htmp
         have hbody :
             ExecTransitionBody config contract
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (healLocals I) healTransition.body .reverted := by
-          exact vatHealSourceViceUnderflow
+          exact vatHealSourceViceUnderflow (hperm := by assumption)
             (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
             (by simpa [initState] using hwv)
             (by simp [initState])
-            (by simpa [initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
-            hdaiEnoughSolmLoad
-            hviceSolm
+            (by simpa [initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
+            hdaiEnoughSteleLoad
+            hviceStele
         have hrev := RD.vatHealViceSubUnderflow
           (σ := σ) (σ₀ := σ₀) (A := A)
           (I := I) (g := g) (sel := sel) (rad := healRad I) (sinNew := sinNew)
@@ -1340,131 +1340,131 @@ theorem vatHealBodyCoreOk
                   (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
                   (healDaiSlot I) daiNew)
                 healViceSlot viceNew) I).toNat < (healRad I).toNat
-        · have hsinNewSolm :
+        · have hsinNewStele :
               UInt256.sub (solcSlotWordAt (healSinSlot I) σ I) (healRad I) = sinNew := rfl
-          have hdaiNewSolm :
+          have hdaiNewStele :
               UInt256.sub
                   (solcSlotWordAt (healDaiSlot I)
                     (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) I)
                   (healRad I) = daiNew := rfl
-          have hviceNewSolm :
+          have hviceNewStele :
               UInt256.sub
                   (solcSlotWordAt healViceSlot
                     (sstoreAccountMap I.codeOwner
                       (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
                       (healDaiSlot I) daiNew) I)
                   (healRad I) = viceNew := rfl
-          let evm0Solm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-          let evmSinSolm := Solm.EVM.storageStore evm0Solm evm0Solm.executionEnv.codeOwner
+          let evm0Stele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+          let evmSinStele := Stele.EVM.storageStore evm0Stele evm0Stele.executionEnv.codeOwner
             (healSinSlot I)
-            (UInt256.sub (Solm.EVM.storageLoad evm0Solm evm0Solm.executionEnv.codeOwner
+            (UInt256.sub (Stele.EVM.storageLoad evm0Stele evm0Stele.executionEnv.codeOwner
               (healSinSlot I)) (healRad I))
-          let evmDaiSolm := Solm.EVM.storageStore evmSinSolm
-            evmSinSolm.executionEnv.codeOwner (healDaiSlot I)
-            (UInt256.sub (Solm.EVM.storageLoad evmSinSolm
-              evmSinSolm.executionEnv.codeOwner (healDaiSlot I)) (healRad I))
-          let evmViceSolm := Solm.EVM.storageStore evmDaiSolm
-            evmDaiSolm.executionEnv.codeOwner healViceSlot
-            (UInt256.sub (Solm.EVM.storageLoad evmDaiSolm
-              evmDaiSolm.executionEnv.codeOwner healViceSlot) (healRad I))
-          have hmapSinSolm :
-              Eq evmSinSolm.accountMap
+          let evmDaiStele := Stele.EVM.storageStore evmSinStele
+            evmSinStele.executionEnv.codeOwner (healDaiSlot I)
+            (UInt256.sub (Stele.EVM.storageLoad evmSinStele
+              evmSinStele.executionEnv.codeOwner (healDaiSlot I)) (healRad I))
+          let evmViceStele := Stele.EVM.storageStore evmDaiStele
+            evmDaiStele.executionEnv.codeOwner healViceSlot
+            (UInt256.sub (Stele.EVM.storageLoad evmDaiStele
+              evmDaiStele.executionEnv.codeOwner healViceSlot) (healRad I))
+          have hmapSinStele :
+              Eq evmSinStele.accountMap
                 (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew) := by
-            have hsinNewSolmRaw :
+            have hsinNewSteleRaw :
                 UInt256.sub
                     (Option.option ⟨0⟩ (fun acc : Account => acc.storage.getD (healSinSlot I) ⟨0⟩)
                       (σ.get? I.codeOwner))
                     (healRad I) = sinNew := by
-              simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewSolm
-            dsimp [evmSinSolm, evm0Solm]
+              simpa [-Std.ExtTreeMap.get?_eq_getElem?, solcSlotWordAt, solcSlotWord, Account.lookupStorage] using hsinNewStele
+            dsimp [evmSinStele, evm0Stele]
             rw [storageStore_accountMap]
-            simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageLoad,
+            simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageLoad,
               State.lookupAccount, Account.lookupStorage]
-            rw [hsinNewSolmRaw]
-          have hdaiEnoughSolmLoad :
+            rw [hsinNewSteleRaw]
+          have hdaiEnoughSteleLoad :
               (healRad I).toNat ≤
-                (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+                (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
                   (healDaiSlot I)).toNat := by
             have htmp := hdaiEnoughEvm
             simp [solcSlotWordAt, solcSlotWord] at htmp
-            rw [← hmapSinSolm] at htmp
-            simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-          have hdaiNewSolmLoad :
+            rw [← hmapSinStele] at htmp
+            simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+          have hdaiNewSteleLoad :
               UInt256.sub
-                  (Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner
+                  (Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner
                     (healDaiSlot I)) (healRad I) = daiNew := by
-            have htmp := hdaiNewSolm
+            have htmp := hdaiNewStele
             simp [solcSlotWordAt, solcSlotWord] at htmp
-            rw [← hmapSinSolm] at htmp
-            simpa [evmSinSolm, Solm.EVM.storageLoad, storageStore_executionEnv] using htmp
-          have hmapDaiSolm :
-              Eq evmDaiSolm.accountMap
+            rw [← hmapSinStele] at htmp
+            simpa [evmSinStele, Stele.EVM.storageLoad, storageStore_executionEnv] using htmp
+          have hmapDaiStele :
+              Eq evmDaiStele.accountMap
                 (sstoreAccountMap I.codeOwner
                   (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
                   (healDaiSlot I) daiNew) := by
-            dsimp [evmDaiSolm]
+            dsimp [evmDaiStele]
             rw [storageStore_accountMap]
-            rw [hdaiNewSolmLoad]
-            simpa [evmSinSolm, evm0Solm, storageStore_executionEnv, initState] using
+            rw [hdaiNewSteleLoad]
+            simpa [evmSinStele, evm0Stele, storageStore_executionEnv, initState] using
               congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts
-                (healDaiSlot I) daiNew) hmapSinSolm
-          have hviceEnoughSolmLoad :
+                (healDaiSlot I) daiNew) hmapSinStele
+          have hviceEnoughSteleLoad :
               (healRad I).toNat ≤
-                (Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+                (Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner
                   healViceSlot).toNat := by
-            have howner : evmSinSolm.executionEnv.codeOwner = I.codeOwner := by
-              simp [evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+            have howner : evmSinStele.executionEnv.codeOwner = I.codeOwner := by
+              simp [evmSinStele, evm0Stele, storageStore_executionEnv, initState]
             have htmp := hviceEnoughEvm
             simp [solcSlotWordAt, solcSlotWord] at htmp
-            rw [← hmapDaiSolm] at htmp
-            simpa [howner, evmDaiSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+            rw [← hmapDaiStele] at htmp
+            simpa [howner, evmDaiStele, Stele.EVM.storageLoad, storageStore_executionEnv,
               State.lookupAccount, Account.lookupStorage] using htmp
-          have hviceNewSolmLoad :
+          have hviceNewSteleLoad :
               UInt256.sub
-                  (Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner
+                  (Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner
                     healViceSlot) (healRad I) = viceNew := by
-            have howner : evmSinSolm.executionEnv.codeOwner = I.codeOwner := by
-              simp [evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
-            have htmp := hviceNewSolm
+            have howner : evmSinStele.executionEnv.codeOwner = I.codeOwner := by
+              simp [evmSinStele, evm0Stele, storageStore_executionEnv, initState]
+            have htmp := hviceNewStele
             simp [solcSlotWordAt, solcSlotWord] at htmp
-            rw [← hmapDaiSolm] at htmp
-            simpa [howner, evmDaiSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+            rw [← hmapDaiStele] at htmp
+            simpa [howner, evmDaiStele, Stele.EVM.storageLoad, storageStore_executionEnv,
               State.lookupAccount, Account.lookupStorage] using htmp
-          have hmapViceSolm :
-              Eq evmViceSolm.accountMap
+          have hmapViceStele :
+              Eq evmViceStele.accountMap
                 (sstoreAccountMap I.codeOwner
                   (sstoreAccountMap I.codeOwner
                     (sstoreAccountMap I.codeOwner σ (healSinSlot I) sinNew)
                     (healDaiSlot I) daiNew)
                   healViceSlot viceNew) := by
-            dsimp [evmViceSolm]
+            dsimp [evmViceStele]
             rw [storageStore_accountMap]
-            rw [hviceNewSolmLoad]
-            simpa [evmDaiSolm, evmSinSolm, evm0Solm, storageStore_executionEnv, initState] using
+            rw [hviceNewSteleLoad]
+            simpa [evmDaiStele, evmSinStele, evm0Stele, storageStore_executionEnv, initState] using
               congrArg (fun accounts => sstoreAccountMap I.codeOwner accounts
-                healViceSlot viceNew) hmapDaiSolm
-          have hdebtSolm :
-              (Solm.EVM.storageLoad evmViceSolm evmViceSolm.executionEnv.codeOwner
+                healViceSlot viceNew) hmapDaiStele
+          have hdebtStele :
+              (Stele.EVM.storageLoad evmViceStele evmViceStele.executionEnv.codeOwner
                   healDebtSlot).toNat < (healRad I).toNat := by
-            have howner : evmDaiSolm.executionEnv.codeOwner = I.codeOwner := by
-              simp [evmDaiSolm, evmSinSolm, evm0Solm, storageStore_executionEnv, initState]
+            have howner : evmDaiStele.executionEnv.codeOwner = I.codeOwner := by
+              simp [evmDaiStele, evmSinStele, evm0Stele, storageStore_executionEnv, initState]
             have htmp := hdebtEvm
             simp [solcSlotWordAt, solcSlotWord] at htmp
-            rw [← hmapViceSolm] at htmp
-            simpa [howner, evmViceSolm, Solm.EVM.storageLoad, storageStore_executionEnv,
+            rw [← hmapViceStele] at htmp
+            simpa [howner, evmViceStele, Stele.EVM.storageLoad, storageStore_executionEnv,
               State.lookupAccount, Account.lookupStorage] using htmp
           have hbody :
               ExecTransitionBody config contract
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (healLocals I) healTransition.body .reverted := by
-            exact vatHealSourceDebtUnderflow
+            exact vatHealSourceDebtUnderflow (hperm := by assumption)
               (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I) (I := I)
               (by simpa [initState] using hwv)
               (by simp [initState])
-              (by simpa [initState, Solm.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
-              hdaiEnoughSolmLoad
-              hviceEnoughSolmLoad
-              hdebtSolm
+              (by simpa [initState, Stele.EVM.storageLoad, solcSlotWordAt] using hsinEnoughEvm)
+              hdaiEnoughSteleLoad
+              hviceEnoughSteleLoad
+              hdebtStele
           have hrev := RD.vatHealDebtSubUnderflow
             (σ := σ) (σ₀ := σ₀) (A := A)
             (I := I) (g := g) (sel := sel) (rad := healRad I) (sinNew := sinNew)

@@ -5,7 +5,7 @@ import Benchmarks.Dss.Clipper.GetStatusBody
 import Reasoning.ExternalCall
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

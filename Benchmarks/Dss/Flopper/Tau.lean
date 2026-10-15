@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flopper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flopper
 
@@ -10,9 +10,9 @@ def tauWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   uint48Offset6Word ⟨6⟩ σ I
 
 theorem flopperDecode_tau {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tauTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tauTransition.params.map Param.name)
       (transitionSignature tauTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flopperReachTauBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem flopperTauBodyCore
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some tauTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (tauTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (tauTransition.params.map Param.name)
         (transitionSignature tauTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨833⟩ [sel]
@@ -71,7 +71,7 @@ theorem flopperTauBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (tauWord σ I).toNat))])) := by
     simpa [tauTransition, tauWord, uint48Offset6Word, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       flopperUint48GetterBodyReturns_offset6
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := tauRef) (er := ({ base := "tau", steps := [] } : EvaledStorageRef))

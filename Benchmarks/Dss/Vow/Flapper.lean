@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -36,9 +36,9 @@ theorem vowDispatch_flapper {I : ExecutionEnv}
     exact hsel
 
 theorem vowDecode_flapper {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (flapperTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (flapperTransition.params.map Param.name)
       (transitionSignature flapperTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachFlapperBody {σ σ₀ A I} {g : Sat256}
@@ -75,7 +75,7 @@ theorem vowFlapperBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapperTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapperTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapperTransition.params.map Param.name)
         (transitionSignature flapperTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨501⟩ [sel]
@@ -88,7 +88,7 @@ theorem vowFlapperBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (flapperWord σ I).toNat))])) := by
     simpa [flapperTransition, flapperWord, solcAddressSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       vowAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := flapperRef) (er := ({ base := "flapper", steps := [] } : EvaledStorageRef))

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.End.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -13,9 +13,9 @@ def vowWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨4⟩ σ I
 
 theorem endDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 abbrev endVowConcreteSelector : ByteArray := selectorBytes 0x62 0x6c 0xb3 0xc5
@@ -67,7 +67,7 @@ theorem endVowBodyCore
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vowTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
         (transitionSignature vowTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨715⟩ [sel]
@@ -80,7 +80,7 @@ theorem endVowBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (vowWord σ I).toNat))])) := by
     simpa [vowTransition, vowWord, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       endAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))

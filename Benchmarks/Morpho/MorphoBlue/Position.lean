@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MorphoBlue.Storage
 # Morpho `position(bytes32,address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 4366; reach lemma `morphoReachPositionBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -220,7 +220,7 @@ theorem morphoPositionBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
   by_cases hlen : 68 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 36).toNat < EVM.addressModulus
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (positionTransition.params.map Param.name)
             (transitionSignature positionTransition).paramTypes I.calldata =
             some (positionArgs I.calldata) := by

@@ -4,10 +4,10 @@ import Examples.UniswapV2Pair.Bytecode
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Solc
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -55,7 +55,7 @@ abbrev uniswapUint256Value (w : UInt256) : Value :=
 /-! ## Shared reentrancy-lock source helpers -/
 
 def uniswapUnlockedState (evm : EVM.State) (val : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩ val
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨12⟩ val
 
 def uniswapLockEnteredState (evm : EVM.State) : EVM.State :=
   uniswapUnlockedState evm ⟨0⟩
@@ -72,7 +72,7 @@ theorem evalExpr_uniswap_unlocked (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "unlocked" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage unlockedRef) =
       .ok (.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat)) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat)) := by
   rw [evalExpr_storage_scalar
     (hbackend := rfl)
     (t := .int uint256Int)
@@ -84,7 +84,7 @@ theorem evalExpr_uniswap_unlocked (evm : EVM.State) (locals : Store)
 
 theorem evalExpr_uniswap_unlocked_eq_one_true (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "unlocked" = none)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage unlockedRef) (.intLit 1)) = .ok (.bool true) := by
   simp only [evalExpr?, evalExpr_uniswap_unlocked evm locals hbase, EvalResult.bind, bind, pure,
@@ -94,22 +94,22 @@ theorem evalExpr_uniswap_unlocked_eq_one_true (evm : EVM.State) (locals : Store)
 
 theorem evalExpr_uniswap_unlocked_eq_one_false (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "unlocked" = none)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage unlockedRef) (.intLit 1)) = .ok (.bool false) := by
   have hval :
       (Value.int
-          (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat) ==
+          (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat) ==
         Value.int 1) = false := by
     rw [beq_eq_false_iff_ne]
     intro hvalue
     rw [Value.int.injEq] at hvalue
     apply hlocked
-    have hnat : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat = 1 := by
+    have hnat : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat = 1 := by
       exact Int.ofNat.inj hvalue
     calc
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩
-          = UInt256.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat := by
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩
+          = UInt256.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩).toNat := by
               exact (u256_ofNat_toNat _).symm
       _ = UInt256.ofNat 1 := by rw [hnat]
       _ = ⟨1⟩ := by native_decide
@@ -146,7 +146,8 @@ theorem uniswapAssignUnlockedOne (evm : EVM.State) (locals : Store)
 theorem uniswapLockEnterPrefix (evm : EVM.State) (locals : Store)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hbase : locals.get? "unlocked" = none)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩) :
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm lockEnter
       (.ok { contract := contract, locals := locals } (uniswapLockEnteredState evm)) := by
   change ExecBlock config { contract := contract, locals := locals } evm
@@ -154,7 +155,7 @@ theorem uniswapLockEnterPrefix (evm : EVM.State) (locals : Store)
       .require (.binary .eq (.storage unlockedRef) (.intLit 1)),
       .assign .storage unlockedRef (.intLit 0) ]
     (.ok { contract := contract, locals := locals } (uniswapLockEnteredState evm))
-  exact nonpayableRequireAssignStorageBlock hwv
+  exact nonpayableRequireAssignStorageBlock (hperm := hperm) hwv
     (evalExpr_uniswap_unlocked_eq_one_true evm locals hbase hunlocked)
     (by simp [evalExpr?, pure])
     (uniswapAssignUnlockedZero evm locals hbase)
@@ -172,7 +173,7 @@ theorem uniswapLockEnterNonpayableRevert (evm : EVM.State) (locals : Store)
 theorem uniswapLockEnterLockedRevert (evm : EVM.State) (locals : Store)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hbase : locals.get? "unlocked" = none)
-    (hlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
+    (hlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ ≠ ⟨1⟩) :
     ExecBlock config { contract := contract, locals := locals } evm lockEnter .reverted := by
   change ExecBlock config { contract := contract, locals := locals } evm
     [ .require (.binary .eq (.env .callvalue) (.intLit 0)),
@@ -186,7 +187,7 @@ theorem uniswapLockEnterLockedRevert (evm : EVM.State) (locals : Store)
 theorem uniswapLockEnterStatic (evm : EVM.State) (locals : Store)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hbase : locals.get? "unlocked" = none)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecBlock config { contract := contract, locals := locals } evm lockEnter
       .staticViolation := by
@@ -202,13 +203,14 @@ theorem uniswapLockEnterStatic (evm : EVM.State) (locals : Store)
     (uniswapAssignUnlockedZero evm locals hbase) hperm)
 
 theorem uniswapLockExitSuffix (evm : EVM.State) (locals : Store)
-    (hbase : locals.get? "unlocked" = none) :
+    (hbase : locals.get? "unlocked" = none)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := locals } evm lockExit
       (.ok { contract := contract, locals := locals } (uniswapLockExitedState evm)) := by
   change ExecBlock config { contract := contract, locals := locals } evm
     [ .assign .storage unlockedRef (.intLit 1) ]
     (.ok { contract := contract, locals := locals } (uniswapLockExitedState evm))
-  exact assignStorageBlock (by simp [evalExpr?, pure])
+  exact assignStorageBlock (hperm := hperm) (by simp [evalExpr?, pure])
     (uniswapAssignUnlockedOne evm locals hbase)
 
 /-! ## Packed reserve-slot helpers -/
@@ -221,7 +223,7 @@ abbrev reserve32Mask : UInt256 := ⟨4294967295⟩
 theorem uniswapStorageLocLoad_uint112_offset0 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint112Loc0 slot) =
       .int (Int.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) reserve112Mask).toNat) := by
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) reserve112Mask).toNat) := by
   rw [← show UInt256.ofNat (2 ^ (8 * 14) - 1) = reserve112Mask by native_decide]
   simpa [uint112Loc0, uint112Int] using
     storageLocLoad_uint_offset0 evm slot (14 : Fin 33) ⟨112, by decide⟩ (by decide)
@@ -230,7 +232,7 @@ theorem uniswapStorageLocLoad_uint112_offset0 (evm : EVM.State) (slot : UInt256)
 theorem uniswapStorageLocLoad_uint112_offset14 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint112Loc14 slot) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           reserve112Shift) reserve112Mask).toNat) := by
   rw [← show UInt256.ofNat (256 ^ 14) = reserve112Shift by native_decide]
   rw [← show UInt256.ofNat (256 ^ 14 - 1) = reserve112Mask by native_decide]
@@ -241,7 +243,7 @@ theorem uniswapStorageLocLoad_uint112_offset14 (evm : EVM.State) (slot : UInt256
 theorem uniswapStorageLocLoad_uint32_offset28 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint32Loc28 slot) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           reserve224Shift) reserve32Mask).toNat) := by
   rw [← show UInt256.ofNat (256 ^ 28) = reserve224Shift by native_decide]
   rw [← show UInt256.ofNat (256 ^ 4 - 1) = reserve32Mask by native_decide]
@@ -250,11 +252,11 @@ theorem uniswapStorageLocLoad_uint32_offset28 (evm : EVM.State) (slot : UInt256)
       (by decide) (by decide) (by decide)
 
 abbrev uniswapReserve0Word (evm : EVM.State) : UInt256 :=
-  UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Mask
+  UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Mask
 
 abbrev uniswapReserve1Word (evm : EVM.State) : UInt256 :=
   UInt256.land
-    (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Shift)
+    (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩) reserve112Shift)
     reserve112Mask
 
 theorem evalExpr_uniswap_storage_uint112_offset0 (evm : EVM.State) (locals : Store)
@@ -265,7 +267,7 @@ theorem evalExpr_uniswap_storage_uint112_offset0 (evm : EVM.State) (locals : Sto
     (hloc : storageLayout er = some (.leaf (uint112Loc0 slot))) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage ref) =
       .ok (.int (Int.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           reserve112Mask).toNat)) := by
   exact evalExpr_storage_scalar_value hbase her hty rfl hloc
     (uniswapStorageLocLoad_uint112_offset0 evm slot)
@@ -279,7 +281,7 @@ theorem evalExpr_uniswap_storage_uint112_offset14 (evm : EVM.State) (locals : St
     evalExpr? config { contract := contract, locals := locals } evm (.storage ref) =
       .ok (.int (Int.ofNat
         (UInt256.land (UInt256.div
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) reserve112Shift)
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) reserve112Shift)
           reserve112Mask).toNat)) := by
   exact evalExpr_storage_scalar_value hbase her hty rfl hloc
     (uniswapStorageLocLoad_uint112_offset14 evm slot)
@@ -545,9 +547,9 @@ theorem setUint32Offset28Word_toNat (old val : UInt256) :
 
 theorem uniswapStorageLocStore_uint112_offset0 (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (uint112Loc0 slot) (uniswapUint256Value val) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (setUint112Offset0Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
   unfold storageLocStore storageLocWriteWord uint112Loc0 uniswapUint256Value uint256Value
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hvlen := (EVM.Word.toBytesLEWithSizeProof val).2
@@ -557,7 +559,7 @@ theorem uniswapStorageLocStore_uint112_offset0 (evm : EVM.State) (slot val : UIn
       (List.take (0 : Fin 32).val _ ++ List.take (14 : Fin 33).val _
         ++ List.drop ((0 : Fin 32).val + (14 : Fin 33).val) _) =
       (setUint112Offset0Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
   rw [show (0 : Fin 32).val = 0 from rfl, show (14 : Fin 33).val = 14 from rfl,
     List.take_zero, List.nil_append]
   rw [fromBytes'_append, fromBytes'_take_wordLE_land_mask val 14 (by decide),
@@ -575,13 +577,13 @@ theorem uniswapStorageLocStore_uint112_offset0 (evm : EVM.State) (slot val : UIn
 
 theorem uniswapStorageLocStore_uint112_offset14 (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (uint112Loc14 slot) (uniswapUint256Value val) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (setUint112Offset14Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
   unfold storageLocStore storageLocWriteWord uint112Loc14 uniswapUint256Value uint256Value
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof val).2
   congr 2
   apply u256_inj
@@ -589,25 +591,25 @@ theorem uniswapStorageLocStore_uint112_offset14 (evm : EVM.State) (slot val : UI
       (List.take (14 : Fin 32).val _ ++ List.take (14 : Fin 33).val _
         ++ List.drop ((14 : Fin 32).val + (14 : Fin 33).val) _) =
       (setUint112Offset14Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
   rw [show (14 : Fin 32).val = 14 from rfl, show (14 : Fin 33).val = 14 from rfl,
     show (14 : Nat) + 14 = 28 by norm_num]
   rw [List.append_assoc]
   rw [fromBytes'_append
     (List.take 14 (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)
     (List.take 14 (EVM.Word.toBytesLEWithSizeProof val).1 ++
       List.drop 28 (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
   rw [fromBytes'_append
     (List.take 14 (EVM.Word.toBytesLEWithSizeProof val).1)
     (List.drop 28 (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
   rw [fromBytes'_take_wordLE_land_mask _ 14 (by decide),
     fromBytes'_take_wordLE_land_mask val 14 (by decide),
     fromBytes'_drop_wordLE]
   have hlenOld14 : ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 14).length = 14 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 14).length = 14 := by
     rw [List.length_take, hslen]
     norm_num
   have hlenVal14 : ((EVM.Word.toBytesLEWithSizeProof val).1.take 14).length = 14 := by
@@ -623,13 +625,13 @@ theorem uniswapStorageLocStore_uint112_offset14 (evm : EVM.State) (slot val : UI
 
 theorem uniswapStorageLocStore_uint32_offset28 (evm : EVM.State) (slot val : UInt256) :
     storageLocStore evm (uint32Loc28 slot) (uniswapUint256Value val) =
-      some (Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
+      some (Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
         (setUint32Offset28Word
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val)) := by
   unfold storageLocStore storageLocWriteWord uint32Loc28 uniswapUint256Value uint256Value
   simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   have hslen := (EVM.Word.toBytesLEWithSizeProof
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).2
   have hvlen := (EVM.Word.toBytesLEWithSizeProof val).2
   congr 2
   apply u256_inj
@@ -637,24 +639,24 @@ theorem uniswapStorageLocStore_uint32_offset28 (evm : EVM.State) (slot val : UIn
       (List.take (28 : Fin 32).val _ ++ List.take (4 : Fin 33).val _
         ++ List.drop ((28 : Fin 32).val + (4 : Fin 33).val) _) =
       (setUint32Offset28Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) val).toNat
   rw [show (28 : Fin 32).val = 28 from rfl, show (4 : Fin 33).val = 4 from rfl,
     show (28 : Nat) + 4 = 32 by norm_num]
   rw [List.append_assoc]
   rw [fromBytes'_append
     (List.take 28 (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)
     (List.take 4 (EVM.Word.toBytesLEWithSizeProof val).1 ++
       List.drop 32 (EVM.Word.toBytesLEWithSizeProof
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
   rw [fromBytes'_append
     (List.take 4 (EVM.Word.toBytesLEWithSizeProof val).1)
     (List.drop 32 (EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1)]
   rw [fromBytes'_take_wordLE, fromBytes'_take_wordLE_land_mask val 4 (by decide),
     fromBytes'_drop_wordLE]
   have hlenOld28 : ((EVM.Word.toBytesLEWithSizeProof
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 28).length = 28 := by
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)).1.take 28).length = 28 := by
     rw [List.length_take, hslen]
     norm_num
   have hlenVal4 : ((EVM.Word.toBytesLEWithSizeProof val).1.take 4).length = 4 := by
@@ -665,8 +667,8 @@ theorem uniswapStorageLocStore_uint32_offset28 (evm : EVM.State) (slot val : UIn
   rw [show 2 ^ (8 * 28) = 2 ^ 224 by norm_num]
   rw [show 2 ^ (8 * 4) = 2 ^ 32 by norm_num]
   rw [show 256 ^ 32 = 2 ^ 256 by norm_num]
-  rw [show (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat / 2 ^ 256 = 0 by
-    exact Nat.div_eq_of_lt (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt]
+  rw [show (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat / 2 ^ 256 = 0 by
+    exact Nat.div_eq_of_lt (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).val.isLt]
   rw [setUint32Offset28Word_toNat]
   rw [show UInt256.ofNat (2 ^ 32 - 1) = reserve32Mask by native_decide]
   ring_nf
@@ -727,7 +729,7 @@ theorem uniswapAssignBlockTimestampLastOfStore (evm evm' : EVM.State) (locals : 
 
 abbrev uniswapAddressAtSlot (evm : EVM.State) (slot : UInt256) : AccountAddress :=
   AccountAddress.ofNat
-    (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot) solcAddrMask).toNat
+    (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) solcAddrMask).toNat
 
 theorem evalExpr_uniswap_storage_address (evm : EVM.State) (locals : Store)
     {ref : StorageRef} {er : EvaledStorageRef} {slot : UInt256}
@@ -778,7 +780,8 @@ theorem uniswapLowLevelCallRequireSuccess {cfg : Config} {C : ContractDecl}
     (heth : evalExpr? cfg { contract := C, locals := locals } evm eth = .ok (.int sendVal))
     (hdata : evalExpr? cfg { contract := C, locals := locals } evm cdata = .ok (.bytes calldata))
     (hcall : callViaEVM evm (EVM.address target) sendVal calldata (true, evm', out))
-    (hne : (dataVar == okVar) = false) :
+    (hne : (dataVar == okVar) = false)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require (.var okVar) ]
@@ -786,7 +789,7 @@ theorem uniswapLowLevelCallRequireSuccess {cfg : Config} {C : ContractDecl}
         { contract := C, locals := uniswapLowLevelCallRequireStore locals okVar dataVar true out }
         evm') := by
   simpa [uniswapLowLevelCallRequireStore] using
-    lowLevelCallSuccessThenRequireTrue
+    lowLevelCallSuccessThenRequireTrue (hperm := hperm)
       (cfg := cfg) (C := C) (evm := evm) (evm' := evm') (locals := locals)
       (receiver := receiver) (eth := eth) (cdata := cdata) (requireCond := .var okVar)
       (okVar := okVar) (dataVar := dataVar)
@@ -802,13 +805,14 @@ theorem uniswapLowLevelCallRequireFailure {cfg : Config} {C : ContractDecl}
     (heth : evalExpr? cfg { contract := C, locals := locals } evm eth = .ok (.int sendVal))
     (hdata : evalExpr? cfg { contract := C, locals := locals } evm cdata = .ok (.bytes calldata))
     (hcall : callViaEVM evm (EVM.address target) sendVal calldata (false, evm', out))
-    (hne : (dataVar == okVar) = false) :
+    (hne : (dataVar == okVar) = false)
+    (hperm : EVM.wordOfInt sendVal = ⟨0⟩ ∨ evm.executionEnv.perm = true) :
     ExecBlock cfg { contract := C, locals := locals } evm
       [ .lowLevelCall receiver eth cdata okVar dataVar,
         .require (.var okVar) ]
       .reverted := by
   simpa [uniswapLowLevelCallRequireStore] using
-    lowLevelCallFailureThenRequireFalse
+    lowLevelCallFailureThenRequireFalse (hperm := hperm)
       (cfg := cfg) (C := C) (evm := evm) (evm' := evm') (locals := locals)
       (receiver := receiver) (eth := eth) (cdata := cdata) (requireCond := .var okVar)
       (okVar := okVar) (dataVar := dataVar)
@@ -828,7 +832,7 @@ theorem uniswapExternalBalanceOfThisSuccess (evm evm' : EVM.State) (locals : Sto
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ]
       (.ok { contract := contract, locals := locals.insert retVar value } evm') := by
-  exact externalCallSuccess
+  exact externalCallSuccess (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -846,7 +850,7 @@ theorem uniswapExternalBalanceOfThisFailure (evm evm' : EVM.State) (locals : Sto
       "balanceOf" 0 [.address evm.executionEnv.codeOwner] (false, evm', out) false) :
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ] .reverted := by
-  exact externalCallFailure
+  exact externalCallFailure (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -865,7 +869,7 @@ theorem uniswapExternalBalanceOfThisDecodeRevert (evm evm' : EVM.State) (locals 
     (hdec : config.externalABI.decode? "balanceOf" out = none) :
     ExecBlock config { contract := contract, locals := locals } evm
       [ .externalCall (.storage ref) "balanceOf" (.intLit 0) [this] retVar (perm := false) ] .reverted := by
-  exact externalCallDecodeRevert
+  exact externalCallDecodeRevert (hperm := Or.inl rfl)
     (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
     (target := uniswapAddressAtSlot evm slot)
     (evalExpr_uniswap_storage_address evm locals hbase her hty hloc)
@@ -903,7 +907,7 @@ theorem uniswapCheckedExternalBalanceOfThisSuccess (evm evm' : EVM.State) (local
       (balanceOfThisStmts (.storage ref) retVar)
       (.ok { contract := contract, locals := locals.insert retVar value } evm') := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallSuccess
+    checkedExternalCallSuccess (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -926,7 +930,7 @@ theorem uniswapCheckedExternalBalanceOfThisFailure (evm evm' : EVM.State) (local
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -951,7 +955,7 @@ theorem uniswapCheckedExternalBalanceOfThisDecodeRevert
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
   simpa [balanceOfThisStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -1214,7 +1218,7 @@ theorem uniswapAddressGetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -1231,7 +1235,7 @@ theorem uniswapUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -1248,7 +1252,7 @@ theorem uniswapBytes32GetterBodyReturns (evm : EVM.State) (locals : Store)
       (.returned { contract := contract, locals := locals } evm
         (some [(.fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]

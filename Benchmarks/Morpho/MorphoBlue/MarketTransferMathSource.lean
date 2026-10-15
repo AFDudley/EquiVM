@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.SharesUpSource
 import Benchmarks.Morpho.MorphoBlue.AssetsDownSource
 import Benchmarks.Morpho.MorphoBlue.StateBlock
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -47,7 +47,7 @@ theorem marketTransferMath_assetsOk (hz : assets = ⟨0⟩)
       evm (.assign .localVar ⟨"assets", []⟩ (.var "__c5"))
       (.ok { contract := contract, immutables := imms,
                 locals := (locals.insert "__c5" (.int (Int.ofNat value.toNat))).insert "assets" (.int (Int.ofNat value.toNat)) } evm) :=
-    ExecStmt.assign (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.assets_eq)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.assets_eq)
   refine ⟨_, ExecStmt.iteFalse he (ExecBlock.consNormal hcall (ExecBlock.consNormal hass ExecBlock.nil)), hl1.setAssets value, ?_⟩
   rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide)]
 
@@ -88,7 +88,7 @@ theorem marketTransferMath_sharesOk (hn : assets ≠ ⟨0⟩)
       evm (.assign .localVar ⟨"shares", []⟩ (.var "__c4"))
       (.ok { contract := contract, immutables := imms,
                 locals := (locals.insert "__c4" (.int (Int.ofNat value.toNat))).insert "shares" (.int (Int.ofNat value.toNat)) } evm) :=
-    ExecStmt.assign (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.shares_eq)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.shares_eq)
   refine ⟨_, ExecStmt.iteTrue he (ExecBlock.consNormal hcall (ExecBlock.consNormal hass ExecBlock.nil)), hl1.setShares value, ?_⟩
   rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide)]
 

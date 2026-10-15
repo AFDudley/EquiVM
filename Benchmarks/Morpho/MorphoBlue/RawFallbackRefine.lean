@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.RawReturnBlockRefines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 
 variable {cfg : Config} {contract : ContractDecl} {t : TransitionDecl}

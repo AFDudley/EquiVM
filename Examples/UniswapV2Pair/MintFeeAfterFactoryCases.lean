@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintFeeRootRuntimeCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000000 in
@@ -61,7 +61,9 @@ theorem uniswapMintFeeFunctionBodyRuntimeAfterFactoryCasesWithMemory
       obtain ⟨_, _, rdRet⟩ := uniswapMintFeeRuntimeFeeOffKLastNonzeroReturnOfTail rd8026
         hperm hkLast hret hov
       refine Or.inr ⟨false, _, mintFeeKLastClearedState evmFee, _, mem, _, _,
-        uniswapMintFeeFunctionBody_feeOff_kLastNonzero evm evmFee reserve0 reserve1 feeTo
+        uniswapMintFeeFunctionBody_feeOff_kLastNonzero (hperm := by
+          rw [← typedCallViaEVM_executionEnv_eq hcall, henv]
+          exact hperm) evm evmFee reserve0 reserve1 feeTo
           hguard hcall hdec hfeeTo hkLastNat, ?_, ?_, rdRet, hmem, hmem64, ?_, rfl⟩
       · simpa only [mintFeeKLastClearedState, storageStore_accountMap, henv] using
           congrArg (fun m => sstoreAccountMap I.codeOwner m ⟨11⟩ ⟨0⟩) hAccounts

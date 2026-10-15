@@ -2,7 +2,7 @@ import Benchmarks.Auction.TransferCall
 import Benchmarks.Auction.TransferReturn
 import Benchmarks.Auction.ReturnABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

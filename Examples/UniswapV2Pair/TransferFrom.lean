@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.TransferRoutines
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -41,7 +41,7 @@ def transferFromAllowanceSlot (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   allowanceSlot (transferFromFromKey I) (.address evm.executionEnv.source)
 
 def transferFromCurrentAllowanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
 
 abbrev transferFromCurrentAllowanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromCurrentAllowanceWord evm I).toNat)
@@ -54,13 +54,13 @@ def transferFromAllowanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt25
     ((transferFromCurrentAllowanceWord evm I).toNat - (transferFromValueWord I).toNat)
 
 def transferFromAfterAllowanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
     (transferFromAllowanceDebitWord evm I)
 
 theorem transferFromAfterAllowance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterAllowanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterAllowanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterAllowanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
@@ -87,10 +87,10 @@ theorem uniswapDecode_transferFrom_ok {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)
     (_hcanonTo : (transferFromToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"
@@ -101,9 +101,9 @@ theorem uniswapDecode_transferFrom_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_transferFrom_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 100) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, uint256]
+  show config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, uint256]
     I.calldata = none
   simpa [uint256, abiUInt256]
     using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
@@ -112,10 +112,10 @@ theorem uniswapDecode_transferFrom_none_short {I : ExecutionEnv}
 theorem uniswapDecode_transferFrom_ok_noncanon_from {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hnc : ¬ (transferFromFromWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"
@@ -128,10 +128,10 @@ theorem uniswapDecode_transferFrom_ok_noncanon_to {I : ExecutionEnv}
     (hsz100 : 100 ≤ I.calldata.size)
     (_hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)
     (_hnc : ¬ (transferFromToWord I).toNat < EVM.addressModulus) :
-    decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
       (transitionSignature transferFromTransition).paramTypes I.calldata =
         some (transferFromStore I) := by
-  change decodeCalldataWithMode config.abiDecodeMode ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
+  change config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, abiUInt256]
     I.calldata =
     some ((((∅ : Store).insert "from"
       (.address (AccountAddress.ofNat (calldataWord I.calldata 4).toNat))).insert "to"
@@ -284,7 +284,7 @@ def transferFromFromSlot (I : ExecutionEnv) : UInt256 :=
   balanceOfSlot (transferFromFromKey I)
 
 def transferFromFromBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
 
 def transferFromBalanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat
@@ -349,7 +349,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterDebit {σ σ₀ A I} {g : Sat25
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount, Account.lookupStorage,
       hstateMap, hfromSlot, hcodeOwner]
   have hbalanceEvm : (transferFromValueWord I).toNat ≤
@@ -658,12 +658,12 @@ abbrev transferFromStoreFromBalance (evm : EVM.State) (I : ExecutionEnv) : Store
     (transferFromFromBalanceValue (transferFromAfterAllowanceState evm I) I)
 
 def transferFromAfterBalanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
     (transferFromFromSlot I) (transferFromBalanceDebitWord evm I)
 
 theorem transferFromAfterBalance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterBalanceState evm I).executionEnv.codeOwner = evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterBalanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterBalanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases (transferFromAfterAllowanceState evm I).accountMap.get? evm.executionEnv.codeOwner with
   | none => exact transferFromAfterAllowance_codeOwner evm I
   | some acc =>
@@ -677,7 +677,7 @@ def transferFromToSlot (I : ExecutionEnv) : UInt256 :=
   balanceOfSlot (transferFromToKey I)
 
 def transferFromToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I)
 
 abbrev transferFromToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -696,20 +696,20 @@ abbrev transferFromNewToValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromNewToNat evm I))
 
 def transferFromPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I) (transferFromNewToWord evm I)
 
 def transferFromBalanceDebitWordMax (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat ((transferFromFromBalanceWord evm I).toNat - (transferFromValueWord I).toNat)
 
 def transferFromAfterBalanceStateMax (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromFromSlot I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromFromSlot I)
     (transferFromBalanceDebitWordMax evm I)
 
 theorem transferFromAfterBalanceMax_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterBalanceStateMax evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterBalanceStateMax, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterBalanceStateMax, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
@@ -807,7 +807,7 @@ theorem uniswapTransferFromX_allowanceMaxAfterSenderStore {σ σ₀ A I} {g : Sa
   exact ⟨_, _, rd7582⟩
 
 def transferFromToBalanceWordMax (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromAfterBalanceStateMax evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferFromAfterBalanceStateMax evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I)
 
 abbrev transferFromToBalanceValueMax (evm : EVM.State) (I : ExecutionEnv) : Value :=
@@ -823,7 +823,7 @@ abbrev transferFromNewToValueMax (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromNewToNatMax evm I))
 
 def transferFromPostStateMax (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterBalanceStateMax evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterBalanceStateMax evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I) (transferFromNewToWordMax evm I)
 
 theorem transferFromNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -910,7 +910,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterCreditCalc {σ σ₀ A I} {g : 
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [hinitCodeOwner]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]
@@ -988,7 +988,7 @@ theorem uniswapTransferFromX_allowanceMaxAfterCreditCalc {σ σ₀ A I} {g : Sat
         transferFromToBalanceWordMax (initState σ σ₀ g A I) I := by
     simp [-Std.ExtTreeMap.get?_eq_getElem?, σDebit, uniswapCodeOwnerStorageWord,
       transferFromToBalanceWordMax,
-      transferFromAfterBalanceStateMax, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      transferFromAfterBalanceStateMax, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap, hfromSlot, htoSlot]
   have hfitWord :
       (uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToWord I) ⟨1⟩)).toNat +
@@ -1677,7 +1677,8 @@ theorem uniswapTransferFromAllowanceFinitePrefix (evm : EVM.State) (I : Executio
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hnotMax : (transferFromCurrentAllowanceWord evm I).toNat ≠ UInt256.size - 1)
     (henough : (transferFromValueWord I).toNat ≤
-      (transferFromCurrentAllowanceWord evm I).toNat) :
+      (transferFromCurrentAllowanceWord evm I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := transferFromStore I } evm
       transferFromAllowancePrefixBody
       (.ok { contract := contract, locals := transferFromStoreCurrentAllowance evm I }
@@ -1700,7 +1701,9 @@ theorem uniswapTransferFromAllowanceFinitePrefix (evm : EVM.State) (I : Executio
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I henough)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I henough)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I henough)
       (transferFromAssignAllowance evm I)) ExecBlock.nil
 
 theorem uniswapTransferFromAllowanceMaxPrefix (evm : EVM.State) (I : ExecutionEnv)
@@ -1795,7 +1798,8 @@ theorem uniswapTransferFromBodyReturns_finiteAllowance (evm : EVM.State) (I : Ex
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromNewToNat evm I < UInt256.size) :
+    (hfit : transferFromNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStoreToBalance evm I }
         (transferFromPostState evm I) (some [(.bool true)])) := by
@@ -1813,16 +1817,20 @@ theorem uniswapTransferFromBodyReturns_finiteAllowance (evm : EVM.State) (I : Ex
     (.returned { contract := contract, locals := transferFromStoreToBalance evm I }
       (transferFromPostState evm I) (some [(.bool true)]))
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_balance_debit evm I hbalance)
       (transferFromAssignFrom evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalance evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_newToBalance evm I hfit)
       (transferFromAssignTo evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -1830,7 +1838,8 @@ theorem uniswapTransferFromBodyReturns_maxAllowance (evm : EVM.State) (I : Execu
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hmax : (transferFromCurrentAllowanceWord evm I).toNat = UInt256.size - 1)
     (hbalance : (transferFromValueWord I).toNat ≤ (transferFromFromBalanceWord evm I).toNat)
-    (hfit : transferFromNewToNatMax evm I < UInt256.size) :
+    (hfit : transferFromNewToNatMax evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStoreToBalanceMax evm I }
         (transferFromPostStateMax evm I) (some [(.bool true)])) := by
@@ -1852,11 +1861,15 @@ theorem uniswapTransferFromBodyReturns_maxAllowance (evm : EVM.State) (I : Execu
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true_max evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit_max evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_balance_debit_max evm I hbalance)
       (transferFromAssignFromMax evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance_max evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalanceMax evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterBalanceStateMax] using hperm))
+      (evalExpr_transferFrom_newToBalanceMax evm I hfit)
       (transferFromAssignToMax evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -1960,7 +1973,8 @@ theorem uniswapTransferFromBodyReverts_balance_finiteAllowance
     (hallowance : (transferFromValueWord I).toNat ≤
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hlt : (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromValueWord I).toNat) :
+      (transferFromValueWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -1976,7 +1990,7 @@ theorem uniswapTransferFromBodyReverts_balance_finiteAllowance
         .return [(.boolLit true)] ])
     .reverted
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (evalExpr_transferFrom_require_from_false evm I hlt))
@@ -2013,7 +2027,8 @@ theorem uniswapTransferFromBodyReverts_overflow_finiteAllowance
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNat evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2029,12 +2044,14 @@ theorem uniswapTransferFromBodyReverts_overflow_finiteAllowance
         .return [(.boolLit true)] ])
     .reverted
   refine execBlock_append
-    (uniswapTransferFromAllowanceFinitePrefix evm I hwv hnotMax hallowance) ?_
+    (uniswapTransferFromAllowanceFinitePrefix (hperm := by assumption) evm I hwv hnotMax hallowance) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_balance_debit evm I hbalance)
       (transferFromAssignFrom evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   exact ExecBlock.consRevert
@@ -2045,7 +2062,8 @@ theorem uniswapTransferFromBodyReverts_overflow_maxAllowance
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hmax : (transferFromCurrentAllowanceWord evm I).toNat = UInt256.size - 1)
     (hbalance : (transferFromValueWord I).toNat ≤ (transferFromFromBalanceWord evm I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNatMax evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNatMax evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I) transferFromTransition.body
       .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -2065,7 +2083,9 @@ theorem uniswapTransferFromBodyReverts_overflow_maxAllowance
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true_max evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_balance_debit_max evm I hbalance)
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_transferFrom_balance_debit_max evm I hbalance)
       (transferFromAssignFromMax evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance_max evm I)) ?_
   exact ExecBlock.consRevert

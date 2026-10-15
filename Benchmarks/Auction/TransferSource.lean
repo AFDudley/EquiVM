@@ -2,7 +2,7 @@ import Benchmarks.Auction.DepositSource
 import Benchmarks.Auction.TransferCall
 import Benchmarks.Auction.ReturnABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -31,7 +31,9 @@ theorem transferCallSource {s0 I σ evm evm' locals recipient amount ptr out z}
       (.lowLevelCall (.storage wethRef) (.intLit 0)
         (.abiEncodeCall "transfer" [.var "to", .var "amount"]) "_transferSuccess" "_transferData")
       (.ok { contract := auctionContract, locals := transferSourceLocals locals z out } evm') := by
-  apply lowLevelCallSource (wethSourceRead hs hv.weth) (by simp [evalExpr?, pure]) ?_ hc
+  apply lowLevelCallSource (cfg := auctionConfig)
+    (frame := { contract := auctionContract, locals := locals }) (hperm := Or.inl rfl)
+    (wethSourceRead hs hv.weth) (by simp [evalExpr?, pure]) ?_ hc
   have ht : auctionConfig.externalABI.encode? "transfer"
       [.address (paymentAddress recipient), .int (Int.ofNat amount.toNat)] =
       some (transferData recipient amount) := by

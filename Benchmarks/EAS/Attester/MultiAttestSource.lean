@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.MultiAttestAllocation
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -10,14 +10,14 @@ def multiAttestLocals (schemas rows : List Value) : Store :=
 
 theorem multiAttestDecode_some {cd : ByteArray} {schemas rows : List Value}
     (hd : decodeArrays? uint256 cd = some (.array schemas, .array rows)) :
-    decodeCalldataWithMode config.abiDecodeMode (multiAttestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiAttestTransition.params.map Param.name)
       (transitionSignature multiAttestTransition).paramTypes cd =
         some (multiAttestLocals schemas rows) := by
   simpa only [hd, Option.map_some, multiAttestLocals] using
     decodeCalldata_arrays_eq uint256 "schemas" "schemaInputs" cd
 
 theorem multiAttestDecode_none {cd : ByteArray} (hd : decodeArrays? uint256 cd = none) :
-    decodeCalldataWithMode config.abiDecodeMode (multiAttestTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (multiAttestTransition.params.map Param.name)
       (transitionSignature multiAttestTransition).paramTypes cd = none := by
   simpa only [hd, Option.map_none] using decodeCalldata_arrays_eq uint256 "schemas" "schemaInputs"
       cd
@@ -26,10 +26,10 @@ def multiAttestShapeGuard : Expr :=
   .binary .and (.binary .ne (.var "schemaLength") (.intLit 0))
     (.binary .eq (.var "schemaLength") (.arrayLength .localVar ⟨"schemaInputs", []⟩))
 
-theorem multiAttestShapeGuard_eval {cfg solm evm} {n : Nat} {rows : List Value}
-    (hn : solm.locals.get? "schemaLength" = some (.int (Int.ofNat n)))
-    (hr : solm.locals.get? "schemaInputs" = some (.array rows)) :
-    evalExpr? cfg solm evm multiAttestShapeGuard =
+theorem multiAttestShapeGuard_eval {cfg stele evm} {n : Nat} {rows : List Value}
+    (hn : stele.locals.get? "schemaLength" = some (.int (Int.ofNat n)))
+    (hr : stele.locals.get? "schemaInputs" = some (.array rows)) :
+    evalExpr? cfg stele evm multiAttestShapeGuard =
       .ok (.bool (decide (0 < n ∧ rows.length = n))) := by
   rw [multiAttestShapeGuard, evalExpr?, evalLocalNatNeZero hn]
   simp only [bind, EvalResult.bind]
@@ -65,7 +65,7 @@ theorem multiAttestSourceBadShape {imms : Store} {evm : State} {schemas rows : L
   apply ExecBlock.consRevert
   apply ExecStmt.requireFalse
   have he := multiAttestShapeGuard_eval (cfg := config) (evm := evm)
-    (solm := ⟨contract, (multiAttestLocals schemas rows).insert "schemaLength"
+    (stele := ⟨contract, (multiAttestLocals schemas rows).insert "schemaLength"
       (.int (Int.ofNat schemas.length)), imms⟩) (n := schemas.length) (rows := rows)
     (by simp) (by simp [multiAttestLocals, Std.HashMap.getElem?_insert, Std.HashMap.getElem_insert])
   simpa only [decide_eq_false hbad] using he
@@ -105,7 +105,7 @@ theorem multiAttestSourceBuild {imms : Store} {evm : State} {cd : ByteArray}
   have hguard : evalExpr? config ⟨contract, l0, imms⟩ evm multiAttestShapeGuard =
       .ok (.bool true) := by
     have he := multiAttestShapeGuard_eval (cfg := config) (evm := evm)
-      (solm := ⟨contract, l0, imms⟩) hn0 hr0
+      (stele := ⟨contract, l0, imms⟩) hn0 hr0
     rw [hslen, hrlen, decide_eq_true
       (show 0 < arrayCount cd 4 ∧ arrayCount cd 36 = arrayCount cd 4 from hshape)] at he
     exact he

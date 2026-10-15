@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Spot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -10,9 +10,9 @@ def spotVatWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem spotDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem spotReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -55,7 +55,7 @@ theorem spotVatBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (spotVatWord σ I).toNat))])) := by
-    simpa [vatTransition, spotVatWord, solcAddressSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [vatTransition, spotVatWord, solcAddressSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       spotAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

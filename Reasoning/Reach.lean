@@ -31,7 +31,7 @@ ordinary Lean and composes by `RD` transitivity at the call site.
 
 TODO: remove redundant arguments from `RD` and pack remaining as `cursor`.
 -/
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Reasoning.Reach
 
@@ -3331,7 +3331,7 @@ set_option maxHeartbeats 1000000 in
     external message call `Θ` and advance to the successor: the result `(σ', z, o)` is
     abstracted (no assumption on the callee's code), the return bytes `o` are written to memory,
     the status flag `z` is pushed, and the account map advances to `σ'`.  The same `Θ` is what the
-    Solm-side `externalCall` invokes, so the two coincide by construction.  Gas is existential:
+    Stele-side `externalCall` invokes, so the two coincide by construction.  Gas is existential:
     the successor gas is expressed through the charged delta `gc - returnedGas`. -/
 theorem RD.call {code : ByteArray} {ee : ExecutionEnv} {g : Sat256} {s0 : State}
     {pc : UInt256} {mem : ByteArray} {aw : UInt256} {rdata : ByteArray}
@@ -4314,7 +4314,7 @@ theorem RD.callDepthLimitEmptyInOut {code : ByteArray} {ee : ExecutionEnv} {g : 
   rw [hmin, byteArray_write_len_zero] at rd
   exact ⟨k', C', rd⟩
 
-/-- **Hoare while-rule for an `RD` loop** — the EVM analogue of `execWhile_var` (the Solm-side
+/-- **Hoare while-rule for an `RD` loop** — the EVM analogue of `execWhile_var` (the Stele-side
     while-rule).  A variant-indexed invariant `Inv : ℕ → α → Prop` over the loop-carried state `α`
     (whose stack image is `stk a`), together with:
     * **`hexit`** — at variant `0` the guard's `JUMPI` falls through to `exit` with `exitStk`;
@@ -4651,7 +4651,7 @@ theorem RD.invalid {code : ByteArray} {ee : ExecutionEnv} {g : Sat256} {s0 : Sta
     rw [hX, hfuel]
     exact Xstep_X_X_except (g.toNat - k) s (D_J code 0) .InvalidInstruction st
 
-/-- Coupled variant-indexed loop rule for a solc bytecode loop and a Solm `for` loop.
+/-- Coupled variant-indexed loop rule for a solc bytecode loop and a Stele `for` loop.
 
 This is the `RD.whileLoopCarryFull` analogue used when the source loop body may revert before the
 variant reaches zero.  The caller supplies the bytecode transitions for the false-condition exit
@@ -5014,36 +5014,37 @@ theorem selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some
       rw [hsel] at h
       simpa using h
 
-/-- Solm fails to dispatch and `Ξ` reverts ⇒ the `noDispatch` case. This path never runs
-    `solmExec`. -/
+/-- Stele fails to dispatch and `Ξ` reverts ⇒ an execution producing `.noMatch`. -/
 theorem reEquiv_noDispatch {immutables : Store} {cfg contract σ σ₀ g A I} {g' o}
     (hd : dispatchMsg contract I.calldata = none)
     (h : Ξ σ σ₀ g A I = .ok (.revert g' o)) :
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables :=
-  .noDispatch hd h
+  .execution h (.noMatch hd) (.noMatch rfl rfl)
 
-/-- Solm dispatches but decoding fails and `Ξ` reverts ⇒ `decodingFailed`. The Solm body does
+/-- Stele dispatches but decoding fails and `Ξ` reverts ⇒ `decodingFailed`. The Stele body does
     not execute. -/
 theorem reEquiv_decodingFailed {immutables : Store}
     {cfg contract σ σ₀ g A I} {t g' o}
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = none)
     (h : Ξ σ σ₀ g A I = .ok (.revert g' o))
     (hfallback : contract.fallback = none := by rfl)
     (hreceive : contract.receive = none := by rfl) :
     runtimeRefinementFor cfg contract σ σ₀ g A I immutables :=
-  .decodingFailed (selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some hreceive hfallback hd)
-    rfl hdec h
+  .execution h
+    (.decodingFailed
+      (selectorDispatchMsg_eq_some_of_dispatchMsg_eq_some hreceive hfallback hd) hdec)
+    (.decodingFailed rfl rfl)
 
-/-- The Solm transition executes (to `actRes`) and `Ξ`'s result matches ⇒ the `execution` case.
+/-- The Stele transition executes (to `actRes`) and `Ξ`'s result matches ⇒ the `execution` case.
     Both executions start from `σ`; `hequiv` carries their result coupling, including account-map
     equality on success. -/
 theorem reEquiv_execution {immutables : Store}
     {cfg contract σ σ₀ A I} {t callargs actRes}
     {g : UInt256}
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ (.ofUInt256 g) A I) callargs t.body actRes immutables)
@@ -5075,12 +5076,12 @@ namespace Reasoning.Reach
 
 open Reasoning.Theory
 
-/-! ## From RD terminals to Solm runtime-equivalence
+/-! ## From RD terminals to Stele runtime-equivalence
 
 `RDret`/`RDrev` record that the *whole* run `X (g+1) … (initState …)` halts.  These
 eliminators carry that halting fact across the `X → Ξ` bridge (`Xi_*_of_X`) and into a
 `runtimeRefinementFor` case, folding the out-of-gas alternative into `reEquiv_outOfGas`
-*once*.  A revert/success segment therefore reaches the Solm layer compositionally — e.g.
+*once*.  A revert/success segment therefore reaches the Stele layer compositionally — e.g.
 `(powX_short …).reEquivNoDispatch hcode (powDispatch_none_short …)` — with no per-site
 `rcases` / `Xi_*_of_X` / `reEquiv_*` plumbing.  All four are contract- and bytecode-generic
 (`hcode : I.code = code` bridges the concrete bytecode back to `I.code`). -/
@@ -5102,7 +5103,7 @@ theorem RDrev.reEquivElim {immutables : Store}
   · exact reEquiv_outOfGas (Xi_error_of_X_sat (by rw [← hcode] at hoog; exact hoog))
   · exact k g' o (Xi_revert_of_X_sat (by rw [← hcode] at hX; exact hX))
 
-/-- `RDrev ⇒ noDispatch`: revert with Act failing to dispatch; the Solm body does not run. -/
+/-- `RDrev ⇒ noMatch`: revert with Stele failing to dispatch; the Stele body does not run. -/
 theorem RDrev.reEquivNoDispatch {immutables : Store}
     {cfg contract σ σ₀ A I} {g : Sat256}
     {code : ByteArray}
@@ -5112,14 +5113,14 @@ theorem RDrev.reEquivNoDispatch {immutables : Store}
       g.toUInt256 A I immutables :=
   h.reEquivElim hcode fun _ _ hrev => reEquiv_noDispatch hd hrev
 
-/-- `RDrev ⇒ decodingFailed`: Act dispatches to `t` but calldata-decoding fails; the Solm body
+/-- `RDrev ⇒ decodingFailed`: Stele dispatches to `t` but calldata-decoding fails; the Stele body
     does not run. -/
 theorem RDrev.reEquivDecodingFailed {immutables : Store}
     {cfg contract σ σ₀ A I} {g : Sat256}
     {code : ByteArray} {t}
     (hcode : I.code = code) (h : RDrev code g (initState σ σ₀ g A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = none)
     (hfallback : contract.fallback = none := by rfl)
     (hreceive : contract.receive = none := by rfl) :
@@ -5178,7 +5179,7 @@ theorem RDrev.xiResult {σ σ₀ A I} {g : Sat256} {code : ByteArray}
   · exact Or.inl (Xi_error_of_X_sat (by rw [← hcode] at hoog; exact hoog))
   · exact Or.inr ⟨g', o, Xi_revert_of_X_sat (by rw [← hcode] at hX; exact hX)⟩
 
-/-! ## Static-halt terminals to Solm runtime-equivalence -/
+/-! ## Static-halt terminals to Stele runtime-equivalence -/
 
 /-- A static-mode segment's **raw `Ξ` result**: out of gas, or a `StaticModeViolation` halt. -/
 theorem RDstatic.xiResult {σ σ₀ A I} {g : Sat256} {code : ByteArray}
@@ -5200,12 +5201,12 @@ theorem RDstatic.reEquivElim {immutables : Store} {cfg contract σ σ₀ A I} {g
   · exact reEquiv_outOfGas hoog
   · exact k hst
 
-/-- `RDstatic ⇒ execution` with `staticHalt`: the dispatched Solm body also halts in static mode. -/
+/-- `RDstatic ⇒ execution` with `staticHalt`: the dispatched Stele body also halts in static mode. -/
 theorem RDstatic.reEquivStaticHalt {immutables : Store} {cfg contract σ σ₀ A I} {g : Sat256} {code : ByteArray}
     {t callargs}
     (hcode : I.code = code) (h : RDstatic code g (initState σ σ₀ g A I))
     (hd : dispatchMsg contract I.calldata = some t)
-    (hdec : decodeCalldataWithMode cfg.abiDecodeMode (t.params.map Param.name)
+    (hdec : cfg.externalABI.decodeCalldata? (t.params.map Param.name)
               (transitionSignature t).paramTypes I.calldata = some callargs)
     (hbody : ExecTransitionBody cfg contract
               (initState σ σ₀ g A I) callargs t.body .staticViolation immutables)
@@ -5694,7 +5695,7 @@ end Reasoning.Reach
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

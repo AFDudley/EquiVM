@@ -12,7 +12,7 @@ the `clearDataWordsForwardFrom` last-store peel lemma used by the symbolic clear
 and the no-overflow bound that keeps the clear-loop cursor `keccak(slot) + i` from wrapping.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.WETH9
 
@@ -22,13 +22,13 @@ set_option maxRecDepth 4000000
 
 /-- `keccak256(bytes32(0))` — the compact-string data words base slot for storage slot 0 (`name`). -/
 theorem weth9DataBaseSlot0 :
-    Solm.solidityBytesDataBaseSlot ⟨0⟩ =
+    Stele.solidityBytesDataBaseSlot ⟨0⟩ =
       (⟨0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563⟩ : UInt256) := by
   decide +kernel
 
 /-- `keccak256(bytes32(1))` — the compact-string data words base slot for storage slot 1 (`symbol`). -/
 theorem weth9DataBaseSlot1 :
-    Solm.solidityBytesDataBaseSlot ⟨1⟩ =
+    Stele.solidityBytesDataBaseSlot ⟨1⟩ =
       (⟨0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6⟩ : UInt256) := by
   decide +kernel
 
@@ -126,7 +126,7 @@ theorem weth9OldWords_lt (S : UInt256) :
 /-- Clear-loop no-overflow: for `name`/`symbol` slots the keccak-data base slot plus the entire
     cleared-word count stays below `2^256`. -/
 theorem weth9NoOverflow (slot : UInt256) (hslot : slot = ⟨0⟩ ∨ slot = ⟨1⟩) (S : UInt256) :
-    (Solm.solidityBytesDataBaseSlot slot).toNat +
+    (Stele.solidityBytesDataBaseSlot slot).toNat +
       solidityBytesDataWordCount (weth9DecodeLenWord S).toNat < UInt256.size := by
   have hw := weth9OldWords_lt S
   have hsize : UInt256.size = 2 ^ 256 := rfl

@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
 import Examples.UniswapV2Pair.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -225,7 +225,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -247,7 +247,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         (.returned { contract := contract, locals := transferFromStoreToBalance evmS I }
           (transferFromPostState evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferFromBodyReturns_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReturns_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hfitS
   have hfromKeyWord : keyValueToWord (transferFromFromKey I) = transferFromFromWord I := by
     unfold transferFromFromKey

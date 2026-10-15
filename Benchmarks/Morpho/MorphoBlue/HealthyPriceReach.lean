@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.HealthyPriceSource
 import Benchmarks.Morpho.MorphoBlue.RepayMathReach
 import Benchmarks.Morpho.MorphoBlue.SupplyPositionRefine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

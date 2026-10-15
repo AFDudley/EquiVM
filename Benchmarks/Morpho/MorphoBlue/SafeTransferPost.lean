@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.SafeTransferBoolRoute
 import Benchmarks.Morpho.MorphoBlue.SafeTransferSourceTail
 import Benchmarks.Morpho.MorphoBlue.ReturnBoolView
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -14,7 +14,7 @@ def safeTransferPostMem (isFrom : Bool) (mem : ByteArray) : ByteArray :=
 
 theorem safeTransferBoolStatus_accept {out : ByteArray} (hb : out.size < 2 ^ 64)
     (hv : out.size = 0 ∨ BoolReturnValid out) (hz : safeTransferBoolStatus out ≠ UInt256.ofNat 0) :
-    out.size = 0 ∨ ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool true) := by
+    out.size = 0 ∨ config.externalABI.decodeValue? abiBool out = some (.bool true) := by
   by_cases hn : out.size = 0
   · exact Or.inl hn
   · right
@@ -25,7 +25,7 @@ theorem safeTransferBoolStatus_accept {out : ByteArray} (hb : out.size < 2 ^ 64)
 
 theorem safeTransferBoolStatus_reject {out : ByteArray} (hb : out.size < 2 ^ 64)
     (hv : out.size = 0 ∨ BoolReturnValid out) (hz : safeTransferBoolStatus out = UInt256.ofNat 0) :
-    out.size ≠ 0 ∧ ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool false) := by
+    out.size ≠ 0 ∧ config.externalABI.decodeValue? abiBool out = some (.bool false) := by
   have hn : out.size ≠ 0 := by
     intro hn
     rw [safeTransferBoolStatus, if_pos hn] at hz

@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.SupplyCallbackTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -26,6 +26,8 @@ theorem morphoSupplyTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
       (supplyTransition.body.drop 16) supplyTransition.returnType := by
   have hass := morphoAccrueAssetsAssign p locals imms evm ⟨0, by decide⟩ "__c6" assets hl.toMarketLocals
     (by simp only [evalExpr?, hget6, EvalResult.ofOption]) (by simpa only [hs.env, ← hs.accounts] using hfit)
+  simp only [show evm.executionEnv.perm = true from
+    (congrArg ExecutionEnv.perm hs.env).trans hp, if_true] at hass
   let e1 := storeMarketField evm p.id ⟨0, by decide⟩ (marketFieldWord evm.accountMap evm.executionEnv p.id 0 + assets)
   let σ1 := storeMarketFieldAccounts σ ee p.id ⟨0, by decide⟩ (marketFieldWord σ ee p.id 0 + assets)
   have hs1 : SourceState s0 ee σ1 e1 := by
@@ -34,7 +36,7 @@ theorem morphoSupplyTail {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}
   have hevent : StateBlock config { contract := contract, locals := locals, immutables := imms } evm
       (supplyTransition.body.drop 16) { contract := contract, locals := locals, immutables := imms } e1
       (supplyTransition.body.drop 18) :=
-    (StateBlock.start.step hass).step (supplyEmit p assets shares account data locals imms e1 hl)
+    (StateBlock.start.step hass).step (supplyEmit (hperm := (congrArg ExecutionEnv.perm hs1.env).trans hp) p assets shares account data locals imms e1 hl)
   obtain ⟨a1, k1, C1, rd1⟩ := morphoSupplyStoreEvent (v := v) (by decide) hp hm.free (accrueAssetSumClean hfit) h
   obtain ⟨hm1, hpref⟩ := hm.twoWordEvent (by decide) assets shares
   have hm2 := hm1.weaken (by decide : 0 ≤ 160)

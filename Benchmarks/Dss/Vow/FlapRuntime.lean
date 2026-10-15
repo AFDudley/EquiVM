@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Vow.FlapKickBody
 import Benchmarks.Dss.Vow.FlopBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -14,7 +14,7 @@ theorem vowFlapSin0CallDepthLimitBody
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some flapTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨349⟩ [vowSelWord I]
@@ -22,7 +22,7 @@ theorem vowFlapSin0CallDepthLimitBody
     (hcodeSizeSinNE :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) ≠
         ⟨0⟩)
-    (hvatCodeSolm :
+    (hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat)
@@ -46,7 +46,7 @@ theorem vowFlapSin0CallDepthLimitBody
   exact vowFlapSin0CallFailureBodyCore (acc := σ)
     (evmSin := { evm0 with accountMap := σ, substate := A_sin })
     (outSin := ByteArray.empty) hcode hwv hdispatch hdecode rd937
-    (by native_decide) hvatCodeSolm hcallSinDepth
+    (by native_decide) hvatCodeStele hcallSinDepth
 
 theorem RD.vowFlapSin0PostCallDecodeOk
     {σ σ₀ A I} {g sel target : UInt256}
@@ -247,7 +247,7 @@ theorem vowFlapBodyPrefix
     {σ σ₀ A I} {g : UInt256}
     (cont :
       ∀ {σ_sin : AccountMap}
-        {evmSinSolm : EVM.State} {outSin memSin : ByteArray} {k993 C993 : ℕ}
+        {evmSinStele : EVM.State} {outSin memSin : ByteArray} {k993 C993 : ℕ}
         {vatSin0 BumpVal surplus0 HumpVal surplusNeed : UInt256},
         memSin = outSin.write 0 (healSinCalldataMem I solcFreePtrMem) 128 32 →
         RD vowBytecode I (Sat256.ofUInt256 g)
@@ -261,29 +261,29 @@ theorem vowFlapBodyPrefix
             (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat →
         typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-          (true, evmSinSolm, outSin) false →
+          (true, evmSinStele, outSin) false →
         config.externalABI.decode? "sin" outSin =
           some [.int (Int.ofNat vatSin0.toNat)] →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨10⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨10⟩ =
           BumpVal →
         BumpVal = solcSlotWordAt ⟨10⟩ σ I →
         surplus0 = vatSin0 + BumpVal →
         vatSin0.toNat + BumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨11⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨11⟩ =
           HumpVal →
         surplusNeed = surplus0 + HumpVal →
         surplus0.toNat + HumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         I.depth.val < 1024 →
-        evmSinSolm.σ₀ = σ₀ →
-        evmSinSolm.executionEnv = I →
-        Eq σ_sin evmSinSolm.accountMap →
+        evmSinStele.σ₀ = σ₀ →
+        evmSinStele.executionEnv = I →
+        Eq σ_sin evmSinStele.accountMap →
         (∀ slot : UInt256,
-          Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_sin I) →
         (∀ slot : UInt256,
-          solcSlotWordAt slot evmSinSolm.accountMap I = solcSlotWordAt slot σ I) →
+          solcSlotWordAt slot evmSinStele.accountMap I = solcSlotWordAt slot σ I) →
         runtimeRefinementFor config contract σ σ₀ g A I)
     (hcode : I.code = vowBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -294,7 +294,7 @@ theorem vowFlapBodyPrefix
   have hdispatch : dispatchMsg contract I.calldata = some flapTransition :=
     vowDispatch_flap hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flap hsz4
   have hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -309,16 +309,16 @@ theorem vowFlapBodyPrefix
   have hcodeSizeSinNE :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) ≠ ⟨0⟩ :=
     hcodeSizeSin
-  have hcodeSizeSinSolmNE :
+  have hcodeSizeSinSteleNE :
       Reasoning.Theory.extCodeSizeWord σ (kissDaiTargetWord σ I) ≠
         ⟨0⟩ :=
     hcodeSizeSinNE
-  have hvatCodeSolm :
+  have hvatCodeStele :
       0 < (UInt256.ofNat
         (((initState σ σ₀ (Sat256.ofUInt256 g) A I).lookupAccount
           (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat :=
     kissVatCode_pos_of_codeSize_ne
-      (σ₀ := σ₀) (A := A) (I := I) (g := g) hcodeSizeSinSolmNE
+      (σ₀ := σ₀) (A := A) (I := I) (g := g) hcodeSizeSinSteleNE
   have hVatAddrOrig : kissVatAddress σ I = kissVatAddress σ I := rfl
   by_cases hdepthLt : I.depth.val < 1024
   · obtain ⟨σ_sin, zSin, outSin, A_sin, k937, C937, rd937,
@@ -334,18 +334,18 @@ theorem vowFlapBodyPrefix
                   substate := A_sin },
               outSin) false := by
         simpa using hcallSinEvmRaw
-      let evmSinSolm :=
+      let evmSinStele :=
         { initState σ σ₀ (Sat256.ofUInt256 g) A I with
             accountMap := σ_sin
             substate := A_sin }
-      have hcallSinSolm :
+      have hcallSinStele :
           typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-            (false, evmSinSolm, outSin) false := by
-        simpa [evmSinSolm] using hcallSinEvm
+            (false, evmSinStele, outSin) false := by
+        simpa [evmSinStele] using hcallSinEvm
       exact vowFlapSin0CallFailureBodyCore (acc := σ_sin)
-        hcode hwv hdispatch hdecode (by simpa using rd937) hoszSin hvatCodeSolm
-        hcallSinSolm
+        hcode hwv hdispatch hdecode (by simpa using rd937) hoszSin hvatCodeStele
+        hcallSinStele
     · have rd937True : RD vowBytecode I (Sat256.ofUInt256 g)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨937⟩
           (⟨1⟩ :: healSinEndPtr :: healSinSelector :: kissDaiTargetWord σ I ::
@@ -367,16 +367,16 @@ theorem vowFlapBodyPrefix
         { initState σ σ₀ (Sat256.ofUInt256 g) A I with
             accountMap := σ_sin
             substate := A_sin }
-      let evmSinSolm :=
+      let evmSinStele :=
         { initState σ σ₀ (Sat256.ofUInt256 g) A I with
             accountMap := σ_sin
             substate := A_sin }
-      have hcallSinSolm :
+      have hcallSinStele :
           typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-            (true, evmSinSolm, outSin) false := by
-        simpa [evmSinSolm] using hcallSinEvm
-      have hStateSin : EVMStateEquiv evmSinEvm evmSinSolm := by
+            (true, evmSinStele, outSin) false := by
+        simpa [evmSinStele] using hcallSinEvm
+      have hStateSin : EVMStateEquiv evmSinEvm evmSinStele := by
         exact ⟨rfl, rfl⟩
       by_cases ho32Sin : 32 ≤ outSin.size
       · let vatSin0 : UInt256 :=
@@ -386,25 +386,25 @@ theorem vowFlapBodyPrefix
               some [.int (Int.ofNat vatSin0.toNat)] := by
           simpa [vatSin0] using vatSinDecode_ok (o := outSin) ho32Sin
         have hslotLoad : ∀ slot : UInt256,
-            Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner slot =
+            Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner slot =
               solcSlotWordAt slot σ_sin I := by
           intro slot
           have h := hStateSin.storageLoad_codeOwner slot
           rw [← h]
-          simp [evmSinEvm, initState, Solm.EVM.storageLoad, State.lookupAccount,
+          simp [evmSinEvm, initState, Stele.EVM.storageLoad, State.lookupAccount,
             Account.lookupStorage, solcSlotWordAt, solcSlotWord]
         let BumpVal : UInt256 := solcSlotWordAt ⟨10⟩ σ_sin I
         let HumpVal : UInt256 := solcSlotWordAt ⟨11⟩ σ_sin I
         have hBumpLoad :
-            Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨10⟩ =
+            Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨10⟩ =
               BumpVal := by
           simpa [BumpVal] using hslotLoad ⟨10⟩
         obtain ⟨_, _, rd978⟩ :=
           RD.vowFlapSin0PostCallDecodeOk rd937True ho32Sin hoszSin
         by_cases hover0 : UInt256.size ≤ vatSin0.toNat + BumpVal.toNat
         · exact vowFlapSurplus0AddOverflowBodyCore (acc := σ_sin)
-            (evmSin := evmSinSolm) hcode hwv hdispatch hdecode
-            (by simpa [vatSin0] using rd978) hvatCodeSolm hcallSinSolm hdecSin
+            (evmSin := evmSinStele) hcode hwv hdispatch hdecode
+            (by simpa [vatSin0] using rd978) hvatCodeStele hcallSinStele hdecSin
             hBumpLoad (by simp [BumpVal]) hover0
         have hfit0 : vatSin0.toNat + BumpVal.toNat < UInt256.size := by
           omega
@@ -413,13 +413,13 @@ theorem vowFlapBodyPrefix
           RD.vowFlapSurplus0AddSuccess (by simpa [vatSin0] using rd978)
             (by simpa [BumpVal] using hfit0)
         have hHumpLoad :
-            Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨11⟩ =
+            Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨11⟩ =
               HumpVal := by
           simpa [HumpVal] using hslotLoad ⟨11⟩
         by_cases hoverNeed : UInt256.size ≤ surplus0.toNat + HumpVal.toNat
         · exact vowFlapSurplusNeedAddOverflowBodyCore (acc := σ_sin)
-            (evmSin := evmSinSolm) hcode hwv hdispatch hdecode
-            (by simpa [surplus0, BumpVal] using rd985) hvatCodeSolm hcallSinSolm
+            (evmSin := evmSinStele) hcode hwv hdispatch hdecode
+            (by simpa [surplus0, BumpVal] using rd985) hvatCodeStele hcallSinStele
             hdecSin hBumpLoad rfl hfit0 hHumpLoad (by simp [HumpVal]) hoverNeed
         have hfitNeed : surplus0.toNat + HumpVal.toNat < UInt256.size := by
           omega
@@ -433,40 +433,40 @@ theorem vowFlapBodyPrefix
         have hread64Sin :
             memSin.readWithPadding 64 32 = UInt256.toByteArray ⟨128⟩ := by
           simpa [memSin] using initialHealSinWrite_read64 I outSin 32 (by omega) ho32Sin
-        have hAccountsSin : Eq σ_sin evmSinSolm.accountMap := by
+        have hAccountsSin : Eq σ_sin evmSinStele.accountMap := by
           simpa [evmSinEvm] using hStateSin.accountMap
-        have hSlotSinSolm : ∀ slot : UInt256,
-            solcSlotWordAt slot σ_sin I = solcSlotWordAt slot evmSinSolm.accountMap I := by
+        have hSlotSinStele : ∀ slot : UInt256,
+            solcSlotWordAt slot σ_sin I = solcSlotWordAt slot evmSinStele.accountMap I := by
           intro slot
           exact congrArg (fun accounts => solcSlotWordAt slot accounts I) hAccountsSin
-        have hSlotSolmStatic : ∀ slot : UInt256,
-            solcSlotWordAt slot evmSinSolm.accountMap I = solcSlotWordAt slot σ I := by
+        have hSlotSteleStatic : ∀ slot : UInt256,
+            solcSlotWordAt slot evmSinStele.accountMap I = solcSlotWordAt slot σ I := by
           intro slot
           have h := typedCallViaEVM_static_storage_getD_of_accounts_eq
             (cfg := config) (σ := σ)
             (evm := initState σ σ₀ (Sat256.ofUInt256 g) A I)
-            (evm' := evmSinSolm) (slot := slot) (default := ⟨0⟩)
+            (evm' := evmSinStele) (slot := slot) (default := ⟨0⟩)
             (hAccounts := rfl)
-            hcallSinSolm
-          simpa [evmSinSolm, initState, solcSlotWordAt, solcSlotWord] using h
-        have hBumpSolm : BumpVal = solcSlotWordAt ⟨10⟩ σ I := by
-          simpa [BumpVal] using Eq.trans (hSlotSinSolm ⟨10⟩) (hSlotSolmStatic ⟨10⟩)
+            hcallSinStele
+          simpa [evmSinStele, initState, solcSlotWordAt, solcSlotWord] using h
+        have hBumpStele : BumpVal = solcSlotWordAt ⟨10⟩ σ I := by
+          simpa [BumpVal] using Eq.trans (hSlotSinStele ⟨10⟩) (hSlotSteleStatic ⟨10⟩)
         have hvatLoadSin :
-            Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨1⟩ =
+            Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨1⟩ =
               solcSlotWordAt ⟨1⟩ σ I := by
-          rw [hslotLoad, hSlotSinSolm, hSlotSolmStatic]
-        have hσ0Sin : evmSinSolm.σ₀ = σ₀ := by
-          simp [evmSinSolm, initState]
-        have henvSin : evmSinSolm.executionEnv = I := by
-          simp [evmSinSolm, initState]
-        exact cont (memSin := memSin) (evmSinSolm := evmSinSolm)
+          rw [hslotLoad, hSlotSinStele, hSlotSteleStatic]
+        have hσ0Sin : evmSinStele.σ₀ = σ₀ := by
+          simp [evmSinStele, initState]
+        have henvSin : evmSinStele.executionEnv = I := by
+          simp [evmSinStele, initState]
+        exact cont (memSin := memSin) (evmSinStele := evmSinStele)
           (vatSin0 := vatSin0) (BumpVal := BumpVal) (surplus0 := surplus0)
           (HumpVal := HumpVal) (surplusNeed := surplusNeed) rfl
           (by simpa [memSin, surplusNeed, surplus0, HumpVal, BumpVal] using rd993)
-          hmemSin hread64Sin hvatCodeSolm hcallSinSolm hdecSin hBumpLoad
-          hBumpSolm rfl hfit0 hHumpLoad rfl hfitNeed hvatLoadSin hdepthLt
+          hmemSin hread64Sin hvatCodeStele hcallSinStele hdecSin hBumpLoad
+          hBumpStele rfl hfit0 hHumpLoad rfl hfitNeed hvatLoadSin hdepthLt
           hσ0Sin henvSin hAccountsSin hslotLoad
-          hSlotSolmStatic
+          hSlotSteleStatic
       · have hshortRet : outSin.size < 32 := Nat.lt_of_not_ge ho32Sin
         have hminShort :
             (min (⟨32⟩ : UInt256) (UInt256.ofNat outSin.size)).toNat =
@@ -499,15 +499,15 @@ theorem vowFlapBodyPrefix
           vatSinDecode_none_short hshortRet
         have hbody := vowFlapSourceVatSin0DecodeRevert
           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-          (evmSin := evmSinSolm) (outSin := outSin)
-          hwv hvatCodeSolm hcallSinSolm hdecSin
+          (evmSin := evmSinStele) (outSin := outSin)
+          hwv hvatCodeStele hcallSinStele hdecSin
         exact hrev.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · have hdepthEq : I.depth = 1024 := by
       apply Fin.ext
       have hle : I.depth.val ≤ 1024 := Nat.le_of_lt_succ I.depth.isLt
       omega
     exact vowFlapSin0CallDepthLimitBody hcode hwv hdispatch hdecode hreach
-      hcodeSizeSinNE hvatCodeSolm hdepthEq
+      hcodeSizeSinNE hvatCodeStele hdepthEq
 
 /-- Public `flap()` wrapper prefix through the first `vat.dai(address(this))` call.
 
@@ -516,7 +516,7 @@ theorem vowFlapBodyToSin1
     {σ σ₀ A I} {g : UInt256}
     (cont :
       ∀ {σ_dai : AccountMap}
-        {evmSinSolm evmDaiSolm : EVM.State} {outSin outDai memSin memDai : ByteArray}
+        {evmSinStele evmDaiStele : EVM.State} {outSin outDai memSin memDai : ByteArray}
         {k1190 C1190 : ℕ}
         {vatSin0 BumpVal surplus0 HumpVal surplusNeed vatDai : UInt256},
         memDai = outDai.write 0 (vatDaiCalldataMem I memSin) 128 32 →
@@ -533,39 +533,39 @@ theorem vowFlapBodyToSin1
             (kissVatAddress σ I)).option 0 (fun acc => acc.code.size))).toNat →
         typedCallViaEVM config (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-          (true, evmSinSolm, outSin) false →
+          (true, evmSinStele, outSin) false →
         config.externalABI.decode? "sin" outSin =
           some [.int (Int.ofNat vatSin0.toNat)] →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨10⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨10⟩ =
           BumpVal →
         BumpVal = solcSlotWordAt ⟨10⟩ σ I →
         surplus0 = vatSin0 + BumpVal →
         vatSin0.toNat + BumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨11⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨11⟩ =
           HumpVal →
         surplusNeed = surplus0 + HumpVal →
         surplus0.toNat + HumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSinSolm evmSinSolm.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmSinStele evmSinStele.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         0 < (UInt256.ofNat
-          ((evmSinSolm.lookupAccount (kissVatAddress σ I)).option 0
+          ((evmSinStele.lookupAccount (kissVatAddress σ I)).option 0
             (fun acc => acc.code.size))).toNat →
-        typedCallViaEVM config evmSinSolm (EVM.address (kissVatAddress σ I)) "dai" 0
-          [.address I.codeOwner] (true, evmDaiSolm, outDai) false →
+        typedCallViaEVM config evmSinStele (EVM.address (kissVatAddress σ I)) "dai" 0
+          [.address I.codeOwner] (true, evmDaiStele, outDai) false →
         config.externalABI.decode? "dai" outDai =
           some [.int (Int.ofNat vatDai.toNat)] →
         surplusNeed.toNat ≤ vatDai.toNat →
-        Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         I.depth.val < 1024 →
-        evmDaiSolm.σ₀ = σ₀ →
-        evmDaiSolm.executionEnv = I →
-        Eq σ_dai evmDaiSolm.accountMap →
+        evmDaiStele.σ₀ = σ₀ →
+        evmDaiStele.executionEnv = I →
+        Eq σ_dai evmDaiStele.accountMap →
         (∀ slot : UInt256,
-          Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_dai I) →
         (∀ slot : UInt256,
-          solcSlotWordAt slot evmDaiSolm.accountMap I = solcSlotWordAt slot σ I) →
+          solcSlotWordAt slot evmDaiStele.accountMap I = solcSlotWordAt slot σ I) →
         runtimeRefinementFor config contract σ σ₀ g A I)
     (hcode : I.code = vowBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)
@@ -576,14 +576,14 @@ theorem vowFlapBodyToSin1
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x0e, 0x01, 0x19, 0x8b]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flap hsz4
   refine vowFlapBodyPrefix
-    (fun {σ_sin} {evmSinSolm} {outSin} {memSin} {k993} {C993}
+    (fun {σ_sin} {evmSinStele} {outSin} {memSin} {k993} {C993}
         {vatSin0} {BumpVal} {surplus0} {HumpVal} {surplusNeed}
-        hmemSinDef rd993 hmemSin hread64Sin hvatCodeSolm hcallSinSolm hdecSin
-        hBumpLoad hBumpSolm hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
+        hmemSinDef rd993 hmemSin hread64Sin hvatCodeStele hcallSinStele hdecSin
+        hBumpLoad hBumpStele hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
         hdepthLt hσ0Sin henvSin hAccountsSin hslotLoad
         hSlotSinStatic =>
       ?_) hcode hsize hwv hsel
@@ -592,18 +592,18 @@ theorem vowFlapBodyToSin1
     rw [← hslotLoad ⟨1⟩]
     exact hvatLoadSin
   have hslotVatAcc :
-      solcSlotWordAt ⟨1⟩ evmSinSolm.accountMap I = solcSlotWordAt ⟨1⟩ σ I := by
+      solcSlotWordAt ⟨1⟩ evmSinStele.accountMap I = solcSlotWordAt ⟨1⟩ σ I := by
     calc
-      solcSlotWordAt ⟨1⟩ evmSinSolm.accountMap I = solcSlotWordAt ⟨1⟩ σ_sin I := by
+      solcSlotWordAt ⟨1⟩ evmSinStele.accountMap I = solcSlotWordAt ⟨1⟩ σ_sin I := by
         exact (congrArg (fun accounts => solcSlotWordAt ⟨1⟩ accounts I) hAccountsSin).symm
       _ = solcSlotWordAt ⟨1⟩ σ I := hslotVatSin
-  have hTargetSinSolm :
-      kissDaiTargetWord evmSinSolm.accountMap I = kissDaiTargetWord σ I := by
+  have hTargetSinStele :
+      kissDaiTargetWord evmSinStele.accountMap I = kissDaiTargetWord σ I := by
     simp [kissDaiTargetWord, hslotVatAcc]
   have haddrDai :
       kissVatAddress σ I =
-        AccountAddress.ofUInt256 (kissDaiTargetWord evmSinSolm.accountMap I) := by
-    rw [hTargetSinSolm]
+        AccountAddress.ofUInt256 (kissDaiTargetWord evmSinStele.accountMap I) := by
+    rw [hTargetSinStele]
     exact kissVatAddress_eq_daiTarget_account σ I
   have hVatAddrSin : kissVatAddress σ_sin I = kissVatAddress σ I := by
     apply Fin.ext
@@ -611,40 +611,40 @@ theorem vowFlapBodyToSin1
   by_cases hcodeSizeDai :
       Reasoning.Theory.extCodeSizeWord σ_sin (kissDaiTargetWord σ_sin I) =
         ⟨0⟩
-  · have hcodeSizeDaiSolm :
-        Reasoning.Theory.extCodeSizeWord evmSinSolm.accountMap
-            (kissDaiTargetWord evmSinSolm.accountMap I) = ⟨0⟩ := by
+  · have hcodeSizeDaiStele :
+        Reasoning.Theory.extCodeSizeWord evmSinStele.accountMap
+            (kissDaiTargetWord evmSinStele.accountMap I) = ⟨0⟩ := by
       simpa only [← hAccountsSin] using hcodeSizeDai
     have hvatNoCodeDai :
         (UInt256.ofNat
-          ((evmSinSolm.lookupAccount (kissVatAddress σ I)).option 0
+          ((evmSinStele.lookupAccount (kissVatAddress σ I)).option 0
             (fun acc => acc.code.size))).toNat = 0 := by
       simpa [State.lookupAccount] using
         extCodeSizeWord_zero_lookup_code_zero
-          (σ := evmSinSolm.accountMap)
-          (target := kissDaiTargetWord evmSinSolm.accountMap I)
-          (addr := kissVatAddress σ I) haddrDai hcodeSizeDaiSolm
+          (σ := evmSinStele.accountMap)
+          (target := kissDaiTargetWord evmSinStele.accountMap I)
+          (addr := kissVatAddress σ I) haddrDai hcodeSizeDaiStele
     exact vowFlapDai0NoCodeBodyCore (acc := σ_sin)
-      (evmSin := evmSinSolm) hcode hwv hdispatch hdecode rd993 hmemSin hread64Sin
-      hcodeSizeDai hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0
+      (evmSin := evmSinStele) hcode hwv hdispatch hdecode rd993 hmemSin hread64Sin
+      hcodeSizeDai hvatCodeStele hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0
       hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatNoCodeDai
   have hcodeSizeDaiNE :
       Reasoning.Theory.extCodeSizeWord σ_sin (kissDaiTargetWord σ_sin I) ≠
         ⟨0⟩ :=
     hcodeSizeDai
-  have hcodeSizeDaiSolmNE :
-      Reasoning.Theory.extCodeSizeWord evmSinSolm.accountMap
-          (kissDaiTargetWord evmSinSolm.accountMap I) ≠ ⟨0⟩ := by
+  have hcodeSizeDaiSteleNE :
+      Reasoning.Theory.extCodeSizeWord evmSinStele.accountMap
+          (kissDaiTargetWord evmSinStele.accountMap I) ≠ ⟨0⟩ := by
     simpa only [← hAccountsSin] using hcodeSizeDaiNE
   have hvatCodeDai :
       0 < (UInt256.ofNat
-        ((evmSinSolm.lookupAccount (kissVatAddress σ I)).option 0
+        ((evmSinStele.lookupAccount (kissVatAddress σ I)).option 0
           (fun acc => acc.code.size))).toNat := by
     simpa [State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := evmSinSolm.accountMap)
-        (target := kissDaiTargetWord evmSinSolm.accountMap I)
-        (addr := kissVatAddress σ I) haddrDai hcodeSizeDaiSolmNE
+        (σ := evmSinStele.accountMap)
+        (target := kissDaiTargetWord evmSinStele.accountMap I)
+        (addr := kissVatAddress σ I) haddrDai hcodeSizeDaiSteleNE
   obtain ⟨σ_dai, zDai, outDai, A_dai, k1072, C1072, rd1072,
       hcallDaiEvmRaw, hoszDai⟩ :=
     RD.vowFlapDai0PostCall rd993 hmemSin hread64Sin hcodeSizeDaiNE hdepthLt
@@ -660,38 +660,38 @@ theorem vowFlapBodyToSin1
         (EVM.address (kissVatAddress σ_sin I)) "dai" 0 [.address I.codeOwner]
         (zDai, evmDaiEvmOut, outDai) false := by
     simpa [evmDaiEvmIn, evmDaiEvmOut] using hcallDaiEvmRaw
-  let evmDaiSolmBase := { evmSinSolm with substate := evmDaiEvmIn.substate }
-  have hcallEnv : evmDaiSolmBase.executionEnv = evmDaiEvmIn.executionEnv := by
-    simpa [evmDaiSolmBase, evmDaiEvmIn, initState] using henvSin
-  obtain ⟨σ_dai_solm, A_dai_solm0, hcallDaiSolmBase, hAccountsDai⟩ :=
-    typedCallViaEVM_sameInputs (evm_solm := evmDaiSolmBase)
-      hcallDaiEvm (by simpa [evmDaiEvmIn, evmDaiSolmBase] using hAccountsSin)
-      (by simpa [evmDaiEvmIn, evmDaiSolmBase, initState] using hσ0Sin.symm)
+  let evmDaiSteleBase := { evmSinStele with substate := evmDaiEvmIn.substate }
+  have hcallEnv : evmDaiSteleBase.executionEnv = evmDaiEvmIn.executionEnv := by
+    simpa [evmDaiSteleBase, evmDaiEvmIn, initState] using henvSin
+  obtain ⟨σ_dai_stele, A_dai_stele0, hcallDaiSteleBase, hAccountsDai⟩ :=
+    typedCallViaEVM_sameInputs (evm_stele := evmDaiSteleBase)
+      hcallDaiEvm (by simpa [evmDaiEvmIn, evmDaiSteleBase] using hAccountsSin)
+      (by simpa [evmDaiEvmIn, evmDaiSteleBase, initState] using hσ0Sin.symm)
       hcallEnv.symm
   have hdepthNeI : I.depth ≠ ⟨1024, by decide⟩ := by
     intro hdepthEq
     have hval : I.depth.val = 1024 := congrArg Fin.val hdepthEq
     omega
-  have hdepthNeBase : evmDaiSolmBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
-    simpa [evmDaiSolmBase, henvSin] using hdepthNeI
-  obtain ⟨A_dai_solm, hcallDaiSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallDaiSolmBase hdepthNeBase
-      evmSinSolm.substate
-  let evmDaiSolm :=
-    { evmSinSolm with
-        accountMap := σ_dai_solm
-        substate := A_dai_solm }
-  have hcallDaiSolm :
-      typedCallViaEVM config evmSinSolm
+  have hdepthNeBase : evmDaiSteleBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
+    simpa [evmDaiSteleBase, henvSin] using hdepthNeI
+  obtain ⟨A_dai_stele, hcallDaiSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallDaiSteleBase hdepthNeBase
+      evmSinStele.substate
+  let evmDaiStele :=
+    { evmSinStele with
+        accountMap := σ_dai_stele
+        substate := A_dai_stele }
+  have hcallDaiStele :
+      typedCallViaEVM config evmSinStele
         (EVM.address (kissVatAddress σ I)) "dai" 0 [.address I.codeOwner]
-        (zDai, evmDaiSolm, outDai) false := by
-    simpa [evmDaiSolm, evmDaiSolmBase, hVatAddrSin] using hcallDaiSolmRaw
+        (zDai, evmDaiStele, outDai) false := by
+    simpa [evmDaiStele, evmDaiSteleBase, hVatAddrSin] using hcallDaiSteleRaw
   cases zDai
   · exact vowFlapDai0CallFailureBodyCore (acc := σ_dai)
-      (evmSin := evmSinSolm) (evmDai := evmDaiSolm)
-      hcode hwv hdispatch hdecode (by simpa using rd1072) hoszDai hvatCodeSolm
-      hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad hsurplusNeed
-      hfitNeed hvatLoadSin hvatCodeDai (by simpa using hcallDaiSolm)
+      (evmSin := evmSinStele) (evmDai := evmDaiStele)
+      hcode hwv hdispatch hdecode (by simpa using rd1072) hoszDai hvatCodeStele
+      hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad hsurplusNeed
+      hfitNeed hvatLoadSin hvatCodeDai (by simpa using hcallDaiStele)
   · have rd1072True : RD vowBytecode I (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1072⟩
         (⟨1⟩ :: ⟨164⟩ :: ⟨1814410054⟩ :: kissDaiTargetWord σ_sin I ::
@@ -700,11 +700,11 @@ theorem vowFlapBodyToSin1
           (min (⟨32⟩ : UInt256) (UInt256.ofNat outDai.size)).toNat)
         (UInt256.ofNat 6) outDai σ_dai k1072 C1072 := by
       simpa using rd1072
-    have hcallDaiSolmTrue :
-        typedCallViaEVM config evmSinSolm
+    have hcallDaiSteleTrue :
+        typedCallViaEVM config evmSinStele
           (EVM.address (kissVatAddress σ I)) "dai" 0 [.address I.codeOwner]
-          (true, evmDaiSolm, outDai) false := by
-      simpa using hcallDaiSolm
+          (true, evmDaiStele, outDai) false := by
+      simpa using hcallDaiStele
     by_cases ho32Dai : 32 ≤ outDai.size
     · let vatDai : UInt256 :=
         UInt256.ofNat (fromByteArrayBigEndian (outDai.extract 0 32))
@@ -724,72 +724,72 @@ theorem vowFlapBodyToSin1
           hoszDai
       by_cases hinsuff : vatDai.toNat < surplusNeed.toNat
       · exact vowFlapDai0InsufficientSurplusBodyCore (acc := σ_dai)
-          (evmSin := evmSinSolm) (evmDai := evmDaiSolm)
+          (evmSin := evmSinStele) (evmDai := evmDaiStele)
           hcode hwv hdispatch hdecode (by simpa [vatDai] using rd1113)
           hmemDai hread64Dai
-          hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad
-          hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolmTrue hdecDai
+          hvatCodeStele hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad
+          hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSteleTrue hdecDai
           hinsuff
       have henough : surplusNeed.toNat ≤ vatDai.toNat := by
         omega
       obtain ⟨_, _, rd1190⟩ :=
         RD.vowFlapDai0Enough (by simpa [vatDai] using rd1113) henough
-      have hStateDai : EVMStateEquiv evmDaiEvmOut evmDaiSolm := by
+      have hStateDai : EVMStateEquiv evmDaiEvmOut evmDaiStele := by
         refine ⟨?_, ?_⟩
-        · simpa [evmDaiEvmOut, evmDaiSolm, initState] using henvSin.symm
-        · simpa [evmDaiEvmOut, evmDaiSolm] using hAccountsDai
+        · simpa [evmDaiEvmOut, evmDaiStele, initState] using henvSin.symm
+        · simpa [evmDaiEvmOut, evmDaiStele] using hAccountsDai
       have hslotDaiLoad : ∀ slot : UInt256,
-          Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_dai I := by
         intro slot
         have h := hStateDai.storageLoad_codeOwner slot
         rw [← h]
-        simp [evmDaiEvmOut, initState, Solm.EVM.storageLoad, State.lookupAccount,
+        simp [evmDaiEvmOut, initState, Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage, solcSlotWordAt, solcSlotWord]
-      have hAccountsDaiOut : Eq σ_dai evmDaiSolm.accountMap := by
-        simpa [evmDaiEvmOut, evmDaiSolm] using hAccountsDai
-      have henvDai : evmDaiSolm.executionEnv = I := by
-        simpa [evmDaiSolm] using henvSin
+      have hAccountsDaiOut : Eq σ_dai evmDaiStele.accountMap := by
+        simpa [evmDaiEvmOut, evmDaiStele] using hAccountsDai
+      have henvDai : evmDaiStele.executionEnv = I := by
+        simpa [evmDaiStele] using henvSin
       have hSlotDaiStatic : ∀ slot : UInt256,
-          solcSlotWordAt slot evmDaiSolm.accountMap I = solcSlotWordAt slot σ I := by
+          solcSlotWordAt slot evmDaiStele.accountMap I = solcSlotWordAt slot σ I := by
         intro slot
         have hstatic := typedCallViaEVM_static_storage_getD_of_accounts_eq
-          (cfg := config) (σ := evmSinSolm.accountMap)
-          (evm := evmSinSolm) (evm' := evmDaiSolm) (slot := slot) (default := ⟨0⟩)
+          (cfg := config) (σ := evmSinStele.accountMap)
+          (evm := evmSinStele) (evm' := evmDaiStele) (slot := slot) (default := ⟨0⟩)
           (hAccounts := rfl)
-          hcallDaiSolmTrue
+          hcallDaiSteleTrue
         have hslot :
-            solcSlotWordAt slot evmDaiSolm.accountMap I =
-              solcSlotWordAt slot evmSinSolm.accountMap I := by
+            solcSlotWordAt slot evmDaiStele.accountMap I =
+              solcSlotWordAt slot evmSinStele.accountMap I := by
           simpa [solcSlotWordAt, solcSlotWord, henvDai, henvSin] using hstatic
         rw [hslot, hSlotSinStatic slot]
       have hvatLoadDai :
-          Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner ⟨1⟩ =
+          Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner ⟨1⟩ =
             solcSlotWordAt ⟨1⟩ σ I := by
         calc
-          Solm.EVM.storageLoad evmDaiSolm evmDaiSolm.executionEnv.codeOwner ⟨1⟩ =
+          Stele.EVM.storageLoad evmDaiStele evmDaiStele.executionEnv.codeOwner ⟨1⟩ =
               solcSlotWordAt ⟨1⟩ σ_dai I := hslotDaiLoad ⟨1⟩
-          _ = solcSlotWordAt ⟨1⟩ evmDaiSolm.accountMap I :=
+          _ = solcSlotWordAt ⟨1⟩ evmDaiStele.accountMap I :=
             congrArg (fun accounts => solcSlotWordAt ⟨1⟩ accounts I) hAccountsDaiOut
           _ = solcSlotWordAt ⟨1⟩ σ I := hSlotDaiStatic ⟨1⟩
-      have hσ0Dai : evmDaiSolm.σ₀ = σ₀ := by
-        simpa [evmDaiSolm] using hσ0Sin
-      exact cont (memDai := memDai) (evmSinSolm := evmSinSolm)
-        (evmDaiSolm := evmDaiSolm) (vatSin0 := vatSin0) (BumpVal := BumpVal)
+      have hσ0Dai : evmDaiStele.σ₀ = σ₀ := by
+        simpa [evmDaiStele] using hσ0Sin
+      exact cont (memDai := memDai) (evmSinStele := evmSinStele)
+        (evmDaiStele := evmDaiStele) (vatSin0 := vatSin0) (BumpVal := BumpVal)
         (surplus0 := surplus0) (HumpVal := HumpVal) (surplusNeed := surplusNeed)
         (vatDai := vatDai) rfl
         (by simpa [memDai] using rd1190)
-        hmemSin hread64Sin hmemDai hread64Dai hvatCodeSolm hcallSinSolm hdecSin
-        hBumpLoad hBumpSolm hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
-        hvatCodeDai hcallDaiSolmTrue hdecDai henough hvatLoadDai hdepthLt
+        hmemSin hread64Sin hmemDai hread64Dai hvatCodeStele hcallSinStele hdecSin
+        hBumpLoad hBumpStele hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
+        hvatCodeDai hcallDaiSteleTrue hdecDai henough hvatLoadDai hdepthLt
         hσ0Dai henvDai hAccountsDaiOut hslotDaiLoad
         hSlotDaiStatic
     · have hshortDai : outDai.size < 32 := Nat.lt_of_not_ge ho32Dai
       exact vowFlapDai0DecodeShortBodyCore (acc := σ_dai)
-        (evmSin := evmSinSolm) (evmDai := evmDaiSolm)
+        (evmSin := evmSinStele) (evmDai := evmDaiStele)
         hcode hwv hdispatch hdecode rd1072True hmemSin hread64Sin hshortDai
-        hoszDai hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0
-        hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolmTrue
+        hoszDai hvatCodeStele hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0
+        hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSteleTrue
 
 /-- Public `flap()` wrapper prefix through the second `vat.sin(address(this))` call. -/
 theorem vowFlapBodyToSub
@@ -817,14 +817,14 @@ theorem vowFlapBodyToSub
           (true, evmSin0, outSin0) false →
         config.externalABI.decode? "sin" outSin0 =
           some [.int (Int.ofNat vatSin0.toNat)] →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨10⟩ = BumpVal →
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨10⟩ = BumpVal →
         BumpVal = solcSlotWordAt ⟨10⟩ σ I →
         surplus0 = vatSin0 + BumpVal →
         vatSin0.toNat + BumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨11⟩ = HumpVal →
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨11⟩ = HumpVal →
         surplusNeed = surplus0 + HumpVal →
         surplus0.toNat + HumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         0 < (UInt256.ofNat
           ((evmSin0.lookupAccount (kissVatAddress σ I)).option 0
@@ -835,7 +835,7 @@ theorem vowFlapBodyToSub
           some [.int (Int.ofNat vatDai.toNat)] →
         evmDai.executionEnv.codeOwner = I.codeOwner →
         surplusNeed.toNat ≤ vatDai.toNat →
-        Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         0 < (UInt256.ofNat
           ((evmDai.lookupAccount (kissVatAddress σ I)).option 0
@@ -849,7 +849,7 @@ theorem vowFlapBodyToSub
         evmSin1.executionEnv = I →
         Eq σ_sin1 evmSin1.accountMap →
         (∀ slot : UInt256,
-          Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_sin1 I) →
         (∀ slot : UInt256,
           solcSlotWordAt slot evmSin1.accountMap I = solcSlotWordAt slot σ I) →
@@ -863,28 +863,28 @@ theorem vowFlapBodyToSub
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x0e, 0x01, 0x19, 0x8b]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flap hsz4
   refine vowFlapBodyToSin1
-    (fun {σ_dai} {evmSinSolm} {evmDaiSolm} {outSin} {outDai}
+    (fun {σ_dai} {evmSinStele} {evmDaiStele} {outSin} {outDai}
         {memSin} {memDai} {k1190} {C1190} {vatSin0} {BumpVal} {surplus0}
         {HumpVal} {surplusNeed} {vatDai} hmemDaiDef rd1190 hmemSin hread64Sin
-        hmemDai hread64Dai hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hBumpSolm
-        hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolm
+        hmemDai hread64Dai hvatCodeStele hcallSinStele hdecSin hBumpLoad hBumpStele
+        hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiStele
         hdecDai henough hvatLoadDai hdepthLt hσ0Dai henvDai hAccountsDai
         hslotDaiLoad hSlotDaiStatic => ?_)
     hcode hsize hwv hsel
-  have hownerDai : evmDaiSolm.executionEnv.codeOwner = I.codeOwner := by
+  have hownerDai : evmDaiStele.executionEnv.codeOwner = I.codeOwner := by
     simp [henvDai]
-  have hTargetDaiSolm :
-      kissDaiTargetWord evmDaiSolm.accountMap I = kissDaiTargetWord σ I := by
+  have hTargetDaiStele :
+      kissDaiTargetWord evmDaiStele.accountMap I = kissDaiTargetWord σ I := by
     have hslot := hSlotDaiStatic ⟨1⟩
     simp [kissDaiTargetWord, hslot]
   have haddrSin1 :
       kissVatAddress σ I =
-        AccountAddress.ofUInt256 (kissDaiTargetWord evmDaiSolm.accountMap I) := by
-    rw [hTargetDaiSolm]
+        AccountAddress.ofUInt256 (kissDaiTargetWord evmDaiStele.accountMap I) := by
+    rw [hTargetDaiStele]
     exact kissVatAddress_eq_daiTarget_account σ I
   have hVatAddrDai : kissVatAddress σ_dai I = kissVatAddress σ I := by
     apply Fin.ext
@@ -895,42 +895,42 @@ theorem vowFlapBodyToSub
   by_cases hcodeSizeSin1 :
       Reasoning.Theory.extCodeSizeWord σ_dai (kissDaiTargetWord σ_dai I) =
         ⟨0⟩
-  · have hcodeSizeSin1Solm :
-        Reasoning.Theory.extCodeSizeWord evmDaiSolm.accountMap
-            (kissDaiTargetWord evmDaiSolm.accountMap I) = ⟨0⟩ := by
+  · have hcodeSizeSin1Stele :
+        Reasoning.Theory.extCodeSizeWord evmDaiStele.accountMap
+            (kissDaiTargetWord evmDaiStele.accountMap I) = ⟨0⟩ := by
       simpa only [← hAccountsDai] using hcodeSizeSin1
     have hvatNoCodeSin1 :
         (UInt256.ofNat
-          ((evmDaiSolm.lookupAccount (kissVatAddress σ I)).option 0
+          ((evmDaiStele.lookupAccount (kissVatAddress σ I)).option 0
             (fun acc => acc.code.size))).toNat = 0 := by
       simpa [State.lookupAccount] using
         extCodeSizeWord_zero_lookup_code_zero
-          (σ := evmDaiSolm.accountMap)
-          (target := kissDaiTargetWord evmDaiSolm.accountMap I)
-          (addr := kissVatAddress σ I) haddrSin1 hcodeSizeSin1Solm
+          (σ := evmDaiStele.accountMap)
+          (target := kissDaiTargetWord evmDaiStele.accountMap I)
+          (addr := kissVatAddress σ I) haddrSin1 hcodeSizeSin1Stele
     exact vowFlapSin1NoCodeBodyCore (acc := σ_dai)
-      (evmSin0 := evmSinSolm) (evmDai := evmDaiSolm)
+      (evmSin0 := evmSinStele) (evmDai := evmDaiStele)
       hcode hwv hdispatch hdecode rd1190 hmemDai hread64Dai hcodeSizeSin1
-      hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad
-      hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolm hdecDai
+      hvatCodeStele hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad
+      hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiStele hdecDai
       henough hvatLoadDai hvatNoCodeSin1
   have hcodeSizeSin1NE :
       Reasoning.Theory.extCodeSizeWord σ_dai (kissDaiTargetWord σ_dai I) ≠
         ⟨0⟩ :=
     hcodeSizeSin1
-  have hcodeSizeSin1SolmNE :
-      Reasoning.Theory.extCodeSizeWord evmDaiSolm.accountMap
-          (kissDaiTargetWord evmDaiSolm.accountMap I) ≠ ⟨0⟩ := by
+  have hcodeSizeSin1SteleNE :
+      Reasoning.Theory.extCodeSizeWord evmDaiStele.accountMap
+          (kissDaiTargetWord evmDaiStele.accountMap I) ≠ ⟨0⟩ := by
     simpa only [← hAccountsDai] using hcodeSizeSin1NE
   have hvatCodeSin1 :
       0 < (UInt256.ofNat
-        ((evmDaiSolm.lookupAccount (kissVatAddress σ I)).option 0
+        ((evmDaiStele.lookupAccount (kissVatAddress σ I)).option 0
           (fun acc => acc.code.size))).toNat := by
     simpa [State.lookupAccount] using
       extCodeSizeWord_ne_zero_lookup_code_pos
-        (σ := evmDaiSolm.accountMap)
-        (target := kissDaiTargetWord evmDaiSolm.accountMap I)
-        (addr := kissVatAddress σ I) haddrSin1 hcodeSizeSin1SolmNE
+        (σ := evmDaiStele.accountMap)
+        (target := kissDaiTargetWord evmDaiStele.accountMap I)
+        (addr := kissVatAddress σ I) haddrSin1 hcodeSizeSin1SteleNE
   obtain ⟨σ_sin1, zSin1, outSin1, A_sin1, k1277, C1277,
       rd1277, hcallSin1EvmRaw, hoszSin1⟩ :=
     RD.vowFlapSin1PostCall rd1190 hmemDai hread64Dai hcodeSizeSin1NE hdepthLt
@@ -946,39 +946,39 @@ theorem vowFlapBodyToSub
         (EVM.address (kissVatAddress σ_dai I)) "sin" 0 [.address I.codeOwner]
         (zSin1, evmSin1EvmOut, outSin1) false := by
     simpa [evmSin1EvmIn, evmSin1EvmOut] using hcallSin1EvmRaw
-  let evmSin1SolmBase := { evmDaiSolm with substate := evmSin1EvmIn.substate }
-  have hcallEnvSin1 : evmSin1SolmBase.executionEnv = evmSin1EvmIn.executionEnv := by
-    simpa [evmSin1SolmBase, evmSin1EvmIn, initState] using henvDai
-  obtain ⟨σ_sin1_solm, A_sin1_solm0, hcallSin1SolmBase, hAccountsSin1⟩ :=
-    typedCallViaEVM_sameInputs (evm_solm := evmSin1SolmBase)
-      hcallSin1Evm (by simpa [evmSin1EvmIn, evmSin1SolmBase] using hAccountsDai)
-      (by simpa [evmSin1EvmIn, evmSin1SolmBase, initState] using hσ0Dai.symm)
+  let evmSin1SteleBase := { evmDaiStele with substate := evmSin1EvmIn.substate }
+  have hcallEnvSin1 : evmSin1SteleBase.executionEnv = evmSin1EvmIn.executionEnv := by
+    simpa [evmSin1SteleBase, evmSin1EvmIn, initState] using henvDai
+  obtain ⟨σ_sin1_stele, A_sin1_stele0, hcallSin1SteleBase, hAccountsSin1⟩ :=
+    typedCallViaEVM_sameInputs (evm_stele := evmSin1SteleBase)
+      hcallSin1Evm (by simpa [evmSin1EvmIn, evmSin1SteleBase] using hAccountsDai)
+      (by simpa [evmSin1EvmIn, evmSin1SteleBase, initState] using hσ0Dai.symm)
       hcallEnvSin1.symm
   have hdepthNeI : I.depth ≠ ⟨1024, by decide⟩ := by
     intro hdepthEq
     have hval : I.depth.val = 1024 := congrArg Fin.val hdepthEq
     omega
-  have hdepthNeBase : evmSin1SolmBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
-    simpa [evmSin1SolmBase, henvDai] using hdepthNeI
-  obtain ⟨A_sin1_solm, hcallSin1SolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallSin1SolmBase hdepthNeBase
-      evmDaiSolm.substate
-  let evmSin1Solm :=
-    { evmDaiSolm with
-        accountMap := σ_sin1_solm
-        substate := A_sin1_solm }
-  have hcallSin1Solm :
-      typedCallViaEVM config evmDaiSolm
+  have hdepthNeBase : evmSin1SteleBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
+    simpa [evmSin1SteleBase, henvDai] using hdepthNeI
+  obtain ⟨A_sin1_stele, hcallSin1SteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallSin1SteleBase hdepthNeBase
+      evmDaiStele.substate
+  let evmSin1Stele :=
+    { evmDaiStele with
+        accountMap := σ_sin1_stele
+        substate := A_sin1_stele }
+  have hcallSin1Stele :
+      typedCallViaEVM config evmDaiStele
         (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-        (zSin1, evmSin1Solm, outSin1) false := by
-    simpa [evmSin1Solm, evmSin1SolmBase, hVatAddrDai] using hcallSin1SolmRaw
+        (zSin1, evmSin1Stele, outSin1) false := by
+    simpa [evmSin1Stele, evmSin1SteleBase, hVatAddrDai] using hcallSin1SteleRaw
   cases zSin1
   · exact vowFlapSin1CallFailureBodyCore (acc := σ_sin1)
-      (evmSin0 := evmSinSolm) (evmDai := evmDaiSolm) (evmSin1 := evmSin1Solm)
-      hcode hwv hdispatch hdecode (by simpa using rd1277) hoszSin1 hvatCodeSolm
-      hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad hsurplusNeed
-      hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolm hdecDai hownerDai henough
-      hvatLoadDai hvatCodeSin1 (by simpa using hcallSin1Solm)
+      (evmSin0 := evmSinStele) (evmDai := evmDaiStele) (evmSin1 := evmSin1Stele)
+      hcode hwv hdispatch hdecode (by simpa using rd1277) hoszSin1 hvatCodeStele
+      hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0 hHumpLoad hsurplusNeed
+      hfitNeed hvatLoadSin hvatCodeDai hcallDaiStele hdecDai hownerDai henough
+      hvatLoadDai hvatCodeSin1 (by simpa using hcallSin1Stele)
   · have rd1277True : RD vowBytecode I (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1277⟩
         (⟨1⟩ :: healSinEndPtr :: healSinSelector :: kissDaiTargetWord σ_dai I ::
@@ -987,11 +987,11 @@ theorem vowFlapBodyToSub
           (min (⟨32⟩ : UInt256) (UInt256.ofNat outSin1.size)).toNat)
         (UInt256.ofNat 6) outSin1 σ_sin1 k1277 C1277 := by
       simpa using rd1277
-    have hcallSin1SolmTrue :
-        typedCallViaEVM config evmDaiSolm
+    have hcallSin1SteleTrue :
+        typedCallViaEVM config evmDaiStele
           (EVM.address (kissVatAddress σ I)) "sin" 0 [.address I.codeOwner]
-          (true, evmSin1Solm, outSin1) false := by
-      simpa using hcallSin1Solm
+          (true, evmSin1Stele, outSin1) false := by
+      simpa using hcallSin1Stele
     by_cases ho32Sin1 : 32 ≤ outSin1.size
     · let vatSin1 : UInt256 :=
         UInt256.ofNat (fromByteArrayBigEndian (outSin1.extract 0 32))
@@ -1011,55 +1011,55 @@ theorem vowFlapBodyToSub
         simpa [memSin1] using
           healSinWrite_read64 I memDai outSin1 32 hmemDai hread64Dai
             (by omega) ho32Sin1
-      have hStateSin1 : EVMStateEquiv evmSin1EvmOut evmSin1Solm := by
+      have hStateSin1 : EVMStateEquiv evmSin1EvmOut evmSin1Stele := by
         refine ⟨?_, ?_⟩
-        · simpa [evmSin1EvmOut, evmSin1Solm, initState] using henvDai.symm
-        · simpa [evmSin1EvmOut, evmSin1Solm] using hAccountsSin1
+        · simpa [evmSin1EvmOut, evmSin1Stele, initState] using henvDai.symm
+        · simpa [evmSin1EvmOut, evmSin1Stele] using hAccountsSin1
       have hslotSin1Load : ∀ slot : UInt256,
-          Solm.EVM.storageLoad evmSin1Solm evmSin1Solm.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmSin1Stele evmSin1Stele.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_sin1 I := by
         intro slot
         have h := hStateSin1.storageLoad_codeOwner slot
         rw [← h]
-        simp [evmSin1EvmOut, initState, Solm.EVM.storageLoad, State.lookupAccount,
+        simp [evmSin1EvmOut, initState, Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage, solcSlotWordAt, solcSlotWord]
-      have hAccountsSin1Out : Eq σ_sin1 evmSin1Solm.accountMap := by
-        simpa [evmSin1EvmOut, evmSin1Solm] using hAccountsSin1
-      have hσ0Sin1 : evmSin1Solm.σ₀ = σ₀ := by
-        simpa [evmSin1Solm] using hσ0Dai
-      have henvSin1 : evmSin1Solm.executionEnv = I := by
-        simpa [evmSin1Solm] using henvDai
+      have hAccountsSin1Out : Eq σ_sin1 evmSin1Stele.accountMap := by
+        simpa [evmSin1EvmOut, evmSin1Stele] using hAccountsSin1
+      have hσ0Sin1 : evmSin1Stele.σ₀ = σ₀ := by
+        simpa [evmSin1Stele] using hσ0Dai
+      have henvSin1 : evmSin1Stele.executionEnv = I := by
+        simpa [evmSin1Stele] using henvDai
       have hSlotSin1Static : ∀ slot : UInt256,
-          solcSlotWordAt slot evmSin1Solm.accountMap I = solcSlotWordAt slot σ I := by
+          solcSlotWordAt slot evmSin1Stele.accountMap I = solcSlotWordAt slot σ I := by
         intro slot
         have hstatic := typedCallViaEVM_static_storage_getD_of_accounts_eq
-          (cfg := config) (σ := evmDaiSolm.accountMap)
-          (evm := evmDaiSolm) (evm' := evmSin1Solm) (slot := slot)
+          (cfg := config) (σ := evmDaiStele.accountMap)
+          (evm := evmDaiStele) (evm' := evmSin1Stele) (slot := slot)
           (default := ⟨0⟩)
           (hAccounts := rfl)
-          hcallSin1SolmTrue
+          hcallSin1SteleTrue
         have hslot :
-            solcSlotWordAt slot evmSin1Solm.accountMap I =
-              solcSlotWordAt slot evmDaiSolm.accountMap I := by
+            solcSlotWordAt slot evmSin1Stele.accountMap I =
+              solcSlotWordAt slot evmDaiStele.accountMap I := by
           simpa [solcSlotWordAt, solcSlotWord, henvSin1, henvDai] using hstatic
         rw [hslot, hSlotDaiStatic slot]
-      exact cont (memSin1 := memSin1) (evmSin0 := evmSinSolm)
-        (evmDai := evmDaiSolm) (evmSin1 := evmSin1Solm)
+      exact cont (memSin1 := memSin1) (evmSin0 := evmSinStele)
+        (evmDai := evmDaiStele) (evmSin1 := evmSin1Stele)
         (vatSin0 := vatSin0) (BumpVal := BumpVal) (surplus0 := surplus0)
         (HumpVal := HumpVal) (surplusNeed := surplusNeed) (vatDai := vatDai)
         (vatSin1 := vatSin1) rfl (by simpa [memSin1, vatSin1] using rd1318)
-        hmemDai hread64Dai hmemSin1 hread64Sin1 hvatCodeSolm hcallSinSolm hdecSin
-        hBumpLoad hBumpSolm hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
-        hvatCodeDai hcallDaiSolm hdecDai hownerDai henough hvatLoadDai hvatCodeSin1
-        hcallSin1SolmTrue hdecSin1 hdepthLt hσ0Sin1 henvSin1 hAccountsSin1Out
+        hmemDai hread64Dai hmemSin1 hread64Sin1 hvatCodeStele hcallSinStele hdecSin
+        hBumpLoad hBumpStele hsurplus0 hfit0 hHumpLoad hsurplusNeed hfitNeed hvatLoadSin
+        hvatCodeDai hcallDaiStele hdecDai hownerDai henough hvatLoadDai hvatCodeSin1
+        hcallSin1SteleTrue hdecSin1 hdepthLt hσ0Sin1 henvSin1 hAccountsSin1Out
         hslotSin1Load hSlotSin1Static
     · have hshortSin1 : outSin1.size < 32 := Nat.lt_of_not_ge ho32Sin1
       exact vowFlapSin1DecodeShortBodyCore (acc := σ_sin1)
-        (evmSin0 := evmSinSolm) (evmDai := evmDaiSolm) (evmSin1 := evmSin1Solm)
+        (evmSin0 := evmSinStele) (evmDai := evmDaiStele) (evmSin1 := evmSin1Stele)
         hcode hwv hdispatch hdecode rd1277True hmemDai hread64Dai hshortSin1
-        hoszSin1 hvatCodeSolm hcallSinSolm hdecSin hBumpLoad hsurplus0 hfit0
-        hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiSolm
-        hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1SolmTrue
+        hoszSin1 hvatCodeStele hcallSinStele hdecSin hBumpLoad hsurplus0 hfit0
+        hHumpLoad hsurplusNeed hfitNeed hvatLoadSin hvatCodeDai hcallDaiStele
+        hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1SteleTrue
 
 /-- Public `flap()` wrapper prefix through the checked subtractions and zero-debt gate. -/
 theorem vowFlapBodyToKick
@@ -1084,14 +1084,14 @@ theorem vowFlapBodyToKick
           (true, evmSin0, outSin0) false →
         config.externalABI.decode? "sin" outSin0 =
           some [.int (Int.ofNat vatSin0.toNat)] →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨10⟩ = BumpVal →
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨10⟩ = BumpVal →
         BumpVal = solcSlotWordAt ⟨10⟩ σ I →
         surplus0 = vatSin0 + BumpVal →
         vatSin0.toNat + BumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨11⟩ = HumpVal →
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨11⟩ = HumpVal →
         surplusNeed = surplus0 + HumpVal →
         surplus0.toNat + HumpVal.toNat < UInt256.size →
-        Solm.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmSin0 evmSin0.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         0 < (UInt256.ofNat
           ((evmSin0.lookupAccount (kissVatAddress σ I)).option 0
@@ -1102,7 +1102,7 @@ theorem vowFlapBodyToKick
           some [.int (Int.ofNat vatDai.toNat)] →
         evmDai.executionEnv.codeOwner = I.codeOwner →
         surplusNeed.toNat ≤ vatDai.toNat →
-        Solm.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
+        Stele.EVM.storageLoad evmDai evmDai.executionEnv.codeOwner ⟨1⟩ =
           solcSlotWordAt ⟨1⟩ σ I →
         0 < (UInt256.ofNat
           ((evmDai.lookupAccount (kissVatAddress σ I)).option 0
@@ -1111,11 +1111,11 @@ theorem vowFlapBodyToKick
           [.address I.codeOwner] (true, evmSin1, outSin1) false →
         config.externalABI.decode? "sin" outSin1 =
           some [.int (Int.ofNat vatSin1.toNat)] →
-        Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨5⟩ =
+        Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨5⟩ =
           solcSlotWordAt ⟨5⟩ σ_sin1 I →
         freeSin = UInt256.sub vatSin1 (solcSlotWordAt ⟨5⟩ σ_sin1 I) →
         (solcSlotWordAt ⟨5⟩ σ_sin1 I).toNat ≤ vatSin1.toNat →
-        Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨6⟩ =
+        Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨6⟩ =
           solcSlotWordAt ⟨6⟩ σ_sin1 I →
         debt = UInt256.sub freeSin (solcSlotWordAt ⟨6⟩ σ_sin1 I) →
         (solcSlotWordAt ⟨6⟩ σ_sin1 I).toNat ≤ freeSin.toNat →
@@ -1125,7 +1125,7 @@ theorem vowFlapBodyToKick
         evmSin1.executionEnv = I →
         Eq σ_sin1 evmSin1.accountMap →
         (∀ slot : UInt256,
-          Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner slot =
+          Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner slot =
             solcSlotWordAt slot σ_sin1 I) →
         (∀ slot : UInt256,
           solcSlotWordAt slot evmSin1.accountMap I = solcSlotWordAt slot σ I) →
@@ -1139,15 +1139,15 @@ theorem vowFlapBodyToKick
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x0e, 0x01, 0x19, 0x8b]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flap hsz4
   refine vowFlapBodyToSub
     (fun {σ_sin1} {evmSin0} {evmDai} {evmSin1} {outSin0} {outDai}
         {outSin1} {memDai} {memSin1} {k1318} {C1318} {vatSin0} {BumpVal}
         {surplus0} {HumpVal} {surplusNeed} {vatDai} {vatSin1} hmemSin1Def rd1318
-        hmemDai hread64Dai hmemSin1 hread64Sin1 hvatCodeSolm hcallSin0 hdecSin0
-        hBumpLoad0 hBumpSolm hsurplus0 hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0
+        hmemDai hread64Dai hmemSin1 hread64Sin1 hvatCodeStele hcallSin0 hdecSin0
+        hBumpLoad0 hBumpStele hsurplus0 hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0
         hvatCodeDai hcallDai hdecDai hownerDai henough hvatLoadDai hvatCodeSin1
         hcallSin1 hdecSin1 hdepthLt hσ0Sin1 henvSin1 hAccountsSin1
         hslotSin1Load hSlotSin1Static => ?_)
@@ -1155,14 +1155,14 @@ theorem vowFlapBodyToKick
   let SinVal : UInt256 := solcSlotWordAt ⟨5⟩ σ_sin1 I
   let AshVal : UInt256 := solcSlotWordAt ⟨6⟩ σ_sin1 I
   have hSinLoad :
-      Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨5⟩ = SinVal := by
+      Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨5⟩ = SinVal := by
     simpa [SinVal] using hslotSin1Load ⟨5⟩
   by_cases hfreeUnder : vatSin1.toNat < SinVal.toNat
   · exact vowFlapFreeSinUnderflowBodyCore (acc := σ_sin1)
       (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
       hcode hwv hdispatch hdecode (by simpa [SinVal] using rd1318)
       (by simpa [SinVal] using hfreeUnder)
-      hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
+      hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
       hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai hcallDai hdecDai hownerDai
       henough hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1
       (by simpa [SinVal] using hSinLoad)
@@ -1173,14 +1173,14 @@ theorem vowFlapBodyToKick
     RD.vowFlapFreeSinSubSuccess (by simpa [SinVal] using rd1318)
       (by simpa [SinVal] using hfreeOk)
   have hAshLoad :
-      Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨6⟩ = AshVal := by
+      Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨6⟩ = AshVal := by
     simpa [AshVal] using hslotSin1Load ⟨6⟩
   by_cases hdebtUnder : freeSin.toNat < AshVal.toNat
   · exact vowFlapDebtUnderflowBodyCore (acc := σ_sin1)
       (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
       hcode hwv hdispatch hdecode (by simpa [freeSin, SinVal] using rd1325)
       (by simpa [AshVal] using hdebtUnder)
-      hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
+      hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
       hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai hcallDai hdecDai hownerDai
       henough hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1
       (by simpa [SinVal] using hSinLoad) rfl hfreeOk
@@ -1195,7 +1195,7 @@ theorem vowFlapBodyToKick
   · exact vowFlapDebtNotZeroBodyCore (acc := σ_sin1)
       (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
       hcode hwv hdispatch hdecode (by simpa [debt, freeSin, AshVal] using rd1333)
-      hdebtNe hmemSin1 hread64Sin1 hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0
+      hdebtNe hmemSin1 hread64Sin1 hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0
       hsurplus0 hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai
       hcallDai hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1
       hdecSin1 (by simpa [SinVal] using hSinLoad) rfl hfreeOk
@@ -1208,7 +1208,7 @@ theorem vowFlapBodyToKick
     (HumpVal := HumpVal) (surplusNeed := surplusNeed) (vatDai := vatDai)
     (vatSin1 := vatSin1) (freeSin := freeSin) (debt := debt)
     (by simpa [freeSin, debt, SinVal, AshVal] using rd1403)
-    hmemSin1 hread64Sin1 hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hBumpSolm
+    hmemSin1 hread64Sin1 hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hBumpStele
     hsurplus0 hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai hcallDai
     hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1
     (by simpa [SinVal] using hSinLoad) rfl hfreeOk
@@ -1226,14 +1226,14 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
   have hsz4 : 4 ≤ I.calldata.size :=
     calldata_size_ge_of_selIs I ⟨#[0x0e, 0x01, 0x19, 0x8b]⟩ rfl hsel
   have hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (flapTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (flapTransition.params.map Param.name)
         (transitionSignature flapTransition).paramTypes I.calldata = some ∅ :=
     vowDecode_flap hsz4
   refine vowFlapBodyToKick
     (fun {σ_sin1} {evmSin0} {evmDai} {evmSin1} {outSin0} {outDai}
         {outSin1} {memSin1} {k1403} {C1403} {vatSin0} {BumpVal} {surplus0}
         {HumpVal} {surplusNeed} {vatDai} {vatSin1} {freeSin} {debt} rd1403
-        hmemSin1 hread64Sin1 hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hBumpSolm
+        hmemSin1 hread64Sin1 hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hBumpStele
         hsurplus0 hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai
         hcallDai hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1
         hdecSin1 hSinLoad hfree hfreeOk hAshLoad hdebt hdebtOk hdebtZero hdepthLt
@@ -1246,16 +1246,16 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
           solcSlotWordAt ⟨10⟩ evmSin1.accountMap I :=
         congrArg (fun accounts => solcSlotWordAt ⟨10⟩ accounts I) hAccountsSin1
       _ = solcSlotWordAt ⟨10⟩ σ I := hSlotSin1Static ⟨10⟩
-      _ = BumpVal := hBumpSolm.symm
+      _ = BumpVal := hBumpStele.symm
   have hBumpLoad1 :
-      Solm.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨10⟩ = BumpVal := by
+      Stele.EVM.storageLoad evmSin1 evmSin1.executionEnv.codeOwner ⟨10⟩ = BumpVal := by
     simpa [hBumpSin1] using hslotSin1Load ⟨10⟩
   have hownerSin1 : evmSin1.executionEnv.codeOwner = I.codeOwner := by
     simp [henvSin1]
   by_cases hcodeSizeKick :
       Reasoning.Theory.extCodeSizeWord σ_sin1 (solcAddressSlotWord ⟨2⟩ σ_sin1 I) =
         ⟨0⟩
-  · have hcodeSizeKickSolm :
+  · have hcodeSizeKickStele :
         Reasoning.Theory.extCodeSizeWord evmSin1.accountMap
             (solcAddressSlotWord ⟨2⟩ evmSin1.accountMap I) = ⟨0⟩ := by
       simpa only [← hAccountsSin1] using hcodeSizeKick
@@ -1263,11 +1263,11 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
         (UInt256.ofNat
           ((evmSin1.lookupAccount (flapFlapperAddressOf evmSin1)).option 0
             (fun acc => acc.code.size))).toNat = 0 :=
-      flapFlapperCode_zero_of_codeSize_zero evmSin1 I hownerSin1 hcodeSizeKickSolm
+      flapFlapperCode_zero_of_codeSize_zero evmSin1 I hownerSin1 hcodeSizeKickStele
     exact vowFlapKickNoCodeBodyCore (acc := σ_sin1)
       (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
       hcode hwv hdispatch hdecode rd1403 hmemSin1 hread64Sin1 hcodeSizeKick
-      hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
+      hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0
       hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai hcallDai hdecDai hownerDai
       henough hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1 hSinLoad hfree hfreeOk
       hAshLoad hdebt hdebtOk hdebtZero hflapperNoCode
@@ -1275,7 +1275,7 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
       Reasoning.Theory.extCodeSizeWord σ_sin1 (solcAddressSlotWord ⟨2⟩ σ_sin1 I) ≠
         ⟨0⟩ :=
     hcodeSizeKick
-  have hcodeSizeKickSolmNE :
+  have hcodeSizeKickSteleNE :
       Reasoning.Theory.extCodeSizeWord evmSin1.accountMap
           (solcAddressSlotWord ⟨2⟩ evmSin1.accountMap I) ≠ ⟨0⟩ := by
     simpa only [← hAccountsSin1] using hcodeSizeKickNE
@@ -1283,7 +1283,7 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
       0 < (UInt256.ofNat
         ((evmSin1.lookupAccount (flapFlapperAddressOf evmSin1)).option 0
           (fun acc => acc.code.size))).toNat :=
-    flapFlapperCode_pos_of_codeSize_ne evmSin1 I hownerSin1 hcodeSizeKickSolmNE
+    flapFlapperCode_pos_of_codeSize_ne evmSin1 I hownerSin1 hcodeSizeKickSteleNE
   obtain ⟨σ_kick, zKick, outKick, A_kick, k1498, C1498, rd1498,
       hcallKickEvmRaw, houtKickSize⟩ :=
     RD.vowFlapKickPostCall rd1403 hmemSin1 hread64Sin1 hcodeSizeKickNE hdepthLt
@@ -1323,42 +1323,42 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
         [.int (Int.ofNat BumpVal.toNat), .int 0]
         (zKick, evmKickEvmOut, outKick) true := by
     simpa [evmKickEvmIn, evmKickEvmOut, hKickTargetAddr, hBumpSin1] using hcallKickEvmRaw
-  let evmKickSolmBase := { evmSin1 with substate := evmKickEvmIn.substate }
+  let evmKickSteleBase := { evmSin1 with substate := evmKickEvmIn.substate }
   have hcallEnvKick :
-      evmKickSolmBase.executionEnv = evmKickEvmIn.executionEnv := by
-    simpa [evmKickSolmBase, evmKickEvmIn, initState] using henvSin1
-  obtain ⟨σ_kick_solm, A_kick_solm0, hcallKickSolmBase, hAccountsKick⟩ :=
-    typedCallViaEVM_sameInputs (evm_solm := evmKickSolmBase)
-      hcallKickEvm (by simpa [evmKickEvmIn, evmKickSolmBase] using hAccountsSin1)
-      (by simpa [evmKickEvmIn, evmKickSolmBase, initState] using hσ0Sin1.symm)
+      evmKickSteleBase.executionEnv = evmKickEvmIn.executionEnv := by
+    simpa [evmKickSteleBase, evmKickEvmIn, initState] using henvSin1
+  obtain ⟨σ_kick_stele, A_kick_stele0, hcallKickSteleBase, hAccountsKick⟩ :=
+    typedCallViaEVM_sameInputs (evm_stele := evmKickSteleBase)
+      hcallKickEvm (by simpa [evmKickEvmIn, evmKickSteleBase] using hAccountsSin1)
+      (by simpa [evmKickEvmIn, evmKickSteleBase, initState] using hσ0Sin1.symm)
       hcallEnvKick.symm
   have hdepthNeI : I.depth ≠ ⟨1024, by decide⟩ := by
     intro hdepthEq
     have hval : I.depth.val = 1024 := congrArg Fin.val hdepthEq
     omega
-  have hdepthNeBaseKick : evmKickSolmBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
-    simpa [evmKickSolmBase, henvSin1] using hdepthNeI
-  obtain ⟨A_kick_solm, hcallKickSolmRaw⟩ :=
-    typedCallViaEVM_zero_setSubstate hcallKickSolmBase hdepthNeBaseKick evmSin1.substate
-  let evmKickSolm :=
+  have hdepthNeBaseKick : evmKickSteleBase.executionEnv.depth ≠ ⟨1024, by decide⟩ := by
+    simpa [evmKickSteleBase, henvSin1] using hdepthNeI
+  obtain ⟨A_kick_stele, hcallKickSteleRaw⟩ :=
+    typedCallViaEVM_zero_setSubstate hcallKickSteleBase hdepthNeBaseKick evmSin1.substate
+  let evmKickStele :=
     { evmSin1 with
-        accountMap := σ_kick_solm
-        substate := A_kick_solm }
-  have hcallKickSolm :
+        accountMap := σ_kick_stele
+        substate := A_kick_stele }
+  have hcallKickStele :
       typedCallViaEVM config evmSin1 (EVM.address (flapFlapperAddressOf evmSin1))
         "kick" 0 [.int (Int.ofNat BumpVal.toNat), .int 0]
-        (zKick, evmKickSolm, outKick) true := by
-    simpa [evmKickSolm, evmKickSolmBase] using hcallKickSolmRaw
+        (zKick, evmKickStele, outKick) true := by
+    simpa [evmKickStele, evmKickSteleBase] using hcallKickSteleRaw
   cases zKick
   · exact vowFlapKickCallFailureBodyCore (acc := σ_kick)
       (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
-      (evmKick := evmKickSolm) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
+      (evmKick := evmKickStele) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
       (AshVal := solcSlotWordAt ⟨6⟩ σ_sin1 I)
-      hcode hwv hdispatch hdecode (by simpa using rd1498) houtKickSize hvatCodeSolm
+      hcode hwv hdispatch hdecode (by simpa using rd1498) houtKickSize hvatCodeStele
       hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0 hsurplusNeed
       hfitNeed hvatLoadSin0 hvatCodeDai hcallDai hdecDai hownerDai henough
       hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1 hSinLoad hfree hfreeOk hAshLoad
-      hdebt hdebtOk hdebtZero hBumpLoad1 hflapperCode (by simpa using hcallKickSolm)
+      hdebt hdebtOk hdebtZero hBumpLoad1 hflapperCode (by simpa using hcallKickStele)
   · have rd1498True : RD vowBytecode I (Sat256.ofUInt256 g)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1498⟩
         (⟨1⟩ :: flapKickEndPtr :: flapKickSelectorWord ::
@@ -1367,25 +1367,25 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
           (min flapKickOutSize (UInt256.ofNat outKick.size)).toNat)
         (UInt256.ofNat 7) outKick σ_kick k1498 C1498 := by
       simpa [hBumpSin1] using rd1498
-    have hcallKickSolmTrue :
+    have hcallKickSteleTrue :
         typedCallViaEVM config evmSin1 (EVM.address (flapFlapperAddressOf evmSin1))
           "kick" 0 [.int (Int.ofNat BumpVal.toNat), .int 0]
-          (true, evmKickSolm, outKick) true := by
-      simpa using hcallKickSolm
+          (true, evmKickStele, outKick) true := by
+      simpa using hcallKickStele
     by_cases ho32Kick : 32 ≤ outKick.size
     · let id : UInt256 := UInt256.ofNat (fromByteArrayBigEndian (outKick.extract 0 32))
-      have hAccountsFinal : Eq σ_kick evmKickSolm.accountMap := by
-        simpa [evmKickEvmOut, evmKickSolm] using hAccountsKick
+      have hAccountsFinal : Eq σ_kick evmKickStele.accountMap := by
+        simpa [evmKickEvmOut, evmKickStele] using hAccountsKick
       exact vowFlapKickSuccessBodyCore (acc := σ_kick)
         (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
-        (evmKick := evmKickSolm) (id := id) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
+        (evmKick := evmKickStele) (id := id) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
         (AshVal := solcSlotWordAt ⟨6⟩ σ_sin1 I)
         hcode hwv hdispatch hdecode (by simpa using rd1498True)
-        hmemSin1 hread64Sin1 ho32Kick houtKickSize rfl hvatCodeSolm
+        hmemSin1 hread64Sin1 ho32Kick houtKickSize rfl hvatCodeStele
         hcallSin0 hdecSin0 hBumpLoad0 hsurplus0 hfit0 hHumpLoad0 hsurplusNeed
         hfitNeed hvatLoadSin0 hvatCodeDai hcallDai hdecDai hownerDai henough
         hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1 hSinLoad hfree hfreeOk hAshLoad
-        hdebt hdebtOk hdebtZero hBumpLoad1 hflapperCode hcallKickSolmTrue
+        hdebt hdebtOk hdebtZero hBumpLoad1 hflapperCode hcallKickSteleTrue
         hAccountsFinal
     · have hshortKick : outKick.size < 32 := Nat.lt_of_not_ge ho32Kick
       have hminKick :
@@ -1416,13 +1416,13 @@ theorem vowFlapBody {σ σ₀ A I} {g : UInt256}
         mloadFreePtrValue (by rw [hmemKickShort]; decide) hread64KickShort
       exact vowFlapKickDecodeShortBodyCore (acc := σ_kick)
         (evmSin0 := evmSin0) (evmDai := evmDai) (evmSin1 := evmSin1)
-        (evmKick := evmKickSolm) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
+        (evmKick := evmKickStele) (SinVal := solcSlotWordAt ⟨5⟩ σ_sin1 I)
         (AshVal := solcSlotWordAt ⟨6⟩ σ_sin1 I)
         hcode hwv hdispatch hdecode (by simpa using rd1516) hshortKick houtKickSize
-        hmload64KickShort hvatCodeSolm hcallSin0 hdecSin0 hBumpLoad0 hsurplus0
+        hmload64KickShort hvatCodeStele hcallSin0 hdecSin0 hBumpLoad0 hsurplus0
         hfit0 hHumpLoad0 hsurplusNeed hfitNeed hvatLoadSin0 hvatCodeDai hcallDai
         hdecDai hownerDai henough hvatLoadDai hvatCodeSin1 hcallSin1 hdecSin1
         hSinLoad hfree hfreeOk hAshLoad hdebt hdebtOk hdebtZero hBumpLoad1
-        hflapperCode hcallKickSolmTrue
+        hflapperCode hcallKickSteleTrue
 
 end Benchmarks.Dss.Vow

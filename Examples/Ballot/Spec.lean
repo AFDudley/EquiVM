@@ -1,12 +1,12 @@
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
 
 /-!
-# Ballot — Solm specification for `Ballot.sol`
+# Ballot — Stele specification for `Ballot.sol`
 
-A faithful (events-aside) Solm spec of the classic Solidity "Voting with delegation" `Ballot`
-contract.  This exercises a broad slice of the Solm surface that earlier examples did not:
+A faithful (events-aside) Stele spec of the classic Solidity "Voting with delegation" `Ballot`
+contract.  This exercises a broad slice of the Stele surface that earlier examples did not:
 
 * **structs** — `Voter { weight, voted, delegate, vote }` and `Proposal { name, voteCount }`,
   with the solc storage **packing** of `Voter` (`voted`/`delegate` share one slot);
@@ -38,7 +38,7 @@ This is spec-level data only; the bytecode/jump facts live in `Bytecode.lean` an
 the per-function files / `Correct.lean`.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace Ballot
 

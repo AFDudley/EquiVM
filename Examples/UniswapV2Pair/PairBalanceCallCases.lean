@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.PairBalanceCallRuntime
 import Examples.UniswapV2Pair.BurnInitialSource
 import Examples.UniswapV2Pair.BalanceCallSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -56,16 +56,16 @@ theorem uniswapPairBalanceCallRuntimeCases
       ⟨hbad, rdRev⟩ | ⟨hz, ho32, kr, Cr, rdRet⟩
     · refine Or.inl ⟨?_, rdRev⟩
       cases z with
-      | false => exact checkedExternalCallFailure (retVar := retVar) hguard hreceiver hargs hcall
+      | false => exact checkedExternalCallFailure (hperm := Or.inl rfl) (retVar := retVar) hguard hreceiver hargs hcall
       | true =>
         have hshort : out.size < 32 := by rcases hbad with heq | hshort; cases heq; exact hshort
         have hdec : config.externalABI.decode? "balanceOf" out = none := by
           change uniswapExternalABI.decode? "balanceOf" out = none
           simpa [uniswapExternalABI, uint256, uint256Int, abiUInt256] using
             decodeReturnValueWithMode_legacy_uint256_none_short (returndata := out) hshort
-        exact checkedExternalCallDecodeRevert (retVar := retVar) hguard hreceiver hargs hcall hdec
+        exact checkedExternalCallDecodeRevert (hperm := Or.inl rfl) (retVar := retVar) hguard hreceiver hargs hcall hdec
     · refine Or.inr ⟨evm', σ', out, kr, Cr, ?_, ha'.symm, hs'.trans hs, he'.trans he, ho32, hout, rdRet⟩
-      exact checkedExternalCallSuccess (value := [uniswapUint256Value
+      exact checkedExternalCallSuccess (hperm := Or.inl rfl) (value := [uniswapUint256Value
         (UInt256.ofNat (fromByteArrayBigEndian (out.extract 0 32)))])
         (retVar := retVar) hguard hreceiver hargs (by simpa only [hz] using hcall) (uniswapBalanceOfDecode_ok ho32)
 

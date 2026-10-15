@@ -2,7 +2,7 @@ import Benchmarks.Auction.BidRoutine
 import Benchmarks.Auction.Decoders
 import Benchmarks.Auction.Events
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -18,7 +18,7 @@ theorem createBidBodyCore {σ σ₀ A I} {g : UInt256}
     push1 ⟨4⟩, push2 ⟨5357⟩, jump (by jump_dest)]
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hhi : I.calldata.size < 2 ^ 255 + 4
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (createBidTransition.params.map Param.name)
           (transitionSignature createBidTransition).paramTypes I.calldata =
             some (bidParams (calldataWord I.calldata 4)) :=
@@ -38,14 +38,14 @@ theorem createBidBodyCore {σ σ₀ A I} {g : UInt256}
           hcode hd hdec (ExecFuncBody.execBlockOK hbody) hs'.accounts
           (.fallthrough rfl rfl (by native_decide))
       · exact hr.reEquivExecutionRevert hcode hd hdec (ExecFuncBody.execBlockRevert hbody)
-    · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    · have hdec : auctionConfig.externalABI.decodeCalldata?
           (createBidTransition.params.map Param.name)
           (transitionSignature createBidTransition).paramTypes I.calldata = none :=
         decodeCalldata_uint256_none_huge (by omega)
       exact (decodeUint256Fail rd5357
         (solcDecodeLenCheckHuge_4_32 (by omega) hsize) (by evm_ov)).reEquivDecodingFailed
         hcode hd hdec
-  · have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+  · have hdec : auctionConfig.externalABI.decodeCalldata?
         (createBidTransition.params.map Param.name)
         (transitionSignature createBidTransition).paramTypes I.calldata = none :=
       decodeCalldata_uint256_none_short (by omega)

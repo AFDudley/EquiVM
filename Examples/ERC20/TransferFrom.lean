@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Examples.ERC20.Transfer
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -46,7 +46,7 @@ def transferFromAllowanceSlotI (I : ExecutionEnv) : UInt256 :=
     (.address I.source)
 
 def transferFromCurrentAllowanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
 
 abbrev transferFromCurrentAllowanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromCurrentAllowanceWord evm I).toNat)
@@ -58,14 +58,13 @@ def transferFromFromSlot (I : ExecutionEnv) : UInt256 :=
   erc20BalanceOfSlot (.address (AccountAddress.ofNat (transferFromFromWord I).toNat))
 
 def transferFromFromBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (transferFromFromSlot I)
 
 abbrev transferFromFromBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromFromBalanceWord evm I).toNat)
 
 abbrev transferFromStoreFromBalance (evm : EVM.State) (I : ExecutionEnv) : Store :=
-  (transferFromStoreCurrentAllowance evm I).insert "fromBalance"
-    (transferFromFromBalanceValue evm I)
+  transferFromStoreCurrentAllowance evm I
 
 def transferFromAllowanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat
@@ -76,26 +75,26 @@ def transferFromBalanceDebitWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 
     ((transferFromFromBalanceWord evm I).toNat - (transferFromValueWord I).toNat)
 
 def transferFromAfterAllowanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (transferFromAllowanceSlot evm I)
     (transferFromAllowanceDebitWord evm I)
 
 theorem transferFromAfterAllowance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterAllowanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterAllowanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterAllowanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases evm.accountMap.get? evm.executionEnv.codeOwner with
   | none => rfl
   | some acc => simp only [Option.option, State.setAccount, Account.updateStorage]
 
 def transferFromAfterBalanceState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterAllowanceState evm I) evm.executionEnv.codeOwner
     (transferFromFromSlot I)
     (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm I) I)
 
 theorem transferFromAfterBalance_codeOwner (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromAfterBalanceState evm I).executionEnv.codeOwner =
       evm.executionEnv.codeOwner := by
-  simp only [transferFromAfterBalanceState, Solm.EVM.storageStore, State.lookupAccount]
+  simp only [transferFromAfterBalanceState, Stele.EVM.storageStore, State.lookupAccount]
   cases (transferFromAfterAllowanceState evm I).accountMap.get? evm.executionEnv.codeOwner with
   | none => exact transferFromAfterAllowance_codeOwner evm I
   | some acc =>
@@ -106,15 +105,14 @@ def transferFromToSlot (I : ExecutionEnv) : UInt256 :=
   erc20BalanceOfSlot (.address (AccountAddress.ofNat (transferFromToWord I).toNat))
 
 def transferFromToBalanceWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageLoad (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I)
 
 abbrev transferFromToBalanceValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromToBalanceWord evm I).toNat)
 
 abbrev transferFromStoreToBalance (evm : EVM.State) (I : ExecutionEnv) : Store :=
-  (transferFromStoreFromBalance evm I).insert "toBalance"
-    (transferFromToBalanceValue evm I)
+  transferFromStoreCurrentAllowance evm I
 
 def transferFromNewToNat (evm : EVM.State) (I : ExecutionEnv) : ℕ :=
   (transferFromToBalanceWord evm I).toNat + (transferFromValueWord I).toNat
@@ -126,10 +124,10 @@ abbrev transferFromNewToValue (evm : EVM.State) (I : ExecutionEnv) : Value :=
   .int (Int.ofNat (transferFromNewToNat evm I))
 
 abbrev transferFromStoreNewToBalance (evm : EVM.State) (I : ExecutionEnv) : Store :=
-  (transferFromStoreToBalance evm I).insert "newToBalance" (transferFromNewToValue evm I)
+  transferFromStoreCurrentAllowance evm I
 
 def transferFromPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
+  Stele.EVM.storageStore (transferFromAfterBalanceState evm I) evm.executionEnv.codeOwner
     (transferFromToSlot I) (transferFromNewToWord evm I)
 
 theorem transferFromNewToWord_toNat (evm : EVM.State) (I : ExecutionEnv)
@@ -244,97 +242,69 @@ theorem transferFromStoreCurrentAllowance_allowance (evm : EVM.State) (I : Execu
   rw [transferFromStoreCurrentAllowance, store_get_ne _ _ (by decide),
     transferFromStore_allowance]
 
-theorem transferFromStoreFromBalance_fromBalance (evm : EVM.State) (I : ExecutionEnv) :
-    (transferFromStoreFromBalance evm I).get? "fromBalance" =
-      some (transferFromFromBalanceValue evm I) := by
-  rw [transferFromStoreFromBalance, store_get_self]
-
 theorem transferFromStoreFromBalance_currentAllowance (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "currentAllowance" =
       some (transferFromCurrentAllowanceValue evm I) := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance_currentAllowance]
+  exact transferFromStoreCurrentAllowance_currentAllowance evm I
 
 theorem transferFromStoreFromBalance_value (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "value" =
       some (transferFromValueValue I) := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance_value]
+  exact transferFromStoreCurrentAllowance_value evm I
 
 theorem transferFromStoreFromBalance_from (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "from" =
       some (transferFromFromValue I) := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance_from]
+  exact transferFromStoreCurrentAllowance_from evm I
 
 theorem transferFromStoreFromBalance_to (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "to" = some (transferFromToValue I) := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance_to]
+  exact transferFromStoreCurrentAllowance_to evm I
 
 theorem transferFromStoreFromBalance_allowance (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "allowance" = none := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance_allowance]
+  exact transferFromStoreCurrentAllowance_allowance evm I
 
 theorem transferFromStoreFromBalance_balanceOf (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreFromBalance evm I).get? "balanceOf" = none := by
-  rw [transferFromStoreFromBalance, store_get_ne _ _ (by decide),
-    transferFromStoreCurrentAllowance]
-  rw [store_get_ne _ _ (by decide), transferFromStore_balanceOf]
-
-theorem transferFromStoreToBalance_toBalance (evm : EVM.State) (I : ExecutionEnv) :
-    (transferFromStoreToBalance evm I).get? "toBalance" =
-      some (transferFromToBalanceValue evm I) := by
-  rw [transferFromStoreToBalance, store_get_self]
+  rw [transferFromStoreFromBalance, transferFromStoreCurrentAllowance, store_get_ne _ _ (by decide),
+    transferFromStore_balanceOf]
 
 theorem transferFromStoreToBalance_value (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreToBalance evm I).get? "value" =
       some (transferFromValueValue I) := by
-  rw [transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_value]
+  exact transferFromStoreCurrentAllowance_value evm I
 
 theorem transferFromStoreToBalance_to (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreToBalance evm I).get? "to" =
       some (transferFromToValue I) := by
-  rw [transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_to]
+  exact transferFromStoreCurrentAllowance_to evm I
 
 theorem transferFromStoreToBalance_balanceOf (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreToBalance evm I).get? "balanceOf" = none := by
-  rw [transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_balanceOf]
-
-theorem transferFromStoreNewToBalance_newToBalance (evm : EVM.State) (I : ExecutionEnv) :
-    (transferFromStoreNewToBalance evm I).get? "newToBalance" =
-      some (transferFromNewToValue evm I) := by
-  rw [transferFromStoreNewToBalance, store_get_self]
+  rw [transferFromStoreToBalance, transferFromStoreCurrentAllowance, store_get_ne _ _ (by decide),
+    transferFromStore_balanceOf]
 
 theorem transferFromStoreNewToBalance_to (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreNewToBalance evm I).get? "to" =
       some (transferFromToValue I) := by
-  rw [transferFromStoreNewToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_to]
+  exact transferFromStoreCurrentAllowance_to evm I
 
 theorem transferFromStoreNewToBalance_from (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreNewToBalance evm I).get? "from" =
       some (transferFromFromValue I) := by
-  rw [transferFromStoreNewToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_from]
+  exact transferFromStoreCurrentAllowance_from evm I
 
 theorem transferFromStoreNewToBalance_value (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreNewToBalance evm I).get? "value" =
       some (transferFromValueValue I) := by
-  rw [transferFromStoreNewToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreToBalance_value]
+  exact transferFromStoreCurrentAllowance_value evm I
 
 theorem transferFromStoreNewToBalance_balanceOf (evm : EVM.State) (I : ExecutionEnv) :
     (transferFromStoreNewToBalance evm I).get? "balanceOf" = none := by
-  rw [transferFromStoreNewToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreToBalance, store_get_ne _ _ (by decide),
-    transferFromStoreFromBalance_balanceOf]
+  rw [transferFromStoreNewToBalance, transferFromStoreCurrentAllowance,
+    store_get_ne _ _ (by decide),
+    transferFromStore_balanceOf]
 
 theorem evalExpr_transferFrom_from (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? erc20Config { contract := erc20Contract, locals := transferFromStore I } evm
@@ -504,10 +474,12 @@ theorem evalExpr_transferFrom_require_from_true (evm : EVM.State) (I : Execution
       (transferFromFromBalanceWord evm I).toNat) :
     evalExpr? erc20Config
       { contract := erc20Contract, locals := transferFromStoreFromBalance evm I } evm
-      (.binary .ge (.var "fromBalance") (.var "value")) = .ok (.bool true) := by
-  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
-  rw [transferFromStoreFromBalance_fromBalance, transferFromStoreFromBalance_value]
-  simp [evalBinaryOp?, transferFromFromBalanceValue, transferFromValueValue]
+      (.binary .ge (.storage (balanceOfRef (.var "from"))) (.var "value")) = .ok (.bool true) := by
+  conv_lhs => unfold evalExpr?
+  rw [evalExpr_transferFrom_from_balance evm I,
+    evalExpr_transferFrom_value_fromBalance evm evm I]
+  simp [EvalResult.bind, bind, evalBinaryOp?, transferFromFromBalanceValue,
+    transferFromValueValue]
   exact henough
 
 theorem evalExpr_transferFrom_require_from_false (evm : EVM.State) (I : ExecutionEnv)
@@ -515,10 +487,12 @@ theorem evalExpr_transferFrom_require_from_false (evm : EVM.State) (I : Executio
       (transferFromValueWord I).toNat) :
     evalExpr? erc20Config
       { contract := erc20Contract, locals := transferFromStoreFromBalance evm I } evm
-      (.binary .ge (.var "fromBalance") (.var "value")) = .ok (.bool false) := by
-  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
-  rw [transferFromStoreFromBalance_fromBalance, transferFromStoreFromBalance_value]
-  simp [evalBinaryOp?, transferFromFromBalanceValue, transferFromValueValue]
+      (.binary .ge (.storage (balanceOfRef (.var "from"))) (.var "value")) = .ok (.bool false) := by
+  conv_lhs => unfold evalExpr?
+  rw [evalExpr_transferFrom_from_balance evm I,
+    evalExpr_transferFrom_value_fromBalance evm evm I]
+  simp [EvalResult.bind, bind, evalBinaryOp?, transferFromFromBalanceValue,
+    transferFromValueValue]
   omega
 
 theorem evalExpr_transferFrom_allowance_debit (evm : EVM.State) (I : ExecutionEnv)
@@ -640,7 +614,8 @@ theorem evalExpr_transferFrom_balance_debit_revert (evm evm' : EVM.State) (I : E
     evalExpr? erc20Config
       { contract := erc20Contract, locals := transferFromStoreFromBalance evm I } evm'
       (valueInUInt256
-        (.binary .sub (.storage (balanceOfRef (.var "from"))) (.var "value"))) = .revert := by
+        (.binary .sub (.storage (balanceOfRef (.var "from"))) (.var "value"))) =
+        .revert := by
   have hneg :
       Int.ofNat (transferFromFromBalanceWord evm' I).toNat -
           Int.ofNat (transferFromValueWord I).toNat < 0 := by
@@ -724,12 +699,16 @@ theorem evalExpr_transferFrom_newToBalance (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? erc20Config
       { contract := erc20Contract, locals := transferFromStoreToBalance evm I }
       (transferFromAfterBalanceState evm I)
-      (valueInUInt256 (.binary .add (.var "toBalance") (.var "value"))) =
+      (valueInUInt256 (.binary .add (.storage (balanceOfRef (.var "to"))) (.var "value"))) =
         .ok (transferFromNewToValue evm I) := by
   have hlt : ¬ Int.ofNat (transferFromNewToNat evm I) ≥ (2 : Int) ^ 256 := by
     exact not_le.mpr (Int.ofNat_lt.mpr (by simpa [UInt256.size] using hfit))
-  simp only [valueInUInt256, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
-  rw [transferFromStoreToBalance_toBalance, transferFromStoreToBalance_value]
+  conv_lhs =>
+    unfold valueInUInt256
+    unfold evalExpr?
+  simp only [evalExpr?, evalExpr_transferFrom_to_balance]
+  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
+  rw [transferFromStoreToBalance_value]
   simp [evalBinaryOp?, transferFromToBalanceValue, transferFromValueValue,
     transferFromNewToValue, transferFromNewToNat, uint256Int, hlt]
   constructor
@@ -744,24 +723,21 @@ theorem evalExpr_transferFrom_newToBalance_revert (evm : EVM.State) (I : Executi
     evalExpr? erc20Config
       { contract := erc20Contract, locals := transferFromStoreToBalance evm I }
       (transferFromAfterBalanceState evm I)
-      (valueInUInt256 (.binary .add (.var "toBalance") (.var "value"))) = .revert := by
+      (valueInUInt256 (.binary .add (.storage (balanceOfRef (.var "to"))) (.var "value"))) =
+        .revert := by
   have hge : Int.ofNat (transferFromNewToNat evm I) ≥ (2 : Int) ^ 256 := by
     rw [UInt256.size] at hover
     exact Int.ofNat_le.mpr hover
-  simp only [valueInUInt256, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
-  rw [transferFromStoreToBalance_toBalance, transferFromStoreToBalance_value]
+  conv_lhs =>
+    unfold valueInUInt256
+    unfold evalExpr?
+  simp only [evalExpr?, evalExpr_transferFrom_to_balance]
+  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
+  rw [transferFromStoreToBalance_value]
   simp [evalBinaryOp?, transferFromToBalanceValue, transferFromValueValue,
     transferFromNewToValue, transferFromNewToNat, uint256Int]
   intro _
   simpa [transferFromNewToNat] using hge
-
-theorem evalExpr_transferFrom_newToBalance_var (evm : EVM.State) (I : ExecutionEnv) :
-    evalExpr? erc20Config
-      { contract := erc20Contract, locals := transferFromStoreNewToBalance evm I }
-      (transferFromAfterBalanceState evm I) (.var "newToBalance") =
-        .ok (transferFromNewToValue evm I) := by
-  simp only [evalExpr?, EvalResult.ofOption]
-  rw [transferFromStoreNewToBalance_newToBalance]
 
 theorem transferFromAssignTo (evm : EVM.State) (I : ExecutionEnv)
     (hfit : transferFromNewToNat evm I < UInt256.size) :
@@ -818,7 +794,8 @@ theorem erc20TransferFromBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       (transferFromFromBalanceWord evm I).toNat)
     (hbalanceDebit : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromNewToNat evm I < UInt256.size) :
+    (hfit : transferFromNewToNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body
       (.returned { contract := erc20Contract, locals := transferFromStoreNewToBalance evm I }
@@ -828,25 +805,26 @@ theorem erc20TransferFromBodyReturns (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_currentAllowance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I hallowance)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_balance_debit evm (transferFromAfterAllowanceState evm I) I
         hbalanceDebit)
       (transferFromAssignFrom evm I)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.letDecl (evalExpr_transferFrom_newToBalance evm I hfit)) ?_
-  refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_newToBalance_var evm I)
+    (ExecStmt.assign
+      (Or.inr (by simpa [transferFromAfterBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_newToBalance evm I hfit)
       (transferFromAssignTo evm I hfit)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.emit (evalExprs_transferFrom_event evm (transferFromPostState evm I) I)) ?_
+    (ExecStmt.emit (by simpa [transferFromPostState, transferFromAfterBalanceState,
+      transferFromAfterAllowanceState] using hperm)
+      (evalExprs_transferFrom_event evm (transferFromPostState evm I) I)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
 /-- Static mode: the body halts at its first storage write (the allowance debit). -/
@@ -864,7 +842,6 @@ theorem erc20TransferFromBodyStatic (evm : EVM.State) (I : ExecutionEnv)
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_currentAllowance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I hallowance)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   exact ExecBlock.consStatic
@@ -896,7 +873,6 @@ theorem erc20TransferFromBodyReverts_balance (evm : EVM.State) (I : ExecutionEnv
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_currentAllowance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I hallowance)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (evalExpr_transferFrom_require_from_false evm I hlt))
 
@@ -908,7 +884,8 @@ theorem erc20TransferFromBodyReverts_overflow (evm : EVM.State) (I : ExecutionEn
       (transferFromFromBalanceWord evm I).toNat)
     (hbalanceDebit : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hover : UInt256.size ≤ transferFromNewToNat evm I) :
+    (hover : UInt256.size ≤ transferFromNewToNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -916,20 +893,19 @@ theorem erc20TransferFromBodyReverts_overflow (evm : EVM.State) (I : ExecutionEn
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_currentAllowance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I hallowance)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign
+    (ExecStmt.assign (Or.inr (by simpa [transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_balance_debit evm (transferFromAfterAllowanceState evm I) I
         hbalanceDebit)
       (transferFromAssignFrom evm I)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_to_balance evm I)) ?_
   exact ExecBlock.consRevert
-    (ExecStmt.letDeclRevert (evalExpr_transferFrom_newToBalance_revert evm I hover))
+    (ExecStmt.assignExprRevert (evalExpr_transferFrom_newToBalance_revert evm I hover))
 
 theorem erc20TransferFromBodyReverts_balanceDebit (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -938,7 +914,8 @@ theorem erc20TransferFromBodyReverts_balanceDebit (evm : EVM.State) (I : Executi
     (hbalance : (transferFromValueWord I).toNat ≤
       (transferFromFromBalanceWord evm I).toNat)
     (hltDebit : (transferFromFromBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromValueWord I).toNat) :
+      (transferFromValueWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody erc20Config erc20Contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -946,11 +923,11 @@ theorem erc20TransferFromBodyReverts_balanceDebit (evm : EVM.State) (I : Executi
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_currentAllowance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_allowance_true evm I hallowance)) ?_
-  refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_from_balance evm I)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_transferFrom_require_from_true evm I hbalance)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_allowance_debit evm I hallowance)
+    (ExecStmt.assign (Or.inr hperm)
+      (evalExpr_transferFrom_allowance_debit evm I hallowance)
       (transferFromAssignAllowance evm I)) ?_
   exact ExecBlock.consRevert
     (ExecStmt.assignExprRevert
@@ -1497,7 +1474,7 @@ theorem erc20TransferFromX_afterAllowance {σ σ₀ A I} {g : Sat256} {sel : UIn
       (allowanceOuterHashMem (transferFromFromWord I) (transferFromSenderWord I))
       (UInt256.ofNat 3) ByteArray.empty σ k1 C1 := by
     simpa [transferFromCurrentAllowanceWord, transferFromAllowanceSlot,
-      transferFromAllowanceSlotI, transferFromSenderWord, initState, Solm.EVM.storageLoad,
+      transferFromAllowanceSlotI, transferFromSenderWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, transferFromSender_ofNat] using rd736₀
   have hlt : UInt256.lt
       (transferFromCurrentAllowanceWord (initState σ σ₀ g A I) I)
@@ -1549,7 +1526,7 @@ theorem erc20TransferFromX_afterBalance {σ σ₀ A I} {g : Sat256} {sel : UInt2
       (balanceOfHashMem (transferFromFromWord I)) (UInt256.ofNat 3) ByteArray.empty σ
       k1 C1 := by
     simpa [transferFromFromBalanceWord, transferFromFromSlot, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd868₀
   have hlt : UInt256.lt
       (transferFromFromBalanceWord (initState σ σ₀ g A I) I)
@@ -1685,7 +1662,7 @@ theorem erc20TransferFromX_afterFromStore {σ σ₀ A I}
     unfold transferFromFromBalanceWord
     rw [transferFromAfterAllowance_codeOwner (initState σ σ₀ g A I) I]
     simpa [transferFromFromSlot, transferFromAfterAllowanceState,
-      transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Solm.EVM.storageLoad,
+      transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap]
       using rd1134₀
   have rd2552 := evm_run rd1134 with [
@@ -1762,7 +1739,7 @@ theorem erc20TransferFromX_balanceDebitUnderflow {σ σ₀ A I}
     unfold transferFromFromBalanceWord
     rw [transferFromAfterAllowance_codeOwner (initState σ σ₀ g A I) I]
     simpa [transferFromFromSlot, transferFromAfterAllowanceState,
-      transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Solm.EVM.storageLoad,
+      transferFromAllowanceSlot, transferFromAllowanceSlotI, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap]
       using rd1134₀
   have rd2552 := evm_run rd1134 with [
@@ -1830,7 +1807,7 @@ theorem erc20TransferFromX_afterToStore {σ σ₀ A I}
           (transferFromAfterAllowanceState (initState σ σ₀ g A I) I) I)) k1 C1 := by
     simpa [transferFromToBalanceWord, transferFromAfterBalanceState,
       transferFromAfterAllowanceState, transferFromAllowanceSlot, transferFromAllowanceSlotI,
-      initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       storageStore_accountMap, transferFromAfterAllowance_codeOwner]
       using rd1216₀
   have rd2603 := evm_run rd1216 with [
@@ -1993,7 +1970,7 @@ theorem erc20TransferFromX_overflow {σ σ₀ A I} {g : Sat256} {sel : UInt256}
           (transferFromAfterAllowanceState (initState σ σ₀ g A I) I) I)) k1 C1 := by
     simpa [transferFromToBalanceWord, transferFromAfterBalanceState,
       transferFromAfterAllowanceState, transferFromAllowanceSlot, transferFromAllowanceSlotI,
-      initState, Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       storageStore_accountMap, transferFromAfterAllowance_codeOwner]
       using rd1216₀
   have rd2603 := evm_run rd1216 with [
@@ -2075,16 +2052,16 @@ theorem erc20TransferFromSelector_size {I : ExecutionEnv}
 theorem erc20Dispatch_transferFrom {cd : ByteArray}
     (hsel : ((⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ : ByteArray) == cd.extract 0 4) = true) :
     dispatchMsg erc20Contract cd = some transferFromTransition := by
-  have hcd : cd.extract 0 4 = (⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ : ByteArray) :=
-    (byteArray_eq_of_beq hsel).symm
-  refine dispatchMsg_eq_some_of_split (pre := [approveTransition, totalSupplyTransition])
-    (post := [balanceOfTransition, transferTransition, allowanceTransition])
+  have hcd := (byteArray_eq_of_beq hsel).symm
+  refine dispatchMsg_eq_some_of_split
+    (pre := [transferTransition, approveTransition])
+    (post := [balanceOfTransition, allowanceTransition, totalSupplyTransition])
     rfl rfl ?_ (by rw [selectorOf, erc20TransferFromSelectorBytes]; exact hsel)
   intro t ht
   simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
   rcases ht with rfl | rfl
+  · rw [selectorOf, erc20TransferSelectorBytes, hcd]; decide
   · rw [selectorOf, erc20ApproveSelectorBytes, hcd]; decide
-  · rw [selectorOf, erc20TotalSupplySelectorBytes, hcd]; decide
 
 /-- ERC20-local trace fact for the `require(currentAllowance >= value)` failure path.
     The branch builds `Error("ERC20: insufficient allowance")` and reverts. -/
@@ -2130,7 +2107,7 @@ theorem erc20TransferFromX_insufficientAllowance {σ σ₀ A I}
       (allowanceOuterHashMem (transferFromFromWord I) (transferFromSenderWord I))
       (UInt256.ofNat 3) ByteArray.empty σ k1 C1 := by
     simpa [transferFromCurrentAllowanceWord, transferFromAllowanceSlot,
-      transferFromAllowanceSlotI, transferFromSenderWord, initState, Solm.EVM.storageLoad,
+      transferFromAllowanceSlotI, transferFromSenderWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, transferFromSender_ofNat] using rd736₀
   have hltw : UInt256.lt
       (transferFromCurrentAllowanceWord (initState σ σ₀ g A I) I)
@@ -2249,7 +2226,7 @@ theorem erc20TransferFromX_insufficientBalance {σ σ₀ A I}
       (balanceOfHashMem (transferFromFromWord I)) (UInt256.ofNat 3) ByteArray.empty σ
       k1 C1 := by
     simpa [transferFromFromBalanceWord, transferFromFromSlot, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       using rd868₀
   have hltw : UInt256.lt
       (transferFromFromBalanceWord (initState σ σ₀ g A I) I)
@@ -2366,7 +2343,7 @@ theorem erc20TransferFromBodyCore
                 transferFromNewToNat
                     (initState σ σ₀ (Sat256.ofUInt256 g) A I) I <
                   UInt256.size
-                · have hbody := erc20TransferFromBodyReturns evmS I
+                · have hbody := erc20TransferFromBodyReturns (hperm := hperm) evmS I
                       (by simp only [evmS, initState]; exact hwv)
                       (by simpa [evmS] using hallowance)
                       (by simpa [evmS] using hbalance)
@@ -2386,7 +2363,7 @@ theorem erc20TransferFromBodyCore
                       transferFromNewToNat
                         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I := by
                     omega
-                  have hbody := erc20TransferFromBodyReverts_overflow evmS I
+                  have hbody := erc20TransferFromBodyReverts_overflow (hperm := hperm) evmS I
                       (by simp only [evmS, initState]; exact hwv)
                       (by simpa [evmS] using hallowance)
                       (by simpa [evmS] using hbalance)
@@ -2403,7 +2380,7 @@ theorem erc20TransferFromBodyCore
                       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I) I).toNat <
                     (transferFromValueWord I).toNat := by
                   omega
-                have hbody := erc20TransferFromBodyReverts_balanceDebit evmS I
+                have hbody := erc20TransferFromBodyReverts_balanceDebit (hperm := hperm) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   (by simpa [evmS] using hallowance)
                   (by simpa [evmS] using hbalance)

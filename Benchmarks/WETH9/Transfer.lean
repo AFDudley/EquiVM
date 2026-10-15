@@ -3,18 +3,18 @@ import Benchmarks.WETH9.TransferFrom
 /-!
 # WETH9 `transfer(address,uint256)` refinement
 
-`transfer(dst, wad)` desugars (Solm `transferTransition.body`) to
+`transfer(dst, wad)` desugars (Stele `transferTransition.body`) to
 `transferFrom(msg.sender, dst, wad)` followed by returning the bool.  On the solc 0.5.16 runtime the
 `transfer` dispatch (pc 644) pushes `msg.sender` for `src` and converges on the *same* internal body
 at pc 1087 as public `transferFrom` — so the body always takes the `src == caller` (SkipSender)
 branch: no allowance logic, only the two balance stores.  The EVM body lemmas (`weth9TF*` in
 `TransferFromBody.lean`) and a direct post-state account-map equality
 are reused directly; only the internal-call wrapper (`1661 → 1087`), the internal-return tail
-(`1674 → 361`), and the Solm-side `transferFrom` body on the `src = .address msg.sender` bind-store
+(`1674 → 361`), and the Stele-side `transferFrom` body on the `src = .address msg.sender` bind-store
 are proved here.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -44,14 +44,14 @@ abbrev transferCallStore (I : ExecutionEnv) : Store :=
     (.address I.source)
 
 theorem transferCallStore_bind (I : ExecutionEnv) :
-    bindParams? transferFromTransition.params
+    bindParams? (transferFromTransition.params.map Param.toFunctionParam)
         [.address I.source, xferDstVal I, xferWadVal I] = some (transferCallStore I) := by
   rfl
 
 theorem xferDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = _
   simpa [transferStore, xferDstVal, xferWadVal, xferDstWord, xferWadWord, calldataWord]
     using decodeCalldata_legacyAddress_uint256_ok
@@ -59,9 +59,9 @@ theorem xferDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem xferDecode_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (transferTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["dst", "wad"] [addr, uint256]
+  show config.externalABI.decodeCalldata? ["dst", "wad"] [addr, uint256]
     I.calldata = none
   simpa using decodeCalldata_legacyAddress_uint256_none_short
     (cd := I.calldata) (x := "dst") (y := "wad") hsz4 hshort
@@ -94,7 +94,7 @@ theorem xfer_dstSlot_eq (I : ExecutionEnv) : xferDstSlot I = wtfBalSlot (xferDst
   unfold xferDstSlot xferDstMasked xferDstWord
   exact tfBalSrcSlot_eq I
 
-/-! ## Solm-side store lookups -/
+/-! ## Stele-side store lookups -/
 
 theorem transferCallStore_get_src (I : ExecutionEnv) :
     (transferCallStore I).get? "src" = some (.address I.source) := by
@@ -116,7 +116,7 @@ theorem transferStore_index_dst (I : ExecutionEnv) : (transferStore I)["dst"] = 
 theorem transferStore_index_wad (I : ExecutionEnv) : (transferStore I)["wad"] = xferWadVal I := by
   unfold transferStore; simp
 
-/-! ## Solm-side storage-ref evaluations (`balanceOf[.var "src"/"dst"]`) -/
+/-! ## Stele-side storage-ref evaluations (`balanceOf[.var "src"/"dst"]`) -/
 
 theorem xferCall_srcRef (evm : EVM.State) (I : ExecutionEnv) :
     evalStorageRef config { contract := contract, locals := transferCallStore I } evm
@@ -134,7 +134,7 @@ theorem xferCall_dstRef (evm : EVM.State) (I : ExecutionEnv) :
 theorem xferCall_balSrc (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.storage (balanceOfRef (.var "src"))) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat)) :=
   evalExpr_storage_scalar_value (er := callerBalRef I) (t := .int uint256Int)
     (loc := wordLoc (callerBalSlot I)) (hbase := by simp [balanceOfRef, transferCallStore])
@@ -145,7 +145,7 @@ theorem xferCall_balSrc (evm : EVM.State) (I : ExecutionEnv) :
 theorem xferCall_balDst (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.storage (balanceOfRef (.var "dst"))) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (xferDstSlot I)).toNat)) :=
   evalExpr_storage_scalar_value (er := xferDstBalRef I) (t := .int uint256Int)
     (loc := wordLoc (xferDstSlot I)) (hbase := by simp [balanceOfRef, transferCallStore])
@@ -154,11 +154,11 @@ theorem xferCall_balDst (evm : EVM.State) (I : ExecutionEnv) :
     (by simpa [wordLoc, uint256Loc, uint256Int, xferDstSlot] using
       storageLocLoad_uint256 evm (xferDstSlot I))
 
-/-! ## Solm-side require / condition / arithmetic evaluations -/
+/-! ## Stele-side require / condition / arithmetic evaluations -/
 
 theorem xferCall_ge_true (evm : EVM.State) (I : ExecutionEnv)
     (hle : (xferWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.binary .ge (.storage (balanceOfRef (.var "src"))) (.var "wad")) = .ok (.bool true) := by
   conv_lhs => unfold evalExpr?
@@ -167,7 +167,7 @@ theorem xferCall_ge_true (evm : EVM.State) (I : ExecutionEnv)
     evalBinaryOp?, xferWadVal, EvalResult.ok.injEq, Value.bool.injEq, decide_eq_true_eq]
   exact Int.ofNat_le.mpr hle
 theorem xferCall_ge_false (evm : EVM.State) (I : ExecutionEnv)
-    (hlt : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
+    (hlt : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
       (xferWadWord I).toNat) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.binary .ge (.storage (balanceOfRef (.var "src"))) (.var "wad")) = .ok (.bool false) := by
@@ -196,7 +196,7 @@ theorem xferCall_cond_false (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.exe
 theorem xferCall_sub (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.binary .sub (.storage (balanceOfRef (.var "src"))) (.var "wad")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat - Int.ofNat (xferWadWord I).toNat)) := by
   conv_lhs => unfold evalExpr?
   rw [xferCall_balSrc evm I]
@@ -205,28 +205,28 @@ theorem xferCall_sub (evm : EVM.State) (I : ExecutionEnv) :
 theorem xferCall_add (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? config { contract := contract, locals := transferCallStore I } evm
       (.binary .add (.storage (balanceOfRef (.var "dst"))) (.var "wad")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (xferDstSlot I)).toNat + Int.ofNat (xferWadWord I).toNat)) := by
   conv_lhs => unfold evalExpr?
   rw [xferCall_balDst evm I]
   simp only [evalExpr?, EvalResult.ofOption, transferCallStore_get_wad, EvalResult.bind, bind,
     evalBinaryOp?, xferWadVal]
 
-/-! ## Solm-side post-states and their `accountMap` reconciliation to `wtfPostMap` -/
+/-! ## Stele-side post-states and their `accountMap` reconciliation to `wtfPostMap` -/
 
 def xferSrcSt (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (callerBalSlot I)
-    (UInt256.sub (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (callerBalSlot I)
+    (UInt256.sub (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I))
       (xferWadWord I))
 def xferDstSt (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (xferDstSlot I)
-    (UInt256.add (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (xferDstSlot I))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (xferDstSlot I)
+    (UInt256.add (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (xferDstSlot I))
       (xferWadWord I))
 
 theorem xferCall_assignSrc (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := transferCallStore I } evm
       .storage (balanceOfRef (.var "src"))
-      (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat - Int.ofNat (xferWadWord I).toNat)) =
       .ok ({ contract := contract, locals := transferCallStore I }, xferSrcSt evm I) := by
   refine assignStorageRef_storage_scalar_value (hleaf := by simp [uint256St, uint8St]) (er := callerBalRef I) (ty := uint256St)
@@ -240,7 +240,7 @@ theorem xferCall_assignSrc (evm : EVM.State) (I : ExecutionEnv) :
 theorem xferCall_assignDst (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config { contract := contract, locals := transferCallStore I }
       (xferSrcSt evm I) .storage (balanceOfRef (.var "dst"))
-      (.int (Int.ofNat (Solm.EVM.storageLoad (xferSrcSt evm I)
+      (.int (Int.ofNat (Stele.EVM.storageLoad (xferSrcSt evm I)
         (xferSrcSt evm I).executionEnv.codeOwner (xferDstSlot I)).toNat
         + Int.ofNat (xferWadWord I).toNat)) =
       .ok ({ contract := contract, locals := transferCallStore I }, xferDstSt (xferSrcSt evm I) I) := by
@@ -283,14 +283,14 @@ theorem xferSkip_accountMap {σ σ₀ A I} {g : Sat256} :
     rw [xferSrcSt_co, hco0]
   rw [xferDstSt_accountMap _ I hcoS, xferSrcSt_accountMap _ I hco0]
   rfl
-/-! ## Solm-side `transferFrom` callee body (always SkipSender / balance-revert) -/
+/-! ## Stele-side `transferFrom` callee body (always SkipSender / balance-revert) -/
 
 /-- `transferFrom(msg.sender, dst, wad)` body, success: `src == caller` short-circuits the allowance
     guard, so it just does the two balance stores and returns `true`. -/
 theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
     (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat) :
-    (ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
+    (I.perm = true → ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferCallStore I }
         (xferDstSt (xferSrcSt (initState σ σ₀ g A I) I) I) (some [.bool true]))) ∧
@@ -299,7 +299,7 @@ theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
   set evm := initState σ σ₀ g A I with hevm
   have hsrc : evm.executionEnv = I := rfl
   have hcv : evm.executionEnv.weiValue = ⟨0⟩ := by rw [hsrc]; exact hwv
-  have hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)
+  have hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)
       = solcSlotWord σ I (callerBalSlot I) := by
         rw [storageLoad_eq_solcSlotWord_of_codeOwner_eq evm I _ rfl]; rfl
   have hprefix {result : ExecResult}
@@ -316,11 +316,12 @@ theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
         (xferCall_cond_false evm I hsrc) ExecBlock.nil) ?_
     exact htail
   constructor
-  · refine ExecFuncBody.execBlockRet (hprefix ?_)
+  · intro hperm
+    refine ExecFuncBody.execBlockRet (hprefix ?_)
     refine ExecBlock.consNormal
-      (ExecStmt.assign (xferCall_sub evm I) (xferCall_assignSrc evm I)) ?_
+      (ExecStmt.assign (hperm := Or.inr (by simpa [xferSrcSt, evm, initState] using hperm)) (xferCall_sub evm I) (xferCall_assignSrc evm I)) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.assign (xferCall_add (xferSrcSt evm I) I) (xferCall_assignDst evm I)) ?_
+      (ExecStmt.assign (hperm := Or.inr (by simpa [xferSrcSt, evm, initState] using hperm)) (xferCall_add (xferSrcSt evm I) I) (xferCall_assignDst evm I)) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton (by simp [evalExpr?, pure])))
   · intro hperm
     exact ExecFuncBody.execBlockStatic (hprefix
@@ -329,12 +330,13 @@ theorem weth9XferCallReturns_skipSenderSplit {σ σ₀ A I} {g : Sat256}
 
 theorem weth9XferCallReturns_skipSender {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
-    (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat) :
+    (hle : (xferWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat)
+    (hperm : I.perm = true) :
     ExecTransitionBody config contract (initState σ σ₀ g A I) (transferCallStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferCallStore I }
         (xferDstSt (xferSrcSt (initState σ σ₀ g A I) I) I) (some [.bool true])) :=
-  (weth9XferCallReturns_skipSenderSplit hwv hle).1
+  (weth9XferCallReturns_skipSenderSplit hwv hle).1 hperm
 
 /-- `transferFrom(msg.sender, dst, wad)` body, revert: `balanceOf[msg.sender] < wad`. -/
 theorem weth9XferCallReverts_bal {σ σ₀ A I} {g : Sat256}
@@ -345,7 +347,7 @@ theorem weth9XferCallReverts_bal {σ σ₀ A I} {g : Sat256}
   set evm := initState σ σ₀ g A I with hevm
   have hsrc : evm.executionEnv = I := rfl
   have hcv : evm.executionEnv.weiValue = ⟨0⟩ := by rw [hsrc]; exact hwv
-  have hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)
+  have hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)
       = solcSlotWord σ I (callerBalSlot I) := by
         rw [storageLoad_eq_solcSlotWord_of_codeOwner_eq evm I _ rfl]; rfl
   refine ExecFuncBody.execBlockRevert ?_
@@ -354,7 +356,7 @@ theorem weth9XferCallReverts_bal {σ σ₀ A I} {g : Sat256}
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (xferCall_ge_false evm I (by rw [hload]; exact hlt)))
 
-/-! ## Solm-side `transfer` body (the internal `transferFrom` call + return) -/
+/-! ## Stele-side `transfer` body (the internal `transferFrom` call + return) -/
 
 theorem xferEvalArgs (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source) :
@@ -385,7 +387,7 @@ theorem weth9TransferBodyReturns (evm evmPost : EVM.State) (I : ExecutionEnv)
         (args := [sender, .var "dst", .var "wad"]) (retVar := "_ok")
         (argVals := [.address I.source, xferDstVal I, xferWadVal I])
         (callee := transferFromTransition) (locals := transferCallStore I)
-        (calleeSolm := { contract := contract, locals := transferCallStore I })
+        (calleeStele := { contract := contract, locals := transferCallStore I })
         (value := .bool true) (xferEvalArgs evm I hsrc) rfl (transferCallStore_bind I) hcallee
   have hret : evalExprs? config callerAfter evmPost [.var "_ok"] = .ok [.bool true] := by
     simp [callerAfter, evalExprs?, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure]
@@ -585,7 +587,7 @@ theorem weth9TransferDecodeFailRev {σ σ₀ A I} {g : Sat256}
     |>.jumpiNT (by native_decide) (by rw [hltShort]; decide) (by simp)
     |>.solcPush1Dup1Revert0 (by native_decide) (by native_decide) (by native_decide) (by simp)
 
-/-- `transfer(address,uint256)` body refines its Solm transition. -/
+/-- `transfer(address,uint256)` body refines its Stele transition. -/
 theorem weth9TransferBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = weth9Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hsel : selIs I (weth9SelBytes 8)) :
@@ -621,7 +623,7 @@ theorem weth9TransferBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (xferDstSt (xferSrcSt (initState σ σ₀ (Sat256.ofUInt256 g) A I) I) I) I
           (by simp only [initState]; exact hwv) (by simp [initState])
-          (weth9XferCallReturns_skipSender (σ := σ) (σ₀ := σ₀)
+          (weth9XferCallReturns_skipSender (hperm := by assumption) (σ := σ) (σ₀ := σ₀)
             (A := A) (I := I) (g := Sat256.ofUInt256 g) hwv hbal)
         exact weth9ReEquivExecGen (t := transferTransition) hcode hX hdisp (xferDecode_ok hsz68)
           hbody (by rw [xferSkip_accountMap])

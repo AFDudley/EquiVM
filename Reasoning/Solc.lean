@@ -2875,9 +2875,9 @@ theorem RD.solcAddressAddressUint256ExternalMaskAndJump {code : ByteArray} {g : 
 /-- Decoding an EVM word as an address only depends on the low 160 bits, so applying solc's
     address-cleanup mask before `AccountAddress.ofNat` is value-preserving. -/
 theorem solcAddressValue_masked (w : UInt256) :
-    (Solm.Value.address (AccountAddress.ofNat w.toNat)) =
-      Solm.Value.address (AccountAddress.ofNat (UInt256.land solcAddrMask w).toNat) := by
-  apply congrArg Solm.Value.address
+    (Stele.Value.address (AccountAddress.ofNat w.toNat)) =
+      Stele.Value.address (AccountAddress.ofNat (UInt256.land solcAddrMask w).toNat) := by
+  apply congrArg Stele.Value.address
   apply Fin.ext
   unfold AccountAddress.ofNat
   simp only [Fin.val_ofNat]
@@ -7834,7 +7834,7 @@ end Reasoning.Reach
 
 namespace Reasoning.Theory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000

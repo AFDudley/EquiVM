@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.End.FileUint
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -142,7 +142,7 @@ theorem endFileAddressData_value_masked (I : ExecutionEnv) :
     (solcAddressValue_masked (calldataWord I.calldata 36))
 
 theorem endDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata =
         some (endFileAddressLocals I) := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, endFileAddressLocals,
@@ -152,7 +152,7 @@ theorem endDecode_fileAddress_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.s
 
 theorem endDecode_fileAddress_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
       (transitionSignature fileAddressTransition).paramTypes I.calldata = none := by
   simpa [config, fileAddressTransition, bytes32, bytes32Width, addr, abiBytes32,
     abiBytes32Width, abiAddress] using
@@ -227,7 +227,7 @@ theorem evalStorageRef_endFileAddress_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFileAddress_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) =
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
@@ -236,7 +236,7 @@ theorem evalExpr_endFileAddress_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileAddressLocals I })
+      (stele := { contract := contract, locals := endFileAddressLocals I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -254,7 +254,7 @@ theorem evalExpr_endFileAddress_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endFileAddress_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endRelyAuthStorageSlot I) ≠
         ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
@@ -262,11 +262,11 @@ theorem evalExpr_endFileAddress_auth_false (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endRelyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileAddressLocals I })
+      (stele := { contract := contract, locals := endFileAddressLocals I })
       (slot := wardsRef sender)
       (er := endRelyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -278,7 +278,7 @@ theorem evalExpr_endFileAddress_auth_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (endRelyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -286,13 +286,13 @@ theorem evalExpr_endFileAddress_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endRelyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (endRelyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
@@ -305,7 +305,7 @@ theorem evalStorageRef_endFileAddress_live (evm : EVM.State) (I : ExecutionEnv) 
     pure, bind]
 
 theorem evalExpr_endFileAddress_live_true (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -313,7 +313,7 @@ theorem evalExpr_endFileAddress_live_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage liveRef) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileAddressLocals I })
+      (stele := { contract := contract, locals := endFileAddressLocals I })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -328,17 +328,17 @@ theorem evalExpr_endFileAddress_live_true (evm : EVM.State) (I : ExecutionEnv)
   rfl
 
 theorem evalExpr_endFileAddress_live_false (evm : EVM.State) (I : ExecutionEnv)
-    (hload : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
+    (hload : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩ ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
       (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endFileAddressLocals I } evm
         (.storage liveRef) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := endFileAddressLocals I })
+      (stele := { contract := contract, locals := endFileAddressLocals I })
       (slot := liveRef)
       (er := endLiveEvaledRef)
       (t := .int uint256Int)
@@ -350,7 +350,7 @@ theorem evalExpr_endFileAddress_live_false (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm ⟨8⟩)
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ≠
         Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -358,21 +358,21 @@ theorem evalExpr_endFileAddress_live_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat) ==
         Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨8⟩).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
 
 def endFileAddressPostState (evm : EVM.State) (I : ExecutionEnv) (slot : UInt256) :
     EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner slot
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner slot
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
       (endFileAddressDataMaskedWord I))
 
 theorem endFileAddressAssignAddress (evm : EVM.State) (I : ExecutionEnv)
@@ -1394,14 +1394,14 @@ theorem endFileAddressSourceAuthReverts {σ σ₀ A I} {g : UInt256}
   have hguard :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_false evm0 I (by simp [evm0, initState]) hauth
   refine ExecFuncBody.execBlockRevert ?_
   simpa [fileAddressTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := ([
@@ -1429,13 +1429,13 @@ theorem endFileAddressSourceLiveReverts {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool false) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_false evm0 I hlive
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm0 fileAddressTransition.body
@@ -1455,7 +1455,7 @@ theorem endFileAddressSourceVatOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨1⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1463,13 +1463,13 @@ theorem endFileAddressSourceVatOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1506,8 +1506,9 @@ theorem endFileAddressSourceVatOkSplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguardLive) ?_
     exact execBlock_singleton (ExecStmt.iteTrue hvat hwrite)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1522,7 +1523,7 @@ theorem endFileAddressSourceCatOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨2⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1530,13 +1531,13 @@ theorem endFileAddressSourceCatOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1581,8 +1582,9 @@ theorem endFileAddressSourceCatOkSplit {σ σ₀ A I} {g : UInt256}
     exact execBlock_singleton (ExecStmt.iteFalse hvat
       (execBlock_singleton (ExecStmt.iteTrue hcat hwrite)))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1598,7 +1600,7 @@ theorem endFileAddressSourceDogOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨3⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1606,13 +1608,13 @@ theorem endFileAddressSourceDogOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1665,8 +1667,9 @@ theorem endFileAddressSourceDogOkSplit {σ σ₀ A I} {g : UInt256}
       (execBlock_singleton (ExecStmt.iteFalse hcat
         (execBlock_singleton (ExecStmt.iteTrue hdog hwrite)))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1683,7 +1686,7 @@ theorem endFileAddressSourceVowOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨4⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1691,13 +1694,13 @@ theorem endFileAddressSourceVowOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1758,8 +1761,9 @@ theorem endFileAddressSourceVowOkSplit {σ σ₀ A I} {g : UInt256}
         (execBlock_singleton (ExecStmt.iteFalse hdog
           (execBlock_singleton (ExecStmt.iteTrue hvow hwrite)))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1777,7 +1781,7 @@ theorem endFileAddressSourcePotOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨5⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1785,13 +1789,13 @@ theorem endFileAddressSourcePotOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1860,8 +1864,9 @@ theorem endFileAddressSourcePotOkSplit {σ σ₀ A I} {g : UInt256}
           (execBlock_singleton (ExecStmt.iteFalse hvow
             (execBlock_singleton (ExecStmt.iteTrue hpot hwrite)))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1880,7 +1885,7 @@ theorem endFileAddressSourceSpotOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨6⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -1888,13 +1893,13 @@ theorem endFileAddressSourceSpotOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -1971,8 +1976,9 @@ theorem endFileAddressSourceSpotOkSplit {σ σ₀ A I} {g : UInt256}
             (execBlock_singleton (ExecStmt.iteFalse hpot
               (execBlock_singleton (ExecStmt.iteTrue hspot hwrite)))))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -1992,7 +1998,7 @@ theorem endFileAddressSourceCureOkSplit {σ σ₀ A I} {g : UInt256}
     let locals := endFileAddressLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := endFileAddressPostState evm0 I ⟨7⟩
-    (ExecTransitionBody config contract evm0 locals fileAddressTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals fileAddressTransition.body
       (.returned { contract := contract, locals := locals } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         fileAddressTransition.body .staticViolation) := by
@@ -2000,13 +2006,13 @@ theorem endFileAddressSourceCureOkSplit {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -2091,8 +2097,9 @@ theorem endFileAddressSourceCureOkSplit {σ σ₀ A I} {g : UInt256}
               (execBlock_singleton (ExecStmt.iteFalse hspot
                 (execBlock_singleton (ExecStmt.iteTrue hcure hwrite)))))))))))))
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (hprefix (ExecBlock.consNormal (ExecStmt.assign hdata hassign) ExecBlock.nil))
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (hprefix (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hdata hassign) ExecBlock.nil))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consStatic (ExecStmt.assignStatic hdata hassign
@@ -2116,13 +2123,13 @@ theorem endFileAddressSourceUnrecognizedReverts {σ σ₀ A I} {g : UInt256}
   have hguardAuth :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [locals, evm0, endRelyAuthWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_endFileAddress_auth_true evm0 I (by simp [evm0, initState]) hauth
   have hguardLive :
       evalExpr? config { contract := contract, locals := locals } evm0
         (.binary .eq (.storage liveRef) (.intLit 1)) = .ok (.bool true) := by
-    simpa [locals, evm0, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount]
+    simpa [locals, evm0, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount]
       using evalExpr_endFileAddress_live_true evm0 I hlive
   have hvat :
       evalExpr? config { contract := contract, locals := locals } evm0
@@ -2247,7 +2254,7 @@ theorem endFileAddressBodyCoreStore
     (hcode : I.code = endBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some fileAddressTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (fileAddressTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (fileAddressTransition.params.map Param.name)
         (transitionSignature fileAddressTransition).paramTypes I.calldata =
           some (endFileAddressLocals I))
     (hbody :
@@ -2265,7 +2272,7 @@ theorem endFileAddressBodyCoreStore
             (endFileAddressDataMaskedWord I)))
         ByteArray.empty) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let stored :=
     setAddressOffset0Word (solcSlotWord σ I slot) (endFileAddressDataMaskedWord I)
   have henc : returnEquiv ByteArray.empty none fileAddressTransition.returnType := by
@@ -2277,11 +2284,11 @@ theorem endFileAddressBodyCoreStore
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (sstoreAccountMap I.codeOwner σ slot stored) ByteArray.empty := by
     simpa [stored] using hret
-  simpa [evmSolm] using
+  simpa [evmStele] using
     hret'.reEquivExecutionGen hcode hdispatch hdecode
-      (by simpa [evmSolm] using hbody)
-      (by simp [endFileAddressPostState, evmSolm, initState, storageStore_accountMap,
-        stored, solcSlotWord, solcSlotWordAt, Solm.EVM.storageLoad,
+      (by simpa [evmStele] using hbody)
+      (by simp [endFileAddressPostState, evmStele, initState, storageStore_accountMap,
+        stored, solcSlotWord, solcSlotWordAt, Stele.EVM.storageLoad,
         State.lookupAccount, Account.lookupStorage]) henc
 
 theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
@@ -2302,12 +2309,12 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := endDecode_fileAddress_ok (I := I) hsz68
     obtain ⟨_, _, hdecoded⟩ :=
       endFileAddressX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases hauth : endRelyAuthWord σ I = ⟨1⟩
-    · have hauthSolm : endRelyAuthWord σ I = ⟨1⟩ := hauth
+    · have hauthStele : endRelyAuthWord σ I = ⟨1⟩ := hauth
       obtain ⟨_, _, hauthPc⟩ := endFileAddressX_authorized (I := I) hauth hdecoded
       by_cases hlive : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩
-      · have hliveSolm : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩ := hlive
+      · have hliveStele : solcSlotWordAt ⟨8⟩ σ I = ⟨1⟩ := hlive
         obtain ⟨_, _, hswitch⟩ := endFileAddressX_live (I := I) hlive hauthPc
         have hsz36 : 36 ≤ I.calldata.size := by omega
         by_cases hvat : endFileAddressWhat I = endFileAddressVatBytes
@@ -2315,16 +2322,16 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
               calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressVatBytes :=
             endFileAddressWhatWord_eq_of_bytes_eq hsz36 hvat
           have hbodySplit :
-              (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+              (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                 fileAddressTransition.body
                 (.returned { contract := contract, locals := endFileAddressLocals I }
-                  (endFileAddressPostState evmSolm I ⟨1⟩) none)) ∧
-              (I.perm = false → ExecTransitionBody config contract evmSolm
+                  (endFileAddressPostState evmStele I ⟨1⟩) none)) ∧
+              (I.perm = false → ExecTransitionBody config contract evmStele
                 (endFileAddressLocals I) fileAddressTransition.body .staticViolation) := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endFileAddressSourceVatOkSplit
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                hwv hauthSolm hliveSolm hvat
+                hwv hauthStele hliveStele hvat
           rcases
             RD.endFileAddressStoreVatSplit hswitch hvatWord (by simp) with
               ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2332,7 +2339,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
           have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
             hperm hstore
-          exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+          exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
         · have hnotVatWord :
               calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressVatBytes :=
             endFileAddressWhatWord_ne_of_bytes_ne hsz36 hvat (by native_decide)
@@ -2342,16 +2349,16 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                 calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressCatBytes :=
               endFileAddressWhatWord_eq_of_bytes_eq hsz36 hcat
             have hbodySplit :
-                (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                   fileAddressTransition.body
                   (.returned { contract := contract, locals := endFileAddressLocals I }
-                    (endFileAddressPostState evmSolm I ⟨2⟩) none)) ∧
-                (I.perm = false → ExecTransitionBody config contract evmSolm
+                    (endFileAddressPostState evmStele I ⟨2⟩) none)) ∧
+                (I.perm = false → ExecTransitionBody config contract evmStele
                   (endFileAddressLocals I) fileAddressTransition.body .staticViolation) := by
-              simpa [evmSolm] using
+              simpa [evmStele] using
                 endFileAddressSourceCatOkSplit
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                  hwv hauthSolm hliveSolm hvat hcat
+                  hwv hauthStele hliveStele hvat hcat
             rcases
               RD.endFileAddressStoreCatSplit hcatPc hcatWord (by simp) with
                 ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2359,7 +2366,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
             · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
             have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
               hperm hstore
-            exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+            exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
           · have hnotCatWord :
                 calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressCatBytes :=
               endFileAddressWhatWord_ne_of_bytes_ne hsz36 hcat (by native_decide)
@@ -2369,16 +2376,16 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                   calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressDogBytes :=
                 endFileAddressWhatWord_eq_of_bytes_eq hsz36 hdog
               have hbodySplit :
-                  (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                  (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                     fileAddressTransition.body
                     (.returned { contract := contract, locals := endFileAddressLocals I }
-                      (endFileAddressPostState evmSolm I ⟨3⟩) none)) ∧
-                  (I.perm = false → ExecTransitionBody config contract evmSolm
+                      (endFileAddressPostState evmStele I ⟨3⟩) none)) ∧
+                  (I.perm = false → ExecTransitionBody config contract evmStele
                     (endFileAddressLocals I) fileAddressTransition.body .staticViolation) := by
-                simpa [evmSolm] using
+                simpa [evmStele] using
                   endFileAddressSourceDogOkSplit
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                    hwv hauthSolm hliveSolm hvat hcat hdog
+                    hwv hauthStele hliveStele hvat hcat hdog
               rcases
                 RD.endFileAddressStoreDogSplit hdogPc hdogWord (by simp) with
                   ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2386,7 +2393,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
               · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
               have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                 hperm hstore
-              exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+              exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
             · have hnotDogWord :
                   calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressDogBytes :=
                 endFileAddressWhatWord_ne_of_bytes_ne hsz36 hdog (by native_decide)
@@ -2396,16 +2403,16 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                     calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressVowBytes :=
                   endFileAddressWhatWord_eq_of_bytes_eq hsz36 hvow
                 have hbodySplit :
-                    (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                    (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                       fileAddressTransition.body
                       (.returned { contract := contract, locals := endFileAddressLocals I }
-                        (endFileAddressPostState evmSolm I ⟨4⟩) none)) ∧
-                    (I.perm = false → ExecTransitionBody config contract evmSolm
+                        (endFileAddressPostState evmStele I ⟨4⟩) none)) ∧
+                    (I.perm = false → ExecTransitionBody config contract evmStele
                       (endFileAddressLocals I) fileAddressTransition.body .staticViolation) := by
-                  simpa [evmSolm] using
+                  simpa [evmStele] using
                     endFileAddressSourceVowOkSplit
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                      hwv hauthSolm hliveSolm hvat hcat hdog hvow
+                      hwv hauthStele hliveStele hvat hcat hdog hvow
                 rcases
                   RD.endFileAddressStoreVowSplit hvowPc hvowWord (by simp) with
                     ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2413,7 +2420,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                 · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                 have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                   hperm hstore
-                exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
               · have hnotVowWord :
                     calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressVowBytes :=
                   endFileAddressWhatWord_ne_of_bytes_ne hsz36 hvow (by native_decide)
@@ -2424,16 +2431,16 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                       calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressPotBytes :=
                     endFileAddressWhatWord_eq_of_bytes_eq hsz36 hpot
                   have hbodySplit :
-                      (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                      (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                         fileAddressTransition.body
                         (.returned { contract := contract, locals := endFileAddressLocals I }
-                          (endFileAddressPostState evmSolm I ⟨5⟩) none)) ∧
-                      (I.perm = false → ExecTransitionBody config contract evmSolm
+                          (endFileAddressPostState evmStele I ⟨5⟩) none)) ∧
+                      (I.perm = false → ExecTransitionBody config contract evmStele
                         (endFileAddressLocals I) fileAddressTransition.body .staticViolation) := by
-                    simpa [evmSolm] using
+                    simpa [evmStele] using
                       endFileAddressSourcePotOkSplit
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                        hwv hauthSolm hliveSolm hvat hcat hdog hvow hpot
+                        hwv hauthStele hliveStele hvat hcat hdog hvow hpot
                   rcases
                     RD.endFileAddressStorePotSplit hpotPc hpotWord (by simp) with
                       ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2441,7 +2448,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                   have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                     hperm hstore
-                  exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                  exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                 · have hnotPotWord :
                       calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressPotBytes :=
                     endFileAddressWhatWord_ne_of_bytes_ne hsz36 hpot (by native_decide)
@@ -2452,17 +2459,17 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                         calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressSpotBytes :=
                       endFileAddressWhatWord_eq_of_bytes_eq hsz36 hspot
                     have hbodySplit :
-                        (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                        (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                           fileAddressTransition.body
                           (.returned { contract := contract, locals := endFileAddressLocals I }
-                            (endFileAddressPostState evmSolm I ⟨6⟩) none)) ∧
-                        (I.perm = false → ExecTransitionBody config contract evmSolm
+                            (endFileAddressPostState evmStele I ⟨6⟩) none)) ∧
+                        (I.perm = false → ExecTransitionBody config contract evmStele
                           (endFileAddressLocals I) fileAddressTransition.body .staticViolation)
                             := by
-                      simpa [evmSolm] using
+                      simpa [evmStele] using
                         endFileAddressSourceSpotOkSplit
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                          hwv hauthSolm hliveSolm hvat hcat hdog hvow hpot hspot
+                          hwv hauthStele hliveStele hvat hcat hdog hvow hpot hspot
                     rcases
                       RD.endFileAddressStoreSpotSplit hspotPc hspotWord (by simp) with
                         ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2470,7 +2477,7 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                     · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                     have hret := endFileAddressX_logReturn (I := I) (g := Sat256.ofUInt256 g)
                       hperm hstore
-                    exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                    exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                   · have hnotSpotWord :
                         calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressSpotBytes :=
                       endFileAddressWhatWord_ne_of_bytes_ne hsz36 hspot (by native_decide)
@@ -2481,17 +2488,17 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                           calldataWord I.calldata 4 = ABI.bytesToWord endFileAddressCureBytes :=
                         endFileAddressWhatWord_eq_of_bytes_eq hsz36 hcure
                       have hbodySplit :
-                          (ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                          (I.perm = true → ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                             fileAddressTransition.body
                             (.returned { contract := contract, locals := endFileAddressLocals I }
-                              (endFileAddressPostState evmSolm I ⟨7⟩) none)) ∧
-                          (I.perm = false → ExecTransitionBody config contract evmSolm
+                              (endFileAddressPostState evmStele I ⟨7⟩) none)) ∧
+                          (I.perm = false → ExecTransitionBody config contract evmStele
                             (endFileAddressLocals I) fileAddressTransition.body .staticViolation)
                               := by
-                        simpa [evmSolm] using
+                        simpa [evmStele] using
                           endFileAddressSourceCureOkSplit
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                            hwv hauthSolm hliveSolm hvat hcat hdog hvow hpot hspot hcure
+                            hwv hauthStele hliveStele hvat hcat hdog hvow hpot hspot hcure
                       rcases
                         RD.endFileAddressStoreCureSplit hcurePc hcureWord (by simp) with
                           ⟨hperm, _, _, hstore⟩ | ⟨hperm, hstatic⟩
@@ -2499,43 +2506,43 @@ theorem endFileAddressBody {σ σ₀ A I} {g : UInt256}
                       · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
                       have hret := endFileAddressX_logReturn (I := I)
                         (g := Sat256.ofUInt256 g) hperm hstore
-                      exact endFileAddressBodyCoreStore hcode hdispatch hdecode hbodySplit.1 hret
+                      exact endFileAddressBodyCoreStore hcode hdispatch hdecode (hbodySplit.1 hperm) hret
                     · have hnotCureWord :
                           calldataWord I.calldata 4 ≠ ABI.bytesToWord endFileAddressCureBytes :=
                         endFileAddressWhatWord_ne_of_bytes_ne hsz36 hcure (by native_decide)
                       have hbody :
-                          ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+                          ExecTransitionBody config contract evmStele (endFileAddressLocals I)
                             fileAddressTransition.body .reverted := by
-                        simpa [evmSolm] using
+                        simpa [evmStele] using
                           endFileAddressSourceUnrecognizedReverts
                             (σ := σ)
                             (σ₀ := σ₀) (A := A) (I := I) (g := g)
-                            hwv hauthSolm hliveSolm hvat hcat hdog hvow hpot hspot hcure
+                            hwv hauthStele hliveStele hvat hcat hdog hvow hpot hspot hcure
                       exact (endFileAddressX_unrecognized hnotVatWord hnotCatWord
                         hnotDogWord hnotVowWord hnotPotWord hnotSpotWord hnotCureWord hswitch)
                         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-      · have hliveSolm : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩ := by
+      · have hliveStele : solcSlotWordAt ⟨8⟩ σ I ≠ ⟨1⟩ := by
           intro hbad
           exact hlive hbad
         have hbody :
-            ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+            ExecTransitionBody config contract evmStele (endFileAddressLocals I)
               fileAddressTransition.body .reverted := by
-          simpa [evmSolm] using
+          simpa [evmStele] using
             endFileAddressSourceLiveReverts
               (σ := σ) (σ₀ := σ₀)
-              (A := A) (I := I) (g := g) hwv hauthSolm hliveSolm
+              (A := A) (I := I) (g := g) hwv hauthStele hliveStele
         exact (endFileAddressX_notLive (I := I) hlive hauthPc)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hauthSolm : endRelyAuthWord σ I ≠ ⟨1⟩ := by
+    · have hauthStele : endRelyAuthWord σ I ≠ ⟨1⟩ := by
         intro hbad
         exact hauth hbad
       have hbody :
-          ExecTransitionBody config contract evmSolm (endFileAddressLocals I)
+          ExecTransitionBody config contract evmStele (endFileAddressLocals I)
             fileAddressTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           endFileAddressSourceAuthReverts
             (σ := σ) (σ₀ := σ₀)
-            (A := A) (I := I) (g := g) hwv hauthSolm
+            (A := A) (I := I) (g := g) hwv hauthStele
       exact (endFileAddressX_unauthorized (I := I) hauth hdecoded)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · exact (endFileAddressX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize (by omega) hreach)

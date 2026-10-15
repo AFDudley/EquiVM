@@ -1,6 +1,6 @@
 import Benchmarks.Xxx.Constructor
 import Benchmarks.Xxx.Function   -- one import per transition's proof file
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # Xxx correctness capstone (TEMPLATE)
@@ -15,7 +15,7 @@ After it compiles, verify axiom hygiene on the capstone. The expected footprint 
 Lean axioms and documented `native_decide` evaluation facts.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 

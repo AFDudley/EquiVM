@@ -1,7 +1,7 @@
 import Examples.ERC20.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -66,7 +66,7 @@ theorem erc20BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody erc20Config erc20Contract evm (balanceOfStore I) balanceOfTransition.body
       (.returned { contract := erc20Contract, locals := balanceOfStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (balanceOfSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
@@ -456,17 +456,16 @@ theorem erc20BalanceOfSelector_size {I : ExecutionEnv}
 theorem erc20Dispatch_balanceOf {cd : ByteArray}
     (hsel : ((⟨#[0x70, 0xa0, 0x82, 0x31]⟩ : ByteArray) == cd.extract 0 4) = true) :
     dispatchMsg erc20Contract cd = some balanceOfTransition := by
-  have hcd : cd.extract 0 4 = (⟨#[0x70, 0xa0, 0x82, 0x31]⟩ : ByteArray) :=
-    (byteArray_eq_of_beq hsel).symm
+  have hcd := (byteArray_eq_of_beq hsel).symm
   refine dispatchMsg_eq_some_of_split
-    (pre := [approveTransition, totalSupplyTransition, transferFromTransition])
-    (post := [transferTransition, allowanceTransition])
+    (pre := [transferTransition, approveTransition, transferFromTransition])
+    (post := [allowanceTransition, totalSupplyTransition])
     rfl rfl ?_ (by rw [selectorOf, erc20BalanceOfSelectorBytes]; exact hsel)
   intro t ht
   simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
   rcases ht with rfl | rfl | rfl
+  · rw [selectorOf, erc20TransferSelectorBytes, hcd]; decide
   · rw [selectorOf, erc20ApproveSelectorBytes, hcd]; decide
-  · rw [selectorOf, erc20TotalSupplySelectorBytes, hcd]; decide
   · rw [selectorOf, erc20TransferFromSelectorBytes, hcd]; decide
 
 theorem erc20BalanceOfBodyCore
@@ -493,7 +492,7 @@ theorem erc20BalanceOfBodyCore
               (.returned { contract := erc20Contract, locals := balanceOfStore I }
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-          simpa [balanceOfWord, balanceOfSlot, initState, Solm.EVM.storageLoad,
+          simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
             State.lookupAccount] using erc20BalanceOfBodyReturns
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
               (by simp only [initState]; exact hwv)

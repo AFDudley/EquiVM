@@ -33,8 +33,8 @@ Generated artifacts and scaffold files:
 - `runtime.hex`: optimized deployed runtime bytecode, 6965 bytes.
 - `Vat.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold with storage layout and full public ABI surface.
-- `SpecSyntax.lean`: Solm notation presentation for representative fragments, checked by `rfl`.
+- `Spec.lean`: Stele AST benchmark scaffold with storage layout and full public ABI surface.
+- `SpecSyntax.lean`: Stele notation presentation for representative fragments, checked by `rfl`.
 - `Constructor.lean`: top-level constructor-equivalence theorem, with the proof pending.
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper,
   with the runtime-target proof pending.
@@ -65,6 +65,6 @@ Scaffold notes:
 - The `either` and `both` helpers are ordinary internal Solidity functions, so arithmetic-heavy
   arguments are evaluated eagerly in the source. The scaffold binds those intermediate products
   before the relevant `require`s to avoid accidental short-circuiting.
-- No known Solm syntax or semantics change is required to start proving this benchmark. The likely
+- No known Stele syntax or semantics change is required to start proving this benchmark. The likely
   proof hotspot is showing that the source-level checked signed/unsigned helper model matches the
   optimized Solidity 0.6.12 bytecode paths.

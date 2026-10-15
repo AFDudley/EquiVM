@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Dai
 
@@ -19,35 +19,35 @@ def domainSeparatorWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 
 theorem daiDecode_domainSeparator_ok {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode
+    config.externalABI.decodeCalldata?
       (domainSeparatorTransition.params.map Param.name)
       (transitionSignature domainSeparatorTransition).paramTypes I.calldata =
         some domainSeparatorStore := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata =
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata =
     some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `DOMAIN_SEPARATOR()` body returns the bytes32 storage slot `5`. -/
+/-- The Stele `DOMAIN_SEPARATOR()` body returns the bytes32 storage slot `5`. -/
 theorem daiDomainSeparatorBodyReturns (evm : EVM.State)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm domainSeparatorStore domainSeparatorTransition.body
       (.returned { contract := contract, locals := domainSeparatorStore } evm
         (some [(.fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               domainSeparatorStorageSlot)))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       rw [evalExpr_storage_scalar_value (hbackend := rfl)
         (cfg := config)
-        (solm := { contract := contract, locals := domainSeparatorStore })
+        (stele := { contract := contract, locals := domainSeparatorStore })
         (slot := domainSeparatorRef)
         (er := ({ base := "DOMAIN_SEPARATOR", steps := [] } : EvaledStorageRef))
         (t := .bytes bytes32Width)
         (loc := wordLoc domainSeparatorStorageSlot (.bytes bytes32Width))
         (value := .fixedBytes bytes32Width
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               domainSeparatorStorageSlot)))
         (hbase := by
           simp [domainSeparatorStore, domainSeparatorRef])
@@ -85,7 +85,7 @@ theorem daiDomainSeparatorBodyCoreOk
     (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some domainSeparatorTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode
+      config.externalABI.decodeCalldata?
         (domainSeparatorTransition.params.map Param.name)
         (transitionSignature domainSeparatorTransition).paramTypes I.calldata =
           some domainSeparatorStore)
@@ -103,7 +103,7 @@ theorem daiDomainSeparatorBodyCoreOk
           (some [(.fixedBytes bytes32Width
             (EVM.Word.toBytesBE (domainSeparatorWord σ I)))])) := by
     simpa [domainSeparatorWord, domainSeparatorStorageSlot, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       daiDomainSeparatorBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (by simp only [initState]; exact hwv)
@@ -113,7 +113,7 @@ theorem daiDomainSeparatorBodyCoreOk
         (by simpa [bytes32, bytes32Width] using
           bytes32ReturnEncoding (domainSeparatorWord σ I)))
 
-/-- `DOMAIN_SEPARATOR()` body refines its Solm transition. -/
+/-- `DOMAIN_SEPARATOR()` body refines its Stele transition. -/
 theorem daiDomainSeparatorBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

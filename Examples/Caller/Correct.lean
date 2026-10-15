@@ -5,7 +5,7 @@ import Examples.Caller.Spec
 import Reasoning.ABI
 import Reasoning.EVMWord
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Stepping
 import Reasoning.Memory
 import Reasoning.Solc
@@ -18,19 +18,19 @@ import Reasoning.ExternalCall
 # Caller — runtime-equivalence proof for `run(address t, uint256 n)`
 
 `run` makes an **external call** `t.pow2(n)` and stores the result in `stored`.  The external call
-is *opaque*: nothing is assumed about the code at `t`.  The EVM `CALL` and the Solm `externalCall`
+is *opaque*: nothing is assumed about the code at `t`.  The EVM `CALL` and the Stele `externalCall`
 invoke the identical `Θ`, so the opaque `(z, σ', o)` coincide on both sides by construction; the
-success branch then stores `decode(o)` (EVM `SSTORE` ↔ Solm `.assign`).  Built on `RD.call`.
+success branch then stores `decode(o)` (EVM `SSTORE` ↔ Stele `.assign`).  Built on `RD.call`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 10000
 
 namespace Caller
 
 
-/-! ## Solm-side dispatch facts (mirror `Truth`) -/
+/-! ## Stele-side dispatch facts (mirror `Truth`) -/
 
 /-- Single-selector dispatch bundle (via `callerSelectorBytes`): `.eq` is the 4-byte
     calldata-prefix comparison, `.none_short` / `.none_nomatch` the no-dispatch cases. -/
@@ -39,12 +39,12 @@ theorem callerDispatch :
   singleSelectorDispatch rfl rfl callerSelectorBytes rfl
 
 
-/-- **The Solm body stores the decoded result.**  With zero call value, the decoded `t ↦ address`,
+/-- **The Stele body stores the decoded result.**  With zero call value, the decoded `t ↦ address`,
     `n ↦ int`, a *successful* external call (`z = true`) whose return decodes to `[value]`, and the
     storage assign succeeding, `run`'s body runs to completion (`returned … none`), leaving the
     `stored` slot written. -/
-theorem callerBodySuccess (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Address} {nval : ℤ}
-    {value : Value} {evm' evm'' : EVM.State} {out : ByteArray} {solm'' : Frame}
+theorem callerBodySuccess (evm : EVM.State) (locals : Stele.Store) {tval : EVM.Address} {nval : ℤ}
+    {value : Value} {evm' evm'' : EVM.State} {out : ByteArray} {stele'' : Frame}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ht : locals.get? "t" = some (.address tval))
     (hn : locals.get? "n" = some (.int nval))
@@ -53,13 +53,18 @@ theorem callerBodySuccess (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Ad
     (hdec : callerConfig.externalABI.decode? "pow2" out = some [value])
     (hassign : assignStorageRef? callerConfig
         { contract := callerContract, locals := locals.insert "tmp" value } evm'
-        .storage { base := "stored", steps := [] } value = .ok (solm'', evm'')) :
+        .storage { base := "stored", steps := [] } value = .ok (stele'', evm''))
+    (hperm : evm'.executionEnv.perm = true) :
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body
-      (.returned solm'' evm'' none) := by
+      (.returned stele'' evm'' none) := by
   refine ExecFuncBody.execBlockOK
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consNormal (ExecStmt.externalCallSuccess ?_ ?_ ?_ hcall hdec)
-        (ExecBlock.consNormal (ExecStmt.assign ?_ hassign) ExecBlock.nil)))
+      (ExecBlock.consNormal (ExecStmt.externalCallSuccess
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)
+        (ExecBlock.consNormal (ExecStmt.assign
+          (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+          ?_ hassign) ExecBlock.nil)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -71,8 +76,8 @@ theorem callerBodySuccess (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Ad
     simp only [evalExpr?, EvalResult.ofOption, store_get_self]
 
 /-- Static mode: after a successful sub-call the body halts at its storage write. -/
-theorem callerBodyStatic (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Address} {nval : ℤ}
-    {value : Value} {evm' evm'' : EVM.State} {out : ByteArray} {solm'' : Frame}
+theorem callerBodyStatic (evm : EVM.State) (locals : Stele.Store) {tval : EVM.Address} {nval : ℤ}
+    {value : Value} {evm' evm'' : EVM.State} {out : ByteArray} {stele'' : Frame}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ht : locals.get? "t" = some (.address tval))
     (hn : locals.get? "n" = some (.int nval))
@@ -81,13 +86,15 @@ theorem callerBodyStatic (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Add
     (hdec : callerConfig.externalABI.decode? "pow2" out = some [value])
     (hassign : assignStorageRef? callerConfig
         { contract := callerContract, locals := locals.insert "tmp" value } evm'
-        .storage { base := "stored", steps := [] } value = .ok (solm'', evm''))
+        .storage { base := "stored", steps := [] } value = .ok (stele'', evm''))
     (hperm : evm'.executionEnv.perm = false) :
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body
       .staticViolation := by
   refine ExecFuncBody.execBlockStatic
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consNormal (ExecStmt.externalCallSuccess ?_ ?_ ?_ hcall hdec)
+      (ExecBlock.consNormal (ExecStmt.externalCallSuccess
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)
         (ExecBlock.consStatic (ExecStmt.assignStatic ?_ hassign hperm))))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
@@ -99,9 +106,9 @@ theorem callerBodyStatic (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Add
           evm' (.var "tmp") = .ok value
     simp only [evalExpr?, EvalResult.ofOption, store_get_self]
 
-/-- **The Solm body reverts on a failed sub-call** (`z = false`): `require` passes, the external call
+/-- **The Stele body reverts on a failed sub-call** (`z = false`): `require` passes, the external call
     fails, so the body reverts (`externalCallFailure`). -/
-theorem callerBodyExtFail (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Address} {nval : ℤ}
+theorem callerBodyExtFail (evm : EVM.State) (locals : Stele.Store) {tval : EVM.Address} {nval : ℤ}
     {evm' : EVM.State} {out : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ht : locals.get? "t" = some (.address tval))
@@ -111,7 +118,9 @@ theorem callerBodyExtFail (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Ad
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consRevert (ExecStmt.externalCallFailure ?_ ?_ ?_ hcall)))
+      (ExecBlock.consRevert (ExecStmt.externalCallFailure
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -119,10 +128,10 @@ theorem callerBodyExtFail (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Ad
   · show evalExprs? callerConfig _ evm [.var "n"] = .ok [.int nval]
     simp only [evalExprs?, evalExpr?, EvalResult.ofOption, hn, EvalResult.bind, bind, pure]
 
-/-- **The Solm body reverts on an under-length return** (`z = true`, `decode? = none`): `require`
+/-- **The Stele body reverts on an under-length return** (`z = true`, `decode? = none`): `require`
     passes, the sub-call succeeds but its return data does not decode, so the body reverts
     (`externalCallReturnDecodeRevert`) — the spec analogue of the solc decoder's `< 32` revert. -/
-theorem callerBodyDecodeRevert (evm : EVM.State) (locals : Solm.Store) {tval : EVM.Address} {nval : ℤ}
+theorem callerBodyDecodeRevert (evm : EVM.State) (locals : Stele.Store) {tval : EVM.Address} {nval : ℤ}
     {evm' : EVM.State} {out : ByteArray}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ht : locals.get? "t" = some (.address tval))
@@ -133,7 +142,9 @@ theorem callerBodyDecodeRevert (evm : EVM.State) (locals : Solm.Store) {tval : E
     ExecTransitionBody callerConfig callerContract evm locals runTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert
     (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv))
-      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert ?_ ?_ ?_ hcall hdec)))
+      (ExecBlock.consRevert (ExecStmt.externalCallReturnDecodeRevert
+        (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+        ?_ ?_ ?_ hcall hdec)))
   · show evalExpr? callerConfig _ evm (.var "t") = .ok (.address tval)
     simp only [evalExpr?, EvalResult.ofOption, ht]
   · show evalExpr? callerConfig _ evm (.intLit 0) = .ok (.int 0)
@@ -303,7 +314,7 @@ theorem callerX_toDecoder {σ σ₀ A I} {g : Sat256}
 
 /-! ## The opaque-call coincidence (the conceptual crux)
 
-The EVM `CALL` (via `RD.call`) and the Solm `externalCall` (via `typedCallViaEVM`) invoke the
+The EVM `CALL` (via `RD.call`) and the Stele `externalCall` (via `typedCallViaEVM`) invoke the
 *identical* `Θ`, so the opaque result coincides on both sides by construction — no assumption about
 the callee's code.  This is now the **generic** `Reasoning.Theory.callCoincides` (and the
 depth-limit `callNotMade_depthLimit`) in `Reasoning/ExternalCall.lean`; `Caller` only supplies the
@@ -390,13 +401,13 @@ abbrev callerArg1 (I : ExecutionEnv) : UInt256 :=
 
 /-- **Calldata decode for `run(address t, uint256 n)`.**  With ≥ 68 bytes of calldata and a
     *canonical* address argument, decoding succeeds, binding `t`/`n` to the EVM's words at offsets
-    4 / 36 — the Solm-side analogue of the bytecode's ABI decoder. -/
+    4 / 36 — the Stele-side analogue of the bytecode's ABI decoder. -/
 theorem callerDecode_n {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
     (hbig : I.calldata.size < 2 ^ 255 + 4)
     (hcanon : (callerArg0 I).toNat < EVM.addressModulus) :
     decodeCalldata (runTransition.params.map Param.name)
         (transitionSignature runTransition).paramTypes I.calldata
-      = some (((∅ : Solm.Store).insert "t"
+      = some (((∅ : Stele.Store).insert "t"
           (.address (Ethereum.AccountAddress.ofNat (callerArg0 I).toNat))).insert "n"
           (.int (Int.ofNat (callerArg1 I).toNat))) := by
   show decodeCalldata ["t", "n"] [addr, uint256] I.calldata = _
@@ -576,7 +587,7 @@ theorem callerCalldataMem_read128_36 (I : ExecutionEnv) :
       extract_extract_BA, show (0:ℕ) + 0 = 0 from rfl,
       show min (0 + (164 - 132)) 32 = 32 from by omega, hBfull]
 
-/-- **Encoding coupling (spec level).**  The Solm ABI's `encode? "pow2" [n]` produces exactly the
+/-- **Encoding coupling (spec level).**  The Stele ABI's `encode? "pow2" [n]` produces exactly the
     36-byte buffer the bytecode sends to the `CALL`. -/
 theorem callerEncode_eq (I : ExecutionEnv) :
     callerExternalABI.encode? "pow2" [.int (Int.ofNat (callerArg1 I).toNat)]
@@ -668,9 +679,9 @@ theorem callerX_afterCall {σ σ₀ A I} {g : Sat256}
   exact ⟨σ', z, _, _, _, k', C', rd144⟩
 
 /-- **The opaque CALL, packaged for the assembly.**  Exposes the post-`CALL` `RD` cursor (memory and
-    active-words resolved to their concrete `o.write …` / `⟨6⟩` forms) **together with** the Solm-side
+    active-words resolved to their concrete `o.write …` / `⟨6⟩` forms) **together with** the Stele-side
     `typedCallViaEVM` fact built from the *same* `Θ`-link — the coincidence that lets the EVM and
-    Solm sub-calls share `(z, σ', o)`. -/
+    Stele sub-calls share `(z, σ', o)`. -/
 theorem callerX_postCall {σ σ₀ A I} {g : Sat256}
     (hcode : I.code = callerBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hsz : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
@@ -705,7 +716,7 @@ theorem callerX_postCall {σ σ₀ A I} {g : Sat256}
         (callerOutPtr I).toNat (⟨32⟩ : UInt256).toNat) = (⟨6⟩ : UInt256) := by
       rw [callerOutPtr_eq]; decide
     exact haw ▸ rd144
-  · -- the Solm-side coincidence, fed the same `Θ`-link
+  · -- the Stele-side coincidence, fed the same `Θ`-link
     refine callCoincides (A_in := A_in) (g'' := g'') (callGas := callGas) (callPerm := true)
       (targetWord := UInt256.land addrMask (callerArg0 I))
       (mem := callerCalldataMem I) (inOff := callerOutPtr I)
@@ -818,7 +829,7 @@ theorem callerX_succ_to491 {σ σ₀ A I} {g : Sat256}
 
 /-- **Success-path under-length revert (470 → 203 REVERT).**  When `|o| < 32` the length check
     `slt(|o|, 32) = 1`, so `iszero` is `0`, the `JUMPI` is *not* taken, and control falls into the
-    `…203 REVERT` bail-out ⇒ `RDrev` — matching Solm's `externalCallReturnDecodeRevert`. -/
+    `…203 REVERT` bail-out ⇒ `RDrev` — matching Stele's `externalCallReturnDecodeRevert`. -/
 theorem callerX_succ_revert {σ σ₀ A I} {g : Sat256}
     {acc : AccountMap}
     {mem2 : ByteArray} {o : ByteArray} {k C : ℕ} {arg1 arg0 sel : UInt256}
@@ -925,7 +936,7 @@ theorem callerX_successChain {σ σ₀ A I} {g : Sat256}
   exact callerX_succ_tail rd491 hword2 hmsz2
 
 /-- **The clean-address check ⇒ canonical address.**  The bytecode's `eq(arg0, arg0 & 0xff…ff)`
-    holding means `arg0`'s high bits are zero, i.e. `arg0 < 2¹⁶⁰` — exactly the Solm decoder's
+    holding means `arg0`'s high bits are zero, i.e. `arg0 < 2¹⁶⁰` — exactly the Stele decoder's
     address-validity condition. -/
 theorem callerArg0_canonical {I : ExecutionEnv}
     (hclean : UInt256.eq (callerArg0 I) (UInt256.land (callerArg0 I) addrMask) = ⟨1⟩) :
@@ -952,7 +963,7 @@ theorem callerArg0_canonical {I : ExecutionEnv}
   have hmask : addrMask.toNat < EVM.addressModulus := by decide
   rw [hland, hmod]; exact lt_of_le_of_lt (hlandle _ _) hmask
 
-/-! ## Storage coupling: the Solm `.assign stored := v` writes the same word the EVM `SSTORE` does -/
+/-! ## Storage coupling: the Stele `.assign stored := v` writes the same word the EVM `SSTORE` does -/
 
 
 /-- **Whole-slot store.**  Storing `.int k` into the `stored` location (slot 0, offset 0, size 32)
@@ -965,9 +976,9 @@ theorem callerLocStore (evm' : EVM.State) (k : ℕ) :
       = some (EVM.storageStore evm' evm'.executionEnv.codeOwner ⟨0⟩ (UInt256.ofNat k)) := by
   exact storageLocStore_uint256_ofNat evm' ⟨0⟩ k
 
-/-- **The Solm `.assign stored := .int k` step.**  Dispatches to the storage write (the local
+/-- **The Stele `.assign stored := .int k` step.**  Dispatches to the storage write (the local
     `stored` is absent, `hbase`), producing the post-`SSTORE` EVM state. -/
-theorem callerAssign (evm' : EVM.State) (L : Solm.Store) (k : ℕ) (hbase : L.get? "stored" = none) :
+theorem callerAssign (evm' : EVM.State) (L : Stele.Store) (k : ℕ) (hbase : L.get? "stored" = none) :
     assignStorageRef? callerConfig { contract := callerContract, locals := L } evm'
         .storage { base := "stored", steps := [] } (.int (Int.ofNat k))
       = .ok ({ contract := callerContract, locals := L },
@@ -1052,8 +1063,8 @@ theorem callerX_noncanon {σ σ₀ A I} {g : Sat256}
 /-! ## Decoded-store accessors and the canonical-execution coupling -/
 
 
-abbrev callerDecStore (I : ExecutionEnv) : Solm.Store :=
-  ((∅:Solm.Store).insert "t" (.address (AccountAddress.ofNat (callerArg0 I).toNat))).insert "n"
+abbrev callerDecStore (I : ExecutionEnv) : Stele.Store :=
+  ((∅:Stele.Store).insert "t" (.address (AccountAddress.ofNat (callerArg0 I).toNat))).insert "n"
     (.int (Int.ofNat (callerArg1 I).toNat))
 theorem callerStore_t (I : ExecutionEnv) :
     (callerDecStore I).get? "t" = some (.address (AccountAddress.ofNat (callerArg0 I).toNat)) := by
@@ -1123,7 +1134,7 @@ theorem callerExec_canonical {σ σ₀ A I} {g : Sat256}
         have hword : (o.write 0 (callerCalldataMem I) 128 32).readWithPadding 128 32 = o.extract 0 32 :=
           write32_read_back o (callerCalldataMem I) 128 ho32 (by rw [callerCalldataMem_size]; omega)
         have hrd := callerX_successChain rd144 ho32 ho255 hfp hword hmsz
-        -- Solm body
+        -- Stele body
         set evmP : EVM.State := { initState σ σ₀ g A I with
           accountMap := σ', substate := A' } with hevmP
         set kw := fromByteArrayBigEndian (o.extract 0 32) with hkw
@@ -1136,7 +1147,7 @@ theorem callerExec_canonical {σ σ₀ A I} {g : Sat256}
         by_cases hperm : I.perm = true
         · have hbody := callerBodySuccess (initState σ σ₀ g A I)
             (callerDecStore I) (by exact hwv) (callerStore_t I) (callerStore_n I)
-            hcoin hdecv hassign
+            hcoin hdecv hassign (by simp only [hevmP, initState]; exact hperm)
           exact RDret.reEquivExecutionGen hcode (permSplit_true hperm hrd) hd hdec hbody
             (by rw [storageStore_accountMap]; simp [evmP, initState])
             (returnEquiv.fallthrough rfl rfl (by native_decide))
@@ -1196,7 +1207,7 @@ theorem callerX_callDepthLimit {σ σ₀ A I} {g : Sat256}
   obtain ⟨k', C', rd144⟩ := rd143.callDepthLimit (by decide) hdepth (by evm_ov)
   exact callerX_postRevert rd144 (by simp)
 
-/-! ## The `callvalue = 0` Solm coupling -/
+/-! ## The `callvalue = 0` Stele coupling -/
 
 theorem callerReEquiv_callvalueZero
     {σ σ₀ A I} {g : Sat256}
@@ -1253,7 +1264,7 @@ theorem callerReEquiv_callvalueZero
 
 /-! ## The correctness statement -/
 
-/-- The runtime bytecode refines the Solm specification, for every initial state. -/
+/-- The runtime bytecode refines the Stele specification, for every initial state. -/
 theorem callerCorrect :
     runtimeRefinement callerConfig callerBytecode callerContract := by
   refine ⟨fun σ σ₀ g A I
@@ -1336,7 +1347,7 @@ theorem callerInitcodeRun {σ σ₀ A I} {g : Sat256}
       callerFinal_read
       (by evm_ov)]
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem callerConstructorCorrect :
     typedConstructorRefinement callerConfig callerInitcode callerContract (fun _ => callerBytecode) :=
   emptyConstructorCorrect_of_RDret rfl rfl rfl (fun hcode => callerInitcodeRun hcode)

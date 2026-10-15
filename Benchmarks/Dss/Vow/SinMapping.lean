@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -50,7 +50,7 @@ theorem vowDispatch_sin {I : ExecutionEnv} (hsel : selIs I ⟨#[0xcb, 0x5c, 0xc1
     exact hsel
 
 theorem vowDecode_sin_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
       (transitionSignature sinTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.int (Int.ofNat (sinMappingKey I).toNat))) := by
   simpa [config, sinTransition, sinMappingKey, uint256] using
@@ -58,7 +58,7 @@ theorem vowDecode_sin_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem vowDecode_sin_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
       (transitionSignature sinTransition).paramTypes I.calldata = none := by
   simpa [config, sinTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -98,7 +98,7 @@ theorem vowSinMappingBodyCore
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some sinTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (sinTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (sinTransition.params.map Param.name)
         (transitionSignature sinTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.int (Int.ofNat (sinMappingKey I).toNat))))
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
@@ -116,7 +116,7 @@ theorem vowSinMappingBodyCore
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (sinMappingSlotFor I) σ I).toNat))])) := by
-    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [sinTransition, sinMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       vowUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

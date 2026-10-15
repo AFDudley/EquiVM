@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MorphoBlue.Storage
 # Morpho `isLltvEnabled(uint256)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 3725; reach lemma `morphoReachIsLltvEnabledBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -109,7 +109,7 @@ theorem morphoIsLltvEnabledBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutabl
     morphoSelectorDispatch_of_selIs (by decide) hsel
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
-    · have hdec : decodeCalldataWithMode config.abiDecodeMode
+    · have hdec : config.externalABI.decodeCalldata?
           (isLltvEnabledTransition.params.map Param.name)
           (transitionSignature isLltvEnabledTransition).paramTypes I.calldata =
           some (isLltvEnabledArgs I.calldata) := decodeCalldata_uint256_ok hlen hbound

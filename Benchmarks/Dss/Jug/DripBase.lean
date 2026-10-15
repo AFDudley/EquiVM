@@ -7,12 +7,12 @@ import Benchmarks.Dss.Jug.FileDuty
 import Reasoning.ExternalCall
 import Reasoning.Initcode
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -58,7 +58,7 @@ theorem dripIlkHashMem_read64 (I : ExecutionEnv) :
     solcFreePtrMem_size solcFreePtrMem_read64
 
 theorem jugDecode_drip_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata =
         some (dripLocals I) := by
   simpa [config, dripTransition, dripLocals, fileDutyIlkBytes, bytes32, bytes32Width] using
@@ -66,7 +66,7 @@ theorem jugDecode_drip_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem jugDecode_drip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (dripTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (dripTransition.params.map Param.name)
       (transitionSignature dripTransition).paramTypes I.calldata = none := by
   simpa [config, dripTransition, bytes32, bytes32Width] using
     (decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk")
@@ -846,7 +846,7 @@ theorem evalExpr_dripStorageVat (evm : EVM.State) (I : ExecutionEnv) :
       (.storage vatRef) =
         .ok (.address (dripVatAddress evm.accountMap evm.executionEnv)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := dripLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := dripLocals I }) (evm := evm)
     (slot := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨2⟩)
     (value := .address (dripVatAddress evm.accountMap evm.executionEnv))
@@ -863,7 +863,7 @@ theorem evalExpr_dripStorageVatOfLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage vatRef) =
       .ok (.address (dripVatAddress evm.accountMap evm.executionEnv)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := vatRef) (er := ({ base := "vat", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨2⟩)
     (value := .address (dripVatAddress evm.accountMap evm.executionEnv))
@@ -881,7 +881,7 @@ theorem evalExpr_dripStorageVowOfLocals {evm : EVM.State} {locals : Store}
       .ok (.address (AccountAddress.ofUInt256
         (dripVowTargetWord evm.accountMap evm.executionEnv))) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))
     (t := .address) (loc := addrLoc ⟨3⟩)
     (value := .address (AccountAddress.ofUInt256
@@ -1156,7 +1156,7 @@ theorem evalExpr_dripStorageBase {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm (.storage baseRef) =
       .ok (.int (Int.ofNat (solcSlotWordAt ⟨4⟩ evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := baseRef) (er := ({ base := "base", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨4⟩)
     (value := .int (Int.ofNat (solcSlotWordAt ⟨4⟩ evm.accountMap evm.executionEnv).toNat))
@@ -1175,7 +1175,7 @@ theorem evalExpr_dripStorageDuty {evm : EVM.State} {locals : Store} {I : Executi
         .ok (.int (Int.ofNat
           (solcSlotWordAt (fileDutyDutySlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "duty") (er := fileDutyDutyEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (fileDutyDutySlotFor I))
     (value := .int (Int.ofNat
@@ -1217,7 +1217,7 @@ theorem evalExpr_dripStorageRho (evm : EVM.State) (I : ExecutionEnv)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (fileDutyRhoSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := dripLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := dripLocals I }) (evm := evm)
     (slot := ilksF (.var "ilk") "rho") (er := fileDutyRhoEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (fileDutyRhoSlotFor I))
     (value := .int (Int.ofNat
@@ -1244,7 +1244,7 @@ theorem evalExpr_dripStorageRhoOfLocals {evm : EVM.State} {locals : Store} {I : 
         .ok (.int (Int.ofNat
           (solcSlotWordAt (fileDutyRhoSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := ilksF (.var "ilk") "rho") (er := fileDutyRhoEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (fileDutyRhoSlotFor I))
     (value := .int (Int.ofNat
@@ -1267,7 +1267,7 @@ theorem assign_dripRhoStorageOfLocals {evm : EVM.State} {I : ExecutionEnv}
     (hilks : locals.get? "ilks" = none)
     (hilk : locals.get? "ilk" = some (.fixedBytes bytes32Width (fileDutyIlkBytes I))) :
     let timestamp := UInt256.ofNat evm.executionEnv.header.timestamp
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (fileDutyRhoSlotFor I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (fileDutyRhoSlotFor I)
       timestamp
     assignStorageRef? config { contract := contract, locals := locals } evm
         .storage (ilksF (.var "ilk") "rho") (.int (Int.ofNat timestamp.toNat)) =

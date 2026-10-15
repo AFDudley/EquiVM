@@ -1,7 +1,7 @@
 import Examples.ERC20.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,17 +12,17 @@ def totalSupplyWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
 
 theorem totalSupplyWord_eq_storageLoad_init {σ σ₀ A I} {g : Sat256} :
     totalSupplyWord σ I =
-      Solm.EVM.storageLoad (initState σ σ₀ g A I)
+      Stele.EVM.storageLoad (initState σ σ₀ g A I)
         (initState σ σ₀ g A I).executionEnv.codeOwner ⟨2⟩ :=
   rfl
 
-/-- The Solm `totalSupply()` body returns the word stored in slot 2. -/
+/-- The Stele `totalSupply()` body returns the word stored in slot 2. -/
 theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "totalSupply" = none) :
     ExecTransitionBody erc20Config erc20Contract evm locals totalSupplyTransition.body
       (.returned { contract := erc20Contract, locals := locals } evm
-        (some [(.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
+        (some [(.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef erc20Config { contract := erc20Contract, locals := locals } evm
@@ -82,14 +82,20 @@ theorem erc20TotalSupplySelector_size {I : ExecutionEnv}
 theorem erc20Dispatch_totalSupply {cd : ByteArray}
     (hsel : ((⟨#[0x18, 0x16, 0x0d, 0xdd]⟩ : ByteArray) == cd.extract 0 4) = true) :
     dispatchMsg erc20Contract cd = some totalSupplyTransition := by
-  have hcd : cd.extract 0 4 = (⟨#[0x18, 0x16, 0x0d, 0xdd]⟩ : ByteArray) :=
-    (byteArray_eq_of_beq hsel).symm
-  refine dispatchMsg_eq_some_of_split (pre := [approveTransition])
-    (post := [transferFromTransition, balanceOfTransition, transferTransition, allowanceTransition])
+  have hcd := (byteArray_eq_of_beq hsel).symm
+  refine dispatchMsg_eq_some_of_split
+    (pre := [transferTransition, approveTransition, transferFromTransition,
+      balanceOfTransition, allowanceTransition])
+    (post := [])
     rfl rfl ?_ (by rw [selectorOf, erc20TotalSupplySelectorBytes]; exact hsel)
   intro t ht
-  simp only [List.mem_singleton] at ht; subst ht
-  rw [selectorOf, erc20ApproveSelectorBytes, hcd]; decide
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
+  rcases ht with rfl | rfl | rfl | rfl | rfl
+  · rw [selectorOf, erc20TransferSelectorBytes, hcd]; decide
+  · rw [selectorOf, erc20ApproveSelectorBytes, hcd]; decide
+  · rw [selectorOf, erc20TransferFromSelectorBytes, hcd]; decide
+  · rw [selectorOf, erc20BalanceOfSelectorBytes, hcd]; decide
+  · rw [selectorOf, erc20AllowanceSelectorBytes, hcd]; decide
 
 theorem erc20Decode_totalSupply {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
     decodeCalldata (totalSupplyTransition.params.map Param.name)
@@ -115,7 +121,7 @@ theorem erc20TotalSupplyBodyCore
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

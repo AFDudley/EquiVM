@@ -1,5 +1,6 @@
 import Examples.ERC20.Bytecode
 import Examples.ERC20.Spec
+import Examples.ERC20.SpecSyntax
 import Examples.ERC20.TotalSupply
 import Examples.ERC20.BalanceOf
 import Examples.ERC20.Allowance
@@ -11,7 +12,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Initcode
 import Reasoning.Memory
 import Mathlib.Tactic.IntervalCases
@@ -26,7 +27,7 @@ machinery driver (one `RD.dispatchTo`); the per-function body proofs and the sel
 / revert facts are named obligations discharged in ERC20-local helper files.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -108,18 +109,18 @@ theorem erc20Dispatch_none_short {cd : ByteArray} (h : cd.size < 4) :
     dispatchMsg erc20Contract cd = none := by
   rw [dispatchMsg_eq_dispatchList erc20Contract cd (by rfl)]
   change dispatchList
-    [approveTransition, totalSupplyTransition, transferFromTransition, balanceOfTransition,
-      transferTransition, allowanceTransition] cd = none
+    [transferTransition, approveTransition, transferFromTransition, balanceOfTransition,
+      allowanceTransition, totalSupplyTransition] cd = none
   exact dispatchList_none_short _ (by
     intro t ht
     simp at ht
     rcases ht with rfl | rfl | rfl | rfl | rfl | rfl
+    · rw [selectorOf, erc20TransferSelectorBytes]; rfl
     · rw [selectorOf, erc20ApproveSelectorBytes]; rfl
-    · rw [selectorOf, erc20TotalSupplySelectorBytes]; rfl
     · rw [selectorOf, erc20TransferFromSelectorBytes]; rfl
     · rw [selectorOf, erc20BalanceOfSelectorBytes]; rfl
-    · rw [selectorOf, erc20TransferSelectorBytes]; rfl
-    · rw [selectorOf, erc20AllowanceSelectorBytes]; rfl) h
+    · rw [selectorOf, erc20AllowanceSelectorBytes]; rfl
+    · rw [selectorOf, erc20TotalSupplySelectorBytes]; rfl) h
 
 theorem erc20Dispatch_none_nomatch {cd : ByteArray}
     (hnm : ∀ i, i < 6 → (erc20SelBytes i == cd.extract 0 4) = false) :
@@ -128,12 +129,12 @@ theorem erc20Dispatch_none_nomatch {cd : ByteArray}
   intro t ht
   simp [erc20Contract] at ht
   rcases ht with rfl | rfl | rfl | rfl | rfl | rfl
+  · rw [selectorOf, erc20TransferSelectorBytes]; simpa [erc20SelBytes] using hnm 4 (by omega)
   · rw [selectorOf, erc20ApproveSelectorBytes]; simpa [erc20SelBytes] using hnm 0 (by omega)
-  · rw [selectorOf, erc20TotalSupplySelectorBytes]; simpa [erc20SelBytes] using hnm 1 (by omega)
   · rw [selectorOf, erc20TransferFromSelectorBytes]; simpa [erc20SelBytes] using hnm 2 (by omega)
   · rw [selectorOf, erc20BalanceOfSelectorBytes]; simpa [erc20SelBytes] using hnm 3 (by omega)
-  · rw [selectorOf, erc20TransferSelectorBytes]; simpa [erc20SelBytes] using hnm 4 (by omega)
   · rw [selectorOf, erc20AllowanceSelectorBytes]; simpa [erc20SelBytes] using hnm 5 (by omega)
+  · rw [selectorOf, erc20TotalSupplySelectorBytes]; simpa [erc20SelBytes] using hnm 1 (by omega)
 
 theorem erc20BodyReverts_nonPayable (t : TransitionDecl) (ht : t ∈ erc20Contract.transitions)
     (evm : EVM.State) (locals : Store) (h : evm.executionEnv.weiValue ≠ ⟨0⟩) :
@@ -216,7 +217,7 @@ theorem erc20X_noMatch {σ σ₀ A I} {g : Sat256}
 
 /-! ## Per-function body obligations (take the dispatcher-reached cursor) -/
 
-/-- From `approve`'s body entry (pc 100), the body refines its Solm transition. -/
+/-- From `approve`'s body entry (pc 100), the body refines its Stele transition. -/
 theorem erc20ApproveBody {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = erc20Bytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩) (hsel : selIs I ⟨#[0x09, 0x5e, 0xa7, 0xb3]⟩)
@@ -336,7 +337,7 @@ theorem erc20NonPayable {σ σ₀ A I} {g : UInt256}
 
 /-! ## Top-level theorem — drive the dispatcher, route each body to its correctness -/
 
-/-- The deployed ERC20 runtime bytecode refines the Solm specification, for every initial state.
+/-- The deployed ERC20 runtime bytecode refines the Stele specification, for every initial state.
     `callvalue ≠ 0` / short calldata / no-match revert; otherwise the dispatcher machinery
     (`erc20ReachBody`) drives the EVM to the matched function's body entry, handed to that function's
     body obligation. -/
@@ -731,6 +732,16 @@ theorem erc20CtorLocals_get_initialSupply (initialSupply : Int) :
   unfold erc20CtorLocals
   simp [erc20Contract, constructorDecl]
 
+theorem evalExprs_erc20Ctor_event (evm : EVM.State) (initialSupply : Int) :
+    evalExprs? erc20Config
+      { contract := erc20Contract, locals := erc20CtorLocals initialSupply } evm
+      [.cast (.intLit 0) (.elem .address), sender, .var "initialSupply"] =
+      .ok [.address (AccountAddress.ofNat 0), .address evm.executionEnv.source,
+        .int initialSupply] := by
+  simp only [evalExprs?, evalExpr?, erc20CtorLocals_get_initialSupply,
+    sender, envValue, EvalResult.bind, EvalResult.ofOption, bind, pure]
+  simp [castValue?]
+
 theorem erc20CtorLocals_get_balanceOf (initialSupply : Int) :
     (erc20CtorLocals initialSupply).get? "balanceOf" = none := by
   unfold erc20CtorLocals
@@ -742,11 +753,11 @@ theorem erc20CtorLocals_get_totalSupply (initialSupply : Int) :
   simp [erc20Contract, constructorDecl]
 
 def erc20CtorBalancePostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (erc20BalanceOfSlot (.address evm.executionEnv.source)) initialSupply
 
 def erc20CtorPostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
+  Stele.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
     (erc20CtorBalancePostState evm initialSupply).executionEnv.codeOwner ⟨2⟩ initialSupply
 
 theorem erc20CtorAssignBalance (evm : EVM.State) (initialSupply : Int)
@@ -787,7 +798,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
       { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
       evm .storage totalSupplyRef (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
             (EVM.word initialSupply.toNat)) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
@@ -808,7 +819,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
   conv_lhs => rw [← hint]
   erw [storageLocStore_uint256]
 
-theorem erc20SolmCtorExecReverts_nonpayable
+theorem erc20SteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -816,9 +827,9 @@ theorem erc20SolmCtorExecReverts_nonpayable
     {I : ExecutionEnv}
     (initialSupply : Int)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec erc20Config erc20Contract [.int initialSupply]
+    steleCtorExec erc20Config erc20Contract [.int initialSupply]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
@@ -827,7 +838,7 @@ theorem erc20SolmCtorExecReverts_nonpayable
   · exact bodyReverts_nonPayable (cfg := erc20Config) (contract := erc20Contract)
       (locals := erc20CtorLocals initialSupply) hwv
 
-theorem erc20SolmCtorExecSuccess
+theorem erc20SteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -836,8 +847,9 @@ theorem erc20SolmCtorExecSuccess
     (initialSupply : Int)
     (h0 : 0 ≤ initialSupply)
     (hlt : initialSupply < Int.ofNat (EVM.twoPow 256))
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec erc20Config erc20Contract [.int initialSupply]
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec erc20Config erc20Contract [.int initialSupply]
       σ σ₀ g A I
       (.returned
         { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
@@ -845,7 +857,7 @@ theorem erc20SolmCtorExecSuccess
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (EVM.word initialSupply.toNat))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
@@ -855,11 +867,13 @@ theorem erc20SolmCtorExecSuccess
     let frame : Frame := { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := erc20CtorBalancePostState evm0 (EVM.word initialSupply.toNat)
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := erc20Config)
-        (solm := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
+        (stele := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
     · exact ExecStmt.assign (value := .int initialSupply)
+        (Or.inr (by simpa only [evm1, evm0, erc20CtorBalancePostState,
+          storageStore_executionEnv_eq, initState] using hperm))
         (by
           show evalExpr? erc20Config frame evm0 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -869,8 +883,15 @@ theorem erc20SolmCtorExecSuccess
           exact erc20CtorAssignBalance
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             initialSupply h0 hlt)
-    · refine ExecBlock.consNormal ?_ ExecBlock.nil
+    · refine ExecBlock.consNormal ?_
+        (ExecBlock.consNormal (ExecStmt.emit
+          (by simpa only [erc20CtorPostState, erc20CtorBalancePostState,
+            storageStore_executionEnv_eq, initState] using hperm)
+          (evalExprs_erc20Ctor_event _ initialSupply))
+          ExecBlock.nil)
       exact ExecStmt.assign (value := .int initialSupply)
+        (Or.inr (by simpa only [evm1, evm0, erc20CtorBalancePostState,
+          storageStore_executionEnv_eq, initState] using hperm))
         (by
           show evalExpr? erc20Config frame evm1 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -908,9 +929,9 @@ theorem erc20ConstructorCorrect :
         simpa [Sat256.ofUInt256] using hX)
       rw [hacc] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (erc20SolmCtorExecSuccess
+        (erc20SteleCtorExecSuccess
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
-          initialSupply h0 hlt hwv) ?_
+          initialSupply h0 hlt hwv hperm) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
       simp [erc20CtorPostState, erc20CtorBalancePostState, storageStore_accountMap,
         storageStore_executionEnv, initState]
@@ -923,7 +944,7 @@ theorem erc20ConstructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (erc20SolmCtorExecReverts_nonpayable
+        (erc20SteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply hwv) ?_
       exact ctorResultEquiv.revert rfl rfl
@@ -932,5 +953,11 @@ theorem erc20ConstructorCorrect :
 theorem erc20ContractCorrect :
     contractRefinement erc20Config erc20Initcode erc20Contract :=
   contractRefinement.of_constant erc20ConstructorCorrect erc20Correct
+
+/-- The creation and runtime bytecode refine the Solidity-style surface specification. -/
+theorem erc20ContractSyntaxCorrect :
+    contractRefinement erc20Config erc20Initcode Syntax.contractSyntax := by
+  rw [Syntax.contractSyntax_eq]
+  exact erc20ContractCorrect
 
 end ERC20

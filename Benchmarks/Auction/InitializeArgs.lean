@@ -1,7 +1,7 @@
 import Benchmarks.Auction.UIntABI
 import Benchmarks.Auction.ScalarABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -45,7 +45,7 @@ def InitializeArgs.locals (args : InitializeArgs) : Store :=
 
 theorem initializeDecodeResult {cd : ByteArray}
     (hlen : 196 ≤ cd.size) (hhi : cd.size < 2 ^ 255 + 4) :
-    decodeCalldataWithMode auctionConfig.abiDecodeMode
+    auctionConfig.externalABI.decodeCalldata?
       (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes cd =
       if (initializeArgs cd).canonical then some (initializeArgs cd).locals else none := by
@@ -104,13 +104,13 @@ theorem initializeDecodeResult {cd : ByteArray}
     simp [Option.bind, bind, InitializeArgs.canonical, initializeArgs, hn]
 
 theorem initializeDecodeShort {cd : ByteArray} (hshort : cd.size < 196) :
-    decodeCalldataWithMode auctionConfig.abiDecodeMode
+    auctionConfig.externalABI.decodeCalldata?
       (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes cd = none := by
   exact decodeCalldata_scalar_none_short (by native_decide) hshort
 
 theorem initializeDecodeHuge {cd : ByteArray} (hhuge : 2 ^ 255 + 4 ≤ cd.size) :
-    decodeCalldataWithMode auctionConfig.abiDecodeMode
+    auctionConfig.externalABI.decodeCalldata?
       (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes cd = none := by
   exact decodeCalldata_scalar_none_huge (by native_decide) rfl hhuge

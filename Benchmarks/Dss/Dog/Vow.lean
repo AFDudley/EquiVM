@@ -1,12 +1,12 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
 
 theorem dogDecode_vow {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vowTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vowTransition.params.map Param.name)
       (transitionSignature vowTransition).paramTypes I.calldata = some ∅ := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
@@ -202,7 +202,7 @@ theorem dogVowBodyCore {v : DogImmutables} {code : ByteArray}
           (some [(.address (AccountAddress.ofNat
             (solcAddressSlotWord ⟨2⟩ σ I).toNat))])) (immStore v) := by
     simpa [vowTransition, solcAddressSlotWord, solcSlotWordAt, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       dogAddressGetterBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := vowRef) (er := ({ base := "vow", steps := [] } : EvaledStorageRef))

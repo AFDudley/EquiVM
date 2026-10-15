@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.AdminCommon
 # Morpho `setAuthorization(address,bool)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 443; reach lemma `morphoReachSetAuthorizationBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -63,14 +63,14 @@ theorem morphoSetAuthorizationBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (hcanon : (calldataWord evm.executionEnv.calldata 4).toNat < EVM.addressModulus)
     (hne : UInt256.isZero (UInt256.isZero (calldataWord evm.executionEnv.calldata 36)) ≠
       setAuthorizationOld evm.accountMap evm.executionEnv) :
-    ExecTransitionBody config contract evm (setAuthorizationArgs evm.executionEnv.calldata)
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (setAuthorizationArgs evm.executionEnv.calldata)
       setAuthorizationTransition.body
       (.returned (setAuthorizationFrame v evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner
           (authorizationSlot (solcSourceWord evm.executionEnv) (calldataWord evm.executionEnv.calldata 4))
           (setBoolOffset0Word (solcSlotWordAt
             (authorizationSlot (solcSourceWord evm.executionEnv) (calldataWord evm.executionEnv.calldata 4))
-            evm.accountMap evm.executionEnv) (calldataWord evm.executionEnv.calldata 36))) none) (immStore v) ∧
+            evm.accountMap evm.executionEnv) (calldataWord evm.executionEnv.calldata 36))) none) (immStore v)) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm (setAuthorizationArgs evm.executionEnv.calldata)
         setAuthorizationTransition.body .staticViolation (immStore v)) := by
@@ -86,11 +86,12 @@ theorem morphoSetAuthorizationBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (evalCallerWord config _ evm) (setAuthorizationAddress_eval v _ evm)
     (solcSourceWord_canonical _) hcanon
   constructor
-  · apply ExecFuncBody.execBlockOK
+  · intro hperm
+    apply ExecFuncBody.execBlockOK
     apply hprefix.run
-    apply ExecBlock.consNormal (ExecStmt.assign (setAuthorizationBool_eval v _ evm) hassign)
+    apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (setAuthorizationBool_eval v _ evm) hassign)
     apply ExecBlock.consNormal
-    · apply ExecStmt.emit (vals := [.address evm.executionEnv.source, .address evm.executionEnv.source,
+    · apply ExecStmt.emit (hperm := by simpa only [storageStore_executionEnv] using hperm) (vals := [.address evm.executionEnv.source, .address evm.executionEnv.source,
         .address (AccountAddress.ofNat (calldataWord evm.executionEnv.calldata 4).toNat),
         wordToElem .bool (calldataWord evm.executionEnv.calldata 36)])
       change evalExprs? config (setAuthorizationFrame v evm.executionEnv.calldata) _ _ = _
@@ -361,7 +362,7 @@ theorem morphoSetAuthorizationBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmut
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus ∧
           (calldataWord I.calldata 36 = ⟨0⟩ ∨ calldataWord I.calldata 36 = ⟨1⟩)
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setAuthorizationTransition.params.map Param.name)
             (transitionSignature setAuthorizationTransition).paramTypes I.calldata =
             some (setAuthorizationArgs I.calldata) := decodeCalldata_addr_bool_ok hlen hbound hcanon.1 hcanon.2
@@ -371,7 +372,7 @@ theorem morphoSetAuthorizationBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmut
               hcv hbound hcanon.1 hne
             rcases morphoSetAuthorizationXSplit (g := .ofUInt256 g) (σ₀ := σ₀) (A := A)
               v hcode hsize hsel hcv hlen hbound hcanon.1 hcanon.2 hne with ⟨hp, hx⟩ | ⟨hp, hx⟩
-            · exact reEquivSelectorExecutionGen hcode hx hd hdec hbody.1
+            · exact reEquivSelectorExecutionGen hcode hx hd hdec (hbody.1 hp)
                 (by rw [storageStore_accountMap]; rfl) (.fallthrough rfl rfl (by native_decide))
             · exact reEquivSelectorStatic hcode hx hd hdec (hbody.2 hp)
           · have heq := not_not.mp hne

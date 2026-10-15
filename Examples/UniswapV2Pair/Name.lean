@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.StringReturn
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -16,7 +16,7 @@ theorem nameReturnEncoding :
     encodeReturnValue? .string (.bytes nameBytes) = some nameReturnBytes := by
   native_decide
 
-/-- The Solm `name()` body returns `"Uniswap V2"` as a dynamic string value. -/
+/-- The Stele `name()` body returns `"Uniswap V2"` as a dynamic string value. -/
 theorem uniswapNameBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals nameTransition.body
@@ -144,7 +144,7 @@ theorem uniswapNameBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some nameTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (nameTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (nameTransition.params.map Param.name)
         (transitionSignature nameTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨572⟩ [sel]

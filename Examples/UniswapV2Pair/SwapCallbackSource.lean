@@ -1,5 +1,5 @@
 import Examples.UniswapV2Pair.SwapCallbackABI
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -58,7 +58,7 @@ theorem uniswapSwapCallbackFailure {caller : Frame} {evm evm' : EVM.State} {reci
     (hargs : evalExprs? config caller evm [sender, .var "amount0Out", .var "amount1Out", .var "data"] = .ok argVals)
     (hcall : typedCallViaEVM config evm (EVM.address recipient) "uniswapV2Call" 0 argVals (false, evm', out) true) :
     ExecStmt config caller evm swapCallbackStmt .reverted :=
-  ExecStmt.iteTrue hcond (checkedExternalCallVarFailure hguard hto hargs hcall)
+  ExecStmt.iteTrue hcond (checkedExternalCallVarFailure (hperm := Or.inl rfl) hguard hto hargs hcall)
 
 theorem uniswapSwapCallbackSuccess {caller : Frame} {evm evm' : EVM.State} {recipient : AccountAddress}
     {argVals : List Value} {out : ByteArray}
@@ -69,7 +69,7 @@ theorem uniswapSwapCallbackSuccess {caller : Frame} {evm evm' : EVM.State} {reci
     (hcall : typedCallViaEVM config evm (EVM.address recipient) "uniswapV2Call" 0 argVals (true, evm', out) true) :
     ExecStmt config caller evm swapCallbackStmt
       (.ok { caller with locals := caller.locals.insert "_callback" (collapseReturns []) } evm') :=
-  ExecStmt.iteTrue hcond (checkedExternalCallVarSuccess hguard hto hargs hcall rfl)
+  ExecStmt.iteTrue hcond (checkedExternalCallVarSuccess (hperm := Or.inl rfl) hguard hto hargs hcall rfl)
 
 theorem uniswapSwapBodyReverts_callback (evm evmT : EVM.State) (I : ExecutionEnv) (caller : Frame)
     (hprefix : ExecBlock config { contract := contract, locals := swapStore I } evm swapTransferPrefix (.ok caller evmT))

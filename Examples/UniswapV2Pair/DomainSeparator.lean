@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -12,7 +12,7 @@ namespace UniswapV2Pair
 def domainSeparatorWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨3⟩ σ I
 
-/-- The Solm `DOMAIN_SEPARATOR()` body returns the bytes32 stored in slot 3. -/
+/-- The Stele `DOMAIN_SEPARATOR()` body returns the bytes32 stored in slot 3. -/
 theorem uniswapDomainSeparatorBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩)
     (hlocals : locals.get? "DOMAIN_SEPARATOR" = none) :
@@ -20,7 +20,7 @@ theorem uniswapDomainSeparatorBodyReturns (evm : EVM.State) (locals : Store)
       (.returned { contract := contract, locals := locals } evm
         (some [(.fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)))])) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)))])) := by
   simpa [domainSeparatorTransition] using
     uniswapBytes32GetterBodyReturns (slot := ⟨3⟩) (ref := domainSeparatorRef)
       (er := ({ base := "DOMAIN_SEPARATOR", steps := [] } : EvaledStorageRef)) evm locals h
@@ -40,9 +40,9 @@ theorem uniswapX_domainSeparator {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_domainSeparator {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (domainSeparatorTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (domainSeparatorTransition.params.map Param.name)
       (transitionSignature domainSeparatorTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `DOMAIN_SEPARATOR()` body core, parameterized by dispatcher/decode facts owned by `Correct`. -/
@@ -51,7 +51,7 @@ theorem uniswapDomainSeparatorBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some domainSeparatorTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (domainSeparatorTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (domainSeparatorTransition.params.map Param.name)
         (transitionSignature domainSeparatorTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨971⟩ [sel]
@@ -65,7 +65,7 @@ theorem uniswapDomainSeparatorBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.fixedBytes ⟨31, by decide⟩
             (EVM.Word.toBytesBE (domainSeparatorWord σ I)))])) := by
-    simpa [domainSeparatorWord, solcSlotWordAt, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [domainSeparatorWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapDomainSeparatorBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

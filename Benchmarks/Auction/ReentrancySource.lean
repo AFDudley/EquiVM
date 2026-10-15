@@ -1,11 +1,11 @@
 import Benchmarks.Auction.SettleStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
 def statusState (evm : EVM.State) (word : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ word
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨101⟩ word
 
 theorem statusRead {s0 I σ evm locals} (hs : SourceState s0 I σ evm)
     (hl : locals.get? "_status" = none) :
@@ -13,7 +13,7 @@ theorem statusRead {s0 I σ evm locals} (hs : SourceState s0 I σ evm)
       (.storage statusRef) = .ok (.int (Int.ofNat (solcSlotWord σ I ⟨101⟩).toNat)) := by
   rw [statusRef, scalarRead evm locals "_status" (.int uint256Int) (auctionUint256Loc ⟨101⟩)
     hl (by native_decide) rfl, loadUint256]
-  have hw : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨101⟩ =
+  have hw : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨101⟩ =
       solcSlotWord σ I ⟨101⟩ := by
     exact hs.storageRead _
   rw [hw]
@@ -42,7 +42,7 @@ theorem statusStoreSourceSplit {evm locals e word}
     (hl : locals.get? "_status" = none)
     (he : evalExpr? auctionConfig { contract := auctionContract, locals := locals } evm e =
       .ok (.int (Int.ofNat (UInt256.toNat word)))) :
-    (ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
+    (evm.executionEnv.perm = true → ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
       (.assign .storage statusRef e)
       (.ok { contract := auctionContract, locals := locals } (statusState evm word))) ∧
       (evm.executionEnv.perm = false →
@@ -51,16 +51,17 @@ theorem statusStoreSourceSplit {evm locals e word}
   have hassign := scalarWrite evm _ locals "_status" (.elem (.int uint256Int))
     (auctionUint256Loc ⟨101⟩) _ hl (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩)
     (storageLocStore_uint256 evm ⟨101⟩ word)
-  exact ⟨ExecStmt.assign he hassign, fun hperm ↦ ExecStmt.assignStatic he hassign hperm⟩
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) he hassign, fun hperm ↦ ExecStmt.assignStatic he hassign hperm⟩
 
 theorem statusStoreSource {evm locals e word}
     (hl : locals.get? "_status" = none)
     (he : evalExpr? auctionConfig { contract := auctionContract, locals := locals } evm e =
-      .ok (.int (Int.ofNat (UInt256.toNat word)))) :
+      .ok (.int (Int.ofNat (UInt256.toNat word))))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
       (.assign .storage statusRef e)
       (.ok { contract := auctionContract, locals := locals } (statusState evm word)) :=
-  (statusStoreSourceSplit hl he).1
+  (statusStoreSourceSplit hl he).1 hperm
 
 theorem SourceState.status {s0 I σ evm} (hs : SourceState s0 I σ evm) (word : UInt256) :
     SourceState s0 I (sstoreAccountMap I.codeOwner σ ⟨101⟩ word) (statusState evm word) := by

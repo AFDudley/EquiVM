@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -75,7 +75,8 @@ theorem erc6909TransferFromAllowanceMaxPrefixBlock (evm : EVM.State) (I : Execut
 
 theorem erc6909TransferFromTailReceiverCoreCurrentAllowance
     (evm : EVM.State) (I : ExecutionEnv)
-    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size) :
+    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract,
         locals := transferFromTailStoreFromBalance (transferFromStoreCurrentAllowance evm I)
@@ -98,6 +99,7 @@ theorem erc6909TransferFromTailReceiverCoreCurrentAllowance
         (transferFromStoreCurrentAllowance_id evm I) hbase)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_tail_receiver_credit_of_get
         (transferFromStoreCurrentAllowance evm I) evm I
         (transferFromStoreCurrentAllowance_amount evm I) hfit)
@@ -117,7 +119,8 @@ theorem erc6909TransferFromAfterAllowanceCore (evm : EVM.State) (I : ExecutionEn
         evm (.binary .ne (.var "receiver") zeroAddr) = .ok (.bool true))
     (hbalanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromSenderBalanceWord evm I).toNat)
-    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size) :
+    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract, locals := transferFromStoreCurrentAllowance evm I }
       evm transferFromAfterAllowanceBody
@@ -144,6 +147,7 @@ theorem erc6909TransferFromAfterAllowanceCore (evm : EVM.State) (I : ExecutionEn
         (transferFromStoreCurrentAllowance_amount evm I) hbalanceEnough)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_tail_sender_debit_of_get
         (transferFromStoreCurrentAllowance evm I) evm I
         (transferFromStoreCurrentAllowance_amount evm I) hbalanceEnough)
@@ -162,7 +166,7 @@ theorem erc6909TransferFromAfterAllowanceCore (evm : EVM.State) (I : ExecutionEn
         locals := transferFromTailStoreToBalance (transferFromStoreCurrentAllowance evm I)
           evm I }
       (transferFromTailPostState evm I) (some [(.bool true)]))
-  exact erc6909TransferFromTailReceiverCoreCurrentAllowance evm I hfit
+  exact erc6909TransferFromTailReceiverCoreCurrentAllowance (hperm := by assumption) evm I hfit
 
 theorem erc6909TransferFromAfterAllowanceReverts_sender_zero
     (evm : EVM.State) (I : ExecutionEnv)
@@ -242,7 +246,8 @@ theorem erc6909TransferFromAfterAllowanceReverts_overflow
     (hsender : AccountAddress.ofNat (transferFromSenderWord I).toNat ≠ zeroAccountAddress)
     (hreceiver : AccountAddress.ofNat (transferFromReceiverWord I).toNat ≠ zeroAccountAddress)
     (henough : (transferFromAmountWord I).toNat ≤ (transferFromSenderBalanceWord evm I).toNat)
-    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I) :
+    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config
       { contract := contract, locals := transferFromStoreCurrentAllowance evm I }
       evm transferFromAfterAllowanceBody .reverted := by
@@ -275,6 +280,7 @@ theorem erc6909TransferFromAfterAllowanceReverts_overflow
         (transferFromStoreCurrentAllowance_amount evm I) henough)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
       (evalExpr_transferFrom_tail_sender_debit_of_get
         (transferFromStoreCurrentAllowance evm I) evm I
         (transferFromStoreCurrentAllowance_amount evm I) henough)
@@ -327,7 +333,8 @@ theorem erc6909TransferFromBodyCoreAllowanceDebit (evm : EVM.State) (I : Executi
         (.binary .ne (.var "receiver") zeroAddr) = .ok (.bool true))
     (hbalanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromSenderBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hfit : transferFromReceiverCreditNat evm I < UInt256.size) :
+    (hfit : transferFromReceiverCreditNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferFromStoreToBalance evm I }
@@ -358,6 +365,7 @@ theorem erc6909TransferFromBodyCoreAllowanceDebit (evm : EVM.State) (I : Executi
               evalExpr_transferFrom_allowance_ge_true evm I hallowanceEnough)) ?_
       refine ExecBlock.consNormal
         (ExecStmt.assign
+          (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
           (by
             simpa [transferFromStoreCurrentAllowance] using
               evalExpr_transferFrom_allowance_debit evm I hallowanceEnough)
@@ -373,11 +381,15 @@ theorem erc6909TransferFromBodyCoreAllowanceDebit (evm : EVM.State) (I : Executi
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_sender_balance_ge_true evm I hbalanceEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_sender_debit evm I hbalanceEnough)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_sender_debit evm I hbalanceEnough)
       (transferFromAssignSenderBalance evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_receiver_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_receiver_credit evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_receiver_credit evm I hfit)
       (transferFromAssignReceiverBalance evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -402,7 +414,8 @@ theorem erc6909TransferFromBodyCoreAllowanceMax (evm : EVM.State) (I : Execution
         evm (.binary .ne (.var "receiver") zeroAddr) = .ok (.bool true))
     (hbalanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromSenderBalanceWord evm I).toNat)
-    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size) :
+    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ∃ cs, ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body
       (.returned cs (transferFromTailPostState evm I) (some [(.bool true)])) := by
@@ -411,7 +424,7 @@ theorem erc6909TransferFromBodyCoreAllowanceMax (evm : EVM.State) (I : Execution
       locals := transferFromTailStoreToBalance (transferFromStoreCurrentAllowance evm I) evm I }
   refine ⟨cs, ExecFuncBody.execBlockRet ?_⟩
   exact erc6909TransferFromAllowanceMaxPrefixBlock evm I hwv hallowanceGate hallowanceMax
-    (erc6909TransferFromAfterAllowanceCore evm I hsenderNonzero hreceiverNonzero
+    (erc6909TransferFromAfterAllowanceCore (hperm := by assumption) evm I hsenderNonzero hreceiverNonzero
       hbalanceEnough hfit)
 
 theorem erc6909TransferFromBodyRevertsAllowanceMax_sender_zero
@@ -495,12 +508,13 @@ theorem erc6909TransferFromBodyRevertsAllowanceMax_overflow
     (hsender : AccountAddress.ofNat (transferFromSenderWord I).toNat ≠ zeroAccountAddress)
     (hreceiver : AccountAddress.ofNat (transferFromReceiverWord I).toNat ≠ zeroAccountAddress)
     (henough : (transferFromAmountWord I).toNat ≤ (transferFromSenderBalanceWord evm I).toNat)
-    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I) :
+    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   exact erc6909TransferFromAllowanceMaxPrefixBlock evm I hwv hallowanceGate hallowanceMax
-    (erc6909TransferFromAfterAllowanceReverts_overflow evm I hsender hreceiver henough hover)
+    (erc6909TransferFromAfterAllowanceReverts_overflow (hperm := by assumption) evm I hsender hreceiver henough hover)
 
 theorem erc6909TransferFromBodyCoreNoAllowance (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
@@ -518,7 +532,8 @@ theorem erc6909TransferFromBodyCoreNoAllowance (evm : EVM.State) (I : ExecutionE
         (.binary .ne (.var "receiver") zeroAddr) = .ok (.bool true))
     (hbalanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromSenderBalanceWord evm I).toNat)
-    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size) :
+    (hfit : transferFromTailReceiverCreditNat evm I < UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body
       (.returned { contract := contract, locals := transferFromTailStoreToBalance (transferFromStore I) evm I }
@@ -538,11 +553,15 @@ theorem erc6909TransferFromBodyCoreNoAllowance (evm : EVM.State) (I : ExecutionE
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_tail_sender_balance_ge_true evm I hbalanceEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_tail_sender_debit evm I hbalanceEnough)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_tail_sender_debit evm I hbalanceEnough)
       (transferFromTailAssignSenderBalance evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_tail_receiver_balance evm I)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_tail_receiver_credit evm I hfit)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_tail_receiver_credit evm I hfit)
       (transferFromTailAssignReceiverBalance evm I hfit)) ?_
   exact ExecBlock.consReturn (ExecStmt.return (by simp [evalExprs?, evalExpr?, EvalResult.bind, bind, pure]))
 
@@ -605,7 +624,8 @@ theorem erc6909TransferFromBodyRevertsAllowance_sender_zero
         (.binary .lt (.var "currentAllowance") maxUint256Lit) = .ok (.bool true))
     (hallowanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromCurrentAllowanceWord evm I).toNat)
-    (hz : AccountAddress.ofNat (transferFromSenderWord I).toNat = zeroAccountAddress) :
+    (hz : AccountAddress.ofNat (transferFromSenderWord I).toNat = zeroAccountAddress)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -634,6 +654,7 @@ theorem erc6909TransferFromBodyRevertsAllowance_sender_zero
               evalExpr_transferFrom_allowance_ge_true evm I hallowanceEnough)) ?_
       refine ExecBlock.consNormal
         (ExecStmt.assign
+          (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
           (by
             simpa [transferFromStoreCurrentAllowance] using
               evalExpr_transferFrom_allowance_debit evm I hallowanceEnough)
@@ -664,7 +685,8 @@ theorem erc6909TransferFromBodyRevertsAllowance_receiver_zero
     (hallowanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromCurrentAllowanceWord evm I).toNat)
     (hsender : AccountAddress.ofNat (transferFromSenderWord I).toNat ≠ zeroAccountAddress)
-    (hz : AccountAddress.ofNat (transferFromReceiverWord I).toNat = zeroAccountAddress) :
+    (hz : AccountAddress.ofNat (transferFromReceiverWord I).toNat = zeroAccountAddress)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -693,6 +715,7 @@ theorem erc6909TransferFromBodyRevertsAllowance_receiver_zero
               evalExpr_transferFrom_allowance_ge_true evm I hallowanceEnough)) ?_
       refine ExecBlock.consNormal
         (ExecStmt.assign
+          (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
           (by
             simpa [transferFromStoreCurrentAllowance] using
               evalExpr_transferFrom_allowance_debit evm I hallowanceEnough)
@@ -733,7 +756,8 @@ theorem erc6909TransferFromBodyRevertsAllowance_insufficient_balance
     (hsender : AccountAddress.ofNat (transferFromSenderWord I).toNat ≠ zeroAccountAddress)
     (hreceiver : AccountAddress.ofNat (transferFromReceiverWord I).toNat ≠ zeroAccountAddress)
     (hlt : (transferFromSenderBalanceWord (transferFromAfterAllowanceState evm I) I).toNat <
-      (transferFromAmountWord I).toNat) :
+      (transferFromAmountWord I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -762,6 +786,7 @@ theorem erc6909TransferFromBodyRevertsAllowance_insufficient_balance
               evalExpr_transferFrom_allowance_ge_true evm I hallowanceEnough)) ?_
       refine ExecBlock.consNormal
         (ExecStmt.assign
+          (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
           (by
             simpa [transferFromStoreCurrentAllowance] using
               evalExpr_transferFrom_allowance_debit evm I hallowanceEnough)
@@ -806,7 +831,8 @@ theorem erc6909TransferFromBodyRevertsAllowance_overflow
     (hreceiver : AccountAddress.ofNat (transferFromReceiverWord I).toNat ≠ zeroAccountAddress)
     (hbalanceEnough : (transferFromAmountWord I).toNat ≤
       (transferFromSenderBalanceWord (transferFromAfterAllowanceState evm I) I).toNat)
-    (hover : UInt256.size ≤ transferFromReceiverCreditNat evm I) :
+    (hover : UInt256.size ≤ transferFromReceiverCreditNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -835,6 +861,7 @@ theorem erc6909TransferFromBodyRevertsAllowance_overflow
               evalExpr_transferFrom_allowance_ge_true evm I hallowanceEnough)) ?_
       refine ExecBlock.consNormal
         (ExecStmt.assign
+          (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
           (by
             simpa [transferFromStoreCurrentAllowance] using
               evalExpr_transferFrom_allowance_debit evm I hallowanceEnough)
@@ -861,7 +888,9 @@ theorem erc6909TransferFromBodyRevertsAllowance_overflow
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_sender_balance_ge_true evm I hbalanceEnough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_sender_debit evm I hbalanceEnough)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_sender_debit evm I hbalanceEnough)
       (transferFromAssignSenderBalance evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_receiver_balance evm I)) ?_
   exact ExecBlock.consRevert
@@ -968,7 +997,8 @@ theorem erc6909TransferFromBodyRevertsNoAllowance_overflow
     (hsender : AccountAddress.ofNat (transferFromSenderWord I).toNat ≠ zeroAccountAddress)
     (hreceiver : AccountAddress.ofNat (transferFromReceiverWord I).toNat ≠ zeroAccountAddress)
     (henough : (transferFromAmountWord I).toNat ≤ (transferFromSenderBalanceWord evm I).toNat)
-    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I) :
+    (hover : UInt256.size ≤ transferFromTailReceiverCreditNat evm I)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (transferFromStore I)
       transferFromTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -992,7 +1022,9 @@ theorem erc6909TransferFromBodyRevertsNoAllowance_overflow
     (ExecStmt.requireTrue
       (evalExpr_transferFrom_tail_sender_balance_ge_true evm I henough)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_transferFrom_tail_sender_debit evm I henough)
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [transferFromTailAfterSenderBalanceState, transferFromAfterSenderBalanceState, transferFromAfterAllowanceState] using hperm))
+      (evalExpr_transferFrom_tail_sender_debit evm I henough)
       (transferFromTailAssignSenderBalance evm I)) ?_
   refine ExecBlock.consNormal (ExecStmt.letDecl (evalExpr_transferFrom_tail_receiver_balance evm I)) ?_
   exact ExecBlock.consRevert

@@ -1,4 +1,4 @@
-import Solm.Notation
+import Stele.Notation
 
 /-!
 # EAS Attester surface specification
@@ -16,7 +16,7 @@ the return copy rounds its byte length up to 32 before allocating the decoded UI
 Revert payloads are outside `contractRefinement`; all success/failure conditions remain present.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.EAS.Attester.Syntax
 

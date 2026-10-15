@@ -1,11 +1,11 @@
-import Solm.SolidityStorage
-import Solm.Semantics
-import Solm.SolidityLayout
+import Stele.SolidityStorage
+import Stele.Semantics
+import Stele.SolidityLayout
 
 /-!
 # OpenZeppelin TimelockController benchmark spec
 
-Solm specification for `TimelockControllerBench`, a payable wrapper around OpenZeppelin
+Stele specification for `TimelockControllerBench`, a payable wrapper around OpenZeppelin
 `TimelockController` compiled with solc 0.8.35. The wrapper fixes the constructor to:
 
 * `minDelay = 1 days`
@@ -18,7 +18,7 @@ The event-only loop in `scheduleBatch` is therefore intentionally absent. Operat
 standard Solidity `abi.encode(...)` tuple encoding through the benchmark-local ABI hooks below.
 -/
 
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 namespace OpenZeppelinBench.TimelockController
 

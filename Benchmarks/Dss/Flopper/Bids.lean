@@ -2,7 +2,7 @@ import Reasoning.ABIComposite
 import Benchmarks.Dss.Flopper.Dispatch
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -61,18 +61,18 @@ theorem bidsPackedSlotFor_eq (I : ExecutionEnv) :
 
 
 theorem flopperDecode_bids_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (bidsArgValue I)) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = _
   simpa [config, bidsArgValue, bidsArgWord, uint256] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem flopperDecode_bids_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
       (transitionSignature bidsTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = none
   simpa [config, uint256] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort
 
@@ -102,7 +102,7 @@ theorem flopperBidsBodyReturns {I : ExecutionEnv}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (bidsBidSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := bidsF (.var "arg0") "bid") (er := bidsBidEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (bidsBidSlotFor I))
       (value := .int (Int.ofNat
@@ -122,7 +122,7 @@ theorem flopperBidsBodyReturns {I : ExecutionEnv}
         .ok (.int (Int.ofNat
           (solcSlotWordAt (bidsLotSlotFor I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := bidsF (.var "arg0") "lot") (er := bidsLotEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (bidsLotSlotFor I))
       (value := .int (Int.ofNat
@@ -143,7 +143,7 @@ theorem flopperBidsBodyReturns {I : ExecutionEnv}
           (solcAddressSlotWord (bidsPackedSlotFor I) evm.accountMap
             evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := bidsF (.var "arg0") "guy") (er := bidsGuyEvaledRef I)
       (t := .address) (loc := addrLoc (bidsPackedSlotFor I))
       (value := .address (AccountAddress.ofNat
@@ -174,12 +174,12 @@ theorem flopperBidsBodyReturns {I : ExecutionEnv}
       erw [storageLocLoad_uint48_offset20]
       rw [u256_land_comm
         (UInt256.div
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsPackedSlotFor I))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsPackedSlotFor I))
           (UInt256.ofNat (256 ^ 20)))
         uint48Mask]
       rfl
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := bidsF (.var "arg0") "tic") (er := bidsTicEvaledRef I)
       (t := .int uint48Int) (loc := uint48Loc (bidsPackedSlotFor I) ⟨20, by decide⟩ (by decide))
       (value := .int (Int.ofNat
@@ -208,12 +208,12 @@ theorem flopperBidsBodyReturns {I : ExecutionEnv}
       erw [storageLocLoad_uint48_offset26]
       rw [u256_land_comm
         (UInt256.div
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsPackedSlotFor I))
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (bidsPackedSlotFor I))
           (UInt256.ofNat (256 ^ 26)))
         uint48Mask]
       rfl
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := bidsF (.var "arg0") "end") (er := bidsEndEvaledRef I)
       (t := .int uint48Int) (loc := uint48Loc (bidsPackedSlotFor I) ⟨26, by decide⟩ (by decide))
       (value := .int (Int.ofNat
@@ -947,7 +947,7 @@ theorem flopperBidsBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some bidsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (bidsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (bidsTransition.params.map Param.name)
         (transitionSignature bidsTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (bidsArgValue I)))
     (hreach : ∃ k C, RD flopperBytecode I (Sat256.ofUInt256 g)

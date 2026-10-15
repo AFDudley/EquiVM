@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flipper.TendRefund
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flipper
 
@@ -37,16 +37,16 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
     have hendEq : bidEndWord (tendId I) σ I = bidEndWord (tendId I) σ I := by
       simp [bidEndWord, flipperUint48Offset26Word, hpacked]
     by_cases hguyEvm : bidGuyWord (tendId I) σ I = ⟨0⟩
-    · have hguySolm : bidGuyWord (tendId I) σ I = ⟨0⟩ := by
+    · have hguyStele : bidGuyWord (tendId I) σ I = ⟨0⟩ := by
         simpa [← hguyEq] using hguyEvm
       have hbody :
           ExecTransitionBody config contract evm0 locals tendTransition.body .reverted := by
         simpa [evm0, locals] using
           (flipperTendSourceBodyGuyNotSet
-            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hguySolm)
+            (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hguyStele)
       exact (flipperTendX_guyNotSet (g := Sat256.ofUInt256 g) hguyEvm hdecoded)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-    · have hguySolm : bidGuyWord (tendId I) σ I ≠ ⟨0⟩ := by
+    · have hguyStele : bidGuyWord (tendId I) σ I ≠ ⟨0⟩ := by
         intro hzero
         exact hguyEvm (by simpa [hguyEq] using hzero)
       obtain ⟨_, _, rd2760⟩ :=
@@ -55,10 +55,10 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
       · by_cases hticLeEvm :
             (bidTicWord (tendId I) σ I).toNat ≤
               (UInt256.ofNat I.header.timestamp).toNat
-        · have hticNeSolm : bidTicWord (tendId I) σ I ≠ ⟨0⟩ := by
+        · have hticNeStele : bidTicWord (tendId I) σ I ≠ ⟨0⟩ := by
             intro hzero
             exact hticNeEvm (by simpa [hticEq] using hzero)
-          have hticLeSolm :
+          have hticLeStele :
               (bidTicWord (tendId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat := by
             simpa [← hticEq] using hticLeEvm
@@ -67,7 +67,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               (flipperTendSourceBodyAlreadyFinishedTic
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := g) hwv hguySolm hticNeSolm hticLeSolm)
+                (g := g) hwv hguyStele hticNeStele hticLeStele)
           exact (flipperTendX_alreadyFinishedTic (g := Sat256.ofUInt256 g)
             hticNeEvm hticLeEvm rd2760)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -75,7 +75,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidTicWord (tendId I) σ I).toNat := by
             omega
-          have hticGtSolm :
+          have hticGtStele :
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidTicWord (tendId I) σ I).toNat := by
             simpa [← hticEq] using hticGtEvm
@@ -88,13 +88,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               evalExpr_tendTicActive_true_left
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := Sat256.ofUInt256 g) hticGtSolm
+                (g := Sat256.ofUInt256 g) hticGtStele
           obtain ⟨_, _, rd2918⟩ :=
             flipperTendX_ticGtOk (g := Sat256.ofUInt256 g) hticGtEvm rd2760
           by_cases hendLeEvm :
               (bidEndWord (tendId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat
-          · have hendLeSolm :
+          · have hendLeStele :
                 (bidEndWord (tendId I) σ I).toNat ≤
                   (UInt256.ofNat I.header.timestamp).toNat := by
               simpa [← hendEq] using hendLeEvm
@@ -103,7 +103,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 (flipperTendSourceBodyAlreadyFinishedEnd
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := g) hwv hguySolm hticGuard hendLeSolm)
+                  (g := g) hwv hguyStele hticGuard hendLeStele)
             exact (flipperTendX_alreadyFinishedEnd (g := Sat256.ofUInt256 g)
               (tendHashMem1_size I) (tendHashMem1_read64 I) hendLeEvm rd2918)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -111,7 +111,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (bidEndWord (tendId I) σ I).toNat := by
               omega
-            have hendGtSolm :
+            have hendGtStele :
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (bidEndWord (tendId I) σ I).toNat := by
               simpa [← hendEq] using hendGtEvm
@@ -122,11 +122,11 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 evalExpr_tendEndGtTimestamp_true
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := Sat256.ofUInt256 g) hendGtSolm
+                  (g := Sat256.ofUInt256 g) hendGtStele
             obtain ⟨_, _, rd3035⟩ := flipperTendX_endOk (g := Sat256.ofUInt256 g)
               (tendHashMem1_size I) hendGtEvm rd2918
             by_cases hlotEvm : tendLot I = bidLotWord (tendId I) σ I
-            · have hlotSolm : tendLot I = bidLotWord (tendId I) σ I := by
+            · have hlotStele : tendLot I = bidLotWord (tendId I) σ I := by
                 simpa [← hlotWordEq] using hlotEvm
               have hlotGuard :
                   evalExpr? config { contract := contract, locals := locals } evm0
@@ -135,12 +135,12 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   evalExpr_tendLotEqBidLot_true
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := Sat256.ofUInt256 g) hlotSolm
+                    (g := Sat256.ofUInt256 g) hlotStele
               obtain ⟨_, _, rd3137⟩ := flipperTendX_lotOk (g := Sat256.ofUInt256 g)
                 (tendHashMem2_size I) hlotEvm rd3035
               by_cases htabLeEvm :
                   (tendBid I).toNat ≤ (bidTabWord (tendId I) σ I).toNat
-              · have htabLeSolm :
+              · have htabLeStele :
                     (tendBid I).toNat ≤ (bidTabWord (tendId I) σ I).toNat := by
                   simpa [← htabWordEq] using htabLeEvm
                 have htabGuard :
@@ -150,13 +150,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     evalExpr_tendBidLeBidTab_true
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := Sat256.ofUInt256 g) htabLeSolm
+                      (g := Sat256.ofUInt256 g) htabLeStele
                 obtain ⟨_, _, rd3239⟩ := flipperTendX_bidLeTabOk (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I))
                   htabLeEvm rd3137
                 by_cases hbidGtEvm :
                     (bidBidWord (tendId I) σ I).toNat < (tendBid I).toNat
-                · have hbidGtSolm :
+                · have hbidGtStele :
                       (bidBidWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                     simpa [← hbidWordEq] using hbidGtEvm
                   have hbidGuard :
@@ -166,7 +166,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [evm0, locals] using
                       evalExpr_tendBidGtBidBid_true
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                        (g := Sat256.ofUInt256 g) hbidGtSolm
+                        (g := Sat256.ofUInt256 g) hbidGtStele
                   obtain ⟨_, _, rd3330⟩ := flipperTendX_bidHigherOk (g := Sat256.ofUInt256 g)
                     (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                       (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I)))
@@ -191,7 +191,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                       simpa [evm0, locals] using
                         (flipperTendSourceBodyBidOneOverflow
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                          (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
+                          (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
                           hbidGuard hbidOneOverflow)
                     by_cases hbegOverflow :
                         UInt256.size ≤ (tendBegWord σ I).toNat *
@@ -212,7 +212,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                     by_cases hbegOverflow :
                         UInt256.size ≤ (tendBegWord σ I).toNat *
                           (bidBidWord (tendId I) σ I).toNat
-                    · have hbegOverflowSolm :
+                    · have hbegOverflowStele :
                           UInt256.size ≤ (tendBegWord σ I).toNat *
                             (bidBidWord (tendId I) σ I).toNat := by
                         simpa [← hbegWordEq, ← hbidWordEq] using hbegOverflow
@@ -222,8 +222,8 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                         simpa [evm0, locals] using
                           (flipperTendSourceBodyBegBidOverflow
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                            (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
-                            hbidGuard hbidOneFit hbegOverflowSolm)
+                            (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
+                            hbidGuard hbidOneFit hbegOverflowStele)
                       exact (flipperTendX_begBidOverflow (g := Sat256.ofUInt256 g)
                         hmem3330Size hbegOverflow rd3330)
                         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -231,7 +231,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                           (tendBegWord σ I).toNat *
                               (bidBidWord (tendId I) σ I).toNat < UInt256.size := by
                         omega
-                      have hbegFitSolm :
+                      have hbegFitStele :
                           (tendBegWord σ I).toNat *
                               (bidBidWord (tendId I) σ I).toNat < UInt256.size := by
                         simpa [← hbegWordEq, ← hbidWordEq] using hbegFit
@@ -248,15 +248,15 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             hincGe rd3376
                         by_cases hcallerEvm :
                             solcSourceWord I = bidGuyWord (tendId I) σ I
-                        · have hcallerSolm :
+                        · have hcallerStele :
                               solcSourceWord I = bidGuyWord (tendId I) σ I := by
                             simpa [← hguyEq] using hcallerEvm
-                          have hincGeSolm :
+                          have hincGeStele :
                               (tendBegBidWord σ I).toNat ≤
                                 (tendBidOneWord I).toNat := by
                             simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                               hincGe
-                          have hincSolm :
+                          have hincStele :
                               evalExpr? config
                                 { contract := contract,
                                   locals := tendLocalsBidOneBegBid σ I }
@@ -269,24 +269,24 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             exact evalExpr_tendIncreaseRequire_true_of_ge
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I)
-                              (g := Sat256.ofUInt256 g) hincGeSolm
+                              (g := Sat256.ofUInt256 g) hincGeStele
                           exact flipperTendBodyFrom3486SameCaller
                             (σ := σ)
                              (σ₀ := σ₀) (A := A) (I := I)
                             (g := g) hcode hdispatch hdecode hwv
-                            hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                            hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                            hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                            hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                             hmem3376Size hmem3376Read64 _rd3486
-                        · have hcallerSolm :
+                        · have hcallerStele :
                               solcSourceWord I ≠ bidGuyWord (tendId I) σ I := by
-                            intro hcallerSolm
-                            exact hcallerEvm (by simpa [← hguyEq] using hcallerSolm)
-                          have hincGeSolm :
+                            intro hcallerStele
+                            exact hcallerEvm (by simpa [← hguyEq] using hcallerStele)
+                          have hincGeStele :
                               (tendBegBidWord σ I).toNat ≤
                                 (tendBidOneWord I).toNat := by
                             simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                               hincGe
-                          have hincSolm :
+                          have hincStele :
                               evalExpr? config
                                 { contract := contract,
                                   locals := tendLocalsBidOneBegBid σ I }
@@ -299,13 +299,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             exact evalExpr_tendIncreaseRequire_true_of_ge
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I)
-                              (g := Sat256.ofUInt256 g) hincGeSolm
+                              (g := Sat256.ofUInt256 g) hincGeStele
                           exact flipperTendBodyFrom3486Refund
                             (σ := σ)
                              (σ₀ := σ₀) (A := A) (I := I)
                             (g := g) hcode hdispatch hdecode hwv
-                            hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                            hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                            hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                            hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                             hmem3376Size hmem3376Read64 _rd3486
                       · have hincLt :
                             (tendBidOneWord I).toNat < (tendBegBidWord σ I).toNat := by
@@ -316,17 +316,17 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                               hmem3376Size hincLt htabEq rd3376
                           by_cases hcallerEvm :
                               solcSourceWord I = bidGuyWord (tendId I) σ I
-                          · have hcallerSolm :
+                          · have hcallerStele :
                                 solcSourceWord I = bidGuyWord (tendId I) σ I := by
                               simpa [← hguyEq] using hcallerEvm
-                            have hincLtSolm :
+                            have hincLtStele :
                                 (tendBidOneWord I).toNat <
                                   (tendBegBidWord σ I).toNat := by
                               simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                                 hincLt
-                            have htabSolm : tendBid I = bidTabWord (tendId I) σ I := by
+                            have htabStele : tendBid I = bidTabWord (tendId I) σ I := by
                               simpa [← htabWordEq] using htabEq
-                            have hincSolm :
+                            have hincStele :
                                 evalExpr? config
                                   { contract := contract,
                                     locals := tendLocalsBidOneBegBid σ I }
@@ -339,7 +339,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                               exact evalExpr_tendIncreaseRequire_true_of_tab
                                 (σ := σ)
                                 (σ₀ := σ₀) (A := A) (I := I)
-                                (g := Sat256.ofUInt256 g) hincLtSolm htabSolm
+                                (g := Sat256.ofUInt256 g) hincLtStele htabStele
                             have hmem3486Size :=
                               twoWordHashMem_size_96 (tendId I) ⟨1⟩ hmem3376Size
                             have hmem3486Read64 :=
@@ -349,21 +349,21 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                               (σ := σ)
                                (σ₀ := σ₀) (A := A) (I := I)
                               (g := g) hcode hdispatch hdecode hwv
-                              hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                              hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                              hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                              hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                               hmem3486Size hmem3486Read64 _rd3486
-                          · have hcallerSolm :
+                          · have hcallerStele :
                                 solcSourceWord I ≠ bidGuyWord (tendId I) σ I := by
-                              intro hcallerSolm
-                              exact hcallerEvm (by simpa [← hguyEq] using hcallerSolm)
-                            have hincLtSolm :
+                              intro hcallerStele
+                              exact hcallerEvm (by simpa [← hguyEq] using hcallerStele)
+                            have hincLtStele :
                                 (tendBidOneWord I).toNat <
                                   (tendBegBidWord σ I).toNat := by
                               simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                                 hincLt
-                            have htabSolm : tendBid I = bidTabWord (tendId I) σ I := by
+                            have htabStele : tendBid I = bidTabWord (tendId I) σ I := by
                               simpa [← htabWordEq] using htabEq
-                            have hincSolm :
+                            have hincStele :
                                 evalExpr? config
                                   { contract := contract,
                                     locals := tendLocalsBidOneBegBid σ I }
@@ -376,7 +376,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                               exact evalExpr_tendIncreaseRequire_true_of_tab
                                 (σ := σ)
                                 (σ₀ := σ₀) (A := A) (I := I)
-                                (g := Sat256.ofUInt256 g) hincLtSolm htabSolm
+                                (g := Sat256.ofUInt256 g) hincLtStele htabStele
                             have hmem3486Size :=
                               twoWordHashMem_size_96 (tendId I) ⟨1⟩ hmem3376Size
                             have hmem3486Read64 :=
@@ -386,33 +386,33 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                               (σ := σ)
                                (σ₀ := σ₀) (A := A) (I := I)
                               (g := g) hcode hdispatch hdecode hwv
-                              hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                              hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                              hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                              hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                               hmem3486Size hmem3486Read64 _rd3486
-                        · have hincLtSolm :
+                        · have hincLtStele :
                               (tendBidOneWord I).toNat <
                                   (tendBegBidWord σ I).toNat := by
                             simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using hincLt
-                          have htabNeSolm :
+                          have htabNeStele :
                               tendBid I ≠ bidTabWord (tendId I) σ I := by
-                            intro htabSolm
-                            exact htabEq (by simpa [htabWordEq] using htabSolm)
+                            intro htabStele
+                            exact htabEq (by simpa [htabWordEq] using htabStele)
                           have hbody :
                               ExecTransitionBody config contract evm0 locals tendTransition.body
                                 .reverted := by
                             simpa [evm0, locals] using
                               (flipperTendSourceBodyInsufficientIncrease
                                 (σ := σ) (σ₀ := σ₀)
-                                (A := A) (I := I) (g := g) hwv hguySolm hticGuard
+                                (A := A) (I := I) (g := g) hwv hguyStele hticGuard
                                 hendGuard hlotGuard htabGuard hbidGuard hbidOneFit
-                                hbegFitSolm hincLtSolm htabNeSolm)
+                                hbegFitStele hincLtStele htabNeStele)
                           exact (flipperTendX_insufficientIncrease (g := Sat256.ofUInt256 g)
                             hmem3376Size hmem3376Read64 hincLt htabEq rd3376)
                             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
                 · have hbidLeEvm :
                       (tendBid I).toNat ≤ (bidBidWord (tendId I) σ I).toNat := by
                     omega
-                  have hbidLeSolm :
+                  have hbidLeStele :
                       (tendBid I).toNat ≤ (bidBidWord (tendId I) σ I).toNat := by
                     simpa [← hbidWordEq] using hbidLeEvm
                   have hbody :
@@ -420,8 +420,8 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [evm0, locals] using
                       (flipperTendSourceBodyBidNotHigher
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                        (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
-                        hbidLeSolm)
+                        (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
+                        hbidLeStele)
                   exact (flipperTendX_bidNotHigher (g := Sat256.ofUInt256 g)
                     (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                       (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I)))
@@ -434,7 +434,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               · have htabGtEvm :
                     (bidTabWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                   omega
-                have htabGtSolm :
+                have htabGtStele :
                     (bidTabWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                   simpa [← htabWordEq] using htabGtEvm
                 have hbody :
@@ -442,14 +442,14 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     (flipperTendSourceBodyHigherThanTab
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGtSolm)
+                      (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGtStele)
                 exact (flipperTendX_higherThanTab (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I))
                   (twoWordHashMem_read64 (tendId I) ⟨1⟩ (tendHashMem2_size I)
                     (tendHashMem2_read64 I))
                   htabGtEvm rd3137)
                   |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-            · have hlotSolm : tendLot I ≠ bidLotWord (tendId I) σ I := by
+            · have hlotStele : tendLot I ≠ bidLotWord (tendId I) σ I := by
                 intro hlot
                 exact hlotEvm (by simpa [hlotWordEq] using hlot)
               have hbody :
@@ -457,13 +457,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   (flipperTendSourceBodyLotNotMatching
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := g) hwv hguySolm hticGuard hendGuard hlotSolm)
+                    (g := g) hwv hguyStele hticGuard hendGuard hlotStele)
               exact (flipperTendX_lotNotMatching (g := Sat256.ofUInt256 g)
                 (tendHashMem2_size I) (tendHashMem2_read64 I) hlotEvm rd3035)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hticZeroEvm : bidTicWord (tendId I) σ I = ⟨0⟩ := by
           exact Classical.not_not.mp hticNeEvm
-        have hticZeroSolm : bidTicWord (tendId I) σ I = ⟨0⟩ := by
+        have hticZeroStele : bidTicWord (tendId I) σ I = ⟨0⟩ := by
           simpa [← hticEq] using hticZeroEvm
         have hticGuard :
             evalExpr? config { contract := contract, locals := locals } evm0
@@ -474,13 +474,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
           simpa [evm0, locals] using
             evalExpr_tendTicActive_true_right
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-              (g := Sat256.ofUInt256 g) hticZeroSolm
+              (g := Sat256.ofUInt256 g) hticZeroStele
         obtain ⟨_, _, rd2918⟩ :=
           flipperTendX_ticZeroOk (g := Sat256.ofUInt256 g) hticZeroEvm rd2760
         by_cases hendLeEvm :
             (bidEndWord (tendId I) σ I).toNat ≤
               (UInt256.ofNat I.header.timestamp).toNat
-        · have hendLeSolm :
+        · have hendLeStele :
               (bidEndWord (tendId I) σ I).toNat ≤
                 (UInt256.ofNat I.header.timestamp).toNat := by
             simpa [← hendEq] using hendLeEvm
@@ -489,7 +489,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               (flipperTendSourceBodyAlreadyFinishedEnd
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := g) hwv hguySolm hticGuard hendLeSolm)
+                (g := g) hwv hguyStele hticGuard hendLeStele)
           exact (flipperTendX_alreadyFinishedEnd (g := Sat256.ofUInt256 g)
             (tendHashMem2_size I) (tendHashMem2_read64 I) hendLeEvm rd2918)
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -497,7 +497,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidEndWord (tendId I) σ I).toNat := by
             omega
-          have hendGtSolm :
+          have hendGtStele :
               (UInt256.ofNat I.header.timestamp).toNat <
                 (bidEndWord (tendId I) σ I).toNat := by
             simpa [← hendEq] using hendGtEvm
@@ -508,11 +508,11 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
             simpa [evm0, locals] using
               evalExpr_tendEndGtTimestamp_true
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                (g := Sat256.ofUInt256 g) hendGtSolm
+                (g := Sat256.ofUInt256 g) hendGtStele
           obtain ⟨_, _, rd3035⟩ := flipperTendX_endOk (g := Sat256.ofUInt256 g)
             (tendHashMem2_size I) hendGtEvm rd2918
           by_cases hlotEvm : tendLot I = bidLotWord (tendId I) σ I
-          · have hlotSolm : tendLot I = bidLotWord (tendId I) σ I := by
+          · have hlotStele : tendLot I = bidLotWord (tendId I) σ I := by
               simpa [← hlotWordEq] using hlotEvm
             have hlotGuard :
                 evalExpr? config { contract := contract, locals := locals } evm0
@@ -521,13 +521,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 evalExpr_tendLotEqBidLot_true
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := Sat256.ofUInt256 g) hlotSolm
+                  (g := Sat256.ofUInt256 g) hlotStele
             obtain ⟨_, _, rd3137⟩ := flipperTendX_lotOk (g := Sat256.ofUInt256 g)
               (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I))
               hlotEvm rd3035
             by_cases htabLeEvm :
                 (tendBid I).toNat ≤ (bidTabWord (tendId I) σ I).toNat
-            · have htabLeSolm :
+            · have htabLeStele :
                   (tendBid I).toNat ≤ (bidTabWord (tendId I) σ I).toNat := by
                 simpa [← htabWordEq] using htabLeEvm
               have htabGuard :
@@ -537,14 +537,14 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   evalExpr_tendBidLeBidTab_true
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := Sat256.ofUInt256 g) htabLeSolm
+                    (g := Sat256.ofUInt256 g) htabLeStele
               obtain ⟨_, _, rd3239⟩ := flipperTendX_bidLeTabOk (g := Sat256.ofUInt256 g)
                 (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I)))
                 htabLeEvm rd3137
               by_cases hbidGtEvm :
                   (bidBidWord (tendId I) σ I).toNat < (tendBid I).toNat
-              · have hbidGtSolm :
+              · have hbidGtStele :
                     (bidBidWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                   simpa [← hbidWordEq] using hbidGtEvm
                 have hbidGuard :
@@ -554,7 +554,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     evalExpr_tendBidGtBidBid_true
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := Sat256.ofUInt256 g) hbidGtSolm
+                      (g := Sat256.ofUInt256 g) hbidGtStele
                 obtain ⟨_, _, rd3330⟩ := flipperTendX_bidHigherOk (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                     (twoWordHashMem_size_96 (tendId I) ⟨1⟩
@@ -585,7 +585,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                     simpa [evm0, locals] using
                       (flipperTendSourceBodyBidOneOverflow
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                        (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
+                        (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
                         hbidGuard hbidOneOverflow)
                   by_cases hbegOverflow :
                       UInt256.size ≤ (tendBegWord σ I).toNat *
@@ -606,7 +606,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                   by_cases hbegOverflow :
                       UInt256.size ≤ (tendBegWord σ I).toNat *
                         (bidBidWord (tendId I) σ I).toNat
-                  · have hbegOverflowSolm :
+                  · have hbegOverflowStele :
                         UInt256.size ≤ (tendBegWord σ I).toNat *
                           (bidBidWord (tendId I) σ I).toNat := by
                       simpa [← hbegWordEq, ← hbidWordEq] using hbegOverflow
@@ -616,8 +616,8 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                       simpa [evm0, locals] using
                         (flipperTendSourceBodyBegBidOverflow
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                          (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
-                          hbidGuard hbidOneFit hbegOverflowSolm)
+                          (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
+                          hbidGuard hbidOneFit hbegOverflowStele)
                     exact (flipperTendX_begBidOverflow (g := Sat256.ofUInt256 g)
                       hmem3330Size hbegOverflow rd3330)
                       |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -625,7 +625,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                         (tendBegWord σ I).toNat *
                             (bidBidWord (tendId I) σ I).toNat < UInt256.size := by
                       omega
-                    have hbegFitSolm :
+                    have hbegFitStele :
                         (tendBegWord σ I).toNat *
                             (bidBidWord (tendId I) σ I).toNat < UInt256.size := by
                       simpa [← hbegWordEq, ← hbidWordEq] using hbegFit
@@ -642,14 +642,14 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                           hincGe rd3376
                       by_cases hcallerEvm :
                           solcSourceWord I = bidGuyWord (tendId I) σ I
-                      · have hcallerSolm :
+                      · have hcallerStele :
                             solcSourceWord I = bidGuyWord (tendId I) σ I := by
                           simpa [← hguyEq] using hcallerEvm
-                        have hincGeSolm :
+                        have hincGeStele :
                             (tendBegBidWord σ I).toNat ≤
                               (tendBidOneWord I).toNat := by
                           simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using hincGe
-                        have hincSolm :
+                        have hincStele :
                             evalExpr? config
                               { contract := contract,
                                 locals := tendLocalsBidOneBegBid σ I }
@@ -662,23 +662,23 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                           exact evalExpr_tendIncreaseRequire_true_of_ge
                             (σ := σ)
                             (σ₀ := σ₀) (A := A) (I := I)
-                            (g := Sat256.ofUInt256 g) hincGeSolm
+                            (g := Sat256.ofUInt256 g) hincGeStele
                         exact flipperTendBodyFrom3486SameCaller
                           (σ := σ)
                            (σ₀ := σ₀) (A := A) (I := I)
                           (g := g) hcode hdispatch hdecode hwv
-                          hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                          hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                          hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                          hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                           hmem3376Size hmem3376Read64 _rd3486
-                      · have hcallerSolm :
+                      · have hcallerStele :
                             solcSourceWord I ≠ bidGuyWord (tendId I) σ I := by
-                          intro hcallerSolm
-                          exact hcallerEvm (by simpa [← hguyEq] using hcallerSolm)
-                        have hincGeSolm :
+                          intro hcallerStele
+                          exact hcallerEvm (by simpa [← hguyEq] using hcallerStele)
+                        have hincGeStele :
                             (tendBegBidWord σ I).toNat ≤
                               (tendBidOneWord I).toNat := by
                           simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using hincGe
-                        have hincSolm :
+                        have hincStele :
                             evalExpr? config
                               { contract := contract,
                                 locals := tendLocalsBidOneBegBid σ I }
@@ -691,13 +691,13 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                           exact evalExpr_tendIncreaseRequire_true_of_ge
                             (σ := σ)
                             (σ₀ := σ₀) (A := A) (I := I)
-                            (g := Sat256.ofUInt256 g) hincGeSolm
+                            (g := Sat256.ofUInt256 g) hincGeStele
                         exact flipperTendBodyFrom3486Refund
                           (σ := σ)
                            (σ₀ := σ₀) (A := A) (I := I)
                           (g := g) hcode hdispatch hdecode hwv
-                          hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                          hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                          hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                          hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                           hmem3376Size hmem3376Read64 _rd3486
                     · have hincLt :
                           (tendBidOneWord I).toNat < (tendBegBidWord σ I).toNat := by
@@ -708,17 +708,17 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             hmem3376Size hincLt htabEq rd3376
                         by_cases hcallerEvm :
                             solcSourceWord I = bidGuyWord (tendId I) σ I
-                        · have hcallerSolm :
+                        · have hcallerStele :
                               solcSourceWord I = bidGuyWord (tendId I) σ I := by
                             simpa [← hguyEq] using hcallerEvm
-                          have hincLtSolm :
+                          have hincLtStele :
                               (tendBidOneWord I).toNat <
                                 (tendBegBidWord σ I).toNat := by
                             simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                               hincLt
-                          have htabSolm : tendBid I = bidTabWord (tendId I) σ I := by
+                          have htabStele : tendBid I = bidTabWord (tendId I) σ I := by
                             simpa [← htabWordEq] using htabEq
-                          have hincSolm :
+                          have hincStele :
                               evalExpr? config
                                 { contract := contract,
                                   locals := tendLocalsBidOneBegBid σ I }
@@ -731,7 +731,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             exact evalExpr_tendIncreaseRequire_true_of_tab
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I)
-                              (g := Sat256.ofUInt256 g) hincLtSolm htabSolm
+                              (g := Sat256.ofUInt256 g) hincLtStele htabStele
                           have hmem3486Size :=
                             twoWordHashMem_size_96 (tendId I) ⟨1⟩ hmem3376Size
                           have hmem3486Read64 :=
@@ -741,21 +741,21 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             (σ := σ)
                              (σ₀ := σ₀) (A := A) (I := I)
                             (g := g) hcode hdispatch hdecode hwv
-                            hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                            hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                            hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                            hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                             hmem3486Size hmem3486Read64 _rd3486
-                        · have hcallerSolm :
+                        · have hcallerStele :
                               solcSourceWord I ≠ bidGuyWord (tendId I) σ I := by
-                            intro hcallerSolm
-                            exact hcallerEvm (by simpa [← hguyEq] using hcallerSolm)
-                          have hincLtSolm :
+                            intro hcallerStele
+                            exact hcallerEvm (by simpa [← hguyEq] using hcallerStele)
+                          have hincLtStele :
                               (tendBidOneWord I).toNat <
                                 (tendBegBidWord σ I).toNat := by
                             simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using
                               hincLt
-                          have htabSolm : tendBid I = bidTabWord (tendId I) σ I := by
+                          have htabStele : tendBid I = bidTabWord (tendId I) σ I := by
                             simpa [← htabWordEq] using htabEq
-                          have hincSolm :
+                          have hincStele :
                               evalExpr? config
                                 { contract := contract,
                                   locals := tendLocalsBidOneBegBid σ I }
@@ -768,7 +768,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             exact evalExpr_tendIncreaseRequire_true_of_tab
                               (σ := σ)
                               (σ₀ := σ₀) (A := A) (I := I)
-                              (g := Sat256.ofUInt256 g) hincLtSolm htabSolm
+                              (g := Sat256.ofUInt256 g) hincLtStele htabStele
                           have hmem3486Size :=
                             twoWordHashMem_size_96 (tendId I) ⟨1⟩ hmem3376Size
                           have hmem3486Read64 :=
@@ -778,33 +778,33 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                             (σ := σ)
                              (σ₀ := σ₀) (A := A) (I := I)
                             (g := g) hcode hdispatch hdecode hwv
-                            hguySolm hticGuard hendGuard hlotGuard htabGuard hbidGuard
-                            hbidOneFit hbegFitSolm hincSolm hcallerEvm hcallerSolm
+                            hguyStele hticGuard hendGuard hlotGuard htabGuard hbidGuard
+                            hbidOneFit hbegFitStele hincStele hcallerEvm hcallerStele
                             hmem3486Size hmem3486Read64 _rd3486
-                      · have hincLtSolm :
+                      · have hincLtStele :
                             (tendBidOneWord I).toNat <
                                 (tendBegBidWord σ I).toNat := by
                           simpa [tendBegBidWord, ← hbegWordEq, ← hbidWordEq] using hincLt
-                        have htabNeSolm :
+                        have htabNeStele :
                             tendBid I ≠ bidTabWord (tendId I) σ I := by
-                          intro htabSolm
-                          exact htabEq (by simpa [htabWordEq] using htabSolm)
+                          intro htabStele
+                          exact htabEq (by simpa [htabWordEq] using htabStele)
                         have hbody :
                             ExecTransitionBody config contract evm0 locals tendTransition.body
                               .reverted := by
                           simpa [evm0, locals] using
                             (flipperTendSourceBodyInsufficientIncrease
                               (σ := σ) (σ₀ := σ₀)
-                              (A := A) (I := I) (g := g) hwv hguySolm hticGuard
+                              (A := A) (I := I) (g := g) hwv hguyStele hticGuard
                               hendGuard hlotGuard htabGuard hbidGuard hbidOneFit
-                              hbegFitSolm hincLtSolm htabNeSolm)
+                              hbegFitStele hincLtStele htabNeStele)
                         exact (flipperTendX_insufficientIncrease (g := Sat256.ofUInt256 g)
                           hmem3376Size hmem3376Read64 hincLt htabEq rd3376)
                           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
               · have hbidLeEvm :
                     (tendBid I).toNat ≤ (bidBidWord (tendId I) σ I).toNat := by
                   omega
-                have hbidLeSolm :
+                have hbidLeStele :
                     (tendBid I).toNat ≤ (bidBidWord (tendId I) σ I).toNat := by
                   simpa [← hbidWordEq] using hbidLeEvm
                 have hbody :
@@ -812,8 +812,8 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                   simpa [evm0, locals] using
                     (flipperTendSourceBodyBidNotHigher
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                      (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGuard
-                      hbidLeSolm)
+                      (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGuard
+                      hbidLeStele)
                 exact (flipperTendX_bidNotHigher (g := Sat256.ofUInt256 g)
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                     (twoWordHashMem_size_96 (tendId I) ⟨1⟩
@@ -830,7 +830,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
             · have htabGtEvm :
                   (bidTabWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                 omega
-              have htabGtSolm :
+              have htabGtStele :
                   (bidTabWord (tendId I) σ I).toNat < (tendBid I).toNat := by
                 simpa [← htabWordEq] using htabGtEvm
               have hbody :
@@ -838,7 +838,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                 simpa [evm0, locals] using
                   (flipperTendSourceBodyHigherThanTab
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                    (g := g) hwv hguySolm hticGuard hendGuard hlotGuard htabGtSolm)
+                    (g := g) hwv hguyStele hticGuard hendGuard hlotGuard htabGtStele)
               exact (flipperTendX_higherThanTab (g := Sat256.ofUInt256 g)
                 (twoWordHashMem_size_96 (tendId I) ⟨1⟩
                   (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I)))
@@ -848,7 +848,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
                     (tendHashMem2_read64 I)))
                 htabGtEvm rd3137)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
-          · have hlotSolm : tendLot I ≠ bidLotWord (tendId I) σ I := by
+          · have hlotStele : tendLot I ≠ bidLotWord (tendId I) σ I := by
               intro hlot
               exact hlotEvm (by simpa [hlotWordEq] using hlot)
             have hbody :
@@ -856,7 +856,7 @@ theorem flipperTendBodyCore {σ σ₀ A I} {g : UInt256}
               simpa [evm0, locals] using
                 (flipperTendSourceBodyLotNotMatching
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                  (g := g) hwv hguySolm hticGuard hendGuard hlotSolm)
+                  (g := g) hwv hguyStele hticGuard hendGuard hlotStele)
             exact (flipperTendX_lotNotMatching (g := Sat256.ofUInt256 g)
               (twoWordHashMem_size_96 (tendId I) ⟨1⟩ (tendHashMem2_size I))
               (twoWordHashMem_read64 (tendId I) ⟨1⟩ (tendHashMem2_size I)

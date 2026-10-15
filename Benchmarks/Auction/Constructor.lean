@@ -2,7 +2,7 @@ import Benchmarks.Auction.Bytecode
 import Benchmarks.Auction.Spec
 import Benchmarks.Auction.Common
 import Reasoning.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # Auction constructor correctness
@@ -11,7 +11,7 @@ The creation prefix enforces the nonpayable guard and returns the exact 6150-byt
 embedded at offset 29. It preserves the account map.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -45,15 +45,15 @@ theorem auctionConstructorBodyCore :
         (by native_decide) (by evm_ov) ]
     rcases hr.xiResult hcode with hoog | ⟨g', A', hsuccess⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
-    · have hsolm : solmCtorExec auctionConfig Auction.auctionContract [] σ σ₀ g A I
+    · have hstele : steleCtorExec auctionConfig Auction.auctionContract [] σ σ₀ g A I
           (.returned { contract := Auction.auctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) none) :=
-        solmCtorExec.intro
+        steleCtorExec.intro
           (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (argsStore := ∅) rfl rfl rfl
           (ExecFuncBody.execBlockOK
             (ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ExecBlock.nil))
-      exact typedConstructorRefinementFor.execution hsuccess hsolm
+      exact typedConstructorRefinementFor.execution hsuccess hstele
         (ctorResultEquiv.success rfl rfl rfl rfl)
   · have hr := evm_run rd8 with [
       push2 ⟨15⟩, jumpiNT (isZero_eq_zero_of_ne hwv),
@@ -62,7 +62,7 @@ theorem auctionConstructorBodyCore :
     rcases hr.xiResult hcode with hoog | ⟨g', o, hrevert⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa using hoog)
     · refine typedConstructorRefinementFor.execution hrevert ?_ (ctorResultEquiv.revert rfl rfl)
-      exact solmCtorExec.intro
+      exact steleCtorExec.intro
         (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (argsStore := ∅) rfl rfl rfl (bodyReverts_nonPayable hwv)
 

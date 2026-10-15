@@ -6,7 +6,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -19,7 +19,7 @@ the shared revert paths.
 
 **Every leaf is a `sorry`** — the work-list:
 * one `erc721<Fn>Body` per interface function (7), each to be discharged by a `…BodyCore` lemma in
-  its own `Benchmarks/ERC721/<Fn>.lean` (decode → Solm body → EVM trace → connect);
+  its own `Benchmarks/ERC721/<Fn>.lean` (decode → Stele body → EVM trace → connect);
 * the three revert obligations (`erc721NonPayable`, `erc721ShortRevert`, `erc721NoDispatch`).
 
 ⚠️ **Dispatcher: binary search (shared with `Ballot`).**  solc emits a `GT`-pivot dispatcher for
@@ -43,7 +43,7 @@ Dispatch structure (read off the bytecode):
 | `0xe985e9c5` | `isApprovedForAll(address,address)`    | `356` (0x164) | high |
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -152,7 +152,7 @@ theorem erc721NoDispatch {σ σ₀ A I} {g : UInt256}
 
 /-! ## Top-level theorem — drive the dispatcher, route each body to its correctness -/
 
-/-- The deployed ERC721 runtime bytecode refines the Solm specification, for every initial state. -/
+/-- The deployed ERC721 runtime bytecode refines the Stele specification, for every initial state. -/
 theorem erc721Correct : runtimeRefinement erc721Config erc721Bytecode erc721Contract := by
   refine ⟨fun σ σ₀ g A I hcode hsize ↦ ?_⟩
   by_cases hwv : I.weiValue = ⟨0⟩

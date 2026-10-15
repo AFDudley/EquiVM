@@ -1,6 +1,6 @@
 import Benchmarks.Auction.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -11,7 +11,7 @@ theorem timeBufferBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody auctionConfig auctionContract evm locals timeBufferGetter.body
       (.returned { contract := auctionContract, locals := locals } evm
         (some [.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨203⟩).toNat)])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨203⟩).toNat)])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).returns (by
       rw [timeBufferRef, scalarRead evm locals "timeBuffer" (.int uint256Int) (auctionUint256Loc
@@ -39,7 +39,7 @@ theorem timeBufferBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hsz := calldata_size_ge_of_selIs I (entryBytes 17) (entryBytes_size 17) hsel
     have hd := dispatchEntry 17 hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (timeBufferGetter.params.map Param.name)
         (transitionSignature timeBufferGetter).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz
@@ -48,7 +48,7 @@ theorem timeBufferBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := auctionContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [.int (Int.ofNat (solcSlotWord σ I ⟨203⟩).toNat)])) := by
-      simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+      simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         timeBufferBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           ∅ hwv (by simp)
     exact (timeBufferX hreach hwv).reEquivExecution hcode hd hdec hbody

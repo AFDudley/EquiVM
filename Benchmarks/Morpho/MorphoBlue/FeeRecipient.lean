@@ -6,11 +6,11 @@ import Benchmarks.Morpho.MorphoBlue.Storage
 # Morpho `feeRecipient()`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 9265; reach lemma `morphoReachFeeRecipientBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -83,10 +83,11 @@ theorem morphoFeeRecipientBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
   have hsz : 4 ≤ I.calldata.size := calldata_size_ge_of_selIs I (morphoSelBytes 6) rfl hsel
   have hd : selectorDispatchMsg contract I.calldata = some feeRecipientTransition :=
     morphoSelectorDispatch_of_selIs (by decide) hsel
-  have hdec : decodeCalldataWithMode config.abiDecodeMode
+  have hdec : config.externalABI.decodeCalldata?
       (feeRecipientTransition.params.map Param.name)
-      (transitionSignature feeRecipientTransition).paramTypes I.calldata = some ∅ :=
-    decodeCalldataWithMode_empty_ok hsz
+      (transitionSignature feeRecipientTransition).paramTypes I.calldata = some ∅ := by
+    change decodeCalldataWithMode .modern [] [] I.calldata = some ∅
+    exact decodeCalldataWithMode_empty_ok hsz
   by_cases hcv : I.weiValue = ⟨0⟩
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · apply reEquivSelectorExecution hcode

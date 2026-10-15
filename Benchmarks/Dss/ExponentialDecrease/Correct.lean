@@ -5,17 +5,17 @@ import Benchmarks.Dss.ExponentialDecrease.File
 import Benchmarks.Dss.ExponentialDecrease.Price
 import Benchmarks.Dss.ExponentialDecrease.Rely
 import Benchmarks.Dss.ExponentialDecrease.Wards
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS ExponentialDecrease benchmark correctness stub
 
-The upstream Solidity source, optimized runtime bytecode, Solm AST spec, and Solm syntax companion
+The upstream Solidity source, optimized runtime bytecode, Stele AST spec, and Stele syntax companion
 are present. The runtime-equivalence proof is intentionally left as the benchmark target. This file
 also exposes the whole-contract wrapper that combines the constructor and runtime targets.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.ExponentialDecrease
 

@@ -2,7 +2,7 @@ import Reasoning.Storage
 import Benchmarks.Auction.InitializerStorage
 import Benchmarks.Auction.SetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -61,12 +61,12 @@ theorem evalInitializerGuardFalse (evm : EVM.State) (locals : Store)
     EvalResult.bind, bind, evalUnaryOp?, EvalResult.ofOption, pure]
 
 def setInitializingState (evm : EVM.State) (value : Bool) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (setBoolOffset1Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) value)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (setBoolOffset1Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) value)
 
 def setInitializedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (UInt256.lor (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (UInt256.lor (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       (UInt256.lnot ⟨255⟩)) ⟨1⟩)
 
 def initializerEnteredState (evm : EVM.State) : EVM.State :=
@@ -92,7 +92,8 @@ theorem assignInitialized (evm : EVM.State) (locals : Store)
 theorem initializerBeginSourceSplit (evm : EVM.State) (locals : Store)
     (hi : locals.get? "_initializing" = none) (hz : locals.get? "_initialized" = none)
     (ht : locals.get? "isTopLevelCall" = some (.bool (initializeTop evm))) :
-    (ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
+    ((initializeTop evm = true → evm.executionEnv.perm = true) →
+      ExecStmt auctionConfig { contract := auctionContract, locals := locals } evm
       (.ite (.var "isTopLevelCall")
         [.assign .storage initializingRef (.boolLit true),
           .assign .storage initializedRef (.boolLit true)] [])
@@ -109,12 +110,14 @@ theorem initializerBeginSourceSplit (evm : EVM.State) (locals : Store)
       evm (.boolLit true) = .ok (.bool true) := by simp only [evalExpr?, pure]
   have hassign := assignInitializing evm locals true hi
   constructor
-  · by_cases hb : initializeTop evm = true
+  · intro hperm
+    by_cases hb : initializeTop evm = true
     · rw [initializerEnteredState, if_pos hb]
       apply ExecStmt.iteTrue (by simpa only [hb] using hcond)
-      apply ExecBlock.consNormal (ExecStmt.assign hvalue hassign)
+      apply ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (hperm hb)) hvalue hassign)
       exact assignStorageBlock (by simp [evalExpr?, pure])
         (assignInitialized (setInitializingState evm true) locals hz)
+        (by simpa only [setInitializingState, storageStore_executionEnv] using hperm hb)
     · rw [initializerEnteredState, if_neg hb]
       have hf : initializeTop evm = false := Bool.eq_false_iff.mpr hb
       exact ExecStmt.iteFalse (by simpa only [hf] using hcond) ExecBlock.nil

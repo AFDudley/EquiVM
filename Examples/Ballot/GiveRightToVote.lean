@@ -1,10 +1,10 @@
 import Reasoning.Solc
 import Examples.Ballot.Common
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -45,7 +45,7 @@ def giveRightWeightWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD (giveRightVoterSlot I) ⟨0⟩)
 
 def giveRightPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ⟨1⟩
 
 theorem giveRightStore_voter (I : ExecutionEnv) :
     (giveRightStore I).get? "voter" = some (giveRightVoterValue I) := by
@@ -143,7 +143,7 @@ theorem evalStorageRef_giveRight_voterField (evm : EVM.State) (I : ExecutionEnv)
     EvalResult.ofOption, bind, pure, evalExpr?]
 
 theorem evalExpr_giveRight_chair_true (evm : EVM.State) (I : ExecutionEnv)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.binary .eq sender (.storage chairpersonRef)) = .ok (.bool true) := by
@@ -151,7 +151,7 @@ theorem evalExpr_giveRight_chair_true (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
         (.storage chairpersonRef) =
           .ok (.address (AccountAddress.ofNat
-            (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+            (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
               solcAddrMask).toNat)) := by
     erw [evalExpr_storage_scalar (hbackend := rfl)
       (er := ({ base := "chairperson", steps := [] } : EvaledStorageRef))
@@ -163,7 +163,7 @@ theorem evalExpr_giveRight_chair_true (evm : EVM.State) (I : ExecutionEnv)
       (hty := by simp [storageTypeAt?, ballotContract, ballotStorageDecls, addrSt])
       (hloc := by rfl), storageLocLoad_address_offset0]
   have haddr : AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
         solcAddrMask).toNat = evm.executionEnv.source := by
     have hto : (UInt256.ofNat evm.executionEnv.source.val).toNat =
         evm.executionEnv.source.val :=
@@ -179,7 +179,7 @@ theorem evalExpr_giveRight_chair_true (evm : EVM.State) (I : ExecutionEnv)
   simp [evalBinaryOp?]
 
 theorem evalExpr_giveRight_chair_false (evm : EVM.State) (I : ExecutionEnv)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask ≠ UInt256.ofNat evm.executionEnv.source.val) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.binary .eq sender (.storage chairpersonRef)) = .ok (.bool false) := by
@@ -187,7 +187,7 @@ theorem evalExpr_giveRight_chair_false (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
         (.storage chairpersonRef) =
           .ok (.address (AccountAddress.ofNat
-            (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+            (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
               solcAddrMask).toNat)) := by
     erw [evalExpr_storage_scalar (hbackend := rfl)
       (er := ({ base := "chairperson", steps := [] } : EvaledStorageRef))
@@ -199,13 +199,13 @@ theorem evalExpr_giveRight_chair_false (evm : EVM.State) (I : ExecutionEnv)
       (hty := by simp [storageTypeAt?, ballotContract, ballotStorageDecls, addrSt])
       (hloc := by rfl), storageLocLoad_address_offset0]
   have haddr : AccountAddress.ofNat
-      (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
         solcAddrMask).toNat ≠ evm.executionEnv.source := by
     intro h
     apply hchair
     apply u256_inj
     have hcanon := solcAddrMask_result_canonical
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
     have hval := congrArg Fin.val h
     unfold AccountAddress.ofNat at hval
     rw [Fin.val_ofNat] at hval
@@ -218,12 +218,12 @@ theorem evalExpr_giveRight_chair_false (evm : EVM.State) (I : ExecutionEnv)
   change EvalResult.ok
       (Value.bool ((Value.address evm.executionEnv.source ==
         Value.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat)))) =
     EvalResult.ok (Value.bool false)
   rw [show (Value.address evm.executionEnv.source ==
         Value.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask).toNat)) = false from by
       rw [beq_eq_false_iff_ne]
       intro hval
@@ -232,7 +232,7 @@ theorem evalExpr_giveRight_chair_false (evm : EVM.State) (I : ExecutionEnv)
       exact haddr'.symm]
 
 theorem evalExpr_giveRight_notVoted_true (evm : EVM.State) (I : ExecutionEnv)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ = ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.unary .not (.storage (voterF (.var "voter") "voted"))) = .ok (.bool true) := by
@@ -252,7 +252,7 @@ theorem evalExpr_giveRight_notVoted_true (evm : EVM.State) (I : ExecutionEnv)
   simp [evalExpr?, EvalResult.bind, EvalResult.ofOption, bind, hstorage, evalUnaryOp?]
 
 theorem evalExpr_giveRight_notVoted_false (evm : EVM.State) (I : ExecutionEnv)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ ≠ ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.unary .not (.storage (voterF (.var "voter") "voted"))) = .ok (.bool false) := by
@@ -272,7 +272,7 @@ theorem evalExpr_giveRight_notVoted_false (evm : EVM.State) (I : ExecutionEnv)
   simp [evalExpr?, EvalResult.bind, EvalResult.ofOption, bind, hstorage, evalUnaryOp?]
 
 theorem evalExpr_giveRight_weight_zero_true (evm : EVM.State) (I : ExecutionEnv)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.binary .eq (.storage (voterF (.var "voter") "weight")) (.intLit 0)) =
         .ok (.bool true) := by
@@ -280,7 +280,7 @@ theorem evalExpr_giveRight_weight_zero_true (evm : EVM.State) (I : ExecutionEnv)
       evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
         (.storage (voterF (.var "voter") "weight")) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat)) := by
     erw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
       (hbase := by simp [giveRightStore, voterF])
       (her := evalStorageRef_giveRight_voterField evm I "weight")
@@ -292,7 +292,7 @@ theorem evalExpr_giveRight_weight_zero_true (evm : EVM.State) (I : ExecutionEnv)
   simp [EvalResult.bind, bind, pure, hstorage, evalExpr?, evalBinaryOp?, hweight]
 
 theorem evalExpr_giveRight_weight_zero_false (evm : EVM.State) (I : ExecutionEnv)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ≠ ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ≠ ⟨0⟩) :
     evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
       (.binary .eq (.storage (voterF (.var "voter") "weight")) (.intLit 0)) =
         .ok (.bool false) := by
@@ -300,7 +300,7 @@ theorem evalExpr_giveRight_weight_zero_false (evm : EVM.State) (I : ExecutionEnv
       evalExpr? ballotConfig { contract := ballotContract, locals := giveRightStore I } evm
         (.storage (voterF (.var "voter") "weight")) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat)) := by
     erw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
       (hbase := by simp [giveRightStore, voterF])
       (her := evalStorageRef_giveRight_voterField evm I "weight")
@@ -309,7 +309,7 @@ theorem evalExpr_giveRight_weight_zero_false (evm : EVM.State) (I : ExecutionEnv
       (hloc := by rfl)]
     change EvalResult.ok (storageLocLoad evm (uint256Loc (giveRightVoterSlot I))) = _
     rw [storageLocLoad_uint256]
-  have hnat : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat ≠
+  have hnat : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I)).toNat ≠
       0 := by
     intro hz
     apply hweight
@@ -335,11 +335,12 @@ theorem giveRightAssign (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem ballotGiveRightToVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ = ⟨0⟩)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body
       (.returned { contract := ballotContract, locals := giveRightStore I }
@@ -352,17 +353,19 @@ theorem ballotGiveRightToVoteBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (evalExpr_giveRight_notVoted_true evm I hvoted)) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue
     (evalExpr_giveRight_weight_zero_true evm I hweight)) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) (giveRightAssign evm I))
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    (by simp [evalExpr?, pure]) (giveRightAssign evm I))
     ExecBlock.nil
 
 /-- Static mode: the body halts at the weight write. -/
 theorem ballotGiveRightToVoteBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ = ⟨0⟩)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩)
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) = ⟨0⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body .staticViolation := by
@@ -379,7 +382,7 @@ theorem ballotGiveRightToVoteBodyStatic (evm : EVM.State) (I : ExecutionEnv)
 
 theorem ballotGiveRightToVoteBodyReverts_chair (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask ≠ UInt256.ofNat evm.executionEnv.source.val) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body .reverted := by
@@ -390,9 +393,9 @@ theorem ballotGiveRightToVoteBodyReverts_chair (evm : EVM.State) (I : ExecutionE
 
 theorem ballotGiveRightToVoteBodyReverts_voted (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ ≠ ⟨0⟩) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body .reverted := by
@@ -405,11 +408,11 @@ theorem ballotGiveRightToVoteBodyReverts_voted (evm : EVM.State) (I : ExecutionE
 
 theorem ballotGiveRightToVoteBodyReverts_weight (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hchair : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+    (hchair : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       solcAddrMask = UInt256.ofNat evm.executionEnv.source.val)
-    (hvoted : UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (hvoted : UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (giveRightVotedSlot I)) ⟨255⟩ = ⟨0⟩)
-    (hweight : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ≠ ⟨0⟩) :
+    (hweight : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (giveRightVoterSlot I) ≠ ⟨0⟩) :
     ExecTransitionBody ballotConfig ballotContract evm (giveRightStore I)
       giveRightToVoteTransition.body .reverted := by
   exact ExecFuncBody.execBlockRevert <|
@@ -888,7 +891,7 @@ end Ballot
 
 namespace Reasoning.Reach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 /-! ### Ballot-local decoder routines -/
 
@@ -1445,7 +1448,7 @@ theorem ballotGiveRightToVoteBodyCore
         · by_cases hvoted : giveRightVotedByte σ I = ⟨0⟩
           · by_cases hweight : giveRightWeightWord σ I = ⟨0⟩
             · by_cases hperm : I.perm = true
-              · have hbody := ballotGiveRightToVoteBodyReturns
+              · have hbody := ballotGiveRightToVoteBodyReturns (hperm := by assumption)
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                   (by simp only [initState]; exact hwv)
                   (by

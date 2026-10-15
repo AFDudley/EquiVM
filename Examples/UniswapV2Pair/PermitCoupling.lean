@@ -1,5 +1,6 @@
+import Reasoning.ExternalCall
 import Examples.UniswapV2Pair.PermitSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -235,7 +236,8 @@ theorem uniswapPermitAfterNonceSuccessAt {base cur cur' : EVM.State}
       [digest, permitVValue I, permitRValue I, permitSValue I] (true, cur', out) false)
     (hdec : config.externalABI.decode? "ecrecover" out = some [recovered])
     (hnz : recovered ≠ .address (AccountAddress.ofNat 0))
-    (heq : recovered = permitOwnerValue I) :
+    (heq : recovered = permitOwnerValue I)
+    (hperm : cur.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := permitAfterNonceLoadStore base I } cur
       permitAfterNonceBody
       (.ok (show Frame from
@@ -245,7 +247,8 @@ theorem uniswapPermitAfterNonceSuccessAt {base cur cur' : EVM.State}
   have hprefix := uniswapPermitHashEcrecoverRequireSuccessAt (base := base) (cur := cur)
     (cur' := cur') (I := I) (structHash := structHash) (digest := digest)
     (recovered := recovered) (out := out) hstruct hdigest hcall hdec hnz heq
-  have happ := uniswapPermitApproveCallSuccessAt (base := base) (cur := cur')
+  have happ := uniswapPermitApproveCallSuccessAt
+    (hperm := by simpa only [typedCallViaEVM_executionEnv_eq hcall] using hperm) (base := base) (cur := cur')
     (I := I) (structHash := structHash) (digest := digest) (recovered := recovered)
   have hblock := execBlock_append hprefix happ
   simpa [permitAfterNonceBody] using hblock
@@ -353,7 +356,8 @@ theorem uniswapPermitAfterNonceRequireMismatchRevertAt {base cur cur' : EVM.Stat
     hprefix
   simpa [permitAfterNonceBody] using hblock
 
-theorem uniswapPermitNonceStorePrefix (evm : EVM.State) (I : ExecutionEnv) :
+theorem uniswapPermitNonceStorePrefix (evm : EVM.State) (I : ExecutionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := permitStore I } evm
       permitNonceStorePrefixBody
       (.ok { contract := contract, locals := permitAfterNonceLoadStore evm I }
@@ -370,16 +374,19 @@ theorem uniswapPermitNonceStorePrefix (evm : EVM.State) (I : ExecutionEnv) :
   refine ExecBlock.consNormal
     (ExecStmt.letDecl (evalExpr_permit_afterDomain_nonce_storage evm I)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_permit_nonce_next evm I) (permitAssignNonce evm I))
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (evalExpr_permit_nonce_next evm I) (permitAssignNonce evm I))
     ExecBlock.nil
 
 theorem uniswapPermitBlockAfterNonce {evm : EVM.State} {I : ExecutionEnv} {result}
     (hrest : ExecBlock config
       { contract := contract, locals := permitAfterNonceLoadStore evm I }
-      (permitAfterNonceState evm I) permitAfterNonceBody result) :
+      (permitAfterNonceState evm I) permitAfterNonceBody result)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := permitStore I } evm
       permitAfterDeadlineBody result := by
-  have hblock := execBlock_append (uniswapPermitNonceStorePrefix evm I) hrest
+  have hblock := execBlock_append (uniswapPermitNonceStorePrefix (hperm := by assumption) evm I) hrest
   simpa [permitAfterDeadlineBody, permitNonceStorePrefixBody, permitAfterNonceBody] using hblock
 
 theorem uniswapPermitDeadlinePrefix (evm : EVM.State) (I : ExecutionEnv)

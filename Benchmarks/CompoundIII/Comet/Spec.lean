@@ -1,8 +1,8 @@
 import Benchmarks.CompoundIII.Comet.SpecSyntax
-import Solm.Semantics
-import Solm.SolidityLayout
-import Solm.MetaSolidityLayout
-import Solm.Refine
+import Stele.Semantics
+import Stele.SolidityLayout
+import Stele.MetaSolidityLayout
+import Stele.Refine
 
 import Benchmarks.CompoundIII.Comet.Immutables
 /-!
@@ -13,7 +13,7 @@ handles the proof files unfold, the storage backend (solc's standard layout, fro
 declarations), the external-call ABI, and the `Config`.
 -/
 
-open Solm ABI
+open Stele ABI
 
 namespace Benchmarks.CompoundIII.Comet
 
@@ -135,7 +135,10 @@ def externalABI : ExternalCallABI where
 
 def config : Config :=
   { storageBackend := storageBackend
-    externalABI := externalABI
+    -- Only calldata needs the 0.8.15 deferred address-array decoder. Explicit `abi.decode`
+    -- keeps the modern decoder, and named external returns keep `externalABI.decode?`.
+    externalABI := { externalABI with
+      decodeCalldata? := ABI.decodeCalldataWithMode .solc0815 }
     selfDeployment := genSolidityConstructorDeployment contract.ctor.params }
 
 end Benchmarks.CompoundIII.Comet

@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintInitialCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -18,8 +18,8 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -203,9 +203,9 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
           mintTransition.body .reverted := by
       exact ExecFuncBody.execBlockRevert
-        (uniswapMintInitialSmallRootReverts_feeOff_kLastZero
+        (uniswapMintInitialSmallRootReverts_feeOff_kLastZero (hperm := by assumption)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S evmFeeS I
-          feeTo (by simp only [initState]; exact hwv) hunlockedSolm hguard0 hguard1
+          feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0 hguard1
           hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
           hfeeToAddr hkLastSource htotalSource hfitSource hsmallSource)
     exact (uniswapMintRuntimeAfterMintFeeInitialSmallRootReverts
@@ -252,9 +252,9 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
             mintTransition.body .reverted := by
         exact ExecFuncBody.execBlockRevert
-          (uniswapMintInitialSmallRootReverts_feeOn_kLastZero
+          (uniswapMintInitialSmallRootReverts_feeOn_kLastZero (hperm := by assumption)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S
-            evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedSolm hguard0
+            evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0
             hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
             hfeeDec hfeeToAddr hkLastSource htotalSource hfitSource hsmallSource)
       exact (uniswapMintRuntimeAfterMintFeeInitialSmallRootReverts
@@ -317,9 +317,9 @@ theorem uniswapMintInitialSmallRootRevertsFromFactoryCases
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) (mintStore I)
             mintTransition.body .reverted := by
         exact ExecFuncBody.execBlockRevert
-          (uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero
+          (uniswapMintInitialSmallRootReverts_feeOff_kLastNonzero (hperm := by assumption)
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) evm0S evm1S
-            evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedSolm hguard0
+            evmFeeS I feeTo (by simp only [initState]; exact hwv) hunlockedStele hguard0
             hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall
             hfeeDec hfeeToAddr hkLastSource htotalSource hfitSource hsmallSource)
       exact (uniswapMintRuntimeAfterMintFeeInitialSmallRootReverts

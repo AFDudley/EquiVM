@@ -9,10 +9,10 @@ import Examples.SimpleAuction.HighestBid
 import Reasoning.Initcode
 import Reasoning.Memory
 import Reasoning.Solc
-import Reasoning.SolmArithmetic
-import Solm.Refine
+import Reasoning.SteleArithmetic
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -25,7 +25,7 @@ This file is intentionally thin: it drives the payable binary-search dispatcher 
 PC, then hands control to one per-function body theorem.
 -/
 
-/-- Calldata shorter than a selector (`size < 4`) reverts before Solm dispatch. -/
+/-- Calldata shorter than a selector (`size < 4`) reverts before Stele dispatch. -/
 theorem simpleAuctionShortRevert {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = simpleAuctionBytecode) (_hsize : I.calldata.size < UInt256.size)
     (hsz : I.calldata.size < 4) :
@@ -34,7 +34,7 @@ theorem simpleAuctionShortRevert {σ σ₀ A I} {g : UInt256}
   exact (simpleAuctionX_short (g := Sat256.ofUInt256 g) hcode hsz).reEquivNoDispatch hcode
     (simpleAuctionDispatch_none_short hsz)
 
-/-- `size ≥ 4` but no selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- `size ≥ 4` but no selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem simpleAuctionNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = simpleAuctionBytecode) (hsize : I.calldata.size < UInt256.size)
     (hnm : ∀ i, i < 7 → (simpleAuctionSelBytes i == I.calldata.extract 0 4) = false) :
@@ -47,7 +47,7 @@ theorem simpleAuctionNoDispatch {σ σ₀ A I} {g : UInt256}
     exact (simpleAuctionX_short (g := Sat256.ofUInt256 g) hcode hshort).reEquivNoDispatch hcode
       (simpleAuctionDispatch_none_short hshort)
 
-/-- The deployed SimpleAuction runtime bytecode refines the Solm specification. -/
+/-- The deployed SimpleAuction runtime bytecode refines the Stele specification. -/
 theorem simpleAuctionCorrect :
     runtimeRefinement simpleAuctionConfig simpleAuctionBytecode simpleAuctionContract := by
   refine ⟨fun σ σ₀ g A I hcode hsize
@@ -636,9 +636,9 @@ theorem simpleAuctionCtorLocals_get_beneficiaryAddress (biddingTime : Int)
 
 def simpleAuctionCtorAfterBeneficiaryState
     (evm : EVM.State) (beneficiaryAddress : AccountAddress) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
     (setAddressOffset0Word
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
       (EVM.word beneficiaryAddress))
 
 theorem simpleAuctionCtorAssignBeneficiary (evm : EVM.State) (biddingTime : Int)
@@ -779,7 +779,7 @@ theorem simpleAuctionCtorAssignAuctionEndTime (evm : EVM.State) (biddingTime : I
           biddingTime.toNat)).toNat)) =
         .ok ({ contract := simpleAuctionContract,
                locals := simpleAuctionCtorLocals biddingTime beneficiaryAddress },
-             Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
+             Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩
                (EVM.word ((UInt256.ofNat evm.executionEnv.header.timestamp).toNat +
                  biddingTime.toNat))) := by
   apply assignStorageRef_storage_scalar (hbackend := rfl) (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256St)
@@ -802,7 +802,7 @@ theorem simpleAuctionCtorAssignAuctionEndTime (evm : EVM.State) (biddingTime : I
   exact storageLocStore_uint256 evm ⟨1⟩
     (EVM.word ((UInt256.ofNat evm.executionEnv.header.timestamp).toNat + biddingTime.toNat))
 
-theorem simpleAuctionSolmCtorExecReverts_overflow
+theorem simpleAuctionSteleCtorExecReverts_overflow
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -814,11 +814,12 @@ theorem simpleAuctionSolmCtorExecReverts_overflow
     (hlt : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hover : UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
-    solmCtorExec simpleAuctionConfig simpleAuctionContract
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
+    steleCtorExec simpleAuctionConfig simpleAuctionContract
       [.int biddingTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := simpleAuctionCtorLocals biddingTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -842,13 +843,15 @@ theorem simpleAuctionSolmCtorExecReverts_overflow
           (((∅ : Store).insert "biddingTime" (Value.int biddingTime)).insert
             "beneficiaryAddress" (Value.address beneficiaryAddress)) from rfl]
       rw [store_get_self]
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := simpleAuctionConfig)
-      (solm := frame)
+      (stele := frame)
       (evm := evm0)
       (by simpa [initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? simpleAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -868,7 +871,7 @@ theorem simpleAuctionSolmCtorExecReverts_overflow
               simpa [simpleAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
                 using hover)))
 
-theorem simpleAuctionSolmCtorExecReverts_nonpayable
+theorem simpleAuctionSteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -877,10 +880,10 @@ theorem simpleAuctionSolmCtorExecReverts_nonpayable
     (biddingTime : Int)
     (beneficiaryAddress : AccountAddress)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec simpleAuctionConfig simpleAuctionContract
+    steleCtorExec simpleAuctionConfig simpleAuctionContract
       [.int biddingTime, .address beneficiaryAddress]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := Std.HashMap.ofList
       (List.zip (simpleAuctionContract.ctor.params.map Param.name)
@@ -893,7 +896,7 @@ theorem simpleAuctionSolmCtorExecReverts_nonpayable
           [.int biddingTime, .address beneficiaryAddress]))
       hwv
 
-theorem simpleAuctionSolmCtorExecSuccess
+theorem simpleAuctionSteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -905,21 +908,22 @@ theorem simpleAuctionSolmCtorExecSuccess
     (hlt : biddingTime < Int.ofNat (EVM.twoPow 256))
     (hwv : I.weiValue = ⟨0⟩)
     (hno : ¬ UInt256.size ≤
-      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat) :
-    solmCtorExec simpleAuctionConfig simpleAuctionContract
+      (UInt256.ofNat I.header.timestamp).toNat + (EVM.word biddingTime.toNat).toNat)
+    (hperm : I.perm = true) :
+    steleCtorExec simpleAuctionConfig simpleAuctionContract
       [.int biddingTime, .address beneficiaryAddress]
       σ σ₀ g A I
       (.returned
         { contract := simpleAuctionContract,
           locals := simpleAuctionCtorLocals biddingTime beneficiaryAddress }
-        (Solm.EVM.storageStore
+        (Stele.EVM.storageStore
           (simpleAuctionCtorAfterBeneficiaryState
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             beneficiaryAddress)
           I.codeOwner ⟨1⟩
           (EVM.word ((UInt256.ofNat I.header.timestamp).toNat + biddingTime.toNat)))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := simpleAuctionCtorLocals biddingTime beneficiaryAddress)
     ?_ rfl ?_ ?_
@@ -933,13 +937,15 @@ theorem simpleAuctionSolmCtorExecSuccess
     let evm1 := simpleAuctionCtorAfterBeneficiaryState evm0 beneficiaryAddress
     let auctionEndWord : UInt256 :=
       EVM.word ((UInt256.ofNat I.header.timestamp).toNat + biddingTime.toNat)
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := simpleAuctionConfig)
-        (solm := frame)
+        (stele := frame)
         (evm := evm0)
         (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .address beneficiaryAddress)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .address beneficiaryAddress)
         (by
           show evalExpr? simpleAuctionConfig frame evm0 (.var "beneficiaryAddress") =
             .ok (.address beneficiaryAddress)
@@ -952,7 +958,9 @@ theorem simpleAuctionSolmCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             biddingTime beneficiaryAddress)
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign (value := .int (Int.ofNat auctionEndWord.toNat))
+      exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm1, evm0, simpleAuctionCtorAfterBeneficiaryState, initState] using hperm))
+        (value := .int (Int.ofNat auctionEndWord.toNat))
         (by
           unfold auctionEndWord evm1 evm0 frame
           simpa [simpleAuctionCtorAfterBeneficiaryState, storageStore_executionEnv, initState]
@@ -1004,7 +1012,7 @@ theorem simpleAuctionConstructorEquiv_nonpayable
   rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
   · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
   · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-      (simpleAuctionSolmCtorExecReverts_nonpayable
+      (simpleAuctionSteleCtorExecReverts_nonpayable
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress hwv) ?_
     exact ctorResultEquiv.revert rfl rfl
@@ -1046,7 +1054,7 @@ theorem simpleAuctionConstructorEquiv_overflow
   rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
   · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
   · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-      (simpleAuctionSolmCtorExecReverts_overflow
+      (simpleAuctionSteleCtorExecReverts_overflow (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress h0 hlt hwv hover) ?_
     exact ctorResultEquiv.revert rfl rfl
@@ -1106,7 +1114,7 @@ theorem simpleAuctionConstructorEquiv_success
       simpa [beneficiaryStoreWordEvm, auctionEndWordEvm] using hacc
     rw [hσ'] at hsuccess
     refine typedConstructorRefinementFor.execution hsuccess
-      (simpleAuctionSolmCtorExecSuccess
+      (simpleAuctionSteleCtorExecSuccess (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress h0 hlt hwv hno) ?_
     refine ctorResultEquiv.success rfl rfl ?_ rfl
@@ -1118,10 +1126,10 @@ theorem simpleAuctionConstructorEquiv_success
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           biddingTime h0 hlt (by simpa [initState] using hno)
       simp only [storageStore_accountMap, initState, simpleAuctionCtorAfterBeneficiaryState]
-      simp only [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
+      simp only [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
       rw [hAuctionEnd]
 
-/-- The creation/initcode bytecode refines the Solm constructor specification. -/
+/-- The creation/initcode bytecode refines the Stele constructor specification. -/
 theorem simpleAuctionConstructorCorrect :
     typedConstructorRefinement simpleAuctionConfig simpleAuctionInitcode simpleAuctionContract
       (fun _ => simpleAuctionBytecode) := by

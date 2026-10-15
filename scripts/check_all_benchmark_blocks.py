@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate and compile supported runtime block summaries under Benchmarks/.
 
+Temporary contracts under Benchmarks/Scaffolds/ are excluded.
 The output and per-shard results live under /tmp/equivm-benchmark-blocks by
 default. Successful shards are cached by source hash, so a failed run can resume.
 """
@@ -9,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import re
 import subprocess
 import sys
@@ -26,14 +28,29 @@ def module_name(path: Path) -> str:
     return ".".join(path.relative_to(ROOT).with_suffix("").parts)
 
 
+def benchmark_paths(root: Path) -> list[Path]:
+    return sorted(path for path in root.rglob("Bytecode.lean")
+                  if "Scaffolds" not in path.relative_to(root).parts)
+
+
 def benchmark_inputs(path: Path) -> tuple[str, str, Path | None]:
     source = path.read_text(encoding="utf-8")
     names = re.findall(r"^def (\w+Bytecode)\s*:\s*ByteArray", source, re.MULTILINE)
     runtime = next(name for name in names if "Creation" not in name)
     namespace = re.search(r"^namespace ([\w.]+)", source, re.MULTILINE)
     code_term = f"{namespace.group(1)}.{runtime}" if namespace else runtime
-    layout = path.with_name("Immutables.lean")
+    # Generated layouts live in ImmutableCode; older benchmarks use Immutables.
+    layout = path.with_name("ImmutableCode.lean")
+    if not layout.exists():
+        layout = path.with_name("Immutables.lean")
     return code_term, module_name(path), layout if layout.exists() else None
+
+
+def benchmark_uses_vyper_suffix(path: Path) -> bool:
+    builds = sorted(path.parent.glob("*.build.json"))
+    build_data = [json.loads(p.read_text(encoding="utf-8")) for p in builds]
+    return any(b.get("compiler", {}).get("kind") == "vyper" and b.get("immutables")
+               for b in build_data)
 
 
 def run(args: list[str], *, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -74,7 +91,7 @@ def main() -> int:
     if args.jobs < 1 or args.shard_size < 1:
         parser.error("--jobs and --shard-size must be positive")
 
-    paths = sorted((ROOT / "Benchmarks").rglob("Bytecode.lean"))
+    paths = benchmark_paths(ROOT / "Benchmarks")
     if args.only:
         paths = [p for p in paths if args.only.lower() in str(p.parent).lower()]
     if args.contract:
@@ -90,8 +107,9 @@ def main() -> int:
     build_targets = []
     for path in paths:
         _, bytecode_import, layout = benchmark_inputs(path)
+        vyper_suffix = benchmark_uses_vyper_suffix(path)
         build_targets.append(bytecode_import)
-        if layout:
+        if layout and not vyper_suffix:
             build_targets.append(module_name(layout))
     print(f"Building imports for {len(paths)} benchmark runtimes", flush=True)
     build = run(["lake", "build", *build_targets], timeout=3600)
@@ -102,6 +120,7 @@ def main() -> int:
     shards: list[Path] = []
     for path in paths:
         code_term, bytecode_import, layout = benchmark_inputs(path)
+        vyper_suffix = benchmark_uses_vyper_suffix(path)
         hex_path = path.with_name("runtime.hex")
         if read_bytecode(path, code_term) != read_bytecode(hex_path):
             raise ValueError(f"Lean bytecode differs from runtime.hex: {path}")
@@ -114,8 +133,10 @@ def main() -> int:
                    "--bytecode-import", bytecode_import,
                    "--shard-size", str(args.shard_size),
                    "--output", str(output)]
-        if layout:
-            # The declaration namespace in Immutables.lean can differ from its module path.
+        if vyper_suffix:
+            command.append("--runtime-suffix")
+        elif layout:
+            # The layout's declaration namespace can differ from its module path.
             layout_source = layout.read_text(encoding="utf-8")
             match = re.search(r"^namespace ([\w.]+)", layout_source, re.MULTILINE)
             assert match is not None

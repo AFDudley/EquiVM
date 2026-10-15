@@ -1,15 +1,15 @@
 import Benchmarks.Dss.Cure.Rely
 import Reasoning.Constructor
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Cure constructor correctness stub
 
-The optimized creation bytecode, deployed runtime bytecode, and Solm constructor specification are
+The optimized creation bytecode, deployed runtime bytecode, and Stele constructor specification are
 present. The constructor-equivalence proof is intentionally left as the benchmark target.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -40,10 +40,10 @@ abbrev cureCtorWardsEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "wards", steps := [.mindex (.address I.source)] }
 
 abbrev cureCtorAfterLiveState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩ ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨1⟩ ⟨1⟩
 
 abbrev cureCtorAfterWardsState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (cureCtorWardsSlot I) ⟨1⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (cureCtorWardsSlot I) ⟨1⟩
 
 theorem cureCtorDeployment_eq_initcode {args : List Value} {deployedInitcode : ByteArray}
     (hdeploy : config.selfDeployment cureCreationBytecode args = some deployedInitcode) :
@@ -263,11 +263,12 @@ theorem assign_cureCtorWardsStorage (evm : EVM.State) (I : ExecutionEnv) {locals
         keyValueToWord_address, solcSourceWord, uInt256OfByteArray_eq])
     (hstore := hstore)
 
-theorem cureCtorSolmExecOk
+theorem cureCtorSteleExecOk
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec config contract [] σ σ₀ g A I
       (.returned { contract := contract, locals := (∅ : Store) }
         (cureCtorAfterWardsState
           (cureCtorAfterLiveState
@@ -299,10 +300,10 @@ theorem cureCtorSolmExecOk
     simp [constructorDecl, nonpayable]
     refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
     · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
-    refine ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignLive) ?_
-    exact ExecBlock.consNormal (ExecStmt.assign (by simp [evalExpr?, pure]) hassignWards)
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) (by simp [evalExpr?, pure]) hassignLive) ?_
+    exact ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr (by simpa only [evm1, cureCtorAfterLiveState, storageStore_executionEnv] using hperm)) (by simp [evalExpr?, pure]) hassignWards)
       ExecBlock.nil
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := evm0)
     (argsStore := (∅ : Store))
     ?_ rfl ?_ ?_
@@ -311,13 +312,13 @@ theorem cureCtorSolmExecOk
   · simpa [ExecTransitionBody, evm0, evm1, evm2, contract] using
       ExecFuncBody.execBlockOK hblock
 
-theorem cureCtorSolmExecReverts_nonpayable
+theorem cureCtorSteleExecReverts_nonpayable
     {σ : AccountMap} {σ₀ : AccountMap} {A : Substate} {I : ExecutionEnv}
     {g : UInt256}
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config contract [] σ σ₀ g A I
+    steleCtorExec config contract [] σ σ₀ g A I
       .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀
       (Sat256.ofUInt256 g) A I)
     (argsStore := (∅ : Store))
@@ -366,10 +367,10 @@ theorem cureConstructorBodyCore :
     rcases cureCtorRDretXiResult hcode hrd with hOOG | hSuccess
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.toUInt256] using hOOG)
     · rcases hSuccess with ⟨g', A', hXi⟩
-      have hSolm := cureCtorSolmExecOk
+      have hStele := cureCtorSteleExecOk (hperm := hperm)
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := g) hwv
-      have hmapSolm :
+      have hmapStele :
           (cureCtorAfterWardsState
               (cureCtorAfterLiveState
                 (initState σ σ₀
@@ -385,8 +386,8 @@ theorem cureConstructorBodyCore :
                 (initState σ σ₀
                   (Sat256.ofUInt256 g) A I))
               I).accountMap := by
-        rw [hmapSolm]
-      refine typedConstructorRefinementFor.execution hXi hSolm ?_
+        rw [hmapStele]
+      refine typedConstructorRefinementFor.execution hXi hStele ?_
       exact ctorResultEquiv.success rfl rfl hmap rfl
   · have hrd := cureCtorNonpayableRDrev
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
@@ -394,10 +395,10 @@ theorem cureConstructorBodyCore :
     rcases hrd.xiResult hcode with hOOG | hRev
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.toUInt256] using hOOG)
     · rcases hRev with ⟨g', o, hXi⟩
-      have hSolm := cureCtorSolmExecReverts_nonpayable
+      have hStele := cureCtorSteleExecReverts_nonpayable
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := g) hwv
-      refine typedConstructorRefinementFor.execution hXi hSolm ?_
+      refine typedConstructorRefinementFor.execution hXi hStele ?_
       exact ctorResultEquiv.revert rfl rfl
 
 theorem cureConstructorCorrect :

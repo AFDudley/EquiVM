@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -38,7 +38,7 @@ theorem cureDispatchPos {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_pos_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (posTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (posTransition.params.map Param.name)
       (transitionSignature posTransition).paramTypes I.calldata =
         some ((∅ : Store).insert "arg0" (.address (posMappingArg I))) := by
   simpa [config, posTransition, posMappingArg] using
@@ -46,7 +46,7 @@ theorem cureDecode_pos_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
 
 theorem cureDecode_pos_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (posTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (posTransition.params.map Param.name)
       (transitionSignature posTransition).paramTypes I.calldata = none := by
   simpa [config, posTransition] using
     (decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "arg0") hsz4 hshort)
@@ -57,7 +57,7 @@ theorem curePosBodyCoreOk
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some posTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (posTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (posTransition.params.map Param.name)
         (transitionSignature posTransition).paramTypes I.calldata =
           some ((∅ : Store).insert "arg0" (.address (posMappingArg I))))
     (hreach : ∃ k C, RD cureBytecode I (Sat256.ofUInt256 g)
@@ -75,7 +75,7 @@ theorem curePosBodyCoreOk
         (.returned { contract := contract, locals := locals }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt (posMappingSlotFor I) σ I).toNat))])) := by
-    simpa [posTransition, posMappingSlotFor, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [posTransition, posMappingSlotFor, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount, locals, key] using
       cureUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) locals

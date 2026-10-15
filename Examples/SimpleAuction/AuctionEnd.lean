@@ -1,9 +1,9 @@
 import Reasoning.WordArithmetic
 import Examples.SimpleAuction.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.ExternalCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -639,23 +639,23 @@ theorem simpleAuctionX_auctionEnd_callInsufficientRevert {σ σ₀ A I} {g : Sat
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) rd743
   exact simpleAuctionX_auctionEnd_requireSuccess_revert rd798
 
-/-! ## `auctionEnd()` Solm-side source execution helpers -/
+/-! ## `auctionEnd()` Stele-side source execution helpers -/
 
 def auctionEndAfterEndedState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (auctionEndSetEndedWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (auctionEndSetEndedWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩))
 
 def auctionEndBeneficiaryRawWordState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩
 
 def auctionEndBeneficiaryWordState (evm : EVM.State) : UInt256 :=
   UInt256.land (auctionEndBeneficiaryRawWordState evm) solcAddrMask
 
 def auctionEndHighestBidWordState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩
 
 def auctionEndEndedRawWordState (evm : EVM.State) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩
 
 def auctionEndEndedWordState (evm : EVM.State) : UInt256 :=
   UInt256.land (auctionEndEndedRawWordState evm) ⟨255⟩
@@ -675,7 +675,7 @@ theorem auctionEndCallStore_success_get (success : Bool) (out : ByteArray) :
 theorem evalExpr_auctionEnd_auctionEndTime (evm : EVM.State) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.storage auctionEndTimeRef) =
-        .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
+        .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat)) := by
   have her : evalStorageRef simpleAuctionConfig
       { contract := simpleAuctionContract, locals := ∅ } evm auctionEndTimeRef =
       .ok { base := "auctionEndTime", steps := [] } := by
@@ -755,7 +755,7 @@ theorem evalExpr_auctionEnd_ended_true (evm : EVM.State)
 
 theorem evalExpr_auctionEnd_time_true (evm : EVM.State)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .ge now (.storage auctionEndTimeRef)) = .ok (.bool true) := by
@@ -766,7 +766,7 @@ theorem evalExpr_auctionEnd_time_true (evm : EVM.State)
 theorem evalExpr_auctionEnd_time_false (evm : EVM.State)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evm
       (.binary .ge now (.storage auctionEndTimeRef)) = .ok (.bool false) := by
   simp only [evalExpr?, now, envValue, evalExpr_auctionEnd_auctionEndTime, bind,
@@ -820,7 +820,7 @@ theorem simpleAuctionAuctionEndBodyReverts_time (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (htime :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
       auctionEndTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -831,7 +831,7 @@ theorem simpleAuctionAuctionEndBodyReverts_time (evm : EVM.State)
 theorem simpleAuctionAuctionEndBodyReverts_ended (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hnz : auctionEndEndedWordState evm ≠ ⟨0⟩) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
@@ -847,7 +847,7 @@ theorem simpleAuctionAuctionEndBodyReverts_callFailure
     (evm evm' : EVM.State) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hended : auctionEndEndedWordState evm = ⟨0⟩)
     (hcall :
@@ -856,7 +856,8 @@ theorem simpleAuctionAuctionEndBodyReverts_callFailure
           (AccountAddress.ofNat
             (auctionEndBeneficiaryWordState (auctionEndAfterEndedState evm)).toNat))
         (Int.ofNat (auctionEndHighestBidWordState (auctionEndAfterEndedState evm)).toNat)
-        ByteArray.empty (false, evm', out)) :
+        ByteArray.empty (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
       auctionEndTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -866,9 +867,12 @@ theorem simpleAuctionAuctionEndBodyReverts_callFailure
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_auctionEnd_not_ended_true evm hended)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallFailure
+      (hperm := Or.inr (by simpa [auctionEndAfterEndedState] using hperm))
       (evalExpr_auctionEnd_beneficiary (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_highestBid (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_emptyBytes (auctionEndAfterEndedState evm)) hcall) ?_
@@ -878,7 +882,7 @@ theorem simpleAuctionAuctionEndBodyReverts_callFailure
 theorem simpleAuctionAuctionEndBodyStatic (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hended : auctionEndEndedWordState evm = ⟨0⟩)
     (hperm : evm.executionEnv.perm = false) :
@@ -897,7 +901,7 @@ theorem simpleAuctionAuctionEndBodyReturns_callSuccess
     (evm evm' : EVM.State) (out : ByteArray)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (htime :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat ≤
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hended : auctionEndEndedWordState evm = ⟨0⟩)
     (hcall :
@@ -906,7 +910,8 @@ theorem simpleAuctionAuctionEndBodyReturns_callSuccess
           (AccountAddress.ofNat
             (auctionEndBeneficiaryWordState (auctionEndAfterEndedState evm)).toNat))
         (Int.ofNat (auctionEndHighestBidWordState (auctionEndAfterEndedState evm)).toNat)
-        ByteArray.empty (true, evm', out)) :
+        ByteArray.empty (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅ auctionEndTransition.body
       (.returned { contract := simpleAuctionContract, locals := auctionEndCallStore true out }
         evm' none) := by
@@ -917,9 +922,12 @@ theorem simpleAuctionAuctionEndBodyReturns_callSuccess
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_auctionEnd_not_ended_true evm hended)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr hperm)
+      (by simp [evalExpr?, pure]) (auctionEndAssignEnded evm)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.lowLevelCallSuccess
+      (hperm := Or.inr (by simpa [auctionEndAfterEndedState] using hperm))
       (evalExpr_auctionEnd_beneficiary (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_highestBid (auctionEndAfterEndedState evm))
       (evalExpr_auctionEnd_emptyBytes (auctionEndAfterEndedState evm)) hcall) ?_
@@ -930,7 +938,7 @@ theorem simpleAuctionAuctionEndBodyReturns_callSuccess
 theorem auctionEndAfterEndedState_accountMap (evm : EVM.State) :
     (auctionEndAfterEndedState evm).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨5⟩
-        (auctionEndSetEndedWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)) := by
+        (auctionEndSetEndedWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)) := by
   simp [auctionEndAfterEndedState, storageStore_accountMap]
 
 theorem auctionEndAfterEndedState_executionEnv (evm : EVM.State) :
@@ -939,19 +947,19 @@ theorem auctionEndAfterEndedState_executionEnv (evm : EVM.State) :
 
 theorem auctionEndAfterEndedState_originalMap (evm : EVM.State) :
     (auctionEndAfterEndedState evm).σ₀ = evm.σ₀ := by
-  unfold auctionEndAfterEndedState Solm.EVM.storageStore State.lookupAccount
+  unfold auctionEndAfterEndedState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 theorem auctionEndAfterEndedState_substate (evm : EVM.State) :
     (auctionEndAfterEndedState evm).substate = evm.substate := by
-  unfold auctionEndAfterEndedState Solm.EVM.storageStore State.lookupAccount
+  unfold auctionEndAfterEndedState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 theorem auctionEndAfterEndedState_accountMap_init {σ σ₀ A I} {g : Sat256} :
     (auctionEndAfterEndedState (initState σ σ₀ g A I)).accountMap =
       auctionEndAfterEndedMap σ I := by
   simp [auctionEndAfterEndedState_accountMap, auctionEndAfterEndedMap,
-    auctionEndEndedRawWord, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    auctionEndEndedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount,
     Account.lookupStorage]
 
 theorem auctionEndBeneficiaryWordState_afterEnded_init {σ σ₀ A I} {g : Sat256} :
@@ -960,7 +968,7 @@ theorem auctionEndBeneficiaryWordState_afterEnded_init {σ σ₀ A I} {g : Sat25
       auctionEndBeneficiaryWord (auctionEndAfterEndedMap σ I) I := by
   unfold auctionEndBeneficiaryWordState auctionEndBeneficiaryRawWordState
     auctionEndBeneficiaryWord auctionEndBeneficiaryRawWord
-  unfold Solm.EVM.storageLoad State.lookupAccount Account.lookupStorage
+  unfold Stele.EVM.storageLoad State.lookupAccount Account.lookupStorage
   rw [auctionEndAfterEndedState_executionEnv, auctionEndAfterEndedState_accountMap_init]
   simp [initState]
 
@@ -969,7 +977,7 @@ theorem auctionEndHighestBidWordState_afterEnded_init {σ σ₀ A I} {g : Sat256
       (auctionEndAfterEndedState (initState σ σ₀ g A I)) =
       auctionEndHighestBidWord (auctionEndAfterEndedMap σ I) I := by
   unfold auctionEndHighestBidWordState auctionEndHighestBidWord
-  unfold Solm.EVM.storageLoad State.lookupAccount Account.lookupStorage
+  unfold Stele.EVM.storageLoad State.lookupAccount Account.lookupStorage
   rw [auctionEndAfterEndedState_executionEnv, auctionEndAfterEndedState_accountMap_init]
   simp [initState]
 
@@ -1057,7 +1065,7 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
           (by simpa [evm, initState] using hwv)
           (by
             simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-              Solm.EVM.storageLoad, State.lookupAccount] using htimeBad)
+              Stele.EVM.storageLoad, State.lookupAccount] using htimeBad)
       exact (simpleAuctionX_auctionEnd_timeRevert (g := Sat256.ofUInt256 g) hwv hreach
           htimeBad)
         |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -1067,7 +1075,7 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
       by_cases hendedZero : auctionEndEndedWord σ I = ⟨0⟩
       · have hendedSState : auctionEndEndedWordState evm = ⟨0⟩ := by
           simpa [evm, initState, auctionEndEndedWordState, auctionEndEndedRawWordState,
-            auctionEndEndedWord, Solm.EVM.storageLoad, State.lookupAccount] using hendedZero
+            auctionEndEndedWord, Stele.EVM.storageLoad, State.lookupAccount] using hendedZero
         by_cases hperm : I.perm = true
         swap
         · -- static mode: both sides halt at the `ended` write
@@ -1076,7 +1084,7 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
             (by simpa [evm, initState] using hwv)
             (by
               simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
             hendedSState
             (by simp only [evm, initState]; exact hpf)
           exact (permSplit_false hpf (simpleAuctionX_auctionEnd_afterStoreAndLog
@@ -1105,11 +1113,11 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
           have hbody :
               ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
                 auctionEndTransition.body .reverted :=
-            simpleAuctionAuctionEndBodyReverts_callFailure evm evmSFail ByteArray.empty
+            simpleAuctionAuctionEndBodyReverts_callFailure (hperm := hperm) evm evmSFail ByteArray.empty
               (by simpa [evm, initState] using hwv)
               (by
                 simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                  Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                  Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
               hendedSState
               (by simpa [evmAfter] using hcall)
           exact (simpleAuctionX_auctionEnd_callDepthRevert (g := Sat256.ofUInt256 g) hperm
@@ -1246,11 +1254,11 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
             · have hbody :
                   ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
                     auctionEndTransition.body .reverted :=
-                simpleAuctionAuctionEndBodyReverts_callFailure evm evmSCall out
+                simpleAuctionAuctionEndBodyReverts_callFailure (hperm := hperm) evm evmSCall out
                   (by simpa [evm, initState] using hwv)
                   (by
                     simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                      Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                      Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
                   hendedSState
                   (by simpa [evmAfter] using hcallS)
               have hrev : RDrev simpleAuctionBytecode (Sat256.ofUInt256 g)
@@ -1265,11 +1273,11 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
                     auctionEndTransition.body
                     (.returned { contract := simpleAuctionContract, locals := auctionEndCallStore true out }
                       evmSCall none) :=
-                simpleAuctionAuctionEndBodyReturns_callSuccess evm evmSCall out
+                simpleAuctionAuctionEndBodyReturns_callSuccess (hperm := hperm) evm evmSCall out
                   (by simpa [evm, initState] using hwv)
                   (by
                     simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                      Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                      Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
                   hendedSState
                   (by simpa [evmAfter] using hcallS)
               have hret : RDret simpleAuctionBytecode (Sat256.ofUInt256 g)
@@ -1328,11 +1336,11 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
             have hbody :
                 ExecTransitionBody simpleAuctionConfig simpleAuctionContract evm ∅
                   auctionEndTransition.body .reverted :=
-              simpleAuctionAuctionEndBodyReverts_callFailure evm evmSFail ByteArray.empty
+              simpleAuctionAuctionEndBodyReverts_callFailure (hperm := hperm) evm evmSFail ByteArray.empty
                 (by simpa [evm, initState] using hwv)
                 (by
                   simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                    Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                    Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
                 hendedSState
                 (by simpa [evmAfter] using hcall)
             exact (simpleAuctionX_auctionEnd_callInsufficientRevert (g := Sat256.ofUInt256 g)
@@ -1345,10 +1353,10 @@ theorem simpleAuctionAuctionEndBody {σ σ₀ A I}
             (by simpa [evm, initState] using hwv)
             (by
               simpa [evm, initState, auctionEndAuctionEndWord, auctionEndTimestampWord,
-                Solm.EVM.storageLoad, State.lookupAccount] using htimeLe)
+                Stele.EVM.storageLoad, State.lookupAccount] using htimeLe)
             (by
               simpa [evm, initState, auctionEndEndedWordState, auctionEndEndedRawWordState,
-                auctionEndEndedWord, Solm.EVM.storageLoad, State.lookupAccount] using hendedZero)
+                auctionEndEndedWord, Stele.EVM.storageLoad, State.lookupAccount] using hendedZero)
         exact (simpleAuctionX_auctionEnd_endedRevert (g := Sat256.ofUInt256 g) hwv hreach
             htimeLe hendedZero)
           |>.reEquivExecutionRevert hcode hd hdec hbody

@@ -1,6 +1,6 @@
 import Benchmarks.EAS.Attester.MultiAttestSourceInner
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -38,7 +38,7 @@ theorem attestSourceRowEmpty {C : ContractDecl} {imms : Store} {evm : State}
   have hn : ((locals.insert "inputs" (.array [])).insert "inputLength" (.int (Int.ofNat 0))).get?
       "inputLength" = some (.int (Int.ofNat 0)) := by simp
   exact evalLocalNatNeZero (cfg := config) (evm := evm)
-    (solm := ⟨C, (locals.insert "inputs" (.array [])).insert "inputLength" (.int (Int.ofNat 0)),
+    (stele := ⟨C, (locals.insert "inputs" (.array [])).insert "inputLength" (.int (Int.ofNat 0)),
         imms⟩)
     hn
 
@@ -84,14 +84,14 @@ theorem attestSourceRow {C : ContractDecl} {imms : Store} {evm : State}
   have h2 : ExecStmt config ⟨C, l1, imms⟩ evm
       (.require (.binary .ne (.var "inputLength") (.intLit 0))) (.ok ⟨C, l1, imms⟩ evm) :=
     ExecStmt.requireTrue (by simpa only [decide_eq_true (by omega : inputs.length ≠ 0)] using
-      (evalLocalNatNeZero (cfg := config) (solm := ⟨C, l1, imms⟩) (evm := evm) hn1))
+      (evalLocalNatNeZero (cfg := config) (stele := ⟨C, l1, imms⟩) (evm := evm) hn1))
   have ha1 : l1.get? "allocationEnd" = some (.int (Int.ofNat allocation)) := by
     simpa [l1, l0, Std.HashMap.getElem?_insert] using ha
   have halloc : ExecStmt config ⟨C, l1, imms⟩ evm
       (.assign .localVar ⟨"allocationEnd", []⟩
         (.binary .add (.var "allocationEnd") (.binary .mul (.intLit 480) (.var "inputLength"))))
       (.ok ⟨C, la, imms⟩ evm) := by
-    refine ExecStmt.assign (value := .int (Int.ofNat (allocation + 480 * inputs.length))) ?_ ?_
+    refine ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (value := .int (Int.ofNat (allocation + 480 * inputs.length))) ?_ ?_
     · simp only [evalExpr?, ha1, hn1, EvalResult.ofOption, bind, pure, EvalResult.bind,
         evalBinaryOp?, Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
     · exact assignLocalValue ha1
@@ -123,7 +123,7 @@ theorem attestSourceRow {C : ContractDecl} {imms : Store} {evm : State}
   have hvalue : evalExpr? config ⟨C, l3, imms⟩ evm
       (.tupleLit [.index (.var "schemas") (.var "i"), .var "data"]) =
         .ok (.tuple [schema, .array (attestArrayValues values 0 inputs.length)]) := by
-    have he := evalLocalArrayIndex (cfg := config) (solm := ⟨C, l3, imms⟩) (evm := evm)
+    have he := evalLocalArrayIndex (cfg := config) (stele := ⟨C, l3, imms⟩) (evm := evm)
       hs3 hi3 hsch hsnorm
     simp only [evalExpr?, evalExprList?, he, hdata, EvalResult.ofOption, bind, EvalResult.bind,
         pure]
@@ -133,7 +133,7 @@ theorem attestSourceRow {C : ContractDecl} {imms : Store} {evm : State}
   · exact ExecBlock.consNormal h0 (ExecBlock.consNormal h1 (ExecBlock.consNormal h2
       (ExecBlock.consNormal halloc (ExecBlock.consNormal h3 (ExecBlock.consNormal hinner
           (ExecBlock.consNormal
-        (ExecStmt.assign hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil))))))
+        (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hvalue (assignLocalArrayIndex hq3 hi3 hindex)) ExecBlock.nil))))))
   · simpa only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_insert,
       show ("multiRequests" == "allocationEnd") = false from rfl,
       Bool.false_eq_true, if_false] using ha3

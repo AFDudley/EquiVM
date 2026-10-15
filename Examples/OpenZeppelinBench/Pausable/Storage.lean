@@ -1,7 +1,7 @@
 import Examples.OpenZeppelinBench.Pausable.Bytecode
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 set_option maxRecDepth 2000000
 
@@ -33,24 +33,24 @@ def unpausePostMap (σ : AccountMap) (I : ExecutionEnv) : AccountMap :=
   sstoreAccountMap I.codeOwner σ ⟨0⟩ (pausedSetFalseWord (pausedRawWord σ I))
 
 def pausePostState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (pausedSetTrueWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (pausedSetTrueWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))
 
 def unpausePostState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-    (pausedSetFalseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+    (pausedSetFalseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩))
 
 
 theorem pausePostState_accountMap (evm : EVM.State) :
     (pausePostState evm).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨0⟩
-        (pausedSetTrueWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
+        (pausedSetTrueWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
   simp [pausePostState, storageStore_accountMap]
 
 theorem unpausePostState_accountMap (evm : EVM.State) :
     (unpausePostState evm).accountMap =
       sstoreAccountMap evm.executionEnv.codeOwner evm.accountMap ⟨0⟩
-        (pausedSetFalseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
+        (pausedSetFalseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)) := by
   simp [unpausePostState, storageStore_accountMap]
 
 end OpenZeppelinBench.Pausable

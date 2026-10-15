@@ -6,7 +6,7 @@ import Benchmarks.Dss.Flipper.BidAccess
 import Benchmarks.Dss.Flipper.Dispatch
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -159,7 +159,7 @@ abbrev kickLocalsAfterFlux (σ : AccountMap) (I : ExecutionEnv) : Store :=
 
 abbrev kickFluxArgValsOf (evm : EVM.State) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.source,
     .address evm.executionEnv.codeOwner,
     .int (Int.ofNat (kickLot evm.executionEnv).toNat)]
@@ -652,6 +652,7 @@ theorem kickVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
         some ((kickVatFluxCallMem σmem σ I).readWithPadding 128 132) := by
   rw [kickVatFluxCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -680,7 +681,7 @@ theorem kickVatFluxCallMem_encode (σmem σ : AccountMap) (I : ExecutionEnv) :
 
 
 theorem flipperDecode_kick_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata =
         some (kickLocals I) := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["usr", "gal", "tab", "lot", "bid"]
@@ -692,7 +693,7 @@ theorem flipperDecode_kick_ok {I : ExecutionEnv} (hsz164 : 164 ≤ I.calldata.si
 
 theorem flipperDecode_kick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 164) :
-    decodeCalldataWithMode config.abiDecodeMode (kickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (kickTransition.params.map Param.name)
       (transitionSignature kickTransition).paramTypes I.calldata = none := by
   change decodeCalldataWithMode DecodeMode.legacySolc05 ["usr", "gal", "tab", "lot", "bid"]
       [abiAddress, abiAddress, abiUInt256, abiUInt256, abiUInt256] I.calldata = none
@@ -1333,7 +1334,7 @@ theorem flipperKickSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
     (locals := kickLocals I) (kickLocals_get_wards I) hauth
   have hblock := nonpayableSecondRequireReverts
-    (cfg := config) (solm := { contract := contract, locals := kickLocals I })
+    (cfg := config) (stele := { contract := contract, locals := kickLocals I })
     (evm := evm0) (guard := kickAuthGuard) (rest := kickAfterAuthStmts)
     (by simp [evm0, initState]; exact hwv)
     (by simpa [kickAuthGuard] using hguard)

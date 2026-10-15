@@ -2,7 +2,7 @@ import Benchmarks.Dss.Clipper.TakeDynamicRemove
 import Benchmarks.Dss.Clipper.YankVatEVM
 import Benchmarks.Dss.Clipper.TakePostDogRemove
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper

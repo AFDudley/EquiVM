@@ -4,7 +4,7 @@ import Benchmarks.Dss.Jug.ConstructorTraceVatMask
 # MakerDAO/Sky DSS Jug constructor vat storage trace
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 

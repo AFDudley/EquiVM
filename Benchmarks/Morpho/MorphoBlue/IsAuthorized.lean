@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.Storage
 # Morpho `isAuthorized(address,address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 7223; reach lemma `morphoReachIsAuthorizedBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -200,7 +200,7 @@ theorem morphoIsAuthorizedBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutable
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus ∧
           (calldataWord I.calldata 36).toNat < EVM.addressModulus
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (isAuthorizedTransition.params.map Param.name)
             (transitionSignature isAuthorizedTransition).paramTypes I.calldata =
             some (isAuthorizedArgs I.calldata) :=

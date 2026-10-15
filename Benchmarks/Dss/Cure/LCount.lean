@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Cure.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cure
 
@@ -22,9 +22,9 @@ theorem cureDispatchLCount {I : ExecutionEnv}
   native_decide
 
 theorem cureDecode_lCount {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (lCountTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (lCountTransition.params.map Param.name)
       (transitionSignature lCountTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem cureLCountBodyCore {σ σ₀ A I} {g : UInt256}
@@ -41,7 +41,7 @@ theorem cureLCountBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (lCountWord σ I).toNat))])) := by
-    simpa [lCountTransition, lCountWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [lCountTransition, lCountWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       cureUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

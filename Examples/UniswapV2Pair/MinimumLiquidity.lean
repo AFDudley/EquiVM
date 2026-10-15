@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -11,7 +11,7 @@ namespace UniswapV2Pair
 
 def minimumLiquidityWord : UInt256 := ⟨1000⟩
 
-/-- The Solm `MINIMUM_LIQUIDITY()` body returns the uint256 literal `1000`. -/
+/-- The Stele `MINIMUM_LIQUIDITY()` body returns the uint256 literal `1000`. -/
 theorem uniswapMinimumLiquidityBodyReturns (evm : EVM.State) (locals : Store)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm locals minimumLiquidityTransition.body
@@ -36,9 +36,9 @@ theorem uniswapX_minimumLiquidity {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (by jump_dest) (by jump_dest)
 
 theorem uniswapDecode_minimumLiquidity {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (minimumLiquidityTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (minimumLiquidityTransition.params.map Param.name)
       (transitionSignature minimumLiquidityTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 /-- `MINIMUM_LIQUIDITY()` body core, parameterized by dispatcher/decode facts owned by `Correct`. -/
@@ -47,7 +47,7 @@ theorem uniswapMinimumLiquidityBodyCore
     (hcode : I.code = uniswapV2PairBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some minimumLiquidityTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (minimumLiquidityTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (minimumLiquidityTransition.params.map Param.name)
         (transitionSignature minimumLiquidityTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1278⟩ [sel]

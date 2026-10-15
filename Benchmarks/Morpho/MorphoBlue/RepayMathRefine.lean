@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.SupplyMathRefine
 import Benchmarks.Morpho.MorphoBlue.RepayMathReach
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -65,7 +65,7 @@ theorem morphoRepayMathRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sa
         evm (.assign .localVar ⟨"assets", []⟩ (.var "__c4"))
         (.ok { contract := contract, immutables := imms,
                 locals := (locals.insert "__c4" (.int (Int.ofNat value.toNat))).insert "assets" (.int (Int.ofNat value.toNat)) } evm) :=
-      ExecStmt.assign (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.assets_eq)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.assets_eq)
     refine .ok ⟨fun h ↦ ExecBlock.consNormal (ExecStmt.iteFalse hfalse
       (ExecBlock.consNormal hcall (ExecBlock.consNormal hass ExecBlock.nil))) h⟩ (hl1.setAssets value) ?_ rd3
     rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide)]
@@ -90,7 +90,7 @@ theorem morphoRepayMathRefine {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sa
         evm (.assign .localVar ⟨"shares", []⟩ (.var "__c3"))
         (.ok { contract := contract, immutables := imms,
                 locals := (locals.insert "__c3" (.int (Int.ofNat value.toNat))).insert "shares" (.int (Int.ofNat value.toNat)) } evm) :=
-      ExecStmt.assign (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.shares_eq)
+      ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, store_get_self, EvalResult.ofOption]) (assignLocalWord hl1.shares_eq)
     refine .ok ⟨fun h ↦ ExecBlock.consNormal (ExecStmt.iteTrue htrue
       (ExecBlock.consNormal hcall (ExecBlock.consNormal hass ExecBlock.nil))) h⟩ (hl1.setShares value) ?_ rd3
     rw [store_get_ne _ _ (by decide), store_get_ne _ _ (by decide)]

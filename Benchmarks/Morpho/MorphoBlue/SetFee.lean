@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.SetFeeGuards
 import Benchmarks.Morpho.MorphoBlue.SetFeeFinish
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -70,7 +70,7 @@ theorem morphoSetFeeBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
   by_cases hlen : 196 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hc : p.Canonical
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setFeeTransition.params.map Param.name)
             (transitionSignature setFeeTransition).paramTypes I.calldata =
             some (setFeeArgs p fee) := decodeCalldata_marketParams_uint256_ok hlen hbound hc
@@ -121,14 +121,14 @@ theorem morphoSetFeeBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
               · have hx := morphoSetFeeFinish (v := v) p.id fee hp
                   (by have hfit := hg.2.2.2; unfold maxMarketFee at hfit; omega) hr
                 have hsfinal := storeMarketField_bridge hs' p.id ⟨5, by decide⟩ fee
-                have hsolm : ExecTransitionBody config contract (initState σ σ₀ (.ofUInt256 g) A I)
+                have hstele : ExecTransitionBody config contract (initState σ σ₀ (.ofUInt256 g) A I)
                     (setFeeArgs p fee) setFeeTransition.body
                     (.returned frame (storeMarketField evm' p.id ⟨5, by decide⟩ fee) none) (immStore v) := by
                   apply ExecFuncBody.execBlockOK
                   apply pref.run
                   apply ExecBlock.consNormal hcall
-                  exact morphoSetFeeFinishSource p fee frame.locals (immStore v) evm' hl' hg' hg.2.2.2
-                exact reEquivSelectorExecutionGen hcode hx hd hdec hsolm hsfinal.accounts
+                  exact morphoSetFeeFinishSource (hperm := by simpa only [hs'.env] using hp) p fee frame.locals (immStore v) evm' hl' hg' hg.2.2.2
+                exact reEquivSelectorExecutionGen hcode hx hd hdec hstele hsfinal.accounts
                   (.fallthrough rfl rfl (by native_decide))
               · have hp' : I.perm = false := Bool.eq_false_iff.mpr hp
                 apply reEquivSelectorStatic hcode (morphoSetFeeFinishStatic (v := v) (by simp) hp' hr) hd hdec
@@ -142,7 +142,7 @@ theorem morphoSetFeeBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
               (morphoSetFeeSourceRejects p fee hc _ (immStore v) hcv hbound hg)
         · exact reEquivSelectorRevert hcode
             (morphoSetFeeXReverts v hcode hsize hsel (.inl hcv)) hd hdec (bodyReverts_nonPayable hcv)
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setFeeTransition.params.map Param.name)
             (transitionSignature setFeeTransition).paramTypes I.calldata = none :=
           decodeCalldata_marketParams_uint256_noncanonical hlen hc

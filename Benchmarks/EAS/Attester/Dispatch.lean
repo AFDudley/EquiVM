@@ -11,7 +11,7 @@ Generated summaries cover both branches of each comparison. They do not compose 
 walk automatically. All statements below are proof obligations, not completed proofs.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester

@@ -6,7 +6,7 @@ import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -15,7 +15,7 @@ import Mathlib.Tactic.IntervalCases
 Contract-wide selector notation and constants for the optimized runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -82,7 +82,7 @@ theorem evalExpr_auth_true_of_wards_none (evm : EVM.State) (I : ExecutionEnv)
     (hwards : locals.get? "wards" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -90,7 +90,7 @@ theorem evalExpr_auth_true_of_wards_none (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -110,18 +110,18 @@ theorem evalExpr_auth_false_of_wards_none (evm : EVM.State) (I : ExecutionEnv)
     (hwards : locals.get? "wards" = none)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := locals } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := locals } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (relyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (slot := wardsRef sender)
       (er := relyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -133,7 +133,7 @@ theorem evalExpr_auth_false_of_wards_none (evm : EVM.State) (I : ExecutionEnv)
       (hload := by exact storageLocLoad_uint256 evm (relyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -141,13 +141,13 @@ theorem evalExpr_auth_false_of_wards_none (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (relyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (relyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -312,7 +312,7 @@ theorem gemJoinAddressGetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -329,7 +329,7 @@ theorem gemJoinUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -345,7 +345,7 @@ theorem gemJoinBytes32GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -357,7 +357,7 @@ theorem gemJoinAddressGetterBodyCore
     (hcode : I.code = gemJoinBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -403,7 +403,7 @@ theorem gemJoinUint256GetterBodyCore
     (hcode : I.code = gemJoinBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -448,7 +448,7 @@ theorem gemJoinBytes32GetterBodyCore
     (hcode : I.code = gemJoinBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD gemJoinBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]

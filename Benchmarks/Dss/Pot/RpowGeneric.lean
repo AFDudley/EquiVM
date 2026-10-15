@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Pot.Rpow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowBase
 
@@ -223,7 +223,7 @@ theorem execRpowFunctionReturnXNonzeroWithLoop
           (some [.int (Int.ofNat zFinal.toNat)])) := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hZExpr) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hHalfExpr) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivN hAssignN) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hDivN hAssignN) ?_
     refine ExecBlock.consNormal (by simpa [localsLoop, z, half, n'] using hwhile) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzDone))
   have hblock :
@@ -355,7 +355,7 @@ theorem execRpowFunctionRevertXNonzeroWithLoop
         .reverted := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hZExpr) ?_
     refine ExecBlock.consNormal (ExecStmt.letDecl hHalfExpr) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivN hAssignN) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hDivN hAssignN) ?_
     exact ExecBlock.consRevert (by simpa [localsLoop, z, half, n'] using hwhile)
   have hblock :
       ExecBlock config { contract := contract, locals := locals } evm rpowFunction.body

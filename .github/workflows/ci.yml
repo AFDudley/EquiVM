@@ -25,15 +25,15 @@ jobs:
       - name: Build libraries
         uses: leanprover/lean-action@f061402b660e0c34644504b324e830f2991d4865
         with:
-          build-args: EquiVM EVM ABI Solm Reasoning Proofs Solidity
+          build-args: EquiVM EVM ABI Stele Reasoning Proofs Solidity
           use-github-cache: true
 
       - name: Check ABI signature reduction
         run: lake build ABI.SignatureTests
 
-      # Standalone regression modules are not imported by the Solm library root.
-      - name: Check Solminus semantics
-        run: lake build Solm.CastTests Solm.IntegerTests Solm.TransientTests
+      # Standalone regression modules are not imported by the Stele library root.
+      - name: Check Stele semantics
+        run: lake build Stele.CastTests Stele.IntegerTests Stele.TransientTests Stele.PermissionTests
 
       # Mirrors the imports of Examples.lean. Remove lines to prune.
       - name: Build examples
@@ -74,8 +74,7 @@ jobs:
         run: |
           python3 -m unittest scripts/test_generate_rd_blocks.py
           python3 scripts/check_all_benchmark_blocks.py \
-            --contract Scaffolds/UniswapV3Pool \
-            --contract Scaffolds/Safe \
+            --contract UniswapV3/Pool \
             --jobs 4
 
       # These End dispatch consumers previously overflowed Lean's default stack.
@@ -103,6 +102,7 @@ jobs:
       #     lake build \
       #       Benchmarks.Auction.Correct \
       #       Benchmarks.WETH9.Correct \
+      #       Benchmarks.Safe.Main.Correct \
       #       Benchmarks.Dss.Dai.Correct \
       #       Benchmarks.Dss.Jug.Correct \
       #       Benchmarks.Dss.Vat.Correct \
@@ -123,9 +123,6 @@ jobs:
       #       Benchmarks.Dss.GemJoin.Correct \
       #       Benchmarks.Dss.DaiJoin.Correct
 
-      # # Scaffolded benchmarks: specs + bytecode compile, proofs are sorry stubs.
-      # - name: Build benchmark scaffolds
-      #   run: lake build Benchmarks.Scaffolds
 
   # Native keccak + EVM differential tests of the Solidity spec language (compiles the closure
   # to C; run on demand).

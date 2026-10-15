@@ -3,10 +3,10 @@ import Benchmarks.Dss.DaiJoin.Common
 /-!
 # MakerDAO/Sky DSS DaiJoin selector proofs
 
-The selector theorems connect Solm signatures to the runtime dispatcher constants.
+The selector theorems connect Stele signatures to the runtime dispatcher constants.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM
+open Stele ABI Ethereum Ethereum.EVM
 
 namespace Benchmarks.Dss.DaiJoin
 

@@ -1,6 +1,6 @@
 import Examples.VyperERC20.TransferFrom
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000
@@ -286,7 +286,7 @@ theorem erc20TransferFromBodyCore
     {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = vyperERC20Bytecode) (hwv : I.weiValue = ⟨0⟩)
     (hsize : I.calldata.size < UInt256.size)
-    (hd : dispatchMsg erc20Contract I.calldata = some ERC20.transferFromTransition)
+    (hd : dispatchMsg erc20Contract I.calldata = some transferFromTransition)
     (hsel : ((⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ : ByteArray) == I.calldata.extract 0 4) = true)
     (hreach : ∃ k C, RD vyperERC20Bytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨331⟩
@@ -346,7 +346,7 @@ theorem erc20TransferFromBodyCore
                       (transferFromFromBalanceWord
                         (transferFromAfterAllowanceState evmS I) I).toNat := by
                   simpa [hAfterAllowanceFromBalance] using hbalanceDebit
-                have hbody := erc20TransferFromBodyReturns evmS I
+                have hbody := erc20TransferFromBodyReturns (hperm := by assumption) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   hallowanceS hbalanceS hbalanceDebitS
                   (by simpa [hNewToNat] using hfit)
@@ -377,7 +377,7 @@ theorem erc20TransferFromBodyCore
                       (transferFromFromBalanceWord
                         (transferFromAfterAllowanceState evmS I) I).toNat := by
                   simpa [hAfterAllowanceFromBalance] using hbalanceDebit
-                have hbody := erc20TransferFromBodyReverts_overflow evmS I
+                have hbody := erc20TransferFromBodyReverts_overflow (hperm := by assumption) evmS I
                   (by simp only [evmS, initState]; exact hwv)
                   hallowanceS hbalanceS hbalanceDebitS
                   (by simpa [hNewToNat] using hover)
@@ -392,7 +392,7 @@ theorem erc20TransferFromBodyCore
                   (transferFromFromBalanceWord (transferFromAfterAllowanceState evmE I) I).toNat <
                     (transferFromValueWord I).toNat := by
                 omega
-              have hbody := erc20TransferFromBodyReverts_balanceDebit evmS I
+              have hbody := erc20TransferFromBodyReverts_balanceDebit (hperm := by assumption) evmS I
                 (by simp only [evmS, initState]; exact hwv)
                 (by simpa [hAllowance] using hallowance)
                 (by simpa [hFromBalance] using hbalance)

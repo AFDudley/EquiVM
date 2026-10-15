@@ -3,7 +3,7 @@ import Reasoning.Reach
 import Reasoning.WordArithmetic
 import Benchmarks.Dss.Cat.BiteTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -11,7 +11,7 @@ set_option maxHeartbeats 1000000
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Cat
 
@@ -213,9 +213,9 @@ This file provides the grown-memory analogues, parameterised over the already-gr
 
 Legacy solc (≤ 0.7) compiles a division-by-zero (and `assert`) to the `INVALID` opcode `0xfe`,
 which aborts the whole execution with `.error .InvalidInstruction` — consuming all gas, reverting
-state. On the Solm side the `.div` reverts; the refinement is `execResultsEquiv.invalidHalt`
+state. On the Stele side the `.div` reverts; the refinement is `execResultsEquiv.invalidHalt`
 (and `ctorResultEquiv.invalidHalt`), which matches EVM whole-run result `.error .InvalidInstruction`
-against Solm `.reverted`. This is **not** an `RDrev` (that is REVERT-only): it is a distinct
+against Stele `.reverted`. This is **not** an `RDrev` (that is REVERT-only): it is a distinct
 exceptional halt at the `X`/`Ξ` level.
 
 The producers below are the `INVALID` analogue of `RD.rev`: from an `RD` cursor whose opcode at `pc`

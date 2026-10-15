@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueSourceStart
 import Benchmarks.Morpho.MorphoBlue.BorrowRateABI
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -73,7 +73,7 @@ theorem morphoAccrueSourceCallOk (p : MarketParamsWords) (imms : Store) (elapsed
   change ExecStmt config (accrueBeforeCall p imms elapsed evm) evm
     (.externalCall (.var "irm") "borrowRate" (.intLit 0) [.var "marketParams", .var "marketState"] "borrowRate")
     (.ok (accrueAfterCall p imms elapsed evm (calldataWord out 0)) evm')
-  exact ExecStmt.externalCallSuccess (value := [.int (Int.ofNat (calldataWord out 0).toNat)])
+  exact ExecStmt.externalCallSuccess (hperm := Or.inl rfl) (value := [.int (Int.ofNat (calldataWord out 0).toNat)])
     (accrue_eval_call_receiver p imms elapsed evm)
     (by simp only [evalExpr?, pure]) (accrue_eval_call_args p imms elapsed evm) hcall
     (decodeBorrowRate_word hlen (by omega))
@@ -92,9 +92,9 @@ theorem morphoAccrueSourceCallReverts (p : MarketParamsWords) (imms : Store) (el
     exact Nat.mod_eq_of_lt (AccountAddress.ofNat p.irm.toNat).isLt
   rw [← htarget] at hcall
   cases z
-  · exact ExecStmt.externalCallFailure (accrue_eval_call_receiver p imms elapsed evm)
+  · exact ExecStmt.externalCallFailure (hperm := Or.inl rfl) (accrue_eval_call_receiver p imms elapsed evm)
       (by simp only [evalExpr?, pure]) (accrue_eval_call_args p imms elapsed evm) hcall
-  · exact ExecStmt.externalCallReturnDecodeRevert (accrue_eval_call_receiver p imms elapsed evm)
+  · exact ExecStmt.externalCallReturnDecodeRevert (hperm := Or.inl rfl) (accrue_eval_call_receiver p imms elapsed evm)
       (by simp only [evalExpr?, pure]) (accrue_eval_call_args p imms elapsed evm) hcall
       (decodeBorrowRate_short (by simp only [true_and] at hbad; omega))
 

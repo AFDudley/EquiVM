@@ -1,8 +1,8 @@
 import Examples.UniswapV2Pair.ExternalWrappers
 import Examples.UniswapV2Pair.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -85,9 +85,9 @@ theorem allowanceStorageSlot_eq_mapSlot_masked (I : ExecutionEnv) :
 
 theorem uniswapDecode_allowance_ok {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = _
   simpa [allowanceStore, allowanceOwnerValue, allowanceSpenderValue, allowanceOwnerWord,
     allowanceSpenderWord, calldataWord]
     using decodeCalldata_legacyAddress_legacyAddress_ok (cd := I.calldata) (x := "owner")
@@ -95,19 +95,19 @@ theorem uniswapDecode_allowance_ok {I : ExecutionEnv}
 
 theorem uniswapDecode_allowance_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "owner") (y := "spender") hsz4 hshort
 
-/-- The Solm `allowance(address,address)` body returns `allowance[owner][spender]`. -/
+/-- The Stele `allowance(address,address)` body returns `allowance[owner][spender]`. -/
 theorem uniswapAllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (h : evm.executionEnv.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (allowanceStorageSlot I)).toNat))])) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
@@ -230,7 +230,7 @@ theorem uniswapAllowanceBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size)
     (hdispatch : dispatchMsg contract I.calldata = some allowanceTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (allowanceTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
         (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨1421⟩ [sel]
@@ -244,7 +244,7 @@ theorem uniswapAllowanceBodyCoreOk
         (.returned { contract := contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceStorageSlot, initState, Solm.EVM.storageLoad,
+    simpa [allowanceWord, allowanceStorageSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       uniswapAllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I

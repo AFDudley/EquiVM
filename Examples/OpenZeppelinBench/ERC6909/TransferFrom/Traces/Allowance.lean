@@ -1,6 +1,6 @@
 import Examples.OpenZeppelinBench.ERC6909.TransferFrom.Traces.SkipCaller
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 4000000
@@ -97,7 +97,7 @@ theorem erc6909TransferFromX_operatorApproved_toUpdate {σ σ₀ A I}
   obtain ⟨_, _, rd615⟩ := rd615pre.sload (by decide) (by evm_ov)
   have hopMaskRaw :
       UInt256.land ⟨255⟩
-        (Solm.EVM.storageLoad (initState σ σ₀ g A I)
+        (Stele.EVM.storageLoad (initState σ σ₀ g A I)
           (initState σ σ₀ g A I).executionEnv.codeOwner
           (transferFromOperatorSlot (initState σ σ₀ g A I) I)) ≠ ⟨0⟩ := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -106,11 +106,11 @@ theorem erc6909TransferFromX_operatorApproved_toUpdate {σ σ₀ A I}
       UInt256.land ⟨255⟩
         (σ.get? I.codeOwner |>.option ⟨0⟩
           (fun ac => ac.storage.getD (transferFromOperatorSlotI I) ⟨0⟩)) ≠ ⟨0⟩ := by
-    simpa [transferFromOperatorSlot_init, initState, Solm.EVM.storageLoad,
+    simpa [transferFromOperatorSlot_init, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage] using hopMaskRaw
   exact ⟨_, _, by
     simpa [transferFromOperatorWord, transferFromOperatorSlot_init, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
       evm_run rd615 with [
         push1 ⟨255⟩, and, iszero,
         jumpdest, iszero, push2 ⟨637⟩,
@@ -202,7 +202,7 @@ theorem erc6909TransferFromX_operatorFalse_toAllowanceHelper {σ σ₀ A I}
   obtain ⟨_, _, rd615⟩ := rd615pre.sload (by decide) (by evm_ov)
   have hopMaskRaw :
       UInt256.land ⟨255⟩
-        (Solm.EVM.storageLoad (initState σ σ₀ g A I)
+        (Stele.EVM.storageLoad (initState σ σ₀ g A I)
           (initState σ σ₀ g A I).executionEnv.codeOwner
           (transferFromOperatorSlot (initState σ σ₀ g A I) I)) = ⟨0⟩ := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -211,11 +211,11 @@ theorem erc6909TransferFromX_operatorFalse_toAllowanceHelper {σ σ₀ A I}
       UInt256.land ⟨255⟩
         (σ.get? I.codeOwner |>.option ⟨0⟩
           (fun ac => ac.storage.getD (transferFromOperatorSlotI I) ⟨0⟩)) = ⟨0⟩ := by
-    simpa [transferFromOperatorSlot_init, initState, Solm.EVM.storageLoad,
+    simpa [transferFromOperatorSlot_init, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage] using hopMaskRaw
   exact ⟨_, _, by
     simpa [transferFromOperatorWord, transferFromOperatorSlot_init, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
       evm_run rd615 with [
         push1 ⟨255⟩, and, iszero,
         jumpdest, iszero, push2 ⟨637⟩,
@@ -366,7 +366,7 @@ theorem erc6909TransferFromX_from1147_afterAllowanceLoad
   obtain ⟨k1, C1, rd1193₀⟩ := rd1191.sload (by decide) (by evm_ov)
   exact ⟨k1, C1, by
     simpa [transferFromCurrentAllowanceWord, transferFromAllowanceSlot_init, initState,
-      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, idMem, idKeyMem,
+      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, idMem, idKeyMem,
       spenderMem, spenderKeyMem, ownerMem, ownerKeyMem]
       using rd1193₀⟩
 

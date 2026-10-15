@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.DecodedNonemptyRun
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 10000000
@@ -49,29 +49,29 @@ theorem scratch_blindAuctionReveal_decoded_nonempty_bids
     runtimeRefinementFor blindAuctionConfig blindAuctionContract
       σ σ₀ g A I := by
   obtain ⟨_, _, rd963⟩ := h963
-  let evmSolm : EVM.State :=
+  let evmStele : EVM.State :=
     initState σ σ₀ (Sat256.ofUInt256 g) A I
-  have hwvSolm : evmSolm.executionEnv.weiValue = ⟨0⟩ := by
-    simpa [evmSolm, initState] using hwv
+  have hwvStele : evmStele.executionEnv.weiValue = ⟨0⟩ := by
+    simpa [evmStele, initState] using hwv
   have hbiddingAbsent : callargs.get? biddingEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hrevealAbsent : callargs.get? revealEndRef.base = none :=
     blindAuctionDecode_reveal_callargs_absent hdec (by decide) (by decide) (by decide)
   have hafterBody :
-      (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨1⟩).toNat <
-        (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat := by
+      (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨1⟩).toNat <
+        (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat := by
     change (revealScratchBiddingEndWord σ I).toNat <
       (revealScratchTimestampWord I).toNat
     exact hafter
   have hbeforeBody :
-      (UInt256.ofNat evmSolm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      (UInt256.ofNat evmStele.executionEnv.header.timestamp).toNat <
+        (Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner ⟨2⟩).toNat := by
     change (revealScratchTimestampWord I).toNat <
       (revealScratchRevealEndWord σ I).toNat
     exact hbefore
   have hlenBody :
-      Solm.EVM.storageLoad evmSolm evmSolm.executionEnv.codeOwner
-        (bidsBase (.address evmSolm.executionEnv.source)) =
+      Stele.EVM.storageLoad evmStele evmStele.executionEnv.codeOwner
+        (bidsBase (.address evmStele.executionEnv.source)) =
           revealScratchBidsLengthWord σ I := by
     rfl
   have hbidsHash := revealScratchBidsMappingBaseKeccak I
@@ -108,7 +108,7 @@ theorem scratch_blindAuctionReveal_decoded_nonempty_bids
     RevealLoopInv loopLen values fakes secrets I σ₀ A
   have hinitInv :
       Inv loopLen.toNat initCursor
-        (scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩) evmSolm := by
+        (scratch_revealLoopStore callargs loopLen ⟨0⟩ ⟨0⟩) evmStele := by
     refine
       ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · exact scratch_revealLoopStore_i_get callargs loopLen ⟨0⟩ ⟨0⟩
@@ -128,10 +128,10 @@ theorem scratch_blindAuctionReveal_decoded_nonempty_bids
         (i := ⟨0⟩) hsecretsGet
     · simp [loopLen, initCursor]
     · simp [loopLen, initCursor]
-    · simp [evmSolm, initState]
-    · simp [evmSolm, initState]
-    · simp [evmSolm, initState]
-    · simp [evmSolm, initState, initCursor]
+    · simp [evmStele, initState]
+    · simp [evmStele, initState]
+    · simp [evmStele, initState]
+    · simp [evmStele, initState, initCursor]
   have hloopRun :
       ∀ {revealEnd biddingEnd secretsEnd fakesEnd valuesEnd sel : UInt256},
         secretsEnd = ⟨4⟩ + revealSecretsOffsetWord I + ⟨32⟩ →
@@ -174,10 +174,10 @@ theorem scratch_blindAuctionReveal_decoded_nonempty_bids
       (secretsLenWord := secretsLenWord)
       (fakesLenWord := fakesLenWord)
       (valuesLenWord := valuesLenWord)
-      (initCursor := initCursor) (evmSolm := evmSolm)
+      (initCursor := initCursor) (evmStele := evmStele)
       (k1014 := k1014) (C1014 := C1014)
       hcode hd hdec hstore rfl
-      hwvSolm hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
+      hwvStele hafterBody hbeforeBody hbiddingAbsent hrevealAbsent
       hvaluesGet hfakesGet hsecretsGet hlenBody
       rfl
       (by simpa [loopLen] using hvaluesEq)

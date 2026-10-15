@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Jug.DripSourceRho
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 open Reasoning.Theory.RpowB
 
@@ -153,7 +153,7 @@ theorem jugDripSourceBodyVatIlksRpowReverts
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -170,7 +170,7 @@ theorem jugDripSourceBodyVatIlksRpowReverts
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_
@@ -328,7 +328,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowRevertsGeneric
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat age.toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee age jugRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBodyLocal
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -366,7 +366,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowRevertsGeneric
     simpa [dripVatIlksPrevLocals] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -383,7 +383,7 @@ theorem jugDripSourceBodyVatIlksRmulOverflowRevertsGeneric
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_
@@ -553,7 +553,7 @@ theorem jugDripSourceBodyVatIlksDiffXBoundRevertsGeneric
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat age.toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee age jugRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBodyLocal
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -646,7 +646,7 @@ theorem jugDripSourceBodyVatIlksDiffXBoundRevertsGeneric
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -663,7 +663,7 @@ theorem jugDripSourceBodyVatIlksDiffXBoundRevertsGeneric
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_
@@ -837,7 +837,7 @@ theorem jugDripSourceBodyVatIlksDiffYBoundRevertsGeneric
         [.int (Int.ofNat fee.toNat), .int (Int.ofNat age.toNat),
           .int (Int.ofNat jugRay.toNat)])
       (callee := rpowFunction) (locals := uintTernaryLocals fee age jugRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBodyLocal
     simpa [resumeAfterInternalCall, dripPowLocals] using h
   have hrmulArgs :
@@ -923,7 +923,7 @@ theorem jugDripSourceBodyVatIlksDiffYBoundRevertsGeneric
     simpa [dripVatIlksPrevLocals, prev] using
       (ExecStmt.letDecl
         (cfg := config)
-        (solm := { contract := contract, locals := dripVatIlksLocals I out })
+        (stele := { contract := contract, locals := dripVatIlksLocals I out })
         (evm := evmVat)
         (name := "prev")
         (ty := some uint256)
@@ -940,7 +940,7 @@ theorem jugDripSourceBodyVatIlksDiffYBoundRevertsGeneric
     refine ExecBlock.consNormal (ExecStmt.requireTrue htimeGuard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hvatGuard) ?_
     refine ExecBlock.consNormal
-      (ExecStmt.externalCallSuccess (sendVal := 0) hvat
+      (ExecStmt.externalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (sendVal := 0) hvat
         (by simp [evalExpr?, pure]) hargs (by simpa [evm0] using hcall) hdec) ?_
     refine ExecBlock.consNormal (by
       simpa [locals, dripVatIlksLocals, collapseReturns] using hprevStmt) ?_

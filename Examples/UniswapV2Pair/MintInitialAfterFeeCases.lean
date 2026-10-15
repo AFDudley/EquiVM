@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintInitialRuntimeCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -16,8 +16,8 @@ theorem uniswapMintInitialAfterMintFeeCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -113,8 +113,8 @@ theorem uniswapMintInitialAfterMintFeeCases
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let locals := nextLocals.insert "_totalSupply" (uniswapUint256Value (⟨0⟩ : UInt256))
-  have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call
-    evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedSolm hguard0 hguard1
+  have hprefix := uniswapMintAfterMintFeeTotalSupplyPrefix_of_call (hperm := by assumption)
+    evmS evm0S evm1S evmFeeS I nextLocals hwv hunlockedStele hguard0 hguard1
     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfee htotalBase
   have hruntime := uniswapMintInitialRuntimeCases (locals := locals) evmFeeS recipient fee
     rd3701 hAccounts henv hrecipient

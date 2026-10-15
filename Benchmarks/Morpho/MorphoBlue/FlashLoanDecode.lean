@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AddressWordBytesABI
 import Benchmarks.Morpho.MorphoBlue.CalldataBytesDecode
 import Benchmarks.Morpho.MorphoBlue.Routines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

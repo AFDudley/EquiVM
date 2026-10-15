@@ -36,8 +36,8 @@ Generated artifacts and scaffold files:
 - `Cure.abi.json`: ABI emitted by solc.
 - `Bytecode.lean`: creation/runtime bytecode as Lean `ByteArray`s plus verified `JUMPDEST` sets.
 - `Selectors.lean`: selector Keccak proofs. `Bytecode.lean` holds the verified `JUMPDEST` sets.
-- `Spec.lean`: Solm AST benchmark scaffold with storage layout and full public ABI surface.
-- `SpecSyntax.lean`: Solm notation companion wired to the AST spec, checked by `rfl`.
+- `Spec.lean`: Stele AST benchmark scaffold with storage layout and full public ABI surface.
+- `SpecSyntax.lean`: Stele notation companion wired to the AST spec, checked by `rfl`.
 - `Constructor.lean`: top-level constructor-equivalence theorem, intentionally `sorry`.
 - `Correct.lean`: top-level runtime-equivalence theorem plus whole-contract wrapper,
   intentionally `sorry` at the runtime target.
@@ -66,12 +66,12 @@ Scaffold notes:
   `SourceLike.cure()`. It has no `CALL`, `DELEGATECALL`, contract creation, or selfdestruct.
 - `SourceLike.cure()` is represented with a custom external ABI and modeled as `perm := false`,
   matching the upstream `view` interface and runtime `STATICCALL`.
-- `Selectors.lean` proves the 20 selectors that connect Solm dispatch to the runtime constants in
+- `Selectors.lean` proves the 20 selectors that connect Stele dispatch to the runtime constants in
   `runtime.hex`.
 - Checked `_add`/`_sub` use the same revert conditions as Solidity 0.6 wrapped arithmetic plus the
   source `require`s. The `lCount++` in `load` is modeled as unchecked modulo-2^256 wrapping.
-- Events are intentionally omitted from the Solm specs, matching the existing event-bearing DSS
+- Events are intentionally omitted from the Stele specs, matching the existing event-bearing DSS
   benchmarks whose equivalence relation ignores logs/substate.
-- No known Solm syntax or semantics change is required to start proving this benchmark. The likely
+- No known Stele syntax or semantics change is required to start proving this benchmark. The likely
   proof hotspots are dispatcher routing, dynamic-array and mapping storage lemmas, checked
   arithmetic, and static-call return decoding.

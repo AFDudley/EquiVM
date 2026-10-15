@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Benchmarks.Dss.Dai.Dispatch
 import Benchmarks.Dss.Dai.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -42,7 +42,7 @@ def denyAuthWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
     (fun acc => acc.storage.getD (denyAuthStorageSlot I) ⟨0⟩)
 
 def denyPostState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (denyGuyStorageSlot I) ⟨0⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (denyGuyStorageSlot I) ⟨0⟩
 
 abbrev denyGuyEvaledRef (I : ExecutionEnv) : EvaledStorageRef :=
   { base := "wards", steps := [.mindex (denyGuyKey I)] }
@@ -78,17 +78,17 @@ theorem denyAuthStorageSlot_eq_mapSlot_source (I : ExecutionEnv) :
   rw [keyValueToWord_address]
 
 theorem daiDecode_deny_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy"] [addr] I.calldata = _
+  show config.externalABI.decodeCalldata? ["guy"] [addr] I.calldata = _
   simpa [denyStore, denyGuyValue, denyGuyWord, calldataWord]
     using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "guy") hsz36
 
 theorem daiDecode_deny_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
       (transitionSignature denyTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["guy"] [addr] I.calldata = none
+  show config.externalABI.decodeCalldata? ["guy"] [addr] I.calldata = none
   simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "guy")
     hsz4 hshort
 
@@ -110,7 +110,7 @@ theorem evalStorageRef_deny_auth (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_deny_auth_true (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩) :
     evalExpr? config { contract := contract, locals := denyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool true) := by
   have hstorage :
@@ -118,7 +118,7 @@ theorem evalExpr_deny_auth_true (evm : EVM.State) (I : ExecutionEnv)
         (.storage (wardsRef sender)) = .ok (.int 1) := by
     rw [evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := denyStore I })
+      (stele := { contract := contract, locals := denyStore I })
       (slot := wardsRef sender)
       (er := denyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -139,18 +139,18 @@ theorem evalExpr_deny_auth_true (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_deny_auth_false (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv.source = I.source)
     (hload :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) ≠ ⟨1⟩) :
     evalExpr? config { contract := contract, locals := denyStore I } evm
       (.binary .eq (.storage (wardsRef sender)) (.intLit 1)) = .ok (.bool false) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := denyStore I } evm
         (.storage (wardsRef sender)) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (denyAuthStorageSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
       (cfg := config)
-      (solm := { contract := contract, locals := denyStore I })
+      (stele := { contract := contract, locals := denyStore I })
       (slot := wardsRef sender)
       (er := denyAuthEvaledRef I)
       (t := .int uint256Int)
@@ -166,7 +166,7 @@ theorem evalExpr_deny_auth_false (evm : EVM.State) (I : ExecutionEnv)
           storageLocLoad_uint256 evm (denyAuthStorageSlot I))
   have hne :
       Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (denyAuthStorageSlot I)).toNat) ≠ Value.int 1 := by
     intro hbad
     rw [Value.int.injEq] at hbad
@@ -174,13 +174,13 @@ theorem evalExpr_deny_auth_false (evm : EVM.State) (I : ExecutionEnv)
     exact uInt256_toNat_eq_one (Int.ofNat.inj hbad)
   have hbeq :
       (Value.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (denyAuthStorageSlot I)).toNat) == Value.int 1) = false := by
     exact beq_eq_false_iff_ne.mpr hne
   simp only [evalExpr?, hstorage, EvalResult.bind, bind, pure]
   change evalBinaryOp? BinaryOp.eq
       (Value.int (Int.ofNat
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I)).toNat))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I)).toNat))
       (Value.int 1) = .ok (.bool false)
   simp only [evalBinaryOp?]
   rw [hbeq]
@@ -205,20 +205,21 @@ theorem denyAssign (evm : EVM.State) (I : ExecutionEnv) :
   simpa [denyPostState, wordLoc, uint256Loc, uint256Int] using
     storageLocStore_uint256 evm (denyGuyStorageSlot I) ⟨0⟩
 
-/-- The Solm `deny(address)` body stores `wards[guy] = 0` when `msg.sender` is authorized. -/
+/-- The Stele `deny(address)` body stores `wards[guy] = 0` when `msg.sender` is authorized. -/
 theorem daiDenyBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (denyStore I) denyTransition.body
       (.returned { contract := contract, locals := denyStore I }
         (denyPostState evm I) none) := by
   refine ExecFuncBody.execBlockOK ?_
   simpa [denyTransition, nonpayable, auth] using
-    nonpayableRequireAssignStorageBlock
+    nonpayableRequireAssignStorageBlock (hperm := hperm)
       (cfg := config)
-      (solm := { contract := contract, locals := denyStore I })
+      (stele := { contract := contract, locals := denyStore I })
       (evm := evm)
       (evm' := denyPostState evm I)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
@@ -234,7 +235,7 @@ theorem daiDenyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) = ⟨1⟩)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (denyStore I) denyTransition.body
       .staticViolation := by
@@ -242,7 +243,7 @@ theorem daiDenyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
   simpa [denyTransition, nonpayable, auth] using
     nonpayableRequireAssignStorageBlockStatic
       (cfg := config)
-      (solm := { contract := contract, locals := denyStore I })
+      (stele := { contract := contract, locals := denyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rhs := .intLit 0)
@@ -255,18 +256,18 @@ theorem daiDenyBodyStatic (evm : EVM.State) (I : ExecutionEnv)
       (denyAssign evm I)
       hperm
 
-/-- The Solm `deny(address)` body reverts when `msg.sender` is not authorized. -/
+/-- The Stele `deny(address)` body reverts when `msg.sender` is not authorized. -/
 theorem daiDenyBodyReverts (evm : EVM.State) (I : ExecutionEnv)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hsrc : evm.executionEnv.source = I.source)
     (hauth :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) ≠ ⟨1⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (denyAuthStorageSlot I) ≠ ⟨1⟩) :
     ExecTransitionBody config contract evm (denyStore I) denyTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   simpa [denyTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := denyStore I })
+      (stele := { contract := contract, locals := denyStore I })
       (evm := evm)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.assign .storage (wardsRef (.var "guy")) (.intLit 0)])
@@ -564,25 +565,25 @@ theorem daiDenyBodyCoreStatic
     (hauth : denyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : denyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (denyStore I)
+      ExecTransitionBody config contract evmStele (denyStore I)
         denyTransition.body
         .staticViolation := by
-    simpa [evmSolm, denyAuthWord, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, denyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiDenyBodyStatic evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiDenyBodyStatic evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
-        (by simp only [evmSolm, initState]; exact hperm)
+        (by simp only [evmStele, initState]; exact hperm)
   exact (permSplit_false hperm (daiX_deny_okSplit
       (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach))
     |>.reEquivStaticHalt hcode hdispatch hdecode hbody
@@ -595,7 +596,7 @@ theorem daiDenyBodyCoreOk
     (hauth : denyAuthWord σ I = ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]
@@ -605,22 +606,22 @@ theorem daiDenyBodyCoreOk
   swap
   · exact daiDenyBodyCoreStatic hcode hsize (by simpa using hperm) hwv hsz36 hauth
       hdispatch hdecode hreach
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : denyAuthWord σ I = ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (denyStore I)
+      ExecTransitionBody config contract evmStele (denyStore I)
         denyTransition.body
         (.returned { contract := contract, locals := denyStore I }
-          (denyPostState evmSolm I) none) := by
-    simpa [evmSolm, denyAuthWord, initState, Solm.EVM.storageLoad,
+          (denyPostState evmStele I) none) := by
+    simpa [evmStele, denyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiDenyBodyReturns evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiDenyBodyReturns (hperm := hperm) evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (daiX_deny_ok (g := Sat256.ofUInt256 g) hsz36 hsize hperm hauth hreach)
     |>.reEquivExecutionGen hcode hdispatch hdecode hbody
-      (by simp [denyPostState, evmSolm, initState, storageStore_accountMap])
+      (by simp [denyPostState, evmStele, initState, storageStore_accountMap])
       (by
         simpa [denyTransition] using
           (returnEquiv.fallthrough (o := ByteArray.empty) (r := none) (t := [])
@@ -634,22 +635,22 @@ theorem daiDenyBodyCoreUnauthorized
     (hauth : denyAuthWord σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some denyTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (denyTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (denyTransition.params.map Param.name)
         (transitionSignature denyTransition).paramTypes I.calldata = some (denyStore I))
     (hreach : ∃ k C, RD daiBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨908⟩ [sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
   have hauthWord : denyAuthWord σ I ≠ ⟨1⟩ := hauth
   have hbody :
-      ExecTransitionBody config contract evmSolm (denyStore I)
+      ExecTransitionBody config contract evmStele (denyStore I)
         denyTransition.body .reverted := by
-    simpa [evmSolm, denyAuthWord, initState, Solm.EVM.storageLoad,
+    simpa [evmStele, denyAuthWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
-      daiDenyBodyReverts evmSolm I
-        (by simp only [evmSolm, initState]; exact hwv)
-        (by simp [evmSolm, initState])
+      daiDenyBodyReverts evmStele I
+        (by simp only [evmStele, initState]; exact hwv)
+        (by simp [evmStele, initState])
         hauthWord
   exact (daiX_deny_unauthorized (g := Sat256.ofUInt256 g) hsz36 hsize hauth hreach)
     |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -667,7 +668,7 @@ theorem daiDenyBodyCoreDecodeFailed_short
   exact (daiDenyX_shortarg (g := Sat256.ofUInt256 g) hsz4 hsize hshort hreach)
     |>.reEquivDecodingFailed hcode hdispatch hdec
 
-/-- `deny(address)` body refines its Solm transition. -/
+/-- `deny(address)` body refines its Stele transition. -/
 theorem daiDenyBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = daiBytecode) (hsize : I.calldata.size < UInt256.size)
     (hwv : I.weiValue = ⟨0⟩)

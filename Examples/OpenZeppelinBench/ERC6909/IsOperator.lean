@@ -1,8 +1,8 @@
 import Examples.OpenZeppelinBench.ERC6909.Storage
 import Examples.OpenZeppelinBench.Pausable.Storage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -119,7 +119,7 @@ theorem evalExpr_isOperator_storage (evm : EVM.State) (I : ExecutionEnv) :
       (.storage (operatorApprovalRef (.var "owner") (.var "spender"))) =
         .ok (wordToElem .bool
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (isOperatorSlot I)) ⟨255⟩)) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (isOperatorSlot I)) ⟨255⟩)) := by
   have hgowner := isOperatorStore_owner_getElem? I
   have hgspender := isOperatorStore_spender_getElem? I
   have her : evalStorageRef config { contract := contract, locals := isOperatorStore I }
@@ -157,7 +157,7 @@ theorem erc6909IsOperatorBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       (.returned { contract := contract, locals := isOperatorStore I } evm
         (some [(wordToElem .bool
           (UInt256.land
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (isOperatorSlot I)) ⟨255⟩))])) := by
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (isOperatorSlot I)) ⟨255⟩))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       simpa [operatorApprovalRef] using evalExpr_isOperator_storage evm I)
@@ -759,7 +759,7 @@ theorem erc6909IsOperatorBodyCore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(wordToElem .bool
                     (UInt256.land (isOperatorStorageWord σ I) ⟨255⟩))])) := by
-            simpa [isOperatorStorageWord, isOperatorSlot, initState, Solm.EVM.storageLoad,
+            simpa [isOperatorStorageWord, isOperatorSlot, initState, Stele.EVM.storageLoad,
               State.lookupAccount] using erc6909IsOperatorBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)

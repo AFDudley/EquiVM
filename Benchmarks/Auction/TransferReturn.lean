@@ -2,7 +2,7 @@ import Benchmarks.Auction.ReturnReserve
 import Benchmarks.Auction.BoolDecoder
 import Benchmarks.Auction.DepositPrefix
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

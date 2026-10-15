@@ -7,7 +7,7 @@ import Benchmarks.Dss.Vat.Bytecode
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Solc
 import Reasoning.Stepping
 import Reasoning.Storage
@@ -19,7 +19,7 @@ import Mathlib.Tactic.IntervalCases
 Contract-wide selector notation and proof-shape abbreviations for the optimized Vat runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -246,7 +246,7 @@ theorem vatUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -258,7 +258,7 @@ theorem vatUint256GetterBodyCore
     (hcode : I.code = vatBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]

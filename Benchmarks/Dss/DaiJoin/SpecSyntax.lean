@@ -1,8 +1,8 @@
 import Benchmarks.Dss.DaiJoin.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# DaiJoin spec in the Solidity-faithful Solm frontend
+# DaiJoin spec in the Solidity-faithful Stele frontend
 
 The whole DaiJoin benchmark spec, written with `solidity%` and proven definitionally equal to the
 AST spec in `Benchmarks/Dss/DaiJoin/Spec.lean`.  The `extCodeSize` guards on storage receivers
@@ -10,7 +10,7 @@ AST spec in `Benchmarks/Dss/DaiJoin/Spec.lean`.  The `extCodeSize` guards on sto
 Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Benchmarks.Dss.DaiJoin.Syntax
 

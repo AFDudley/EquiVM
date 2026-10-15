@@ -1,15 +1,15 @@
 import Benchmarks.Dss.Pot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
 /-! ## `vat()` public getter (CDP engine address, slot 5). Group @174 arm 1. -/
 
 theorem potDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachVatBody {σ σ₀ A I} {g : Sat256}
@@ -40,7 +40,7 @@ theorem potVatBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some vatTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
         (transitionSignature vatTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨410⟩ [sel]
@@ -52,7 +52,7 @@ theorem potVatBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (solcAddressSlotWord ⟨5⟩ σ I).toNat))])) := by
-    simpa [vatTransition, solcAddressSlotWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [vatTransition, solcAddressSlotWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       potAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

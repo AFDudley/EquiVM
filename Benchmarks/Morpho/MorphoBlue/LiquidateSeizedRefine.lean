@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.LiquidateAmountRefines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -86,7 +86,7 @@ theorem morphoLiquidateSeizedRefine {v : MorphoImmutables} {ee : ExecutionEnv} {
   have hass : ExecStmt config { contract := contract, locals := l3, immutables := imms } evm
       liquidateSeizedBody[3]!
       (.ok { contract := contract, locals := l3.insert "repaidShares" (.int (Int.ofNat value.toNat)), immutables := imms } evm) :=
-    ExecStmt.assign (by simp only [evalExpr?, l3, store_get_self, EvalResult.ofOption]) (assignLocalWord hl3.shares_eq)
+    ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (by simp only [evalExpr?, l3, store_get_self, EvalResult.ofOption]) (assignLocalWord hl3.shares_eq)
   refine .ok ⟨fun tail ↦ ExecBlock.consNormal (ExecStmt.iteTrue hcond
     (ab3.run (ExecBlock.consNormal hass ExecBlock.nil))) tail⟩ (hl3.setShares value) ?_ rd5
   simp only [l3, l2, l1, store_get_ne _ _ (show ("repaidShares" == "__memory") = false by decide),

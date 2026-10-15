@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.LiquidateSeizedRefine
 import Benchmarks.Morpho.MorphoBlue.LiquidateSharesRefine
 import Benchmarks.Morpho.MorphoBlue.LiquidateIncentiveRefine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

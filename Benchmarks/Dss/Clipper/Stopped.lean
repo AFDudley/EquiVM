@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -79,16 +79,16 @@ theorem clipperDispatch_stopped {I : ExecutionEnv}
 
 theorem clipperDecode_stopped {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (stoppedTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (stoppedTransition.params.map Param.name)
       (transitionSignature stoppedTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalStopped (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "stopped" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage stoppedRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat)) := by
   let er : EvaledStorageRef := { base := "stopped", steps := [] }
   have her : evalStorageRef config
       { contract := contract, locals := locals, immutables := immStore v } evm stoppedRef = .ok er := by
@@ -107,7 +107,7 @@ theorem clipperStoppedBodyReturns (v : ClipperImmutables) (evm : EVM.State) (loc
     ExecTransitionBody config contract evm locals stoppedTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨14⟩).toNat))])) (immStore v) := by
   simpa [stoppedTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
       (clipperEvalStopped v evm locals hbase)
@@ -292,7 +292,7 @@ theorem clipperStoppedBody (v : ClipperImmutables) {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWord σ I ⟨14⟩).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperStoppedBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

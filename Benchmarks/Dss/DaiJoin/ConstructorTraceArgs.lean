@@ -4,7 +4,7 @@ import Benchmarks.Dss.DaiJoin.ConstructorTraceBase
 # MakerDAO/Sky DSS DaiJoin constructor argument and guard traces
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.DaiJoin
 

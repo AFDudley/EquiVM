@@ -1,10 +1,10 @@
-import Solm.MetaSolidityLayout
-import Solm.Semantics
+import Stele.MetaSolidityLayout
+import Stele.Semantics
 
 /-! Executable layout regressions for the compile-time Solidity generator. -/
 
 namespace Examples.StorageBackendTests
-open Solm ABI Ethereum
+open Stele ABI Ethereum
 
 def uint256St : StorageType := .elem (.int (.uint ⟨256, by decide⟩))
 def uint128St : StorageType := .elem (.int (.uint ⟨128, by decide⟩))

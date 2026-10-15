@@ -1,10 +1,10 @@
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.ABIViews
 import Reasoning.Memory
 import Reasoning.WordArithmetic
 import Examples.BlindAuction.Reveal.Loop
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 800000
@@ -379,7 +379,7 @@ theorem scratch_evalPackedArgs_reveal_tail_secret_of_secretStoreOf
   simpa using
     (evalPackedArgs_cons
       (cfg := blindAuctionConfig)
-      (solm :=
+      (stele :=
         { contract := blindAuctionContract,
           locals := scratch_revealSecretStoreOf locals evm i value secret fake })
       (evm := evm) (ty := bytes32) (e := .var "secret")
@@ -399,7 +399,7 @@ theorem scratch_evalPackedArgs_reveal_tail_fake_secret_of_secretStoreOf
   exact
     evalPackedArgs_cons
       (cfg := blindAuctionConfig)
-      (solm :=
+      (stele :=
         { contract := blindAuctionContract,
           locals := scratch_revealSecretStoreOf locals evm i value secret fake })
       (evm := evm) (ty := boolTy) (e := .var "fake")
@@ -419,7 +419,7 @@ theorem scratch_evalPackedArgs_reveal_of_secretStoreOf (evm : EVM.State)
   simpa [packedUint256BoolBytes32Bytes, List.append_assoc] using
     (evalPackedArgs_cons
       (cfg := blindAuctionConfig)
-      (solm :=
+      (stele :=
         { contract := blindAuctionContract,
           locals := scratch_revealSecretStoreOf locals evm i value secret fake })
       (evm := evm) (ty := uint256) (e := .var "value")
@@ -679,7 +679,7 @@ theorem scratch_blindAuctionCheckedAddOverflowRevert {g : Sat256} {s0 : State}
 
 theorem scratch_revealBid_arrayIndexInBounds_revert (evm : EVM.State) (i curLen : UInt256)
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hbound : curLen.toNat ≤ i.toNat) :
     arrayIndexInBounds? blindAuctionConfig evm blindAuctionContract.storage "bids"
@@ -694,7 +694,7 @@ theorem scratch_resolveStorageRef_reveal_bid_revert_of_get (evm : EVM.State) (lo
     (hbids : locals.get? "bids" = none)
     (hi : locals.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hbound : curLen.toNat ≤ i.toNat) :
     resolveStorageRef? blindAuctionConfig
@@ -725,7 +725,7 @@ theorem scratch_revealLoopBody_revert_bounds_of_get (evm : EVM.State) (locals : 
     (hbids : locals.get? "bids" = none)
     (hi : locals.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hbound : curLen.toNat ≤ i.toNat) :
     ExecBlock blindAuctionConfig
@@ -952,7 +952,7 @@ theorem scratch_revealLoopBody_bounds_pair {I} {g : Sat256} {s0 : State}
     (hbids : L.get? "bids" = none)
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen) :
     ExecBlock blindAuctionConfig { contract := blindAuctionContract, locals := L } evm
         scratch_revealLoopBodyStmts .reverted ∧
@@ -1021,7 +1021,7 @@ theorem scratch_revealLoopBody_fakeInvalid_pair {I} {g : Sat256} {s0 : State}
     (hfakes : L.get? "fakes" = some (.array fakes))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundValues : i.toNat < values.length)
     (hboundFakes : i.toNat < fakes.length)
@@ -1079,7 +1079,7 @@ theorem scratch_revealLoopBody_revert_refundOverflow_of_get (evm : EVM.State)
     (hi : locals.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : locals.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hboundBids : i.toNat < len.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1093,10 +1093,10 @@ theorem scratch_revealLoopBody_revert_refundOverflow_of_get (evm : EVM.State)
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
     (hhash :
       evalExpr? blindAuctionConfig
@@ -1211,7 +1211,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromPacked_pair {I} {g : Sat256} {s0
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1225,7 +1225,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromPacked_pair {I} {g : Sat256} {s0
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -1338,7 +1338,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromPacked_concrete_pair {I} {g : Sa
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1352,7 +1352,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromPacked_concrete_pair {I} {g : Sa
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -1478,7 +1478,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromElemSlot_cursor_pair {I} {g : Sa
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1492,7 +1492,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromElemSlot_cursor_pair {I} {g : Sa
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded) :
     ExecBlock blindAuctionConfig { contract := blindAuctionContract, locals := L } evm
         scratch_revealLoopBodyStmts
@@ -1780,7 +1780,7 @@ theorem scratch_revealLoopBody_hashMismatch_afterSecret_pair {I} {g : Sat256}
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hboundBids : i.toNat < len.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1794,7 +1794,7 @@ theorem scratch_revealLoopBody_hashMismatch_afterSecret_pair {I} {g : Sat256}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -1940,7 +1940,7 @@ theorem scratch_revealLoopBody_hashMismatch_afterBool_pair {I} {g : Sat256}
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hboundBids : i.toNat < len.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1954,7 +1954,7 @@ theorem scratch_revealLoopBody_hashMismatch_afterBool_pair {I} {g : Sat256}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -2076,7 +2076,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromFakeDecoder_pair {I} {g : Sat256
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hboundBids : i.toNat < len.toNat)
     (hboundValues : i.toNat < values.length)
@@ -2090,7 +2090,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromFakeDecoder_pair {I} {g : Sat256
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -2252,7 +2252,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromElemSlot_pair {I} {g : Sat256}
     (hsecrets : L.get? "secrets" = some (.array secrets))
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hboundBids : i.toNat < len.toNat)
     (hboundValues : i.toNat < values.length)
@@ -2266,7 +2266,7 @@ theorem scratch_revealLoopBody_hashMismatch_fromElemSlot_pair {I} {g : Sat256}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hhashEval :
       evalExpr? blindAuctionConfig
@@ -2422,11 +2422,11 @@ theorem scratch_blindAuctionRevealBodyReverts_fromLoopRevertOfLocals
     (values fakes secrets : List Value) (len : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hbidding : callargs.get? biddingEndRef.base = none)
     (hreveal : callargs.get? revealEndRef.base = none)
     (hbids : callargs.get? "bids" = none)
@@ -2434,7 +2434,7 @@ theorem scratch_blindAuctionRevealBodyReverts_fromLoopRevertOfLocals
     (hfakes : callargs.get? "fakes" = some (.array fakes))
     (hsecrets : callargs.get? "secrets" = some (.array secrets))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hvaluesLen : values.length = len.toNat)
     (hfakesLen : fakes.length = len.toNat)
@@ -2519,11 +2519,11 @@ theorem scratch_blindAuctionRevealBodyStatic_fromLoopStaticOfLocals
     (values fakes secrets : List Value) (len : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hafter :
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩).toNat <
         (UInt256.ofNat evm.executionEnv.header.timestamp).toNat)
     (hbefore :
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat <
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat)
     (hbidding : callargs.get? biddingEndRef.base = none)
     (hreveal : callargs.get? revealEndRef.base = none)
     (hbids : callargs.get? "bids" = none)
@@ -2531,7 +2531,7 @@ theorem scratch_blindAuctionRevealBodyStatic_fromLoopStaticOfLocals
     (hfakes : callargs.get? "fakes" = some (.array fakes))
     (hsecrets : callargs.get? "secrets" = some (.array secrets))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = len)
     (hvaluesLen : values.length = len.toNat)
     (hfakesLen : fakes.length = len.toNat)

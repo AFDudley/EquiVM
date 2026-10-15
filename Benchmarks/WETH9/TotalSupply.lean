@@ -8,7 +8,7 @@ import Benchmarks.WETH9.Opcodes
 the contract's ether balance).  No arguments, non-payable.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -28,12 +28,12 @@ theorem weth9SelectorDispatchTotalSupply {I : ExecutionEnv} (hsel : selIs I (wet
   native_decide
 
 theorem weth9Decode_totalSupply_ok {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (totalSupplyTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (totalSupplyTransition.params.map Param.name)
       (transitionSignature totalSupplyTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some (∅ : Store)
+  change decodeCalldataWithMode .modern [] [] I.calldata = some (∅ : Store)
   exact decodeCalldataWithMode_empty_ok hsz4
 
-/-- The Solm `totalSupply()` body returns `address(this).balance`. -/
+/-- The Stele `totalSupply()` body returns `address(this).balance`. -/
 theorem weth9TotalSupplyBodyReturns {σ σ₀ A I} {g : Sat256}
     (h : I.weiValue = ⟨0⟩) :
     ExecTransitionBody config contract (initState σ σ₀ g A I) ∅

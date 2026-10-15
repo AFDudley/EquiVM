@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -20,9 +20,9 @@ theorem evalCastUint128 {cfg : Config} {frame : Frame} {evm : EVM.State}
   rfl
 
 def storeMarketLastUpdate (evm : EVM.State) (id value : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (marketFieldSlot id 4)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (marketFieldSlot id 4)
     (setUint128LowWord
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (marketFieldSlot id 4)) value)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (marketFieldSlot id 4)) value)
 
 theorem assignMarketLastUpdate (evm : EVM.State) (locals imms : Store) (key : Expr)
     (id value : UInt256) (hc : value.toNat < 2 ^ 128)

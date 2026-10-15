@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.FlashLoanCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -66,7 +66,7 @@ theorem morphoFlashLoanBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
         have hread := calldataBytesPayload_read hbytes
         have hdataSize := calldataBytesPayload_size hbytes
         have hi := flashLoanFrame_inputs token assets data I.calldata (immStore v)
-        have pref := morphoFlashLoanSourceEnter token assets data evm (immStore v) hcv hbound hz
+        have pref := morphoFlashLoanSourceEnter (hperm := hp) token assets data evm (immStore v) hcv hbound hz
         have hr : RD (deployedRuntime v) I (.ofUInt256 g) evm (UInt256.ofNat 14666)
             [UInt256.ofNat token.val, UInt256.ofNat I.source.val, assets, UInt256.ofNat 1113,
               (UInt256.ofNat 4 + calldataWord I.calldata 68) + UInt256.ofNat 32,

@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.BurnFeeEntryRuntime
 import Examples.UniswapV2Pair.BurnInitialSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 
@@ -94,7 +94,7 @@ abbrev burnBeforeFeePrefix : List Stmt :=
 theorem uniswapBurnBeforeFeePrefix
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv) (balance0 balance1 : UInt256)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hfirst : ExecBlock config
       { contract := contract, locals := burnCacheStore (uniswapLockEnteredState evm) I }
       (uniswapLockEnteredState evm) (balanceOfThisStmts (.var "_token0") "balance0")
@@ -104,12 +104,13 @@ theorem uniswapBurnBeforeFeePrefix
       { contract := contract, locals := burnBalance0Store (uniswapLockEnteredState evm) I balance0 }
       evm0 (balanceOfThisStmts (.var "_token1") "balance1")
       (.ok { contract := contract, locals :=
-        burnBalanceStore (uniswapLockEnteredState evm) I balance0 balance1 } evm1)) :
+        burnBalanceStore (uniswapLockEnteredState evm) I balance0 balance1 } evm1))
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := burnStore I } evm burnBeforeFeePrefix
       (.ok { contract := contract, locals :=
         burnLiquidityStore (uniswapLockEnteredState evm) evm1 I balance0 balance1 } evm1) := by
   exact execBlock_append
-    (execBlock_append (execBlock_append (uniswapBurnCachePrefix evm I hwv hunlocked) hfirst) hsecond)
+    (execBlock_append (execBlock_append (uniswapBurnCachePrefix (hperm := by assumption) evm I hwv hunlocked) hfirst) hsecond)
     (uniswapBurnLiquidityLoaded (uniswapLockEnteredState evm) evm1 I balance0 balance1)
 
 theorem uniswapBurnBodyReverts_mintFeeBlock

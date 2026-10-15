@@ -1,10 +1,10 @@
 import Benchmarks.Morpho.MorphoBlue.AccrueSourceFeeWrites
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
--- LIBRARY CANDIDATE: the nonzero test for a canonical word represented as a Solm integer.
+-- LIBRARY CANDIDATE: the nonzero test for a canonical word represented as a Stele integer.
 theorem evalWordNeZero {cfg : Config} {frame : Frame} {evm : EVM.State} {e : Expr} {w : UInt256}
     (he : evalExpr? cfg frame evm e = .ok (.int (Int.ofNat w.toNat))) :
     evalExpr? cfg frame evm (.binary .ne e (.intLit 0)) = .ok (.bool (decide (w ≠ ⟨0⟩))) := by
@@ -27,10 +27,11 @@ theorem morphoAccrueEmit (p : MarketParamsWords) (locals imms : Store) (evm : EV
     (hi : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
       (.var "interest") = .ok (.int (Int.ofNat interest.toNat)))
     (hs : evalExpr? config { contract := contract, locals := locals, immutables := imms } evm
-      (.var "feeShares") = .ok (.int (Int.ofNat shares.toNat))) :
+      (.var "feeShares") = .ok (.int (Int.ofNat shares.toNat)))
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := locals, immutables := imms } evm accrueIrmBody[11]!
       (.ok { contract := contract, locals := locals, immutables := imms } evm) := by
-  apply ExecStmt.emit
+  apply ExecStmt.emit (hperm := hperm)
   simp only [evalExprs?, hl.evalId imms evm, hr, hi, hs, pure, bind, EvalResult.bind]
   rfl
 
@@ -41,14 +42,15 @@ theorem morphoAccrueSourceFromIrmOk (p : MarketParamsWords) (hc : p.Canonical) (
     (hn : accrueElapsed evm.accountMap evm.executionEnv p ≠ ⟨0⟩) (hi : p.irm ≠ ⟨0⟩)
     (hbody : ExecBlock config (accrueAfterElapsed p imms (accrueElapsed evm.accountMap evm.executionEnv p)) evm
       accrueIrmBody (.ok { contract := contract, locals := locals, immutables := imms } evm'))
-    (hl : MarketLocals p locals) :
+    (hl : MarketLocals p locals)
+    (hperm : evm'.executionEnv.perm = true) :
     ExecFuncBody config (accrueStart p imms) evm accrueInterestFunction.body
       (.returned { contract := contract, locals := locals, immutables := imms }
         (storeMarketLastUpdate evm' p.id (halfWord false (UInt256.ofNat evm'.executionEnv.header.timestamp))) none) := by
   apply ExecFuncBody.execBlockOK
   apply (morphoAccrueSourceNonzeroElapsed p evm imms htime hn).run
   apply ExecBlock.consNormal (ExecStmt.iteTrue ?_ hbody)
-  · exact ExecBlock.consNormal (morphoAccrueTimestampAssign p locals imms evm' hl) ExecBlock.nil
+  · exact ExecBlock.consNormal (by simpa only [hperm, if_true] using morphoAccrueTimestampAssign p locals imms evm' hl) ExecBlock.nil
   · simpa only [decide_eq_true hi] using
       (accrueElapsed_locals p imms _).evalIrmNonzero hc imms evm
 

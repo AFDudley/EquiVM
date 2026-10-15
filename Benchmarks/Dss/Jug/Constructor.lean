@@ -1,12 +1,12 @@
 import Benchmarks.Dss.Jug.ConstructorSource
 import Benchmarks.Dss.Jug.ConstructorTrace
-import Solm.Refine
+import Stele.Refine
 
 /-!
 # MakerDAO/Sky DSS Jug constructor correctness
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Jug
 
@@ -46,10 +46,10 @@ theorem jugConstructorCorrect :
           storageStore_accountMap, hslot]
       have hOldVat :
           solcSlotWord σWards I ⟨2⟩ =
-            Solm.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩ := by
+            Stele.EVM.storageLoad evm1s evm1s.executionEnv.codeOwner ⟨2⟩ := by
         rw [← hMapWards]
         simp [evm1s, evm0s, jugCtorAfterWardsState, initState,
-          Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+          Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
           solcSlotWord, storageStore_executionEnv]
       have howner : evm1s.executionEnv.codeOwner = I.codeOwner := by
         simp [evm1s, evm0s, jugCtorAfterWardsState, storageStore_executionEnv, initState]
@@ -61,7 +61,7 @@ theorem jugConstructorCorrect :
       refine typedConstructorRefinementFor.execution hsuccess
         (by
           simpa [evm0s, evm1s, evm2s] using
-            jugSolmCtorExecSuccess (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
+            jugSteleCtorExecSuccess (hperm := hperm) (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
               (g := g) vat hwv)
         ?_
       exact ctorResultEquiv.success rfl rfl hMapVat.symm rfl
@@ -70,7 +70,7 @@ theorem jugConstructorCorrect :
     rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', out, hRev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hRev)
-        (jugSolmCtorExecReverts_nonpayable (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
+        (jugSteleCtorExecReverts_nonpayable (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
           (g := g) vat hwv)
         ?_
       exact ctorResultEquiv.revert rfl rfl

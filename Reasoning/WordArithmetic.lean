@@ -1,5 +1,5 @@
 import Reasoning.PackedStorage
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.Initcode
 
 /-!
@@ -9,7 +9,7 @@ Signed and unsigned arithmetic guards, byte masks, address conversions, and boun
 The hypotheses here are the original arithmetic bounds, independent of any contract or bytecode.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 set_option autoImplicit false
 set_option maxRecDepth 2000000
@@ -378,7 +378,7 @@ theorem addressOfNat_eq_of_masked_word (w : UInt256) :
   have h := solcAddressValue_masked w
   have haddr : AccountAddress.ofNat w.toNat =
       AccountAddress.ofNat (UInt256.land solcAddrMask w).toNat :=
-    Solm.Value.address.inj h
+    Stele.Value.address.inj h
   simpa [u256_land_comm] using haddr
 
 theorem word_of_addressOfNat_eq_mask' (who : UInt256) :

@@ -1,6 +1,6 @@
 import Benchmarks.Morpho.MorphoBlue.SafeTransferSourceAllocation
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace Benchmarks.Morpho.MorphoBlue
 set_option maxRecDepth 1000
 
@@ -42,8 +42,8 @@ theorem safeTransferTail_decodeFailure {frame : Frame} {evm : EVM.State} {n : Na
     (hm : frame.locals.get? "__memory" = some (.int (Int.ofNat n)))
     (hout : frame.locals.get? "returndata" = some (.bytes out))
     (hz : frame.locals.get? "success" = some (.bool true)) (hn : out.size ≠ 0)
-    (hd : ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = none ∨
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool false)) :
+    (hd : config.externalABI.decodeValue? abiBool out = none ∨
+      config.externalABI.decodeValue? abiBool out = some (.bool false)) :
     ExecBlock config frame evm safeTransferTail .reverted := by
   by_cases hb : out.size < 2 ^ 64
   · by_cases hc : n + safeTransferReturnAlloc out.size + 128 < 2 ^ 64
@@ -68,7 +68,7 @@ theorem safeTransferTail_success {frame : Frame} {evm : EVM.State} {n : Nat}
     (hz : frame.locals.get? "success" = some (.bool true))
     (hb : out.size < 2 ^ 64) (hc : n + safeTransferReturnAlloc out.size + 128 < 2 ^ 64)
     (hd : out.size = 0 ∨
-      ABI.decodeReturnValueWithMode? config.abiDecodeMode abiBool out = some (.bool true)) :
+      config.externalABI.decodeValue? abiBool out = some (.bool true)) :
     ∃ frame', ExecBlock config frame evm safeTransferTail
       (.returned frame' evm (some [.int (Int.ofNat (n + safeTransferReturnAlloc out.size + 128))])) := by
   obtain ⟨frame', hp, hm', hout', hz'⟩ := safeTransferTail_ready hm hout hz hb hc

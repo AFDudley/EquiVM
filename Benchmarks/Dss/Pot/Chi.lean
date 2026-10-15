@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Pot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Pot
 
@@ -9,9 +9,9 @@ namespace Benchmarks.Dss.Pot
 def chiWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt ⟨4⟩ σ I
 
 theorem potDecode_chi {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (chiTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (chiTransition.params.map Param.name)
       (transitionSignature chiTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem potReachChiBody {σ σ₀ A I} {g : Sat256}
@@ -42,7 +42,7 @@ theorem potChiBodyCore
     (hcode : I.code = potBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some chiTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (chiTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (chiTransition.params.map Param.name)
         (transitionSignature chiTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD potBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨629⟩ [sel]
@@ -54,7 +54,7 @@ theorem potChiBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (chiWord σ I).toNat))])) := by
-    simpa [chiTransition, chiWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [chiTransition, chiWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       potUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

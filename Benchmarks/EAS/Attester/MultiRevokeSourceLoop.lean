@@ -1,6 +1,6 @@
 import Benchmarks.EAS.Attester.MultiRevokeSourceRow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory
 
 namespace Benchmarks.EAS.Attester
 
@@ -43,12 +43,12 @@ theorem revokeOuterRun {cfg : Config} {C : ContractDecl} {imms : Store} {evm : S
       refine .inr ⟨by intro k hk hk'; omega, locals, ExecForLoop.falseDone ?_,
         by simpa only [hrequests] using hq, by intro name _; rfl⟩
       simpa only [revokeOuterCond, hin, Nat.lt_irrefl, decide_false] using
-        (evalLocalNatLt (cfg := cfg) (solm := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
+        (evalLocalNatLt (cfg := cfg) (stele := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
   | succ remaining ih =>
       have hin : i < n := by omega
       have hcond : evalExpr? cfg ⟨C, locals, imms⟩ evm revokeOuterCond = .ok (.bool true) := by
         simpa only [revokeOuterCond, hin, decide_true] using
-          (evalLocalNatLt (cfg := cfg) (solm := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
+          (evalLocalNatLt (cfg := cfg) (stele := ⟨C, locals, imms⟩) (evm := evm) hindex hcount)
       obtain ⟨schema, uids, hsch, hrow, hexp, hfit, hsnormal, hunormal⟩ := hviews i hin
       by_cases hempty : uids = []
       · subst uids

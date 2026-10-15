@@ -19,7 +19,7 @@ Shared infra (frozen, reusable): `Common` (binary-dispatch reach lemmas `catReac
 - `BiteTrace.lean` — DONE: `catReachBiteRoutine` (pc 375→1163 reach; output stack
   `[land mask (calldataWord 36), calldataWord 4, ⟨419⟩, catSelWord I]`, mem solcFreePtrMem, aw ⟨3⟩).
 - `BiteSource.lean` — **only `catBiteSourceLiveRevert`** (the live≠1 branch) + storage-read/`biteTupleLet`/checkpoint-Store
-  scaffolding. **NO `catBiteSourceSuccess`, NO other revert branches.** The full Solm body must still be built (~500-700
+  scaffolding. **NO `catBiteSourceSuccess`, NO other revert branches.** The full Stele body must still be built (~500-700
   lines, but FAST builds, uses `Arithmetic.execMin*`/`evalExpr_{mul,add,sub}256_*` + `internalCallFunction*`).
 - `BiteCall{Urns,Grab,Fess,Kick}.lean` — substantive (5-7 `RD.catBite*` lemmas each: encoding + guard + CALL/STATICCALL
   + return-decode). `BiteCallUrns` names its ilk abbrevs `biteUrnsIlk*` (collision-avoid).
@@ -59,7 +59,7 @@ guard→3694 CALL→3711→1030→302 STOP.
      (copy `BiteCallFess` shape).
   2. RMW store 3582→3626 (`FileAddress`'s `setAddressOffset0Word` machinery at slot keccak(ilk,1)).
   3. hope encoder+coupling+call 3626→3711 (near-copy of nope; selector 0xa3b22fc4, arg = flip from stack).
-  4. epilogue → `RDret`; Solm source body via `checkedExternalCall*`/assign helpers.
+  4. epilogue → `RDret`; Stele source body via `checkedExternalCall*`/assign helpers.
   5. the 2-Θ connect (same untemplated step as bite #4, but 2 calls) — TEMPLATE `KissSuccess`.
 
 ## Practical constraints for a resume session
@@ -70,6 +70,6 @@ guard→3694 CALL→3711→1030→302 STOP.
 - Do NOT hand-edit generated files to resolve name collisions — the LSP linter reformats concurrently and
   substring renames break delicate simp/elaboration. Regenerate the offending file or fix atomically in-context.
 - `.lake` cache setup (if `.lake` empty): `.lake/packages` → symlink `EquiVM-proofs1/.lake/packages`;
-  `.lake/build` → `cp -a EquiVM/.lake/build`. (claude2 Reasoning/Solm == proofs1's, verified.)
+  `.lake/build` → `cp -a EquiVM/.lake/build`. (claude2 Reasoning/Stele == proofs1's, verified.)
 - `lake build` returns exit 0 WITH `sorry` (warning). Check `rg -c '\bsorry\b'` AND actual build errors —
   `sorry=0` does NOT imply the file compiles (BiteSource had 5 real errors at `sorry=0`).

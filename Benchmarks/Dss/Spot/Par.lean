@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Spot.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Spot
 
@@ -10,9 +10,9 @@ def spotParWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨3⟩ σ I
 
 theorem spotDecode_par {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (parTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (parTransition.params.map Param.name)
       (transitionSignature parTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem spotReachParBody {σ σ₀ A I} {g : Sat256}
@@ -55,7 +55,7 @@ theorem spotParBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (spotParWord σ I).toNat))])) := by
-    simpa [parTransition, spotParWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [parTransition, spotParWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       spotUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

@@ -2,7 +2,7 @@ import Benchmarks.Auction.UnpauseSource
 import Benchmarks.Auction.PausableErrors
 import Benchmarks.Auction.AddressEventHeap
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 

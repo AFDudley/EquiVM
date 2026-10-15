@@ -6,7 +6,7 @@ import Examples.StringStoreLite.SetLongOldShort
 This file proves the valid `set(string)` branch when both the new decoded value and old stored value are short.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000
@@ -60,8 +60,8 @@ theorem stringStoreLiteSetNewShortOldShortValidRuntime
     (((⟨4⟩ : UInt256) + calldataWord I.calldata 4) + ⟨32⟩)
   let oldLen : UInt256 :=
     UInt256.land (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨127⟩
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolm1 := Solm.EVM.storageStore evmSolm0 I.codeOwner ⟨0⟩
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmStele1 := Stele.EVM.storageStore evmStele0 I.codeOwner ⟨0⟩
     (solidityShortBytesWord (setDecodedValueBytes I))
   have hlenAbi :
       len = calldataWord I.calldata (4 + (calldataWord I.calldata 4).toNat) := by
@@ -116,23 +116,23 @@ theorem stringStoreLiteSetNewShortOldShortValidRuntime
     fun _ hwriteReach => stringStoreLiteX_setShortNonemptyReturnFromWrite
       (payloadStart := payloadStart) (len := len) hnz hshort hsrc hwriteReach
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
-  have hpacked : checkBytesPacked ⟨0⟩ evmSolm0 = true :=
+  have hpacked : checkBytesPacked ⟨0⟩ evmStele0 = true :=
     checkBytesPacked_of_storageLoad_land_one_zero hload hflag
   have hvalueSizeShort : (setDecodedValueBytes I).size < 32 := by
     rw [setDecodedValueBytes_size hpayload]
     simpa [hlenAbi] using hshort
   have hwrite :
       stringStoreLiteConfig.storageBackend.write { base := "current", steps := [] }
-        .string (.bytes (setDecodedValueBytes I)) evmSolm0 = .ok evmSolm1 := by
-    have hwrite₀ := writeCurrentShortPacked (evm := evmSolm0)
+        .string (.bytes (setDecodedValueBytes I)) evmStele0 = .ok evmStele1 := by
+    have hwrite₀ := writeCurrentShortPacked (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := oldLen)
       (value := setDecodedValueBytes I)
       hvalueSizeShort hload hpacked hflag rfl (by simpa [oldLen] using hvalid)
-    simpa only [evmSolm1] using hwrite₀
+    simpa only [evmStele1] using hwrite₀
   have hretEnc :
       returnEquiv (UInt256.toByteArray len) (some [.int (setDecodedValueBytes I).size])
         [(.elem (.int (.uint ⟨256, by decide⟩)))] := by
@@ -148,8 +148,8 @@ theorem stringStoreLiteSetNewShortOldShortValidRuntime
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact setRuntimeStaticOfWrite hcode hwv hpf (permSplit_false hpf hsplit) hd hdec hwrite
-  exact setRuntimeOfWriteAccountMapEq hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
-    (by simp [evmSolm1, evmSolm0, initState, storageStore_accountMap, hheaderEq])
+  exact setRuntimeOfWriteAccountMapEq (hperm := by assumption) hcode hwv (permSplit_true hperm hsplit) hd hdec hwrite
+    (by simp [evmStele1, evmStele0, initState, storageStore_accountMap, hheaderEq])
     hretEnc
 
 

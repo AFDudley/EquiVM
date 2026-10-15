@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vow.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -34,9 +34,9 @@ theorem vowDispatch_bump {I : ExecutionEnv} (hsel : selIs I ⟨#[0x68, 0x11, 0x0
     exact hsel
 
 theorem vowDecode_bump {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bumpTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bumpTransition.params.map Param.name)
       (transitionSignature bumpTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vowReachBumpBody {σ σ₀ A I} {g : Sat256}
@@ -73,7 +73,7 @@ theorem vowBumpBodyCore
     (hcode : I.code = vowBytecode) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some bumpTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (bumpTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (bumpTransition.params.map Param.name)
         (transitionSignature bumpTransition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD vowBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨555⟩ [sel]
@@ -85,7 +85,7 @@ theorem vowBumpBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (bumpWord σ I).toNat))])) := by
-    simpa [bumpTransition, bumpWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [bumpTransition, bumpWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       vowUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

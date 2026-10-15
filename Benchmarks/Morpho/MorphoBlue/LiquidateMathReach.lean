@@ -3,7 +3,7 @@ import Benchmarks.Morpho.MorphoBlue.RepayMathReach
 import Benchmarks.Morpho.MorphoBlue.AssetsDownRoutines
 import Benchmarks.Morpho.MorphoBlue.SharesUpRoutines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

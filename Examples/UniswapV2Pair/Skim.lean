@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.SkimDecoded
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -12,10 +12,10 @@ theorem uniswapSkimBody
     (hdispatch : dispatchMsg contract I.calldata = some skimTransition) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   by_cases hsz36 : 36 ≤ I.calldata.size
-  · have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  · have hdecode : config.externalABI.decodeCalldata?
         (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-      show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+      show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
         using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     exact uniswapSkimBodyDecoded hcode hsize hperm hwv hsel hdispatch hsz36 hdecode
@@ -33,10 +33,10 @@ theorem uniswapSkimBodyAnyPerm
   · exact uniswapSkimBody hcode hsize hperm hwv hsel hdispatch
   replace hperm : I.perm = false := by simpa using hperm
   by_cases hsz36 : 36 ≤ I.calldata.size
-  · have hdecode : decodeCalldataWithMode config.abiDecodeMode
+  · have hdecode : config.externalABI.decodeCalldata?
         (skimTransition.params.map Param.name)
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
-      show decodeCalldataWithMode config.abiDecodeMode ["to"] [legacyAddr] I.calldata = _
+      show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
         using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     have hsz4 : 4 ≤ I.calldata.size :=
@@ -58,14 +58,14 @@ theorem uniswapSkimBodyAnyPerm
           (toWord := skimToMaskedWord I) hlocked hdecoded)
     · have hunlocked := not_not.mp hlocked
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
           Account.lookupStorage] using hunlocked
       exact (uniswapSkimX_lockEnteredStatic hperm hunlocked hdecoded).reEquivStaticHalt
         hcode hdispatch hdecode
         (uniswapSkimBodyStatic evmS I (by simp only [evmS, initState]; exact hwv)
-          hunlockedSolm (by simp only [evmS, initState]; exact hperm))
+          hunlockedStele (by simp only [evmS, initState]; exact hperm))
   · exact uniswapSkimBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
 end UniswapV2Pair

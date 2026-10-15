@@ -1,15 +1,15 @@
 import Examples.Pow.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Pow spec in the Solidity-faithful Solm frontend
+# Pow spec in the Solidity-faithful Stele frontend
 
 The spec's constructor has an empty body (no callvalue guard), so it is written `payable`.
 `pow2` is non-payable; the loop's local updates are `letDecl` re-binds, written as re-declarations
 so the annotations (`some uint256`) match.
 -/
 
-open Solm Solm.Notation
+open Stele Stele.Notation
 
 namespace Pow.Syntax
 

@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Gem
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -79,9 +79,9 @@ theorem urnsArtStorageSlot_eq (I : ExecutionEnv) (hsz68 : 68 ≤ I.calldata.size
   simp [urnsArtStorageSlot, urnsInkStorageSlot_eq I hsz68]
 
 theorem vatDecode_urns_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (urnsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (urnsTransition.params.map Param.name)
       (transitionSignature urnsTransition).paramTypes I.calldata = some (urnsStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [bytes32, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [bytes32, addr]
     I.calldata = _
   simpa [config, urnsStore, urnsIlkValue, urnsUsrValue, urnsUsrWord] using
     decodeCalldata_legacyBytes32_legacyAddress_ok
@@ -89,9 +89,9 @@ theorem vatDecode_urns_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem vatDecode_urns_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (urnsTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (urnsTransition.params.map Param.name)
       (transitionSignature urnsTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0", "arg1"] [bytes32, addr]
+  show config.externalABI.decodeCalldata? ["arg0", "arg1"] [bytes32, addr]
     I.calldata = none
   simpa [config] using decodeCalldata_legacyBytes32_address_none_short
     (cd := I.calldata) (x := "arg0") (y := "arg1") hsz4 hshort
@@ -297,7 +297,7 @@ theorem vatUrnsBodyReturns {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (urnsInkStorageSlot I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := urnsF (.var "arg0") (.var "arg1") "ink") (er := urnsInkEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (urnsInkStorageSlot I))
       (value := .int (Int.ofNat
@@ -318,7 +318,7 @@ theorem vatUrnsBodyReturns {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (urnsArtStorageSlot I) evm.accountMap evm.executionEnv).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := urnsF (.var "arg0") (.var "arg1") "art") (er := urnsArtEvaledRef I)
       (t := .int uint256Int) (loc := wordLoc (urnsArtStorageSlot I))
       (value := .int (Int.ofNat
@@ -357,7 +357,7 @@ theorem vatUrnsBodyCoreOk
     (hsz68 : 68 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some urnsTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (urnsTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (urnsTransition.params.map Param.name)
         (transitionSignature urnsTransition).paramTypes I.calldata = some (urnsStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨570⟩ [sel]

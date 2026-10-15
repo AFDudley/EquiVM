@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.Memory
 import Benchmarks.EAS.Attester.WordHelpers
 import Reasoning.HeapMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Reasoning.Theory
 

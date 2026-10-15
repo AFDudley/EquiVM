@@ -1,6 +1,6 @@
 import Examples.Ballot.DelegateChain
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -471,7 +471,7 @@ theorem evalExpr_delegate_tail_proposal_count_general (evm : EVM.State)
         .int (Int.ofNat (delegateTailProposalCountCurrent evm I w).toNat) := by
     change storageLocLoad (delegateTailAfterSenderState evm I w)
         (wordLoc (delegateTailProposalCountSlotCurrent evm I w)) =
-      .int (Int.ofNat (Solm.EVM.storageLoad (delegateTailAfterSenderState evm I w)
+      .int (Int.ofNat (Stele.EVM.storageLoad (delegateTailAfterSenderState evm I w)
         (delegateTailAfterSenderState evm I w).executionEnv.codeOwner
         (delegateTailProposalCountSlotCurrent evm I w)).toNat)
     exact storageLocLoad_uint256 (delegateTailAfterSenderState evm I w)
@@ -675,7 +675,8 @@ theorem ballotDelegateBodyReturns_tailNotVoted_general (evm : EVM.State)
     (hfit :
       (delegateTailVoterWeightCurrent (delegateTailAfterSenderState evm I w) w).toNat +
           (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body
       (.returned { contract := ballotContract, locals := delegateTailGeneralStore I w L }
@@ -697,9 +698,12 @@ theorem ballotDelegateBodyReturns_tailNotVoted_general (evm : EVM.State)
       (evalExpr_delegate_tail_delegate_weight_ge_true_general evm I w L hdelegateWeight)) ?_
   have hacc := delegateSenderWeightCurrent_ne_zero_account evm I hweight
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
+      (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_to_afterDelegate_general (delegateAfterVotedState evm I) I w L hL)
       (delegateAssignTailDelegate_general evm I w L hL hacc hcanonTail)) ?_
   refine ExecBlock.consNormal ?_ ExecBlock.nil
@@ -708,6 +712,7 @@ theorem ballotDelegateBodyReturns_tailNotVoted_general (evm : EVM.State)
       I w L hdelegateNotVoted) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_delegate_weight_add_general
         (delegateTailAfterSenderState evm I w) I w L hL hfit)
       (delegateAssignTailVoterWeight_general evm I w L)) ExecBlock.nil
@@ -772,7 +777,8 @@ theorem ballotDelegateBodyReverts_tailNotVotedOverflow_general
       delegateTailVoterVotedByteCurrent (delegateTailAfterSenderState evm I w) w = ⟨0⟩)
     (hover : UInt256.size ≤
       (delegateTailVoterWeightCurrent (delegateTailAfterSenderState evm I w) w).toNat +
-        (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat) :
+        (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -792,9 +798,12 @@ theorem ballotDelegateBodyReverts_tailNotVotedOverflow_general
       (evalExpr_delegate_tail_delegate_weight_ge_true_general evm I w L hdelegateWeight)) ?_
   have hacc := delegateSenderWeightCurrent_ne_zero_account evm I hweight
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
+      (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_to_afterDelegate_general (delegateAfterVotedState evm I) I w L hL)
       (delegateAssignTailDelegate_general evm I w L hL hacc hcanonTail)) ?_
   refine ExecBlock.consRevert ?_
@@ -830,7 +839,8 @@ theorem ballotDelegateBodyReturns_tailVoted_general (evm : EVM.State)
     (hfit :
       (delegateTailProposalCountCurrent evm I w).toNat +
           (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat <
-        UInt256.size) :
+        UInt256.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body
       (.returned { contract := ballotContract, locals := delegateTailGeneralStore I w L }
@@ -852,9 +862,12 @@ theorem ballotDelegateBodyReturns_tailVoted_general (evm : EVM.State)
       (evalExpr_delegate_tail_delegate_weight_ge_true_general evm I w L hdelegateWeight)) ?_
   have hacc := delegateSenderWeightCurrent_ne_zero_account evm I hweight
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
+      (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_to_afterDelegate_general (delegateAfterVotedState evm I) I w L hL)
       (delegateAssignTailDelegate_general evm I w L hL hacc hcanonTail)) ?_
   refine ExecBlock.consNormal ?_ ExecBlock.nil
@@ -863,6 +876,7 @@ theorem ballotDelegateBodyReturns_tailVoted_general (evm : EVM.State)
       I w L hdelegateVoted) ?_
   exact ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_proposal_count_add_general evm I w L hL hbound hfit)
       (delegateAssignTailProposalCount_general evm I w L hL hbound hfit)) ExecBlock.nil
 
@@ -887,7 +901,8 @@ theorem ballotDelegateBodyReverts_tailVotedOob_general (evm : EVM.State)
       delegateTailVoterVotedByteCurrent (delegateTailAfterSenderState evm I w) w ≠ ⟨0⟩)
     (hbound :
       ¬ (delegateTailVoterVoteCurrent (delegateTailAfterSenderState evm I w) w).toNat <
-        (delegateTailProposalsLengthCurrent (delegateTailAfterSenderState evm I w)).toNat) :
+        (delegateTailProposalsLengthCurrent (delegateTailAfterSenderState evm I w)).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -907,9 +922,12 @@ theorem ballotDelegateBodyReverts_tailVotedOob_general (evm : EVM.State)
       (evalExpr_delegate_tail_delegate_weight_ge_true_general evm I w L hdelegateWeight)) ?_
   have hacc := delegateSenderWeightCurrent_ne_zero_account evm I hweight
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
+      (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_to_afterDelegate_general (delegateAfterVotedState evm I) I w L hL)
       (delegateAssignTailDelegate_general evm I w L hL hacc hcanonTail)) ?_
   refine ExecBlock.consRevert ?_
@@ -943,7 +961,8 @@ theorem ballotDelegateBodyReverts_tailVotedOverflow_general (evm : EVM.State)
         (delegateTailProposalsLengthCurrent (delegateTailAfterSenderState evm I w)).toNat)
     (hover : UInt256.size ≤
       (delegateTailProposalCountCurrent evm I w).toNat +
-        (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat) :
+        (delegateSenderWeightCurrent (delegateTailAfterSenderState evm I w) I).toNat)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody ballotConfig ballotContract evm (delegateStore I)
       delegateTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -963,9 +982,12 @@ theorem ballotDelegateBodyReverts_tailVotedOverflow_general (evm : EVM.State)
       (evalExpr_delegate_tail_delegate_weight_ge_true_general evm I w L hdelegateWeight)) ?_
   have hacc := delegateSenderWeightCurrent_ne_zero_account evm I hweight
   refine ExecBlock.consNormal
-    (ExecStmt.assign (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
+      (by simp [evalExpr?, pure]) (delegateAssignTailVoted_general evm I w L hL)) ?_
   refine ExecBlock.consNormal
     (ExecStmt.assign
+      (hperm := Or.inr (by simpa [delegateAfterVotedState, delegateTailAfterSenderState] using hperm))
       (evalExpr_delegate_tail_to_afterDelegate_general (delegateAfterVotedState evm I) I w L hL)
       (delegateAssignTailDelegate_general evm I w L hL hacc hcanonTail)) ?_
   refine ExecBlock.consRevert ?_

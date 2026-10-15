@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Flapper.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Flapper
 
@@ -10,9 +10,9 @@ def lidWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨8⟩ σ I
 
 theorem flapperDecode_lid {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (lidTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (lidTransition.params.map Param.name)
       (transitionSignature lidTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem flapperReachLidBody {σ σ₀ A I} {g : Sat256}
@@ -67,7 +67,7 @@ theorem flapperLidBodyCore {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (lidWord σ I).toNat))])) := by
-    simpa [lidTransition, lidWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [lidTransition, lidWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       flapperUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

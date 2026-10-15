@@ -9,7 +9,7 @@ import Reasoning.Solc
 import Reasoning.Memory
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Reasoning.ExternalCall
 import Mathlib.Tactic.IntervalCases
 
@@ -19,7 +19,7 @@ import Mathlib.Tactic.IntervalCases
 Contract-wide helpers for the optimized runtime and creation bytecode.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -44,7 +44,7 @@ theorem endAddressGetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.address (AccountAddress.ofNat
-          (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+          (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             solcAddrMask).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
@@ -61,7 +61,7 @@ theorem endUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -73,7 +73,7 @@ theorem endAddressGetterBodyCore
     (hcode : I.code = endBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -117,7 +117,7 @@ theorem endUint256GetterBodyCore
     (hcode : I.code = endBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD endBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]

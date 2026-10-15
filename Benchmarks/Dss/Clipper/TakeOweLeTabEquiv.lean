@@ -5,7 +5,7 @@ import Benchmarks.Dss.Clipper.TakeChostAdjustedNonzeroEquiv
 import Benchmarks.Dss.Clipper.TakeLotZeroContinuationEquiv
 import Benchmarks.Dss.Clipper.TakeTabZeroContinuationEquiv
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -24,7 +24,7 @@ theorem clipperTakeOweLeTabEquiv
     (hpatch : patchRuntime clipperBytecode (patches v) = some code)
     (hcode : I.code = code) (hwv : I.weiValue = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some takeTransition)
-    (hdec : decodeCalldataWithMode config.abiDecodeMode
+    (hdec : config.externalABI.decodeCalldata?
       (List.map Param.name takeTransition.params)
       (transitionSignature takeTransition).paramTypes I.calldata =
         some (clipperTakeStore I))
@@ -64,7 +64,7 @@ theorem clipperTakeOweLeTabEquiv
     (hmax : price.toNat ≤ (clipperTakeMaxWord I).toNat)
     (hstatus :
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+      let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
       ExecStmt config (Frame.mk contract (clipperTakeLocalsTic evmLock I) (immStore v))
         evmLock (.internalCall "status" [.var "tic", .storage (salesF (.var "id") "top")] "st")
         (.ok (Frame.mk contract (clipperTakeLocalsSt evmLock I false price) (immStore v)) evmPrice))
@@ -81,7 +81,7 @@ theorem clipperTakeOweLeTabEquiv
   · intro hge hrd
     obtain ⟨_, _, rd4223⟩ := hrd
     have hite := clipperTakeOweEqTabIte v
-      (Solm.EVM.storageStore
+      (Stele.EVM.storageStore
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨13⟩ ⟨1⟩)
       evmPrice I price slice
@@ -118,7 +118,7 @@ theorem clipperTakeOweLeTabEquiv
       rw [hsliceEq]
       exact u256_sub_self lot
     have hite := clipperTakeOweLtTabSliceGeLotIte v
-      (Solm.EVM.storageStore
+      (Stele.EVM.storageStore
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         I.codeOwner ⟨13⟩ ⟨1⟩)
       evmPrice I price slice
@@ -179,11 +179,11 @@ theorem clipperTakeOweLeTabEquiv
       hdepth hperm
   · intro hlt hsliceLt hremainingLt htabLeChost hrev
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evmLock := Solm.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
+    let evmLock := Stele.EVM.storageStore evm0 evm0.executionEnv.codeOwner ⟨13⟩ ⟨1⟩
     have hchostEq :
-        Solm.EVM.storageLoad evmPrice evmPrice.executionEnv.codeOwner ⟨9⟩ =
+        Stele.EVM.storageLoad evmPrice evmPrice.executionEnv.codeOwner ⟨9⟩ =
           solcSlotWord σPost I ⟨9⟩ := by
-      simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+      simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
         solcSlotWord, hevmPriceEnv, hAccountsPost]
     have hpref := clipperTakeOwe0MulSuccessBlock v evmLock evmPrice I price slice
       (by simpa [Nat.mul_comm] using hmul)
@@ -202,7 +202,7 @@ theorem clipperTakeOweLeTabEquiv
     have hbody : ExecTransitionBody config contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (clipperTakeStore I) takeTransition.body .reverted (immStore v) := by
-      apply clipperTakeSourceRevertsOfAfterSlice
+      apply clipperTakeSourceRevertsOfAfterSlice (hperm := hperm)
         (σ := σ) (σ₀ := σ₀)
         (A := A) (I := I) (g := g) (evmPrice := evmPrice)
         v price hwv hlocked hstopped husr hmax hstatus

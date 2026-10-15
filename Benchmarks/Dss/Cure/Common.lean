@@ -7,7 +7,7 @@ import Reasoning.Solc
 import Reasoning.Memory
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -17,7 +17,7 @@ Contract-wide selector notation and top-level revert/no-dispatch placeholders fo
 Cure runtime.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -137,7 +137,7 @@ theorem cureStorageWF_returnBound {σ : AccountMap} {I : ExecutionEnv}
 
 theorem cureSrcsLength (evm : EVM.State) :
     solidityStorageLength? storageLayoutRaw { base := "srcs" } (.dynamicArray addrSt) evm =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
   have hloc : solidityAnchorWordLoc ⟨2⟩ = wordLoc ⟨2⟩ := rfl
   simp only [solidityStorageLength?, solidityDynamicLength?, solidityLengthLoc?,
     solidityAnchor?, storageLayoutRaw, hloc, Option.map_some,
@@ -147,7 +147,7 @@ theorem cureSrcsLength (evm : EVM.State) :
 
 theorem cureSrcsDynamicLength (evm : EVM.State) :
     solidityDynamicLength? storageLayoutRaw evm { base := "srcs" } =
-      .ok (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
+      .ok (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat := by
   simpa only [solidityStorageLength?] using cureSrcsLength evm
 
 theorem cureUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
@@ -160,7 +160,7 @@ theorem cureUint256GetterBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals (nonpayable ++ [ .return [(.storage ref)] ])
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot).toNat))])) := by
   simpa [nonpayable] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h (by
       rw [evalExpr_storage_scalar (hbackend := rfl) (hbase := hbase) (her := her) (hty := hty) (hloc := hloc)]
@@ -172,7 +172,7 @@ theorem cureUint256GetterBodyCore
     (hcode : I.code = cureBytecode)
     (hdispatch : dispatchMsg contract I.calldata = some transition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transition.params.map Param.name)
         (transitionSignature transition).paramTypes I.calldata = some ∅)
     (hreach : ∃ k C, RD cureBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) entry [sel]
@@ -752,7 +752,7 @@ theorem cureNonPayable {σ σ₀ A I} {g : UInt256}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec

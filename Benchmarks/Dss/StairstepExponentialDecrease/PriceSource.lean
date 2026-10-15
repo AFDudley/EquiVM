@@ -2,7 +2,7 @@ import Reasoning.WordArithmetic
 import Reasoning.EVMWord
 import Benchmarks.Dss.StairstepExponentialDecrease.RpowEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -280,14 +280,14 @@ theorem evalExpr_price_or_false_right {evm : EVM.State} {locals : Store}
   simp [evalExpr?, EvalResult.bind, bind, pure, hlhs, hrhs]
 
 theorem evalExpr_priceStep_zero {evm : EVM.State} {I : ExecutionEnv}
-    (hstep : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
+    (hstep : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := priceLocals I } evm (.storage stepRef) =
       .ok (.int 0) := by
   have hload : storageLocLoad evm (wordLoc ⟨1⟩) = .int 0 := by
     rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256, hstep]
     native_decide
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := priceLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := priceLocals I }) (evm := evm)
     (slot := stepRef) (er := ({ base := "step", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨1⟩) (value := .int 0)
     (hbase := priceLocals_get_step_none I)
@@ -297,13 +297,13 @@ theorem evalExpr_priceStep_zero {evm : EVM.State} {I : ExecutionEnv}
     (hload := hload)
 
 theorem evalExpr_priceStep_word {evm : EVM.State} {I : ExecutionEnv} {step : UInt256}
-    (hstep : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = step) :
+    (hstep : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = step) :
     evalExpr? config { contract := contract, locals := priceLocals I } evm (.storage stepRef) =
       .ok (.int (Int.ofNat step.toNat)) := by
   have hload : storageLocLoad evm (wordLoc ⟨1⟩) = .int (Int.ofNat step.toNat) := by
     rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256, hstep]
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := priceLocals I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := priceLocals I }) (evm := evm)
     (slot := stepRef) (er := ({ base := "step", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨1⟩) (value := .int (Int.ofNat step.toNat))
     (hbase := priceLocals_get_step_none I)
@@ -314,13 +314,13 @@ theorem evalExpr_priceStep_word {evm : EVM.State} {I : ExecutionEnv} {step : UIn
 
 theorem evalExpr_priceCut_word {evm : EVM.State} {locals : Store} {cut : UInt256}
     (hbase : locals.get? "cut" = none)
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = cut) :
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = cut) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage cutRef) =
       .ok (.int (Int.ofNat cut.toNat)) := by
   have hload : storageLocLoad evm (wordLoc ⟨2⟩) = .int (Int.ofNat cut.toNat) := by
     rw [show wordLoc = uint256Loc from rfl, storageLocLoad_uint256, hcut]
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := locals }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := locals }) (evm := evm)
     (slot := cutRef) (er := ({ base := "cut", steps := [] } : EvaledStorageRef))
     (t := .int uint256Int) (loc := wordLoc ⟨2⟩) (value := .int (Int.ofNat cut.toNat))
     (hbase := hbase)
@@ -330,14 +330,14 @@ theorem evalExpr_priceCut_word {evm : EVM.State} {locals : Store} {cut : UInt256
     (hload := hload)
 
 theorem evalExpr_priceDiv_step_zero {evm : EVM.State} {I : ExecutionEnv}
-    (hstep : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
+    (hstep : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := priceLocals I } evm
       (.binary .div (.var "dur") (.storage stepRef)) = .revert := by
   simp [evalExpr?, EvalResult.bind, bind, evalExpr_priceDur, evalExpr_priceStep_zero hstep,
     evalBinaryOp?]
 
 theorem evalExpr_priceDiv_ok {evm : EVM.State} {I : ExecutionEnv} {step : UInt256}
-    (hstepLoad : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = step)
+    (hstepLoad : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = step)
     (hstep : step ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := priceLocals I } evm
       (.binary .div (.var "dur") (.storage stepRef)) =
@@ -352,7 +352,7 @@ theorem evalExpr_priceDiv_ok {evm : EVM.State} {I : ExecutionEnv} {step : UInt25
 
 theorem stairstepPriceSourceStepZeroReverts {evm : EVM.State} {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hstep : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
+    (hstep : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = ⟨0⟩) :
     ExecTransitionBody config contract evm (priceLocals I) priceTransition.body .reverted := by
   have hlet := evalExpr_priceDiv_step_zero (evm := evm) (I := I) hstep
   have hblock :
@@ -533,7 +533,7 @@ theorem stairstepExecRmulFunctionReturn (evm : EVM.State) {x y prod q : UInt256}
           (some [.int (Int.ofNat q.toNat)])) := by
     refine ExecBlock.consNormal (ExecStmt.letDecl hMul) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hReq) ?_
-    refine ExecBlock.consNormal (ExecStmt.assign hDivRay hAssign) ?_
+    refine ExecBlock.consNormal (ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hDivRay hAssign) ?_
     exact ExecBlock.consReturn (ExecStmt.return (evalExprs?_singleton hzQ))
   simpa [rmulFunction, checkedMulUintInto, locals, localsZ, localsQ]
     using ExecFuncBody.execBlockRet hblock
@@ -571,7 +571,7 @@ theorem stairstepExecRmulFunctionRevertMul (evm : EVM.State) {x y : UInt256}
   simpa [rmulFunction, checkedMulUintInto, locals] using ExecFuncBody.execBlockRevert hblock
 
 theorem evalExprs_priceRpowArgsNZero {evm : EVM.State} {σ : AccountMap} {I : ExecutionEnv}
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hn : priceN σ I = ⟨0⟩) :
     evalExprs? config { contract := contract, locals := priceLocalsN σ I } evm
       [.storage cutRef, .var "n", .intLit RAY] =
@@ -607,7 +607,7 @@ theorem evalExprs_priceRmulRayArgs {evm : EVM.State} {σ : AccountMap} {I : Exec
   simp [evalExprs?, htop, hpow, EvalResult.bind, bind, pure]
 
 theorem evalExprs_priceRpowArgs {evm : EVM.State} {σ : AccountMap} {I : ExecutionEnv}
-    (hcut : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I) :
+    (hcut : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I) :
     evalExprs? config { contract := contract, locals := priceLocalsN σ I } evm
       [.storage cutRef, .var "n", .intLit RAY] =
         .ok [.int (Int.ofNat (priceCutWord σ I).toNat),
@@ -646,9 +646,9 @@ theorem stairstepPriceSourceXZeroNNonzeroReturns {evm : EVM.State} {σ : Account
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hn : priceN σ I ≠ ⟨0⟩)
     (hcut : priceCutWord σ I = ⟨0⟩) :
@@ -745,9 +745,9 @@ theorem stairstepPriceSourceNZeroReturns {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hn : priceN σ I = ⟨0⟩)
     (hfit : stairstepRay.toNat * (priceTop I).toNat < UInt256.size) :
@@ -844,9 +844,9 @@ theorem stairstepPriceSourceNZeroRmulOverflowReverts {evm : EVM.State} {σ : Acc
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hn : priceN σ I = ⟨0⟩)
     (hover : UInt256.size ≤ stairstepRay.toNat * (priceTop I).toNat) :
@@ -927,9 +927,9 @@ theorem stairstepPriceSourceRpowReverts {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hrpowBody :
       ExecFuncBody config
@@ -984,9 +984,9 @@ theorem stairstepPriceSourceRpowReturns {evm : EVM.State} {σ : AccountMap}
     {I : ExecutionEnv} {pow : UInt256} {rpowLocals : Store}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hrpowBody :
       ExecFuncBody config
@@ -1032,7 +1032,7 @@ theorem stairstepPriceSourceRpowReturns {evm : EVM.State} {σ : AccountMap}
         .int (Int.ofNat (priceN σ I).toNat), .int (Int.ofNat stairstepRay.toNat)])
       (callee := rpowFunction)
       (locals := uintTernaryLocals (priceCutWord σ I) (priceN σ I) stairstepRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, priceLocalsPow] using h
   have hrmulArgs := evalExprs_priceRmulArgs (evm := evm) (σ := σ) (I := I)
@@ -1091,9 +1091,9 @@ theorem stairstepPriceSourceRpowReturnsRmulOverflowReverts
     {pow : UInt256} {rpowLocals : Store}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hstepLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨1⟩ = priceStepWord σ I)
     (hcutLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩ = priceCutWord σ I)
     (hstep : priceStepWord σ I ≠ ⟨0⟩)
     (hrpowBody :
       ExecFuncBody config
@@ -1132,7 +1132,7 @@ theorem stairstepPriceSourceRpowReturnsRmulOverflowReverts
         .int (Int.ofNat (priceN σ I).toNat), .int (Int.ofNat stairstepRay.toNat)])
       (callee := rpowFunction)
       (locals := uintTernaryLocals (priceCutWord σ I) (priceN σ I) stairstepRay)
-      (calleeSolm := { contract := contract, locals := rpowLocals })
+      (calleeStele := { contract := contract, locals := rpowLocals })
       hrpowArgs hlookupRpow hbindRpow hrpowBody
     simpa [resumeAfterInternalCall, priceLocalsPow] using h
   have hrmulArgs := evalExprs_priceRmulArgs (evm := evm) (σ := σ) (I := I)

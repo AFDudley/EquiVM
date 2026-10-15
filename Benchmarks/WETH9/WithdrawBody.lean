@@ -8,11 +8,11 @@ import Reasoning.ExternalCall
 
 `withdraw` is the hardest WETH9 function: it decrements `balanceOf[msg.sender]` by `wad` and makes an
 external value-transfer `CALL` (`msg.sender.transfer(wad)` in the source, modeled as a `.lowLevelCall`
-with `require(success)`).  This file carries the EVM trace and the Solm body-execution facts; the
+with `require(success)`).  This file carries the EVM trace and the Stele body-execution facts; the
 top-level refinement `weth9WithdrawBodyCore` lives in `Withdraw.lean`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -44,30 +44,30 @@ theorem weth9SelectorDispatchWithdraw {I : ExecutionEnv} (hsel : selIs I (weth9S
 
 
 theorem weth9Decode_withdraw_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (withdrawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = some (withdrawStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = _
   simpa [withdrawStore, withdrawWadWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "wad") hsz36
 
 theorem weth9Decode_withdraw_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (withdrawTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["wad"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["wad"] [uint256] I.calldata = none
   simpa using decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "wad") hsz4 hshort
 
-/-! ## Solm body execution
+/-! ## Stele body execution
 
-The Solm `withdraw` body is
+The Stele `withdraw` body is
 `require(msg.value==0); require(balanceOf[caller] ≥ wad); balanceOf[caller] -= wad;
  (success,_data)=caller.call{value:wad}(""); require(success)`.
 The store state after the `-=` and the post-call locals. -/
 
 /-- The `evm` state after `balanceOf[caller] -= wad` (unchecked wrapping store). -/
 def withdrawStoreState (evm : EVM.State) (I : ExecutionEnv) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (callerBalSlot I)
-    (UInt256.sub (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I))
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (callerBalSlot I)
+    (UInt256.sub (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I))
       (withdrawWadWord I))
 
 /-- Post-call locals: `wad`, `success`, `_data`. -/
@@ -117,7 +117,7 @@ theorem evalWithdrawSuccess (evm : EVM.State) (I : ExecutionEnv) (z : Bool) (out
 /-- `require(balanceOf[caller] ≥ wad)` evaluates to `true` when `wad ≤ bal`. -/
 theorem evalWithdrawGe_true (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executionEnv = I)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
     evalExpr? config { contract := contract, locals := withdrawStore I } evm
       (.binary .ge (.storage (balanceOfRef sender)) (.var "wad")) = .ok (.bool true) := by
   simp only [evalExpr?, evalCallerBal evm I (withdrawStore I) hsrc (withdrawStore_balanceOf_get I),
@@ -127,7 +127,7 @@ theorem evalWithdrawGe_true (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.exe
 
 /-- `require(balanceOf[caller] ≥ wad)` evaluates to `false` when `bal < wad`. -/
 theorem evalWithdrawGe_false (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executionEnv = I)
-    (hlt : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
+    (hlt : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
       (withdrawWadWord I).toNat) :
     evalExpr? config { contract := contract, locals := withdrawStore I } evm
       (.binary .ge (.storage (balanceOfRef sender)) (.var "wad")) = .ok (.bool false) := by
@@ -140,7 +140,7 @@ theorem evalWithdrawGe_false (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.ex
 theorem evalWithdrawSub (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executionEnv = I) :
     evalExpr? config { contract := contract, locals := withdrawStore I } evm
       (.binary .sub (.storage (balanceOfRef sender)) (.var "wad")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat - Int.ofNat (withdrawWadWord I).toNat)) := by
   simp only [evalExpr?, evalCallerBal evm I (withdrawStore I) hsrc (withdrawStore_balanceOf_get I),
     withdrawStore_wad_get, EvalResult.bind, EvalResult.ofOption, bind, pure, evalBinaryOp?]
@@ -148,10 +148,10 @@ theorem evalWithdrawSub (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executi
 /-- The `balanceOf[caller] -= wad` assignment, given no underflow (`wad ≤ bal`). -/
 theorem withdrawAssign (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executionEnv = I)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat) :
     assignStorageRef? config { contract := contract, locals := withdrawStore I } evm
       .storage (balanceOfRef sender)
-      (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (callerBalSlot I)).toNat - Int.ofNat (withdrawWadWord I).toNat)) =
       .ok ({ contract := contract, locals := withdrawStore I }, withdrawStoreState evm I) := by
   refine assignStorageRef_storage_scalar_value (hleaf := by simp [uint256St, uint8St])
@@ -167,7 +167,7 @@ theorem withdrawAssign (evm : EVM.State) (I : ExecutionEnv) (hsrc : evm.executio
 /-- Body execution, `bal < wad` branch: `require(balanceOf[caller] ≥ wad)` reverts. -/
 theorem weth9WithdrawBodyReverts_geFalse (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv = I) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hlt : (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
+    (hlt : (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat <
       (withdrawWadWord I).toNat) :
     ExecTransitionBody config contract evm (withdrawStore I) withdrawTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
@@ -180,7 +180,7 @@ theorem weth9WithdrawBodyPrefix {evm : EVM.State} {I : ExecutionEnv}
     {result : ExecResult} (hsrc : evm.executionEnv = I)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (htail : ExecBlock config { contract := contract, locals := withdrawStore I } evm
       (withdrawTransition.body.drop 2) result) :
     ExecBlock config { contract := contract, locals := withdrawStore I } evm
@@ -191,7 +191,7 @@ theorem weth9WithdrawBodyPrefix {evm : EVM.State} {I : ExecutionEnv}
 theorem weth9WithdrawBodyStatic (evm : EVM.State) (I : ExecutionEnv)
     (hsrc : evm.executionEnv = I) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (hperm : evm.executionEnv.perm = false) :
     ExecTransitionBody config contract evm (withdrawStore I)
       withdrawTransition.body .staticViolation :=
@@ -202,18 +202,19 @@ theorem weth9WithdrawBodyStatic (evm : EVM.State) (I : ExecutionEnv)
 theorem weth9WithdrawBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEnv) (out : ByteArray)
     (hsrc : evm.executionEnv = I) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (hcall : callViaEVM (withdrawStoreState evm I)
       (EVM.address (withdrawStoreState evm I).executionEnv.source)
-      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (true, evm', out)) :
+      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (true, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (withdrawStore I) withdrawTransition.body
       (.returned { contract := contract, locals := withdrawCallStore I true out } evm' none) := by
   refine ExecFuncBody.execBlockOK ?_
   apply weth9WithdrawBodyPrefix hsrc hwv hle
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.lowLevelCallSuccess
+    (ExecStmt.lowLevelCallSuccess (hperm := Or.inr (by simpa [withdrawStoreState] using hperm))
       (evalWithdrawSender (withdrawStoreState evm I) (withdrawStore I))
       (evalWithdrawWadVar (withdrawStoreState evm I) I)
       (evalWithdrawEmptyBytes (withdrawStoreState evm I) (withdrawStore I)) hcall) ?_
@@ -224,17 +225,18 @@ theorem weth9WithdrawBodyReturns_success (evm evm' : EVM.State) (I : ExecutionEn
 theorem weth9WithdrawBodyReverts_callFailure (evm evm' : EVM.State) (I : ExecutionEnv)
     (out : ByteArray) (hsrc : evm.executionEnv = I) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hle : (withdrawWadWord I).toNat ≤
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (callerBalSlot I)).toNat)
     (hcall : callViaEVM (withdrawStoreState evm I)
       (EVM.address (withdrawStoreState evm I).executionEnv.source)
-      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (false, evm', out)) :
+      (Int.ofNat (withdrawWadWord I).toNat) ByteArray.empty (false, evm', out))
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm (withdrawStore I) withdrawTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
   apply weth9WithdrawBodyPrefix hsrc hwv hle
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
+    (ExecStmt.assign (hperm := Or.inr hperm) (evalWithdrawSub evm I hsrc) (withdrawAssign evm I hsrc hle)) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.lowLevelCallFailure
+    (ExecStmt.lowLevelCallFailure (hperm := Or.inr (by simpa [withdrawStoreState] using hperm))
       (evalWithdrawSender (withdrawStoreState evm I) (withdrawStore I))
       (evalWithdrawWadVar (withdrawStoreState evm I) I)
       (evalWithdrawEmptyBytes (withdrawStoreState evm I) (withdrawStore I)) hcall) ?_
@@ -659,7 +661,7 @@ theorem weth9WithdrawCallInsufficientRev {σ σ₀ A I} {g : Sat256} {k C : ℕ}
   exact weth9WithdrawFailureTail (by decide) rd1470
 
 /-- `bal ≥ wad`, sufficient balance, depth OK: the value `CALL` is dispatched; expose its `Θ` witness
-    (for the Solm-side coupling) and the post-call `RD` at the branch (pc 1470). -/
+    (for the Stele-side coupling) and the post-call `RD` at the branch (pc 1470). -/
 theorem weth9WithdrawCallMade {σ σ₀ A I} {g : Sat256} {k C : ℕ}
     (hperm : I.perm = true)
     (hle : (withdrawWadWord I).toNat ≤ (solcSlotWord σ I (callerBalSlot I)).toNat)
@@ -688,17 +690,17 @@ theorem weth9WithdrawCallMade {σ σ₀ A I} {g : Sat256} {k C : ℕ}
   refine ⟨σ', z, o, A_in, callGas, ?_, hosz, weth9WithdrawAfterCall rd1465⟩
   simpa [initState] using hΘ
 
-/-! ## Solm store-state accountMap (for the external-call coupling) -/
+/-! ## Stele store-state accountMap (for the external-call coupling) -/
 
-/-- The Solm store state's `accountMap` is the caller-keyed decremented map. -/
+/-- The Stele store state's `accountMap` is the caller-keyed decremented map. -/
 theorem withdrawStoreState_accountMap {σ σ₀ A I} {g : Sat256} :
     (withdrawStoreState (initState σ σ₀ g A I) I).accountMap =
       sstoreAccountMap I.codeOwner σ (callerBalSlot I)
         (UInt256.sub (solcSlotWord σ I (callerBalSlot I)) (withdrawWadWord I)) := by
   have hco : (initState σ σ₀ g A I).executionEnv.codeOwner = I.codeOwner := rfl
-  have h : Solm.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
+  have h : Stele.EVM.storageLoad (initState σ σ₀ g A I) I.codeOwner (callerBalSlot I)
       = solcSlotWord σ I (callerBalSlot I) := by
-    simp [solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount, initState,
+    simp [solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount, initState,
       Ethereum.Account.lookupStorage]
   unfold withdrawStoreState
   rw [hco, storageStore_accountMap, show (initState σ σ₀ g A I).accountMap = σ from rfl, h]
@@ -710,12 +712,12 @@ theorem withdrawStoreState_executionEnv (evm : EVM.State) (I : ExecutionEnv) :
 
 theorem withdrawStoreState_originalMap (evm : EVM.State) (I : ExecutionEnv) :
     (withdrawStoreState evm I).σ₀ = evm.σ₀ := by
-  unfold withdrawStoreState Solm.EVM.storageStore State.lookupAccount
+  unfold withdrawStoreState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 theorem withdrawStoreState_substate (evm : EVM.State) (I : ExecutionEnv) :
     (withdrawStoreState evm I).substate = evm.substate := by
-  unfold withdrawStoreState Solm.EVM.storageStore State.lookupAccount
+  unfold withdrawStoreState Stele.EVM.storageStore State.lookupAccount
   cases evm.accountMap.get? evm.executionEnv.codeOwner <;> simp [Option.option, State.setAccount]
 
 end Benchmarks.WETH9

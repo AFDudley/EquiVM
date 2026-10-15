@@ -1,7 +1,7 @@
 import Reasoning.WordArithmetic
 import Examples.VyperERC20.BalanceOf
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option linter.unusedSimpArgs false
@@ -105,7 +105,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       ERC20.allowanceTransition.body
       (.returned { contract := erc20Contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
   have her : evalStorageRef vyperERC20Config { contract := erc20Contract, locals := allowanceStore I }
@@ -122,7 +122,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
         steps := [.mindex (.address (AccountAddress.ofNat (allowanceOwnerWord I).toNat)),
                   .mindex (.address (AccountAddress.ofNat (allowanceSpenderWord I).toNat))] } =
       some (.elem (.int uint256Int)) := by
-    simp [storageTypeAt?, erc20Contract, ERC20.erc20Contract, ERC20.erc20StorageDecls,
+    simp [storageTypeAt?, erc20Contract, ERC20.erc20StorageDecls,
       uint256Storage, ERC20.uint256Storage, List.find?, List.foldlM, storageTypeStep?]
   have hloc : vyperERC20Config.storageBackend.locate?
       { base := "allowance",
@@ -133,7 +133,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       allowanceSpenderValue, erc20AllowanceSlot]
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
-      rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int)
+      rw [evalExpr_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl) (t := .int uint256Int)
         (hbase := allowanceStore_allowance I)
         (her := her)
         (hty := hty)
@@ -756,8 +756,8 @@ theorem erc20Dispatch_allowance {cd : ByteArray}
   have hcd : cd.extract 0 4 = (⟨#[0xdd, 0x62, 0xed, 0x3e]⟩ : ByteArray) :=
     (byteArray_eq_of_beq hsel).symm
   refine dispatchMsg_eq_some_of_split (contract := erc20Contract)
-    (pre := [ERC20.approveTransition, ERC20.totalSupplyTransition, ERC20.transferFromTransition,
-      ERC20.balanceOfTransition, ERC20.transferTransition])
+    (pre := [ERC20.approveTransition, ERC20.totalSupplyTransition, transferFromTransition,
+      ERC20.balanceOfTransition, transferTransition])
     (post := [])
     (hfallback := rfl) (htr := rfl) ?_
     (by rw [selectorOf, vyperERC20AllowanceSelectorBytes]; exact hsel)
@@ -790,7 +790,7 @@ theorem erc20AllowanceBodyCore
         (.returned { contract := erc20Contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceSlot, initState, Solm.EVM.storageLoad,
+    simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using erc20AllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
@@ -800,7 +800,7 @@ theorem erc20AllowanceBodyCore
     · by_cases hcanonSpender : (allowanceSpenderWord I).toNat < EVM.addressModulus
       · have hdec0 := erc20Decode_allowance_ok (I := I) hsz68 hcanonOwner hcanonSpender
         have hdec :
-            decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+            vyperERC20Config.externalABI.decodeCalldata?
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata =
                 some (allowanceStore I) := by
@@ -812,7 +812,7 @@ theorem erc20AllowanceBodyCore
       · have hdec0 := erc20Decode_allowance_none_noncanon_spender
             (I := I) hsz68 hcanonOwner hcanonSpender
         have hdec :
-            decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+            vyperERC20Config.externalABI.decodeCalldata?
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
           simpa [vyperERC20Config] using hdec0
@@ -821,7 +821,7 @@ theorem erc20AllowanceBodyCore
           |>.reEquivDecodingFailed hcode hd hdec
     · have hdec0 := erc20Decode_allowance_none_noncanon_owner (I := I) hsz68 hcanonOwner
       have hdec :
-          decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+          vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.allowanceTransition.params.map Param.name)
             (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
         simpa [vyperERC20Config] using hdec0
@@ -831,7 +831,7 @@ theorem erc20AllowanceBodyCore
   · have hshort : I.calldata.size < 68 := by omega
     have hdec0 := erc20Decode_allowance_none_short (I := I) hsz4 hshort
     have hdec :
-        decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+        vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.allowanceTransition.params.map Param.name)
           (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
       simpa [vyperERC20Config] using hdec0

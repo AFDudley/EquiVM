@@ -1,7 +1,7 @@
 import Benchmarks.EAS.Attester.RevokeTrace
 import Benchmarks.EAS.Attester.RevokeMemory
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester

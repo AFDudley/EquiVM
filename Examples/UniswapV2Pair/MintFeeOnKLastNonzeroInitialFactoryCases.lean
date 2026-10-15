@@ -3,7 +3,7 @@ import Examples.UniswapV2Pair.MintInitialFactoryReturnCases
 import Examples.UniswapV2Pair.MintInitialZeroCases
 import Examples.UniswapV2Pair.MintInitialProductOverflow
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -618,8 +618,8 @@ theorem uniswapMintInitialFeeOnReturnFromAfterFeeWitnessCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -906,9 +906,9 @@ theorem uniswapMintInitialFeeOnReturnFromAfterFeeWitnessCase
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
     exact ExecFuncBody.execBlockRet
-      (uniswapMintAfterMintFeeInitialFeeOnReturn_of_call evmS evm0S evm1S evmAfter I
+      (uniswapMintAfterMintFeeInitialFeeOnReturn_of_call (hpermAfter := by simpa only [henvAfterI] using hperm) (hperm := hperm) evmS evm0S evm1S evmAfter I
         nextFrame.locals rootLiquidity (AccountAddress.ofNat (mintToWord I).toNat)
-        (by simp only [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1
+        (by simp only [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1
         hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
         (by simpa [evmL, evmS] using hfee)
         (by simpa [nextFrame, evmL, evmS] using
@@ -974,8 +974,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialReturnFromFactoryCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1163,7 +1163,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialReturnFromFactoryCase
   exact
     uniswapMintInitialFeeOnReturnFromAfterFeeWitnessCase
       (liquidity := UInt256.ofNat (root - minimumLiquidity).toNat)
-      root hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+      root hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
       hcall1 hdec1 hle0Source hle1Source
       (by simpa [evmL, evmS] using hfee) hPostAccountsFee henvFeeI
       htotalSource
@@ -1188,8 +1188,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialZeroFromFactoryCase
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1374,8 +1374,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialZeroFromFactoryCase
     ⟨hrootGeMin, hliquidityZero, hfitSupplyMinSource, hfitBalanceMinSource,
       htotalFitMin, hbalanceFitMin⟩
   exact
-    uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase nextFrame.locals root hcode
-      hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    uniswapMintInitialAfterMintFeeLiquidityZeroRevertCase (hpermAfter := by simpa [typedCallViaEVM_executionEnv_eq hfeeCall, typedCallViaEVM_executionEnv_eq hcall1, typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState, uniswapUnlockedState, initState] using hperm) nextFrame.locals root hcode
+      hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
         using hsqrt)
@@ -1395,8 +1395,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1517,7 +1517,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase
           outFee)
     (hcase :
       mintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCaseData feeToWord reserve0
-        reserve1 amount0 amount1 σFee evmFeeS I) :
+        reserve1 amount0 amount1 σFee evmFeeS I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -1534,8 +1535,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase
   have htotalSource : mintFunctionTotalSupplyWord evmFeeS = ⟨0⟩ := by
     rw [htotalEq, htotalZero]
   exact
-    uniswapMintInitialProductOverflowFromAfterFeeCase nextFrame.locals hcode hdispatch
-      hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source
+    uniswapMintInitialProductOverflowFromAfterFeeCase (hperm := hperm) nextFrame.locals hcode hdispatch
+      hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source
       hle1Source (by simpa [evmL, evmS] using hfee)
       (by simpa [nextFrame, evmL, evmS] using
         mintAfterMintFeeCallStore_totalSupply evmL I balance0 balance1 true)
@@ -1558,8 +1559,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1683,7 +1684,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase
         reserve1 amount0 amount1 balance0 balance1 σFee evmFeeS
         (uniswapLockEnteredState
           (initState σ σ₀ (Sat256.ofUInt256 g) A I))
-        I memFee) :
+        I memFee)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
   let evmL := uniswapLockEnteredState evmS
@@ -1741,8 +1743,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase
     hfinish root (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS] using hsqrt)
       hrootNonneg hrootSize
   exact
-    uniswapMintInitialAfterMintFeeRootUnderflowRevertCase nextFrame.locals root hcode
-      hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    uniswapMintInitialAfterMintFeeRootUnderflowRevertCase (hperm := hperm) nextFrame.locals root hcode
+      hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
       hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
         using hsqrt)
@@ -1761,8 +1763,8 @@ theorem uniswapMintFeeOnKLastNonzeroInitialFromFactoryCases
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1893,7 +1895,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialFromFactoryCases
   rcases hcase with hreturn | hrest
   · exact
       uniswapMintFeeOnKLastNonzeroInitialReturnFromFactoryCase feeTo hcode hdispatch
-        hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+        hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hPostAccountsFee henvFeeI
         hreserve0Eq hreserve1Eq hruntimeReserve0 hruntimeReserve1 hamount0Eq
         hamount1Eq hkLastEq htotalEq rd7781 ho32 hoSize ho132 ho1Size houtFeeSize
@@ -1901,22 +1903,22 @@ theorem uniswapMintFeeOnKLastNonzeroInitialFromFactoryCases
   rcases hrest with hzero | hrest
   · exact
       uniswapMintFeeOnKLastNonzeroInitialZeroFromFactoryCase feeTo hcode hdispatch
-        hsz36 hperm hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+        hsz36 hperm hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hreserve0Eq hreserve1Eq
         hruntimeReserve0 hruntimeReserve1 hamount0Eq hamount1Eq hkLastEq htotalEq
         rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hfeeToWord
         hfeeTo htoWord hmemFee hzero
   rcases hrest with hproduct | hrootUnderflow
   · exact
-      uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase feeTo hcode
-        hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+      uniswapMintFeeOnKLastNonzeroInitialProductOverflowFromFactoryCase (hperm := hperm) feeTo hcode
+        hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hreserve0Eq hreserve1Eq
         hruntimeReserve0 hruntimeReserve1 hamount0Eq hamount1Eq hkLastEq htotalEq
         rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hfeeToWord
         hfeeTo htoWord hmemFee hproduct
   · exact
-      uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase feeTo hcode
-        hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+      uniswapMintFeeOnKLastNonzeroInitialRootUnderflowFromFactoryCase (hperm := hperm) feeTo hcode
+        hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
         hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hreserve0Eq hreserve1Eq
         hruntimeReserve0 hruntimeReserve1 hamount0Eq hamount1Eq hkLastEq htotalEq
         rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hfeeToWord

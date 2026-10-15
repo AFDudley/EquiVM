@@ -1,6 +1,6 @@
 import Benchmarks.Dss.DaiJoin.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.DaiJoin
 
@@ -10,9 +10,9 @@ def daiJoinDaiWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcAddressSlotWord ⟨2⟩ σ I
 
 theorem daiJoinDecode_dai {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (daiTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (daiTransition.params.map Param.name)
       (transitionSignature daiTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem daiJoinReachDaiBody {σ σ₀ A I} {g : Sat256}
@@ -56,7 +56,7 @@ theorem daiJoinDaiBodyCore {σ σ₀ A I} {g : UInt256}
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (daiJoinDaiWord σ I).toNat))])) := by
     simpa [daiTransition, daiJoinDaiWord, solcAddressSlotWord, initState,
-      Solm.EVM.storageLoad, State.lookupAccount] using
+      Stele.EVM.storageLoad, State.lookupAccount] using
       daiJoinAddressGetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := daiRef) (er := ({ base := "dai", steps := [] } : EvaledStorageRef))

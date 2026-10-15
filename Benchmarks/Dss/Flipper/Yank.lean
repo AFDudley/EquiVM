@@ -5,7 +5,7 @@ import Benchmarks.Dss.Flipper.ExternalTargets
 import Reasoning.ExternalCall
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxHeartbeats 0
 
@@ -183,6 +183,7 @@ theorem yankCatCallMem_encode (σ : AccountMap) (I : ExecutionEnv) :
         some ((yankCatCallMem σ I).readWithPadding 128 36) := by
   rw [yankCatCallMem_read]
   unfold config externalABI
+  simp only [ExternalCallABI.withMode_encode?]
   simp only [if_true]
   unfold ABI.encodeCallWithSelector?
   have hpayload :
@@ -347,7 +348,7 @@ theorem yankLocals_get_cat (I : ExecutionEnv) :
   simp
 
 theorem flipperDecode_yank_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata =
         some (yankLocals I) := by
   simpa [config, yankTransition, transitionSignature, yankLocals, yankId]
@@ -355,7 +356,7 @@ theorem flipperDecode_yank_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
 
 theorem flipperDecode_yank_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (yankTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (yankTransition.params.map Param.name)
       (transitionSignature yankTransition).paramTypes I.calldata = none := by
   simpa [config, yankTransition, transitionSignature]
     using (decodeCalldata_legacyUInt256_none_short (cd := I.calldata)
@@ -544,7 +545,7 @@ theorem evalExpr_yankBidLtTab_true {σ σ₀ A I} {g : Sat256}
 
 abbrev yankClawArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.int (Int.ofNat
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
       (bidSlotOfWord id ⟨5⟩)).toNat)]
 
 abbrev yankClawArgVals (evm : EVM.State) : List Value :=
@@ -596,7 +597,7 @@ theorem evalExpr_yankIlk_ofLocals {evm : EVM.State} {locals : Store}
     evalExpr? config { contract := contract, locals := locals } evm
       (.storage ilkRef) =
         .ok (.fixedBytes bytes32Width
-          (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
+          (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩))) := by
   rw [evalExpr_storage_scalar (hbackend := rfl)
     (t := .bytes bytes32Width)
     (er := ({ base := "ilk", steps := [] } : EvaledStorageRef))
@@ -611,11 +612,11 @@ theorem evalExpr_yankIlk_ofLocals {evm : EVM.State} {locals : Store}
 
 abbrev yankFluxArgValsOf (evm : EVM.State) (id : UInt256) : List Value :=
   [.fixedBytes bytes32Width
-      (EVM.Word.toBytesBE (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
+      (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨3⟩)),
     .address evm.executionEnv.codeOwner,
     .address evm.executionEnv.source,
     .int (Int.ofNat
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidSlotOfWord id ⟨1⟩)).toNat)]
 
 theorem evalExprs_yankFluxArgs_ofLocals {evm : EVM.State} {locals : Store} {id : UInt256}
@@ -846,7 +847,7 @@ theorem flipperYankSourceBodyCatCallFailure {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         .reverted := by
     simpa [checkedExternalCallStmts] using
-      checkedExternalCallFailure (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)
@@ -959,7 +960,7 @@ theorem flipperYankSourceBodyVatNoCode {σ σ₀ A I} {g : UInt256}
           [.storage (bidsF (.var "id") "tab")] "_clawRet")
         (.ok { contract := contract, locals := locals1 } evmCat) := by
     simpa [checkedExternalCallStmts, locals1, locals] using
-      checkedExternalCallSuccess (cfg := config) (C := contract) (evm := evm0)
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) (cfg := config) (C := contract) (evm := evm0)
         (evm' := evmCat) (locals := locals) (receiver := .storage catRef)
         (retVar := "_clawRet") (name := "claw")
         (target := flipperCatAddress evm0.accountMap evm0.executionEnv) (sendVal := 0)

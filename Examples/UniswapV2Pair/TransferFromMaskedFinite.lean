@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.TransferFromMasked
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -60,7 +60,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterDebit_masked {σ σ₀ A I}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromMaskedWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hbalanceEvm : (transferFromValueWord I).toNat ≤
@@ -206,7 +206,7 @@ theorem uniswapTransferFromX_allowanceFiniteAfterCreditCalc_masked {σ σ₀ A I
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [hinitCodeOwner]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]
@@ -463,7 +463,7 @@ theorem uniswapTransferFromX_balanceFiniteAllowance_masked {σ σ₀ A I}
       uniswapCodeOwnerStorageWord I σAllowance (mapSlot (transferFromFromMaskedWord I) ⟨1⟩) =
         transferFromFromBalanceWord (transferFromAfterAllowanceState
           (initState σ σ₀ g A I) I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromFromBalanceWord Stele.EVM.storageLoad
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hstateMap, hfromSlot, hcodeOwner]
   have hltWord :
@@ -576,7 +576,7 @@ theorem uniswapTransferFromX_overflowFiniteAllowance_masked {σ σ₀ A I}
   have htoBalanceWord :
       uniswapCodeOwnerStorageWord I σDebit (mapSlot (transferFromToMaskedWord I) ⟨1⟩) =
         transferFromToBalanceWord (initState σ σ₀ g A I) I := by
-    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Solm.EVM.storageLoad
+    unfold uniswapCodeOwnerStorageWord transferFromToBalanceWord Stele.EVM.storageLoad
     rw [show (initState σ σ₀ g A I).executionEnv.codeOwner = I.codeOwner from rfl]
     simp [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
       Account.lookupStorage, hbalanceMap, htoSlot]
@@ -665,7 +665,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance_masked
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -687,7 +687,7 @@ theorem uniswapTransferFromBodyCoreOk_finiteAllowance_masked
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         (.returned { contract := contract, locals := transferFromStoreToBalance evmS I }
           (transferFromPostState evmS I) (some [(.bool true)])) := by
-    exact uniswapTransferFromBodyReturns_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReturns_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hfitS
   have hallowanceSlot : transferFromAllowanceSlot evmE I =
       mapSlot (uniswapSourceWord I) (mapSlot (transferFromFromMaskedWord I) ⟨2⟩) := by
@@ -734,7 +734,7 @@ theorem uniswapTransferFromBodyOk_finiteAllowance_masked
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) I < UInt256.size)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
@@ -758,7 +758,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -778,7 +778,7 @@ theorem uniswapTransferFromBodyCoreRevert_balance_finiteAllowance_masked
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_balance_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_balance_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hltS
   exact (uniswapTransferFromX_balanceFiniteAllowance_masked (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hnotMax hallowance hlt hreach)
@@ -800,7 +800,7 @@ theorem uniswapTransferFromBodyRevert_balance_finiteAllowance_masked
         (transferFromValueWord I).toNat)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=
@@ -826,7 +826,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance_masked
       transferFromNewToNat (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I))
     (hreach : ∃ k C, RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨879⟩ [sel]
@@ -848,7 +848,7 @@ theorem uniswapTransferFromBodyCoreRevert_overflow_finiteAllowance_masked
   have hbody :
       ExecTransitionBody config contract evmS (transferFromStore I) transferFromTransition.body
         .reverted := by
-    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance evmS I
+    exact uniswapTransferFromBodyReverts_overflow_finiteAllowance (hperm := by assumption) evmS I
       (by simp only [evmS, initState]; exact hwv) hnotMaxS hallowanceS hbalanceS hoverS
   exact (uniswapTransferFromX_overflowFiniteAllowance_masked (g := Sat256.ofUInt256 g)
       hsz100 hsize hperm hnotMax hallowance hbalance hover hreach)
@@ -872,7 +872,7 @@ theorem uniswapTransferFromBodyRevert_overflow_finiteAllowance_masked
       transferFromNewToNat (initState σ σ₀ (Sat256.ofUInt256 g) A I) I)
     (hdispatch : dispatchMsg contract I.calldata = some transferFromTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (transferFromTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (transferFromTransition.params.map Param.name)
         (transitionSignature transferFromTransition).paramTypes I.calldata = some (transferFromStore I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   have hsz4 : 4 ≤ I.calldata.size :=

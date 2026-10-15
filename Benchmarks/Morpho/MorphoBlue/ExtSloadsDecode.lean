@@ -4,7 +4,7 @@ import Benchmarks.Morpho.MorphoBlue.RuntimeBlocks_019
 import Benchmarks.Morpho.MorphoBlue.RuntimeBlocks_020
 import Benchmarks.EAS.Attester.WordHelpers
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue

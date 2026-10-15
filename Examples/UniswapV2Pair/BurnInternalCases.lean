@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.ZeroSlotMemory
 import Examples.UniswapV2Pair.BurnInternalRuntime
 import Examples.UniswapV2Pair.BurnInternalReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 
 
@@ -34,7 +34,7 @@ theorem burnFunctionFromBalanceWord_eq_runtime
       (mapSlot (UInt256.land holderWord solcAddrMask) ⟨1⟩) := by
   have hword := congrArg (fun accounts => uniswapCodeOwnerStorageWord I accounts
     (mapSlot (UInt256.land holderWord solcAddrMask) ⟨1⟩)) hAccounts
-  simpa [burnFunctionFromBalanceWord, uniswapCodeOwnerStorageWord, Solm.EVM.storageLoad,
+  simpa [burnFunctionFromBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, henv,
     burnFunctionFromSlot_eq_runtime holder holderWord hholder] using hword.symm
 
@@ -68,7 +68,7 @@ theorem burnFunctionTotalSupplyWord_eq_runtime
       uniswapCodeOwnerStorageWord I (burnRuntimeBalanceMap σ I holderWord value) ⟨0⟩ := by
   have hpost := burnRuntimeBalanceMap_eq_afterBalanceState hAccounts henv hholder hbalance
   have hword := congrArg (fun accounts => uniswapCodeOwnerStorageWord I accounts ⟨0⟩) hpost
-  simpa [burnFunctionTotalSupplyWord, uniswapCodeOwnerStorageWord, Solm.EVM.storageLoad,
+  simpa [burnFunctionTotalSupplyWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, henv] using hword.symm
 
 theorem burnRuntimePostMap_eq_postState
@@ -160,7 +160,7 @@ theorem uniswapInternalBurnCallRuntimeCasesWithMemory
       refine Or.inr ⟨uniswapInternalMintLogMem value
           (uniswapInternalMintBalanceHashMem holderWord
             (uniswapInternalMintBalanceHashMem holderWord mem)), kRet, CRet,
-        uniswapBurnFunctionCallSuccess hcontract hargs hbalance hsupply,
+        uniswapBurnFunctionCallSuccess (hperm := by simpa only [henv] using hperm) hcontract hargs hbalance hsupply,
         burnRuntimePostMap_eq_postState hAccounts henv hholder hbalance hsupply,
         ?_, ?_, ?_, ?_⟩
       · simpa only [burnRuntimePostMap, hsupplyEq] using rdRet
@@ -168,7 +168,7 @@ theorem uniswapInternalBurnCallRuntimeCasesWithMemory
           (by omega)).trans hmem
       · exact uniswapInternalMintSuccessMem_read64_of_ge160 holderWord value (by omega) hread64
       · exact uniswapInternalMintSuccessMem_read96 holderWord value (by omega)
-    · exact Or.inl ⟨uniswapBurnFunctionCallRevert_totalSupplyUnderflow hcontract hargs
+    · exact Or.inl ⟨uniswapBurnFunctionCallRevert_totalSupplyUnderflow (hperm := by simpa only [henv] using hperm) hcontract hargs
         hbalance (by omega),
         RD.uniswapSafeMathSubUnderflow_aw6_size164_shared rdSub1 (by omega)
           (hhash2Size.trans hmem) hhash2Read (by simp only [List.length_cons]; omega)⟩

@@ -3,10 +3,10 @@ import Benchmarks.Dss.Flopper.Selectors
 /-!
 # MakerDAO/Sky DSS Flopper dispatcher facts
 
-Solm dispatch routing facts and the shared non-payable source result.
+Stele dispatch routing facts and the shared non-payable source result.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -876,7 +876,7 @@ theorem flopperX_noMatch {σ σ₀ A I} {g : Sat256}
           (σ₀ := σ₀) (A := A) (I := I) (g := g) hcode hwv hsz hsize hroot0 hhigh0
       exact flopperHighHighNoMatchRevert hfirst heqHighHigh
 
-/-- `callvalue ≠ 0` is equivalent to every Solm transition reverting on the non-payable guard. -/
+/-- `callvalue ≠ 0` is equivalent to every Stele transition reverting on the non-payable guard. -/
 theorem flopperNonPayable {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = flopperBytecode) (hwv : I.weiValue ≠ ⟨0⟩) :
     runtimeRefinementFor config contract
@@ -889,7 +889,7 @@ theorem flopperNonPayable {σ σ₀ A I} {g : UInt256}
         have htmem : t ∈ contract.transitions := by
           rw [dispatchMsg_eq_dispatchList contract I.calldata (by rfl)] at ht
           exact dispatchList_some_mem ht
-        by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+        by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
             (transitionSignature t).paramTypes I.calldata = none
         · exact reEquiv_decodingFailed ht hdec hrev
         · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec
@@ -899,7 +899,7 @@ theorem flopperNonPayable {σ σ₀ A I} {g : UInt256}
               callargs (by simp only [initState]; exact hwv))
             (by rw [hrev]; exact execResultsEquiv.revert rfl rfl)
 
-/-- Calldata shorter than four bytes has no Solm dispatch and the EVM reverts. -/
+/-- Calldata shorter than four bytes has no Stele dispatch and the EVM reverts. -/
 theorem flopperShortRevert {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = flopperBytecode) (_hsize : I.calldata.size < UInt256.size)
     (_hperm : I.perm = true) (hwv : I.weiValue = ⟨0⟩) (hsz : I.calldata.size < 4) :
@@ -908,7 +908,7 @@ theorem flopperShortRevert {σ σ₀ A I} {g : UInt256}
   exact (flopperX_short (g := Sat256.ofUInt256 g) hcode hwv hsz).reEquivNoDispatch hcode
     (flopperDispatch_none_short hsz)
 
-/-- `size ≥ 4` but no selector matches: no Solm dispatch and EVM fallthrough reverts. -/
+/-- `size ≥ 4` but no selector matches: no Stele dispatch and EVM fallthrough reverts. -/
 theorem flopperNoDispatch {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = flopperBytecode)
     (hsize : I.calldata.size < UInt256.size)

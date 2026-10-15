@@ -2,7 +2,7 @@ import Reasoning.ABIComposite
 import Benchmarks.Dss.Flipper.Dispatch
 import Benchmarks.Dss.Flipper.BidStorage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -405,9 +405,9 @@ theorem evalExpr_tickEndNewGeNow_false {σ σ₀ A I} {g : Sat256}
   exact tickEndNewWord_lt_now48_overflow hover
 
 theorem assign_tickEndStorage (evm : EVM.State) (σ : AccountMap) (I : ExecutionEnv) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (tickBidPackedSlot I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (tickBidPackedSlot I)
       (setUint48Offset26Word
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (tickBidPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (tickBidPackedSlot I))
         (tickEndNewWord σ I))
     assignStorageRef? config { contract := contract, locals := tickLocalsWithEnd σ I } evm
       .storage (bidsF (.var "id") "end")
@@ -435,14 +435,14 @@ theorem assign_tickEndStorage (evm : EVM.State) (σ : AccountMap) (I : Execution
 
 
 theorem flipperDecode_tick_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = some (tickLocals I) := by
   simpa [config, tickTransition, tickLocals, tickId, uint256] using
     (decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "id") hsz36)
 
 theorem flipperDecode_tick_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (tickTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (tickTransition.params.map Param.name)
       (transitionSignature tickTransition).paramTypes I.calldata = none := by
   simpa [config, tickTransition, uint256] using
     (decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "id") hsz4
@@ -1314,9 +1314,9 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     (hfit : (tickNow48 I).toNat + (tickTauWord σ I).toNat < 2 ^ 48) :
     let locals := tickLocals I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
       (tickEndStoredWord σ I)
-    (ExecTransitionBody config contract evm0 locals tickTransition.body
+    (I.perm = true → ExecTransitionBody config contract evm0 locals tickTransition.body
       (.returned { contract := contract, locals := tickLocalsWithEnd σ I } evm1 none)) ∧
       (I.perm = false → ExecTransitionBody config contract evm0 locals
         tickTransition.body .staticViolation) := by
@@ -1353,7 +1353,7 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
         .storage (bidsF (.var "id") "end")
         (.int (Int.ofNat (tickEndNewWord σ I).toNat)) =
           .ok ({ contract := contract, locals := tickLocalsWithEnd σ I }, evm1) := by
-    simpa [evm1, evm0, initState, tickEndStoredWord, solcSlotWordAt, Solm.EVM.storageLoad] using
+    simpa [evm1, evm0, initState, tickEndStoredWord, solcSlotWordAt, Stele.EVM.storageLoad] using
       assign_tickEndStorage evm0 σ I
   have hprefix {result : ExecResult}
       (htail : ExecBlock config { contract := contract, locals := tickLocalsWithEnd σ I } evm0
@@ -1379,9 +1379,10 @@ theorem flipperTickSourceBodySuccessSplit {σ σ₀ A I} {g : UInt256}
     exact hblock
   have hvalue := evalExpr_tickEndVarWithEnd (evm := evm0) (σ := σ) (I := I)
   constructor
-  · exact ExecFuncBody.execBlockOK
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
       (hprefix (ExecBlock.consNormal (ExecStmt.requireTrue hge)
-        (ExecBlock.consNormal (ExecStmt.assign hvalue hassign) ExecBlock.nil)))
+        (ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hvalue hassign) ExecBlock.nil)))
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (hprefix (ExecBlock.consNormal (ExecStmt.requireTrue hge)
@@ -1416,10 +1417,10 @@ theorem flipperTickBodyCore {σ σ₀ A I} {g : UInt256}
         by_cases hfitEvm :
             (tickNow48 I).toNat + (tickTauWord σ I).toNat < 2 ^ 48
         · obtain ⟨_, _, rd6216⟩ := flipperTickX_add48Success hfitEvm rd6272
-          let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
+          let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (tickBidPackedSlot I)
             (tickEndStoredWord σ I)
           have hbodySplit :
-              (ExecTransitionBody config contract evm0 locals tickTransition.body
+              (I.perm = true → ExecTransitionBody config contract evm0 locals tickTransition.body
                 (.returned { contract := contract, locals := tickLocalsWithEnd σ I }
                   evm1 none)) ∧
               (I.perm = false → ExecTransitionBody config contract evm0 locals
@@ -1429,10 +1430,10 @@ theorem flipperTickBodyCore {σ σ₀ A I} {g : UInt256}
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
                 hwv hltEvm hticEvm hfitEvm)
           rcases flipperTickX_storeEndSplit rd6216 with
-              ⟨_hperm, hret⟩ | ⟨hperm, hstatic⟩
+              ⟨hperm, hret⟩ | ⟨hperm, hstatic⟩
           swap
           · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hbodySplit.2 hperm)
-          exact hret.reEquivExecutionGen hcode hdispatch hdecode hbodySplit.1
+          exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbodySplit.1 hperm)
             (by simp [evm1, evm0, initState, storageStore_accountMap])
             (by
               rw [show tickTransition.returnType = [] by rfl]

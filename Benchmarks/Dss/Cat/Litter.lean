@@ -1,7 +1,7 @@
 import Benchmarks.Dss.Cat.Common
-import Solm.Refine
+import Stele.Refine
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -28,9 +28,9 @@ theorem catDispatch_litter {I : ExecutionEnv} (hsel : selIs I ⟨#[0xa4, 0xfe, 0
   · rw [selectorOf, litterSelectorBytes]; exact hsel
 
 theorem catDecode_litter {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (litterTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (litterTransition.params.map Param.name)
       (transitionSignature litterTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem catReachLitterBody {σ σ₀ A I} {g : Sat256}
@@ -70,7 +70,7 @@ theorem catLitterBody {σ σ₀ A I} {g : UInt256}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWordAt ⟨6⟩ σ I).toNat))])) := by
-    simpa [litterTransition, solcSlotWordAt, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [litterTransition, solcSlotWordAt, initState, Stele.EVM.storageLoad, State.lookupAccount,
       solcSlotWord] using
       catUint256GetterBodyReturns (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (ref := litterRef) (er := ({ base := "litter", steps := [] } : EvaledStorageRef))

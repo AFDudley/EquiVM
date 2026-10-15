@@ -19,7 +19,7 @@ import Examples.UniswapV2Pair.SwapTailSource
 import Examples.UniswapV2Pair.SwapEventRuntime
 import Examples.UniswapV2Pair.UpdateDynamicCallRuntimeCases
 import Examples.UniswapV2Pair.SwapCallbackInput
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
 namespace UniswapV2Pair
@@ -47,7 +47,7 @@ theorem uniswapSwapBody
               (uniswapReachSwapBody (σ := σ) (σ₀ := σ₀) (A := A)
                 (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel)
             let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            have hstorage : Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
+            have hstorage : Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
                 (σ.get? I.codeOwner |>.option ⟨0⟩ (fun acc => acc.storage.getD ⟨12⟩ ⟨0⟩)) := by
               rfl
             by_cases hlocked : (σ.get? I.codeOwner |>.option ⟨0⟩
@@ -59,7 +59,7 @@ theorem uniswapSwapBody
             · have hunlocked := not_not.mp hlocked
               obtain ⟨_, _, rd1556⟩ := RD.uniswapSwapLockEntered rd1475 hunlocked hperm
                 (by simp only [List.length_cons, List.length_nil]; omega)
-              have hlockSource := uniswapLockEnterPrefix evmS (swapStore I)
+              have hlockSource := uniswapLockEnterPrefix (hperm := hperm) evmS (swapStore I)
                 (by simpa only [evmS, initState] using hwv) (by simp [swapStore]) (hstorage.trans hunlocked)
               let evmL := uniswapLockEnteredState evmS
               have hpost : sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨0⟩ = evmL.accountMap := by
@@ -310,7 +310,7 @@ theorem uniswapSwapBody
                                     (by simp only [List.length_cons, List.length_nil]; omega)
                                   have rdRet := RD.uniswapSwapUnlockAndStop rd2797 hperm
                                     (by simp only [List.length_cons, List.length_nil]; omega)
-                                  have hbody := uniswapSwapBodyReturns_afterUpdate evmS evmB evmU I _
+                                  have hbody := uniswapSwapBodyReturns_afterUpdate (hperm := by simpa only [heU] using hperm) evmS evmB evmU I _
                                     hinvariantPrefix hupdate
                                     (swapBeforeUpdateFrame_unlocked evmL I balance0 balance1 amount0In amount1In)
                                   have haFinal : sstoreAccountMap I.codeOwner σU ⟨12⟩ ⟨1⟩ =
@@ -356,7 +356,7 @@ theorem uniswapSwapBodyAnyPerm
               (uniswapReachSwapBody (σ := σ) (σ₀ := σ₀) (A := A)
                 (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel)
             let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            have hstorage : Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
+            have hstorage : Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ =
                 (σ.get? I.codeOwner |>.option ⟨0⟩
                   (fun acc => acc.storage.getD ⟨12⟩ ⟨0⟩)) := by
               rfl

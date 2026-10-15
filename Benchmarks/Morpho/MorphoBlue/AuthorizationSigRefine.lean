@@ -1,7 +1,7 @@
 import Benchmarks.Morpho.MorphoBlue.AuthorizationSigVerifySource
 import Benchmarks.Morpho.MorphoBlue.RawReturnBlockRefines
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -65,7 +65,7 @@ theorem morphoAuthorizationSignatureRefine {v : MorphoImmutables} {ee : Executio
     · rw [if_pos hv] at ps pe
       obtain ⟨a6, k6, C6, rd6⟩ := pe
       have hl6 := authorizationSignatoryLocals_authorization hl5 ret
-      exact .ok (p3.run (ps.run (morphoAuthorizationSourceFinish hl6 (immStore v) evm5 hc)))
+      exact .ok (p3.run (ps.run (morphoAuthorizationSourceFinish (hperm := (congrArg ExecutionEnv.perm hs5.env).trans hperm) hl6 (immStore v) evm5 hc)))
         (authorizationFinalSourceState hs5 a)
         (morphoAuthorizationFinish (v := v) a hc ho hstack hperm rd6)
     · rw [if_neg hv] at ps pe

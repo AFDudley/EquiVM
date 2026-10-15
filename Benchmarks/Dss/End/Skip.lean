@@ -6,7 +6,7 @@ import Benchmarks.Dss.End.Flow
 import Benchmarks.Dss.End.Free
 import Benchmarks.Dss.End.Snip
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 0
@@ -14,7 +14,7 @@ set_option maxHeartbeats 0
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.End
 
@@ -412,7 +412,7 @@ def endSkipStoreArtNew (σ : AccountMap) (I : ExecutionEnv)
 
 def endSkipPostArtState (evm : EVM.State) (I : ExecutionEnv)
     (artNew : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner (endSkipArtSlot I) artNew
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner (endSkipArtSlot I) artNew
 
 def endSkipPostArtAccountMap (σ : AccountMap) (I : ExecutionEnv) (artNew : UInt256) :
     AccountMap :=
@@ -3136,9 +3136,9 @@ theorem endSkipLogDataMem3ForTrace_read64
     hloCat hloVat hloBid
 
 theorem endDecode_skip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (skipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skipTransition.params.map Param.name)
       (transitionSignature skipTransition).paramTypes I.calldata = some (endSkipStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = _
   simpa [config, skipTransition, bytes32, bytes32Width, uint256, uint256Int,
     endSkipStore, endSkipIlkBytes, endSkipIdWord, abiBytes32, abiBytes32Width,
@@ -3148,9 +3148,9 @@ theorem endDecode_skip_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size) :
 
 theorem endDecode_skip_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
-    decodeCalldataWithMode config.abiDecodeMode (skipTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (skipTransition.params.map Param.name)
       (transitionSignature skipTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk", "id"] [bytes32, uint256]
+  show config.externalABI.decodeCalldata? ["ilk", "id"] [bytes32, uint256]
     I.calldata = none
   simpa [config, skipTransition, bytes32, bytes32Width, uint256, uint256Int,
     abiBytes32, abiBytes32Width, abiUInt256] using
@@ -7217,11 +7217,11 @@ theorem evalExpr_endSkip_tag (evm : EVM.State) (I : ExecutionEnv)
     evalExpr? config { contract := contract, locals := endSkipStore I } evm
       (.storage (tagRef (.var "ilk"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (endSkipTagSlot I)).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := endSkipStore I })
+    (stele := { contract := contract, locals := endSkipStore I })
     (slot := tagRef (.var "ilk"))
     (er := endSkipTagEvaledRef I)
     (t := .int uint256Int)
@@ -7235,7 +7235,7 @@ theorem evalExpr_endSkip_tag (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endSkip_tag_ne_false (evm : EVM.State) (I : ExecutionEnv)
     (hsz68 : 68 ≤ I.calldata.size)
     (htag :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipTagSlot I) = ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipTagSlot I) = ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endSkipStore I } evm
       (.binary .ne (.storage (tagRef (.var "ilk"))) (.intLit 0)) = .ok (.bool false) := by
   have hstorage :
@@ -7251,14 +7251,14 @@ theorem evalExpr_endSkip_tag_ne_false (evm : EVM.State) (I : ExecutionEnv)
 theorem evalExpr_endSkip_tag_ne_true (evm : EVM.State) (I : ExecutionEnv)
     (hsz68 : 68 ≤ I.calldata.size)
     (htag :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩) :
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩) :
     evalExpr? config { contract := contract, locals := endSkipStore I } evm
       (.binary .ne (.storage (tagRef (.var "ilk"))) (.intLit 0)) = .ok (.bool true) := by
   have hstorage :
       evalExpr? config { contract := contract, locals := endSkipStore I } evm
         (.storage (tagRef (.var "ilk"))) =
           .ok (.int (Int.ofNat
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (endSkipTagSlot I)).toNat)) :=
     evalExpr_endSkip_tag evm I hsz68
   have hzero :
@@ -7304,11 +7304,11 @@ theorem evalExpr_endSkip_cat {locals : Store} (evm : EVM.State)
     (hbase : locals.get? "cat" = none) :
     evalExpr? config { contract := contract, locals := locals } evm (.storage catRef) =
       .ok (.address (AccountAddress.ofNat
-        (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
+        (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩)
           solcAddrMask).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
     (cfg := config)
-    (solm := { contract := contract, locals := locals })
+    (stele := { contract := contract, locals := locals })
     (slot := catRef)
     (er := ({ base := "cat", steps := [] } : EvaledStorageRef))
     (t := .address)
@@ -7332,7 +7332,7 @@ theorem endSkipCheckedCatIlksNoCode {σ σ₀ A I} {g : UInt256}
         (.storage catRef) = .ok (.address (endSkipCatAddr σ I)) := by
     have hbase : (endSkipStore I).get? "cat" = none := by
       simp [endSkipStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipCatAddr, endSkipCatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endSkip_cat (locals := endSkipStore I) evm0 hbase
   have hcodeZero :
@@ -7373,7 +7373,7 @@ theorem endSkipCheckedCatIlksFailure {σ σ₀ A I} {g : UInt256}
         (.storage catRef) = .ok (.address (endSkipCatAddr σ I)) := by
     have hbase : (endSkipStore I).get? "cat" = none := by
       simp [endSkipStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipCatAddr, endSkipCatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endSkip_cat (locals := endSkipStore I) evm0 hbase
   have hcodePos :
@@ -7393,7 +7393,7 @@ theorem endSkipCheckedCatIlksFailure {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
       (locals := endSkipStore I) (receiver := .storage catRef)
       (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7421,7 +7421,7 @@ theorem endSkipCheckedCatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         (.storage catRef) = .ok (.address (endSkipCatAddr σ I)) := by
     have hbase : (endSkipStore I).get? "cat" = none := by
       simp [endSkipStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipCatAddr, endSkipCatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endSkip_cat (locals := endSkipStore I) evm0 hbase
   have hcodePos :
@@ -7441,7 +7441,7 @@ theorem endSkipCheckedCatIlksDecodeRevert {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
       (locals := endSkipStore I) (receiver := .storage catRef)
       (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7471,7 +7471,7 @@ theorem endSkipCheckedCatIlksSuccess {σ σ₀ A I} {g : UInt256}
         (.storage catRef) = .ok (.address (endSkipCatAddr σ I)) := by
     have hbase : (endSkipStore I).get? "cat" = none := by
       simp [endSkipStore]
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipCatAddr, endSkipCatWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endSkip_cat (locals := endSkipStore I) evm0 hbase
   have hcodePos :
@@ -7491,7 +7491,7 @@ theorem endSkipCheckedCatIlksSuccess {σ σ₀ A I} {g : UInt256}
         .ok [.fixedBytes bytes32Width (endBytes32ArgBytes I)] := by
     simp [evalExprs?, hilk, endSkipIlkBytes, endBytes32ArgBytes, EvalResult.bind, bind, pure]
   have hvalue := endSkipCatIlksDecode_ok (out := out) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm0) (evm' := evmCat)
     (locals := endSkipStore I) (receiver := .storage catRef)
     (retVar := "catIlk") (name := "catIlks") (target := endSkipCatAddr σ I)
@@ -7546,10 +7546,10 @@ theorem endSkipBodyReverts_catIlksBlock {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endSkipStore I) skipTransition.body .reverted := by
   intro evm0
   have htagLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩ := by
     intro hbad
     apply htag
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipTagWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguard :
       evalExpr? config { contract := contract, locals := endSkipStore I } evm0
@@ -7720,10 +7720,10 @@ theorem endSkipPrefixFlipSuccess {σ σ₀ A I} {g : UInt256}
       (.ok { contract := contract, locals := endSkipStoreFlip I out } evmCat) := by
   intro evm0
   have htagLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩ := by
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) ≠ ⟨0⟩ := by
     intro hbad
     apply htag
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipTagWord, solcSlotWordAt, solcSlotWord] using hbad
   have hguard :
       evalExpr? config { contract := contract, locals := endSkipStore I } evm0
@@ -7763,7 +7763,7 @@ theorem endSkipVatReceiver_afterFlip {σ I catOut evm}
       (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
   have hbase : (endSkipStoreFlip I catOut).get? "vat" = none := by
     simp [endSkipStoreFlip, endSkipStoreCatIlk, endSkipStore]
-  simpa [hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat (locals := endSkipStoreFlip I catOut) evm hbase
 
@@ -7848,7 +7848,7 @@ theorem endSkipCheckedVatIlksFailure {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -7879,7 +7879,7 @@ theorem endSkipCheckedVatIlksDecodeRevert {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
       (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
       (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -7913,7 +7913,7 @@ theorem endSkipCheckedVatIlksSuccess {σ I} {catOut vatOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_vatIlksArgs_afterFlip evm I catOut
   have hvalue := endFlowVatIlksDecode_ok (out := vatOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmVat)
     (locals := endSkipStoreFlip I catOut) (receiver := .storage vatRef)
     (retVar := "vatIlk") (name := "vatIlks") (target := endPackVatAddr σ I)
@@ -8067,12 +8067,12 @@ theorem endSkipCatIlkFlipAddr_eq_ofUInt256 (catOut : ByteArray) :
     endSkipCatIlkFlipAddr catOut =
       AccountAddress.ofUInt256 (endSkipCatIlkFlipTargetWord catOut) := by
   have hval :
-      Solm.Value.address (endSkipCatIlkFlipAddr catOut) =
-        Solm.Value.address (AccountAddress.ofUInt256 (endSkipCatIlkFlipTargetWord catOut)) := by
+      Stele.Value.address (endSkipCatIlkFlipAddr catOut) =
+        Stele.Value.address (AccountAddress.ofUInt256 (endSkipCatIlkFlipTargetWord catOut)) := by
     simpa [endSkipCatIlkFlipAddr, endSkipCatIlkFlipTargetWord,
       accountAddress_ofUInt256_eq_ofNat_toNat] using
       solcAddressValue_masked (endSkipCatIlkFlipWord catOut)
-  exact Solm.Value.address.inj hval
+  exact Stele.Value.address.inj hval
 
 theorem endSkipBidsReceiver_afterRate {I catOut vatOut evm} :
     evalExpr? config { contract := contract, locals := endSkipStoreRate I catOut vatOut }
@@ -8185,7 +8185,7 @@ theorem endSkipCheckedBidsFailure {σ I} {catOut vatOut bidOut : ByteArray}
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   rw [endSkipBidsCallStmts]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
       (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
       (retVar := "flipBid") (name := "bids")
@@ -8218,7 +8218,7 @@ theorem endSkipCheckedBidsDecodeRevert {σ I} {catOut vatOut bidOut : ByteArray}
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   rw [endSkipBidsCallStmts]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
       (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
       (retVar := "flipBid") (name := "bids")
@@ -8253,7 +8253,7 @@ theorem endSkipCheckedBidsSuccess {σ I} {catOut vatOut bidOut : ByteArray}
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_bidsArgs_afterRate evm I catOut vatOut
   have hvalue := endSkipBidsDecode_ok (out := bidOut) hlo
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmBids)
     (locals := endSkipStoreRate I catOut vatOut) (receiver := .var "flip")
     (retVar := "flipBid") (name := "bids")
@@ -8530,7 +8530,7 @@ theorem endSkipVatReceiver_afterTab {σ I catOut vatOut bidOut evm}
     evalExpr? config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evm (.storage vatRef) = .ok (.address (endPackVatAddr σ I)) := by
   have hbase := endSkipStoreTab_get_vat_none I catOut vatOut bidOut
-  simpa [hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat (locals := endSkipStoreTab I catOut vatOut bidOut) evm hbase
 
@@ -8545,7 +8545,7 @@ theorem evalExprs_endSkip_suck1Args_afterTab (evm : EVM.State) (I : ExecutionEnv
       evalExpr? config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
         evm vowAddr = .ok (.address (endPackVowAddr σ I)) := by
     have hbase := endSkipStoreTab_get_vow_none I catOut vatOut bidOut
-    simpa [vowAddr, hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [vowAddr, hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vow (locals := endSkipStoreTab I catOut vatOut bidOut) evm hbase
   have htab :
@@ -8611,7 +8611,7 @@ theorem endSkipCheckedSuck1Failure {σ I} {catOut vatOut bidOut suckOut : ByteAr
   have hargs := evalExprs_endSkip_suck1Args_afterTab evm I σ catOut vatOut bidOut
     hmap howner
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
       (locals := endSkipStoreTab I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_suck1") (name := "suck") (target := endPackVatAddr σ I)
@@ -8651,7 +8651,7 @@ theorem endSkipCheckedSuck1Success {σ I} {catOut vatOut bidOut suckOut : ByteAr
     hmap howner
   have hdec : config.externalABI.decode? "suck" suckOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
     (locals := endSkipStoreTab I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_suck1") (name := "suck") (target := endPackVatAddr σ I)
@@ -8671,7 +8671,7 @@ theorem endSkipVatReceiver_afterSuck1 {σ I catOut vatOut bidOut evm}
   have hbase : (endSkipStoreSuck1 I catOut vatOut bidOut).get? "vat" = none := by
     rw [endSkipStoreSuck1, store_get_ne _ _ (by native_decide)]
     exact endSkipStoreTab_get_vat_none I catOut vatOut bidOut
-  simpa [hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat
       (locals := endSkipStoreSuck1 I catOut vatOut bidOut) evm hbase
@@ -8692,7 +8692,7 @@ theorem evalExprs_endSkip_suck2Args_afterSuck1 (evm : EVM.State)
       simp [endSkipStoreSuck1, endSkipStoreTab, endSkipStoreUsr, endSkipStoreLot,
         endSkipStoreBid, endSkipStoreFlipBid, endSkipStoreRate, endSkipStoreVatIlk,
         endSkipStoreFlip, endSkipStoreCatIlk, endSkipStore]
-    simpa [vowAddr, hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [vowAddr, hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
       endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
       evalExpr_endPack_vow
         (locals := endSkipStoreSuck1 I catOut vatOut bidOut) evm hbase
@@ -8773,7 +8773,7 @@ theorem endSkipCheckedSuck2Failure {σ I} {catOut vatOut bidOut suckOut : ByteAr
   have hargs := evalExprs_endSkip_suck2Args_afterSuck1 evm I σ catOut vatOut bidOut
     hmap howner
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
       (locals := endSkipStoreSuck1 I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_suck2") (name := "suck") (target := endPackVatAddr σ I)
@@ -8814,7 +8814,7 @@ theorem endSkipCheckedSuck2Success {σ I} {catOut vatOut bidOut suckOut : ByteAr
     hmap howner
   have hdec : config.externalABI.decode? "suck" suckOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmSuck)
     (locals := endSkipStoreSuck1 I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_suck2") (name := "suck") (target := endPackVatAddr σ I)
@@ -8835,7 +8835,7 @@ theorem endSkipVatReceiver_afterSuck2 {σ I catOut vatOut bidOut evm}
     rw [endSkipStoreSuck2, store_get_ne _ _ (by native_decide),
       endSkipStoreSuck1, store_get_ne _ _ (by native_decide)]
     exact endSkipStoreTab_get_vat_none I catOut vatOut bidOut
-  simpa [hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat
       (locals := endSkipStoreSuck2 I catOut vatOut bidOut) evm hbase
@@ -8918,7 +8918,7 @@ theorem endSkipCheckedHopeFailure {σ I} {catOut vatOut bidOut hopeOut : ByteArr
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_hopeArgs_afterSuck2 evm I catOut vatOut bidOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmHope)
       (locals := endSkipStoreSuck2 I catOut vatOut bidOut) (receiver := .storage vatRef)
       (retVar := "_hope") (name := "hope") (target := endPackVatAddr σ I)
@@ -8954,7 +8954,7 @@ theorem endSkipCheckedHopeSuccess {σ I} {catOut vatOut bidOut hopeOut : ByteArr
   have hargs := evalExprs_endSkip_hopeArgs_afterSuck2 evm I catOut vatOut bidOut
   have hdec : config.externalABI.decode? "hope" hopeOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmHope)
     (locals := endSkipStoreSuck2 I catOut vatOut bidOut) (receiver := .storage vatRef)
     (retVar := "_hope") (name := "hope") (target := endPackVatAddr σ I)
@@ -9067,7 +9067,7 @@ theorem endSkipCheckedYankFailure {σ I} {catOut vatOut bidOut yankOut : ByteArr
     endEvalExpr_extCodeGuard_true hreceiver hcodePos
   have hargs := evalExprs_endSkip_yankArgs_afterHope evm I catOut vatOut bidOut
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
       (locals := endSkipStoreHope I catOut vatOut bidOut) (receiver := .var "flip")
       (retVar := "_yank") (name := "yank") (target := endSkipCatIlkFlipAddr catOut)
@@ -9103,7 +9103,7 @@ theorem endSkipCheckedYankSuccess {σ I} {catOut vatOut bidOut yankOut : ByteArr
   have hargs := evalExprs_endSkip_yankArgs_afterHope evm I catOut vatOut bidOut
   have hdec : config.externalABI.decode? "yank" yankOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmYank)
     (locals := endSkipStoreHope I catOut vatOut bidOut) (receiver := .var "flip")
     (retVar := "_yank") (name := "yank") (target := endSkipCatIlkFlipAddr catOut)
@@ -9210,7 +9210,7 @@ theorem endSkipStmtArtNewAddReturns (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σ I)
     (hfit :
       (endSkipArtOldWord σ I).toNat + (endSkipArtWord vatOut bidOut).toNat <
@@ -9269,7 +9269,7 @@ theorem endSkipStmtArtNewAddReverts (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σ I)
     (hover :
       UInt256.size ≤
@@ -9342,7 +9342,7 @@ theorem endSkipAssignArt {locals : Store} (evm : EVM.State) (I : ExecutionEnv)
 theorem endSkipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
     (hsz68 : 68 ≤ I.calldata.size) :
-    (ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
+    (evm.executionEnv.perm = true → ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
         (endSkipPostArtState evm I (endSkipArtNewWord σ I vatOut bidOut)))) ∧
@@ -9373,17 +9373,18 @@ theorem endSkipStmtArtAssignSplit (evm : EVM.State) (I : ExecutionEnv)
       rw [endSkipStoreArtNew, store_get_ne _ _ (by native_decide)]
       exact endSkipStoreArt_get_ilk I catOut vatOut bidOut
     exact endSkipAssignArt evm I (endSkipArtNewWord σ I vatOut bidOut) hbase hget hsz68
-  exact ⟨ExecStmt.assign hArtNew hassign,
+  exact ⟨fun hperm ↦ ExecStmt.assign (hperm := Or.inr hperm) hArtNew hassign,
     fun hperm ↦ ExecStmt.assignStatic hArtNew hassign hperm⟩
 
 theorem endSkipStmtArtAssign (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray)
-    (hsz68 : 68 ≤ I.calldata.size) :
+    (hsz68 : 68 ≤ I.calldata.size)
+    (hperm : evm.executionEnv.perm = true) :
     ExecStmt config { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
       evm (.assign .storage (ArtRef (.var "ilk")) (.var "ArtNew"))
       (.ok { contract := contract, locals := endSkipStoreArtNew σ I catOut vatOut bidOut }
         (endSkipPostArtState evm I (endSkipArtNewWord σ I vatOut bidOut))) :=
-  (endSkipStmtArtAssignSplit evm I σ catOut vatOut bidOut hsz68).1
+  (endSkipStmtArtAssignSplit evm I σ catOut vatOut bidOut hsz68).1 hperm
 
 theorem evalExpr_endSkip_lot_afterArtNew (evm : EVM.State) (I : ExecutionEnv)
     (σ : AccountMap) (catOut vatOut bidOut : ByteArray) :
@@ -9502,7 +9503,7 @@ theorem endSkipVatReceiver_afterArtNewFor {σCall σLoc I catOut vatOut bidOut e
       endSkipStoreSuck2, store_get_ne _ _ (by native_decide),
       endSkipStoreSuck1, store_get_ne _ _ (by native_decide)]
     exact endSkipStoreTab_get_vat_none I catOut vatOut bidOut
-  simpa [hmap, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [hmap, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVatAddr, endPackVatWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vat
       (locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut) evm hbase
@@ -9555,7 +9556,7 @@ theorem evalExpr_endSkip_vow_afterArtNew (evm : EVM.State) (I : ExecutionEnv)
       endSkipStoreSuck2, store_get_ne _ _ (by native_decide),
       endSkipStoreSuck1, store_get_ne _ _ (by native_decide)]
     exact endSkipStoreTab_get_vow_none I catOut vatOut bidOut
-  simpa [vowAddr, howner, Solm.EVM.storageLoad, State.lookupAccount,
+  simpa [vowAddr, howner, Stele.EVM.storageLoad, State.lookupAccount,
     endPackVowAddr, endPackVowWord, solcSlotWordAt, solcSlotWord] using
     evalExpr_endPack_vow
       (locals := endSkipStoreArtNew σ I catOut vatOut bidOut) evm hbase
@@ -9704,7 +9705,7 @@ theorem endSkipGrabTailReverts_callFailedFor {σCall σLoc I}
     rw [endSkipGrabPositiveArgValues]
     exact hargsRaw
   rw [endSkipGrabStmts, checkedExternalCallStmts]
-  exact checkedExternalCallFailure
+  exact checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
       (locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut)
       (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -9760,7 +9761,7 @@ theorem endSkipGrabTailReturns_successFor {σCall σLoc I}
     exact hargsRaw
   have hdec : config.externalABI.decode? "grab" grabOut = some [] := by
     simp [config, externalABI, decodeVoid?]
-  have hblock := checkedExternalCallSuccess
+  have hblock := checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
     (cfg := config) (C := contract) (evm := evm) (evm' := evmGrab)
     (locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut)
     (receiver := .storage vatRef) (retVar := "_grab") (name := "grab")
@@ -9814,7 +9815,7 @@ theorem endSkipTailAfterTabReturnsSplit {I σLoc}
     {evmTab evmSuck1 evmSuck2 evmHope evmYank : EVM.State}
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σLoc I)
     (hrate : endFlowVatIlkRateWord vatOut ≠ ⟨0⟩)
     (hfit :
@@ -9843,7 +9844,7 @@ theorem endSkipTailAfterTabReturnsSplit {I σLoc}
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
           evmYank)) :
-    (((endSkipLotWord bidOut).toNat < 2 ^ 255) →
+    (evmYank.executionEnv.perm = true → ((endSkipLotWord bidOut).toNat < 2 ^ 255) →
       ((endSkipArtWord vatOut bidOut).toNat < 2 ^ 255) →
       ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts
@@ -9879,10 +9880,10 @@ theorem endSkipTailAfterTabReturnsSplit {I σLoc}
   have hassign := endSkipStmtArtAssignSplit evmYank I σLoc
     catOut vatOut bidOut hsz68
   constructor
-  · intro hlot hart
+  · intro hperm hlot hart
     apply hprefix
     refine ExecBlock.consNormal
-      (hassign.1) ?_
+      (hassign.1 hperm) ?_
     exact ExecBlock.consNormal
       (ExecStmt.requireTrue
         (endSkipEvalExpr_intGuard_true
@@ -9897,7 +9898,7 @@ theorem endSkipTailAfterTabReturns {I σLoc}
     {evmTab evmSuck1 evmSuck2 evmHope evmYank : EVM.State}
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σLoc I)
     (hrate : endFlowVatIlkRateWord vatOut ≠ ⟨0⟩)
     (hfit :
@@ -9927,13 +9928,14 @@ theorem endSkipTailAfterTabReturns {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts
       (.ok { contract := contract, locals := endSkipStoreArtNew σLoc I catOut vatOut bidOut }
         (endSkipPostArtState evmYank I (endSkipArtNewWord σLoc I vatOut bidOut))) :=
   (endSkipTailAfterTabReturnsSplit hsz68 hArtLoad hrate hfit
-    hsuck1 hsuck2 hhope hyank).1 hlot hart
+    hsuck1 hsuck2 hhope hyank).1 hperm hlot hart
 
 theorem endSkipTailReverts_suck1 {I} {catOut vatOut bidOut : ByteArray}
     {evmTab : EVM.State}
@@ -10081,7 +10083,7 @@ theorem endSkipTailReverts_artAddOverflow {I σLoc}
     {evmTab evmSuck1 evmSuck2 evmHope evmYank : EVM.State}
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σLoc I)
     (hrate : endFlowVatIlkRateWord vatOut ≠ ⟨0⟩)
     (hover :
@@ -10129,7 +10131,7 @@ theorem endSkipTailReverts_intGuardLot {I σLoc}
     {evmTab evmSuck1 evmSuck2 evmHope evmYank : EVM.State}
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σLoc I)
     (hrate : endFlowVatIlkRateWord vatOut ≠ ⟨0⟩)
     (hfit :
@@ -10158,7 +10160,8 @@ theorem endSkipTailReverts_intGuardLot {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts .reverted := by
   have hartBlock :
@@ -10168,7 +10171,7 @@ theorem endSkipTailReverts_intGuardLot {I σLoc}
     refine ExecBlock.consNormal
       (endSkipStmtArtNewAddReturns evmYank I σLoc catOut vatOut bidOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSkipStmtArtAssign evmYank I σLoc catOut vatOut bidOut hsz68) ?_
+      (endSkipStmtArtAssign (hperm := by assumption) evmYank I σLoc catOut vatOut bidOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSkipEvalExpr_intGuard_false_lot
@@ -10185,7 +10188,7 @@ theorem endSkipTailReverts_intGuardArt {I σLoc}
     {evmTab evmSuck1 evmSuck2 evmHope evmYank : EVM.State}
     (hsz68 : 68 ≤ I.calldata.size)
     (hArtLoad :
-      Solm.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
+      Stele.EVM.storageLoad evmYank evmYank.executionEnv.codeOwner (endSkipArtSlot I) =
         endSkipArtOldWord σLoc I)
     (hrate : endFlowVatIlkRateWord vatOut ≠ ⟨0⟩)
     (hfit :
@@ -10215,7 +10218,8 @@ theorem endSkipTailReverts_intGuardArt {I σLoc}
         { contract := contract, locals := endSkipStoreHope I catOut vatOut bidOut }
         evmHope endSkipYankStmts
         (.ok { contract := contract, locals := endSkipStoreYank I catOut vatOut bidOut }
-          evmYank)) :
+          evmYank))
+    (hperm : evmYank.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := endSkipStoreTab I catOut vatOut bidOut }
       evmTab endSkipTailNoGrabStmts .reverted := by
   have hartBlock :
@@ -10225,7 +10229,7 @@ theorem endSkipTailReverts_intGuardArt {I σLoc}
     refine ExecBlock.consNormal
       (endSkipStmtArtNewAddReturns evmYank I σLoc catOut vatOut bidOut hsz68 hArtLoad hfit) ?_
     refine ExecBlock.consNormal
-      (endSkipStmtArtAssign evmYank I σLoc catOut vatOut bidOut hsz68) ?_
+      (endSkipStmtArtAssign (hperm := by assumption) evmYank I σLoc catOut vatOut bidOut hsz68) ?_
     exact ExecBlock.consRevert
       (ExecStmt.requireFalse
         (endSkipEvalExpr_intGuard_false_art
@@ -10353,8 +10357,8 @@ theorem endSkipBodyReverts_tagZero {σ σ₀ A I} {g : UInt256}
     ExecTransitionBody config contract evm0 (endSkipStore I) skipTransition.body .reverted := by
   intro evm0
   have htagLoad :
-      Solm.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) = ⟨0⟩ := by
-    simpa [evm0, initState, Solm.EVM.storageLoad, State.lookupAccount,
+      Stele.EVM.storageLoad evm0 evm0.executionEnv.codeOwner (endSkipTagSlot I) = ⟨0⟩ := by
+    simpa [evm0, initState, Stele.EVM.storageLoad, State.lookupAccount,
       endSkipTagWord, solcSlotWordAt, solcSlotWord] using htag
   have hguard :
       evalExpr? config { contract := contract, locals := endSkipStore I } evm0
@@ -10364,7 +10368,7 @@ theorem endSkipBodyReverts_tagZero {σ σ₀ A I} {g : UInt256}
   simpa [skipTransition, nonpayable, checkedExternalCallStmts] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := endSkipStore I })
+      (stele := { contract := contract, locals := endSkipStore I })
       (evm := evm0)
       (guard := .binary .ne (.storage (tagRef (.var "ilk"))) (.intLit 0))
       (rest :=
@@ -10452,20 +10456,20 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
   · have hdecode := endDecode_skip_ok (I := I) hsz68
     obtain ⟨_, _, hbodyReach⟩ :=
       endSkipX_decoded (g := Sat256.ofUInt256 g) hsz68 hsize hreach
-    let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
     by_cases htag : endSkipTagWord σ I = ⟨0⟩
-    · have htagSolm : endSkipTagWord σ I = ⟨0⟩ := htag
+    · have htagStele : endSkipTagWord σ I = ⟨0⟩ := htag
       have hbody :
-          ExecTransitionBody config contract evmSolm (endSkipStore I)
+          ExecTransitionBody config contract evmStele (endSkipStore I)
             skipTransition.body .reverted := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           endSkipBodyReverts_tagZero
             (σ := σ) (σ₀ := σ₀)
-            (A := A) (I := I) (g := g) hwv hsz68 htagSolm
+            (A := A) (I := I) (g := g) hwv hsz68 htagStele
       exact (endSkipX_tagZero (g := Sat256.ofUInt256 g) hsz68 htag hbodyReach)
         |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
     · have htagNE : endSkipTagWord σ I ≠ ⟨0⟩ := htag
-      have htagSolmNE : endSkipTagWord σ I ≠ ⟨0⟩ := htagNE
+      have htagSteleNE : endSkipTagWord σ I ≠ ⟨0⟩ := htagNE
       obtain ⟨kTag, CTag, htagPcRaw⟩ :=
         endSkipX_tagNonzero (g := Sat256.ofUInt256 g) hsz68 htagNE hbodyReach
       have htagPc :
@@ -10483,23 +10487,23 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
       by_cases hcatCode :
           Reasoning.Theory.extCodeSizeWord σ (endSkipCatWord σ I) =
             ⟨0⟩
-      · have hcatCodeSolm :
+      · have hcatCodeStele :
             Reasoning.Theory.extCodeSizeWord σ
               (endSkipCatWord σ I) = ⟨0⟩ :=
           hcatCode
         have hbody :
-            ExecTransitionBody config contract evmSolm (endSkipStore I)
+            ExecTransitionBody config contract evmStele (endSkipStore I)
               skipTransition.body .reverted := by
-          simpa [evmSolm] using
+          simpa [evmStele] using
             endSkipBodyReverts_catIlksNoCode
               (σ := σ) (σ₀ := σ₀)
-              (A := A) (I := I) (g := g) hwv hsz68 htagSolmNE hcatCodeSolm
+              (A := A) (I := I) (g := g) hwv hsz68 htagSteleNE hcatCodeStele
         exact (endSkipX_catIlksNoCode (g := Sat256.ofUInt256 g) htagPc hcatCode)
           |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
       · have hcatCodeNE :
             Reasoning.Theory.extCodeSizeWord σ (endSkipCatWord σ I) ≠
               ⟨0⟩ := hcatCode
-        have hcatCodeSolmNE :
+        have hcatCodeSteleNE :
             Reasoning.Theory.extCodeSizeWord σ
               (endSkipCatWord σ I) ≠ ⟨0⟩ :=
           hcatCodeNE
@@ -10529,12 +10533,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                     rw [endSkipCatAddr_eq_ofUInt256]
               _ = AccountAddress.ofUInt256 (endSkipCatWord σ I) :=
                     hAddressId (AccountAddress.ofUInt256 (endSkipCatWord σ I))
-          obtain ⟨σ_cat_solm, A_cat_solm, hcallCatSolmRaw, hAccountsCat,
+          obtain ⟨σ_cat_stele, A_cat_stele, hcallCatSteleRaw, hAccountsCat,
               hSubstateCat⟩ :=
             callMade_accountMapEq_with_substate
               (cfg := config)
               (evm_evm := initState σ σ₀ (Sat256.ofUInt256 g) A I)
-              (evm_solm := evmSolm)
+              (evm_stele := evmStele)
               (tgt := EVM.address (endSkipCatAddr σ I))
               (targetWord := endSkipCatWord σ I)
               (name := "catIlks")
@@ -10548,36 +10552,36 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
               (endSkipCatIlksEncode_eq I hsz68 (endSkipCatIlksBaseMem_size I))
               (by simpa [initState] using hΘCatEq)
               rfl
-              (by simp [evmSolm, initState])
-              (by simp [evmSolm, initState])
+              (by simp [evmStele, initState])
+              (by simp [evmStele, initState])
           have hCatAddr : endSkipCatAddr σ I = endSkipCatAddr σ I := rfl
-          have hcallCatSolm :
-              typedCallViaEVM config evmSolm
+          have hcallCatStele :
+              typedCallViaEVM config evmStele
               (EVM.address (endSkipCatAddr σ I)) "catIlks" 0
               [.fixedBytes bytes32Width (endBytes32ArgBytes I)]
               (zCat,
-                { evmSolm with
-                  accountMap := σ_cat_solm
-                  substate := A_cat_solm
+                { evmStele with
+                  accountMap := σ_cat_stele
+                  substate := A_cat_stele
  },
                 catOut) true := by
-            simpa [evmSolm, hCatAddr] using hcallCatSolmRaw
+            simpa [evmStele, hCatAddr] using hcallCatSteleRaw
           cases zCat
           · have hbody :
-              ExecTransitionBody config contract evmSolm (endSkipStore I)
+              ExecTransitionBody config contract evmStele (endSkipStore I)
                 skipTransition.body .reverted := by
-              simpa [evmSolm] using
+              simpa [evmStele] using
                 endSkipBodyReverts_catIlksCallFailed
                   (σ := σ) (σ₀ := σ₀)
                   (A := A) (I := I) (g := g)
                   (evmCat :=
-                    { evmSolm with
-                      accountMap := σ_cat_solm
-                      substate := A_cat_solm
+                    { evmStele with
+                      accountMap := σ_cat_stele
+                      substate := A_cat_stele
  })
                   (out := catOut)
-                  hwv hsz68 htagSolmNE hcatCodeSolmNE
-                  (by simpa [evmSolm] using hcallCatSolm)
+                  hwv hsz68 htagSteleNE hcatCodeSteleNE
+                  (by simpa [evmStele] using hcallCatStele)
             exact (endSkipX_catIlksCallFailed rd3395 hcatOutSize)
               |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
           · let evmCatEvm :=
@@ -10585,27 +10589,27 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
               accountMap := σ_cat
               substate := ACat
  }
-            let evmCatSolm :=
-              { evmSolm with
-              accountMap := σ_cat_solm
-              substate := A_cat_solm
+            let evmCatStele :=
+              { evmStele with
+              accountMap := σ_cat_stele
+              substate := A_cat_stele
  }
-            have hStateCat : EVMStateEquiv evmCatEvm evmCatSolm := by
+            have hStateCat : EVMStateEquiv evmCatEvm evmCatStele := by
               refine ⟨rfl, ?_⟩
-              simpa [evmCatEvm, evmCatSolm] using hAccountsCat
+              simpa [evmCatEvm, evmCatStele] using hAccountsCat
             obtain ⟨_, _, rd3416⟩ :=
               endSkipX_catIlksCallSucceeded (g := Sat256.ofUInt256 g) rd3395
             by_cases hshortCat : catOut.size < 96
             · have hbody :
-                ExecTransitionBody config contract evmSolm (endSkipStore I)
+                ExecTransitionBody config contract evmStele (endSkipStore I)
                   skipTransition.body .reverted := by
-                simpa [evmCatSolm, evmSolm] using
+                simpa [evmCatStele, evmStele] using
                   endSkipBodyReverts_catIlksDecodeShort
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g)
-                    (evmCat := evmCatSolm) (out := catOut)
-                    hwv hsz68 htagSolmNE hcatCodeSolmNE
-                    (by simpa [evmCatSolm, evmSolm] using hcallCatSolm)
+                    (evmCat := evmCatStele) (out := catOut)
+                    hwv hsz68 htagSteleNE hcatCodeSteleNE
+                    (by simpa [evmCatStele, evmStele] using hcallCatStele)
                     hshortCat
               exact (endSkipX_catIlksReturnDecodeShort rd3416 hshortCat hcatOutSize)
                 |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
@@ -10614,7 +10618,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                 endSkipX_catIlksReturnDecodeOk rd3416 hloCat hcatOutSize
               have hprefix :
                 ExecBlock config { contract := contract, locals := endSkipStore I }
-                  evmSolm
+                  evmStele
                   (nonpayable ++
                     [ .require
                         (.binary .ne (.storage (tagRef (.var "ilk"))) (.intLit 0)) ] ++
@@ -10622,35 +10626,35 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                       [.var "ilk"] "catIlk" ++
                     [ .letDecl "flip" (some addr) (.tupleGet (.var "catIlk") 0) ])
                   (.ok { contract := contract, locals := endSkipStoreFlip I catOut }
-                    evmCatSolm) := by
-                simpa [evmCatSolm, evmSolm] using
+                    evmCatStele) := by
+                simpa [evmCatStele, evmStele] using
                   endSkipPrefixFlipSuccess
                     (σ := σ) (σ₀ := σ₀)
                     (A := A) (I := I) (g := g)
-                    (evmCat := evmCatSolm) (out := catOut)
-                    hwv hsz68 htagSolmNE hcatCodeSolmNE
-                    (by simpa [evmCatSolm, evmSolm] using hcallCatSolm)
+                    (evmCat := evmCatStele) (out := catOut)
+                    hwv hsz68 htagSteleNE hcatCodeSteleNE
+                    (by simpa [evmCatStele, evmStele] using hcallCatStele)
                     hloCat
               by_cases hvatCode :
                   Reasoning.Theory.extCodeSizeWord σ_cat
                     (endPackVatWord σ_cat I) = ⟨0⟩
-              · have hvatCodeSolm :
-                    Reasoning.Theory.extCodeSizeWord σ_cat_solm
-                      (endPackVatWord σ_cat_solm I) = ⟨0⟩ :=
+              · have hvatCodeStele :
+                    Reasoning.Theory.extCodeSizeWord σ_cat_stele
+                      (endPackVatWord σ_cat_stele I) = ⟨0⟩ :=
                   (by simpa only [hAccountsCat] using hvatCode)
                 have hvatBlock :
                     ExecBlock config
                       { contract := contract, locals := endSkipStoreFlip I catOut }
-                      evmCatSolm
+                      evmCatStele
                       (checkedExternalCallStmts (.storage vatRef) "vatIlks" (.intLit 0)
                         [.var "ilk"] "vatIlk") .reverted := by
                   exact endSkipCheckedVatIlksNoCode
-                    (σ := σ_cat_solm) (I := I) (catOut := catOut) (evm := evmCatSolm)
-                    (by simp [evmCatSolm])
-                    (by simp [evmCatSolm, evmSolm, initState])
-                    hvatCodeSolm
+                    (σ := σ_cat_stele) (I := I) (catOut := catOut) (evm := evmCatStele)
+                    (by simp [evmCatStele])
+                    (by simp [evmCatStele, evmStele, initState])
+                    hvatCodeStele
                 have hbody :
-                    ExecTransitionBody config contract evmSolm (endSkipStore I)
+                    ExecTransitionBody config contract evmStele (endSkipStore I)
                       skipTransition.body .reverted := by
                   exact endSkipBodyReverts_afterFlipVatIlksBlock hprefix hvatBlock
                 exact (endSkipX_vatIlksNoCode rd3436 hloCat hvatCode)
@@ -10658,9 +10662,9 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
               · have hvatCodeNE :
                     Reasoning.Theory.extCodeSizeWord σ_cat
                       (endPackVatWord σ_cat I) ≠ ⟨0⟩ := hvatCode
-                have hvatCodeSolmNE :
-                    Reasoning.Theory.extCodeSizeWord σ_cat_solm
-                      (endPackVatWord σ_cat_solm I) ≠ ⟨0⟩ :=
+                have hvatCodeSteleNE :
+                    Reasoning.Theory.extCodeSizeWord σ_cat_stele
+                      (endPackVatWord σ_cat_stele I) ≠ ⟨0⟩ :=
                   (by simpa only [hAccountsCat] using hvatCodeNE)
                 obtain ⟨gasWordVat, _, _, hvatReady⟩ :=
                   endSkipX_vatIlksCallReady rd3436 hloCat hvatCodeNE
@@ -10678,12 +10682,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                           rw [endPackVatAddr_eq_ofUInt256]
                     _ = AccountAddress.ofUInt256 (endPackVatWord σ_cat I) :=
                           hAddressId (AccountAddress.ofUInt256 (endPackVatWord σ_cat I))
-                obtain ⟨σ_vat_solm, A_vat_solm, hcallVatSolmRaw, hAccountsVat,
+                obtain ⟨σ_vat_stele, A_vat_stele, hcallVatSteleRaw, hAccountsVat,
                     hSubstateVat⟩ :=
                   callMade_accountMapEq_with_substate
                     (cfg := config)
                     (evm_evm := evmCatEvm)
-                    (evm_solm := evmCatSolm)
+                    (evm_stele := evmCatStele)
                     (tgt := EVM.address (endPackVatAddr σ_cat I))
                     (targetWord := endPackVatWord σ_cat I)
                     (name := "vatIlks")
@@ -10697,43 +10701,43 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                     htgtVat
                     (endSkipVatIlksEncode_eq I catOut hsz68 hloCat)
                     (by simpa [evmCatEvm, initState] using hΘVatEq)
-                    (by simpa [evmCatEvm, evmCatSolm] using hAccountsCat)
+                    (by simpa [evmCatEvm, evmCatStele] using hAccountsCat)
                     (by rfl)
                     (by simpa using hStateCat.executionEnv.symm)
-                have hVatAddr : endPackVatAddr σ_cat I = endPackVatAddr σ_cat_solm I := by
+                have hVatAddr : endPackVatAddr σ_cat I = endPackVatAddr σ_cat_stele I := by
                   simp [endPackVatAddr, hAccountsCat]
-                have hcallVatSolm :
-                    typedCallViaEVM config evmCatSolm
-                    (EVM.address (endPackVatAddr σ_cat_solm I)) "vatIlks" 0
+                have hcallVatStele :
+                    typedCallViaEVM config evmCatStele
+                    (EVM.address (endPackVatAddr σ_cat_stele I)) "vatIlks" 0
                     [.fixedBytes bytes32Width (endBytes32ArgBytes I)]
                     (zVat,
-                      { evmCatSolm with
-                        accountMap := σ_vat_solm
-                        substate := A_vat_solm
+                      { evmCatStele with
+                        accountMap := σ_vat_stele
+                        substate := A_vat_stele
  },
                       vatOut) true := by
-                  simpa [evmCatSolm, hVatAddr] using hcallVatSolmRaw
+                  simpa [evmCatStele, hVatAddr] using hcallVatSteleRaw
                 cases zVat
                 · have hvatBlock :
                     ExecBlock config
                       { contract := contract, locals := endSkipStoreFlip I catOut }
-                      evmCatSolm
+                      evmCatStele
                       (checkedExternalCallStmts (.storage vatRef) "vatIlks" (.intLit 0)
                         [.var "ilk"] "vatIlk") .reverted := by
                     exact endSkipCheckedVatIlksFailure
-                      (σ := σ_cat_solm) (I := I) (catOut := catOut) (vatOut := vatOut)
-                      (evm := evmCatSolm)
+                      (σ := σ_cat_stele) (I := I) (catOut := catOut) (vatOut := vatOut)
+                      (evm := evmCatStele)
                       (evmVat :=
-                        { evmCatSolm with
-                          accountMap := σ_vat_solm
-                          substate := A_vat_solm
+                        { evmCatStele with
+                          accountMap := σ_vat_stele
+                          substate := A_vat_stele
  })
-                      (by simp [evmCatSolm])
-                      (by simp [evmCatSolm, evmSolm, initState])
-                      hvatCodeSolmNE
-                      (by simpa [evmCatSolm] using hcallVatSolm)
+                      (by simp [evmCatStele])
+                      (by simp [evmCatStele, evmStele, initState])
+                      hvatCodeSteleNE
+                      (by simpa [evmCatStele] using hcallVatStele)
                   have hbody :
-                      ExecTransitionBody config contract evmSolm (endSkipStore I)
+                      ExecTransitionBody config contract evmStele (endSkipStore I)
                         skipTransition.body .reverted := by
                     exact endSkipBodyReverts_afterFlipVatIlksBlock hprefix hvatBlock
                   exact (endSkipX_vatIlksCallFailed rd3521 hvatOutSize)
@@ -10743,33 +10747,33 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                     accountMap := σ_vat
                     substate := AVat
  }
-                  let evmVatSolm :=
-                    { evmCatSolm with
-                    accountMap := σ_vat_solm
-                    substate := A_vat_solm
+                  let evmVatStele :=
+                    { evmCatStele with
+                    accountMap := σ_vat_stele
+                    substate := A_vat_stele
  }
-                  have hStateVat : EVMStateEquiv evmVatEvm evmVatSolm := by
+                  have hStateVat : EVMStateEquiv evmVatEvm evmVatStele := by
                     refine ⟨rfl, ?_⟩
-                    simpa [evmVatEvm, evmVatSolm] using hAccountsVat
+                    simpa [evmVatEvm, evmVatStele] using hAccountsVat
                   obtain ⟨_, _, rd3541⟩ :=
                     endSkipX_vatIlksCallSucceeded (g := Sat256.ofUInt256 g) rd3521
                   by_cases hshortVat : vatOut.size < 160
                   · have hvatBlock :
                       ExecBlock config
                         { contract := contract, locals := endSkipStoreFlip I catOut }
-                        evmCatSolm
+                        evmCatStele
                         (checkedExternalCallStmts (.storage vatRef) "vatIlks" (.intLit 0)
                           [.var "ilk"] "vatIlk") .reverted := by
                       exact endSkipCheckedVatIlksDecodeRevert
-                        (σ := σ_cat_solm) (I := I) (catOut := catOut) (vatOut := vatOut)
-                        (evm := evmCatSolm) (evmVat := evmVatSolm)
-                        (by simp [evmCatSolm])
-                        (by simp [evmCatSolm, evmSolm, initState])
-                        hvatCodeSolmNE
-                        (by simpa [evmVatSolm, evmCatSolm] using hcallVatSolm)
+                        (σ := σ_cat_stele) (I := I) (catOut := catOut) (vatOut := vatOut)
+                        (evm := evmCatStele) (evmVat := evmVatStele)
+                        (by simp [evmCatStele])
+                        (by simp [evmCatStele, evmStele, initState])
+                        hvatCodeSteleNE
+                        (by simpa [evmVatStele, evmCatStele] using hcallVatStele)
                         hshortVat
                     have hbody :
-                        ExecTransitionBody config contract evmSolm (endSkipStore I)
+                        ExecTransitionBody config contract evmStele (endSkipStore I)
                           skipTransition.body .reverted := by
                       exact endSkipBodyReverts_afterFlipVatIlksBlock hprefix hvatBlock
                     exact (endSkipX_vatIlksReturnDecodeShort rd3541 hloCat hshortVat hvatOutSize)
@@ -10780,49 +10784,49 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                     have hvatBlock :
                         ExecBlock config
                           { contract := contract, locals := endSkipStoreFlip I catOut }
-                          evmCatSolm
+                          evmCatStele
                           (checkedExternalCallStmts (.storage vatRef) "vatIlks" (.intLit 0)
                             [.var "ilk"] "vatIlk")
                           (.ok
                             { contract := contract,
                               locals := endSkipStoreVatIlk I catOut vatOut }
-                            evmVatSolm) := by
+                            evmVatStele) := by
                       exact endSkipCheckedVatIlksSuccess
-                        (σ := σ_cat_solm) (I := I) (catOut := catOut) (vatOut := vatOut)
-                        (evm := evmCatSolm) (evmVat := evmVatSolm)
-                        (by simp [evmCatSolm])
-                        (by simp [evmCatSolm, evmSolm, initState])
-                        hvatCodeSolmNE
-                        (by simpa [evmVatSolm, evmCatSolm] using hcallVatSolm)
+                        (σ := σ_cat_stele) (I := I) (catOut := catOut) (vatOut := vatOut)
+                        (evm := evmCatStele) (evmVat := evmVatStele)
+                        (by simp [evmCatStele])
+                        (by simp [evmCatStele, evmStele, initState])
+                        hvatCodeSteleNE
+                        (by simpa [evmVatStele, evmCatStele] using hcallVatStele)
                         hloVat
                     have hprefixRate :
                         ExecBlock config { contract := contract, locals := endSkipStore I }
-                          evmSolm endSkipPrefixRateStmts
+                          evmStele endSkipPrefixRateStmts
                         (.ok
                           { contract := contract,
                               locals := endSkipStoreRate I catOut vatOut }
-                            evmVatSolm) := by
+                            evmVatStele) := by
                       exact endSkipPrefixRateSuccess hprefix hvatBlock
                     by_cases hbidsCode :
                         Reasoning.Theory.extCodeSizeWord σ_vat
                           (endSkipCatIlkFlipTargetWord catOut) = ⟨0⟩
-                    · have hbidsCodeSolm :
-                          Reasoning.Theory.extCodeSizeWord σ_vat_solm
+                    · have hbidsCodeStele :
+                          Reasoning.Theory.extCodeSizeWord σ_vat_stele
                             (endSkipCatIlkFlipTargetWord catOut) = ⟨0⟩ := by
                         simpa only [hAccountsVat] using hbidsCode
                       have hbidsBlock :
                           ExecBlock config
                             { contract := contract,
                               locals := endSkipStoreRate I catOut vatOut }
-                            evmVatSolm endSkipBidsCallStmts
+                            evmVatStele endSkipBidsCallStmts
                             .reverted := by
                         exact endSkipCheckedBidsNoCode
-                          (σ := σ_vat_solm) (I := I) (catOut := catOut)
-                          (vatOut := vatOut) (evm := evmVatSolm)
+                          (σ := σ_vat_stele) (I := I) (catOut := catOut)
+                          (vatOut := vatOut) (evm := evmVatStele)
                           (by rfl)
-                          hbidsCodeSolm
+                          hbidsCodeStele
                       have hbody :
-                          ExecTransitionBody config contract evmSolm (endSkipStore I)
+                          ExecTransitionBody config contract evmStele (endSkipStore I)
                             skipTransition.body .reverted := by
                         exact endSkipBodyReverts_afterRateBidsBlock
                           hprefixRate hbidsBlock
@@ -10831,8 +10835,8 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                     · have hbidsCodeNE :
                           Reasoning.Theory.extCodeSizeWord σ_vat
                             (endSkipCatIlkFlipTargetWord catOut) ≠ ⟨0⟩ := hbidsCode
-                      have hbidsCodeSolmNE :
-                          Reasoning.Theory.extCodeSizeWord σ_vat_solm
+                      have hbidsCodeSteleNE :
+                          Reasoning.Theory.extCodeSizeWord σ_vat_stele
                             (endSkipCatIlkFlipTargetWord catOut) ≠ ⟨0⟩ := by
                         simpa only [hAccountsVat] using hbidsCodeNE
                       obtain ⟨gasWordBids, _, _, hbidsReady⟩ :=
@@ -10855,12 +10859,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                 hAddressId
                                   (AccountAddress.ofUInt256
                                     (endSkipCatIlkFlipTargetWord catOut))
-                      obtain ⟨σ_bids_solm, A_bids_solm, hcallBidsSolmRaw,
+                      obtain ⟨σ_bids_stele, A_bids_stele, hcallBidsSteleRaw,
                           hAccountsBids, hSubstateBids⟩ :=
                         callMade_accountMapEq_with_substate
                           (cfg := config)
                           (evm_evm := evmVatEvm)
-                          (evm_solm := evmVatSolm)
+                          (evm_stele := evmVatStele)
                           (tgt := EVM.address (endSkipCatIlkFlipAddr catOut))
                           (targetWord := endSkipCatIlkFlipTargetWord catOut)
                           (name := "bids")
@@ -10875,29 +10879,29 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                           htgtBids
                           (endSkipBidsEncode_eq I catOut vatOut hloCat hloVat)
                           (by simpa [evmVatEvm, evmCatEvm, initState] using hΘBidsEq)
-                          (by simpa [evmVatEvm, evmVatSolm] using hAccountsVat)
+                          (by simpa [evmVatEvm, evmVatStele] using hAccountsVat)
                           (by rfl)
                           (by simpa using hStateVat.executionEnv.symm)
-                      let evmBidsSolm :=
-                        { evmVatSolm with
-                          accountMap := σ_bids_solm
-                          substate := A_bids_solm
+                      let evmBidsStele :=
+                        { evmVatStele with
+                          accountMap := σ_bids_stele
+                          substate := A_bids_stele
  }
-                      have hcallBidsSolm :
-                          typedCallViaEVM config evmVatSolm
+                      have hcallBidsStele :
+                          typedCallViaEVM config evmVatStele
                           (EVM.address (endSkipCatIlkFlipAddr catOut)) "bids" 0
                           [.int (Int.ofNat (endSkipIdWord I).toNat)]
-                          (zBids, evmBidsSolm, bidOut) false := by
-                        change typedCallViaEVM config evmVatSolm
+                          (zBids, evmBidsStele, bidOut) false := by
+                        change typedCallViaEVM config evmVatStele
                           (EVM.address (endSkipCatIlkFlipAddr catOut)) "bids" 0
                           [.int (Int.ofNat (endSkipIdWord I).toNat)]
                           (zBids,
-                            { evmVatSolm with
-                              accountMap := σ_bids_solm
-                              substate := A_bids_solm
+                            { evmVatStele with
+                              accountMap := σ_bids_stele
+                              substate := A_bids_stele
  },
                             bidOut) false
-                        exact hcallBidsSolmRaw
+                        exact hcallBidsSteleRaw
                       cases zBids
                       · have rd3653Failed := by
                           simpa only [if_false] using rd3653
@@ -10905,18 +10909,18 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                             ExecBlock config
                               { contract := contract,
                                 locals := endSkipStoreRate I catOut vatOut }
-                              evmVatSolm endSkipBidsCallStmts
+                              evmVatStele endSkipBidsCallStmts
                               .reverted := by
                           exact endSkipCheckedBidsFailure
-                            (σ := σ_vat_solm) (I := I) (catOut := catOut)
+                            (σ := σ_vat_stele) (I := I) (catOut := catOut)
                             (vatOut := vatOut) (bidOut := bidOut)
-                            (evm := evmVatSolm)
-                            (evmBids := evmBidsSolm)
+                            (evm := evmVatStele)
+                            (evmBids := evmBidsStele)
                             (by rfl)
-                            hbidsCodeSolmNE
-                            hcallBidsSolm
+                            hbidsCodeSteleNE
+                            hcallBidsStele
                         have hbody :
-                            ExecTransitionBody config contract evmSolm (endSkipStore I)
+                            ExecTransitionBody config contract evmStele (endSkipStore I)
                               skipTransition.body .reverted := by
                           exact endSkipBodyReverts_afterRateBidsBlock
                             hprefixRate hbidsBlock
@@ -10927,9 +10931,9 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                           accountMap := σ_bids
                           substate := ABids
  }
-                        have hStateBids : EVMStateEquiv evmBidsEvm evmBidsSolm := by
+                        have hStateBids : EVMStateEquiv evmBidsEvm evmBidsStele := by
                           refine ⟨rfl, ?_⟩
-                          simpa [evmBidsEvm, evmBidsSolm] using hAccountsBids
+                          simpa [evmBidsEvm, evmBidsStele] using hAccountsBids
                         have rd3653Success := by
                           simpa only [if_true] using rd3653
                         obtain ⟨_, _, rd3674⟩ :=
@@ -10940,18 +10944,18 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                               ExecBlock config
                                 { contract := contract,
                                   locals := endSkipStoreRate I catOut vatOut }
-                                evmVatSolm endSkipBidsCallStmts
+                                evmVatStele endSkipBidsCallStmts
                                 .reverted := by
                             exact endSkipCheckedBidsDecodeRevert
-                              (σ := σ_vat_solm) (I := I) (catOut := catOut)
+                              (σ := σ_vat_stele) (I := I) (catOut := catOut)
                               (vatOut := vatOut) (bidOut := bidOut)
-                              (evm := evmVatSolm) (evmBids := evmBidsSolm)
+                              (evm := evmVatStele) (evmBids := evmBidsStele)
                               (by rfl)
-                              hbidsCodeSolmNE
-                              hcallBidsSolm
+                              hbidsCodeSteleNE
+                              hcallBidsStele
                               hshortBid
                           have hbody :
-                              ExecTransitionBody config contract evmSolm
+                              ExecTransitionBody config contract evmStele
                                 (endSkipStore I) skipTransition.body .reverted := by
                             exact endSkipBodyReverts_afterRateBidsBlock
                               hprefixRate hbidsBlock
@@ -10963,46 +10967,46 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                               ExecBlock config
                                 { contract := contract,
                                   locals := endSkipStoreRate I catOut vatOut }
-                                evmVatSolm endSkipBidsCallStmts
+                                evmVatStele endSkipBidsCallStmts
                                 (.ok
                                   { contract := contract,
                                     locals :=
                                       endSkipStoreFlipBid I catOut vatOut bidOut }
-                                  evmBidsSolm) := by
+                                  evmBidsStele) := by
                             exact endSkipCheckedBidsSuccess
-                              (σ := σ_vat_solm) (I := I) (catOut := catOut)
+                              (σ := σ_vat_stele) (I := I) (catOut := catOut)
                               (vatOut := vatOut) (bidOut := bidOut)
-                              (evm := evmVatSolm) (evmBids := evmBidsSolm)
+                              (evm := evmVatStele) (evmBids := evmBidsStele)
                               (by rfl)
-                              hbidsCodeSolmNE
-                              hcallBidsSolm
+                              hbidsCodeSteleNE
+                              hcallBidsStele
                               hloBid
                           have hprefixTab :=
                             endSkipPrefixTabSuccess hprefixRate hbidsBlock
                           obtain ⟨_, _, rd3712⟩ :=
                             endSkipX_bidsReturnDecodeOk rd3674 hloCat hloVat hloBid
                               hbidOutSize
-                          have hmapBidsSolm : evmBidsSolm.accountMap = σ_bids_solm := by
+                          have hmapBidsStele : evmBidsStele.accountMap = σ_bids_stele := by
                             rfl
-                          have hownerBidsSolm :
-                              evmBidsSolm.executionEnv.codeOwner = I.codeOwner := by
+                          have hownerBidsStele :
+                              evmBidsStele.executionEnv.codeOwner = I.codeOwner := by
                             rfl
                           by_cases hsuck1Code :
                               Reasoning.Theory.extCodeSizeWord σ_bids
                                 (endPackVatWord σ_bids I) = ⟨0⟩
-                          · have hsuck1CodeSolm :
-                                Reasoning.Theory.extCodeSizeWord σ_bids_solm
-                                  (endPackVatWord σ_bids_solm I) = ⟨0⟩ :=
+                          · have hsuck1CodeStele :
+                                Reasoning.Theory.extCodeSizeWord σ_bids_stele
+                                  (endPackVatWord σ_bids_stele I) = ⟨0⟩ :=
                               (by simpa only [hAccountsBids] using hsuck1Code)
                             have hsuck1Block :=
                               endSkipCheckedSuck1NoCode
-                                (σ := σ_bids_solm) (I := I) (catOut := catOut)
+                                (σ := σ_bids_stele) (I := I) (catOut := catOut)
                                 (vatOut := vatOut) (bidOut := bidOut)
-                                (evm := evmBidsSolm) hmapBidsSolm hownerBidsSolm
-                                hsuck1CodeSolm
+                                (evm := evmBidsStele) hmapBidsStele hownerBidsStele
+                                hsuck1CodeStele
                             have htail := endSkipTailReverts_suck1 hsuck1Block
                             have hbody :
-                                ExecTransitionBody config contract evmSolm
+                                ExecTransitionBody config contract evmStele
                                   (endSkipStore I) skipTransition.body .reverted := by
                               exact endSkipBodyReverts_afterTabTailReverted
                                 hprefixTab htail
@@ -11014,9 +11018,9 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                           · have hsuck1CodeNE :
                                 Reasoning.Theory.extCodeSizeWord σ_bids
                                   (endPackVatWord σ_bids I) ≠ ⟨0⟩ := hsuck1Code
-                            have hsuck1CodeSolmNE :
-                                Reasoning.Theory.extCodeSizeWord σ_bids_solm
-                                  (endPackVatWord σ_bids_solm I) ≠ ⟨0⟩ :=
+                            have hsuck1CodeSteleNE :
+                                Reasoning.Theory.extCodeSizeWord σ_bids_stele
+                                  (endPackVatWord σ_bids_stele I) ≠ ⟨0⟩ :=
                               (by simpa only [hAccountsBids] using hsuck1CodeNE)
                             obtain ⟨suck1GasWord, _, _, rdSuck1Ready⟩ :=
                               endSkipX_suck1CallReady
@@ -11047,11 +11051,11 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                 _ = AccountAddress.ofUInt256 (endPackVatWord σ_bids I) :=
                                       hAddressId
                                         (AccountAddress.ofUInt256 (endPackVatWord σ_bids I))
-                            obtain ⟨σ_suck1_solm, A_suck1_solm, hcallSuck1SolmRaw,
+                            obtain ⟨σ_suck1_stele, A_suck1_stele, hcallSuck1SteleRaw,
                                 hAccountsSuck1, hSubstateSuck1⟩ :=
                               callMade_accountMapEq_with_substate
                                 (cfg := config) (evm_evm := evmBidsEvm)
-                                (evm_solm := evmBidsSolm)
+                                (evm_stele := evmBidsStele)
                                 (tgt := EVM.address (endPackVatAddr σ_bids I))
                                 (targetWord := endPackVatWord σ_bids I)
                                 (name := "suck")
@@ -11070,62 +11074,62 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                   hloCat hloVat hloBid)
                                 (by simpa [evmBidsEvm, evmVatEvm, evmCatEvm, initState] using
                                   hΘSuck1Eq)
-                                (by simpa [evmBidsEvm, evmBidsSolm] using hAccountsBids)
+                                (by simpa [evmBidsEvm, evmBidsStele] using hAccountsBids)
                                 (by rfl)
                                 (by simpa using hStateBids.executionEnv.symm)
                             have hVatWordSuck1 :
                                 endPackVatWord σ_bids I =
-                                  endPackVatWord σ_bids_solm I :=
+                                  endPackVatWord σ_bids_stele I :=
                               congrArg (fun m => endPackVatWord m I) hAccountsBids
                             have hVatAddrSuck1 :
                                 endPackVatAddr σ_bids I =
-                                  endPackVatAddr σ_bids_solm I := by
+                                  endPackVatAddr σ_bids_stele I := by
                               simp [endPackVatAddr, hVatWordSuck1]
                             have hVowWordSuck1 :
                                 endPackVowWord σ_bids I =
-                                  endPackVowWord σ_bids_solm I :=
+                                  endPackVowWord σ_bids_stele I :=
                               (congrArg (fun m => endPackVowWord m I) hAccountsBids)
                             have hVowAddrSuck1 :
                                 endPackVowAddr σ_bids I =
-                                  endPackVowAddr σ_bids_solm I := by
+                                  endPackVowAddr σ_bids_stele I := by
                               simp [endPackVowAddr, hVowWordSuck1]
-                            let evmSuck1Solm :=
-                              { evmBidsSolm with
-                                accountMap := σ_suck1_solm
-                                substate := A_suck1_solm
+                            let evmSuck1Stele :=
+                              { evmBidsStele with
+                                accountMap := σ_suck1_stele
+                                substate := A_suck1_stele
  }
-                            have hcallSuck1Solm :
-                                typedCallViaEVM config evmBidsSolm
-                                  (EVM.address (endPackVatAddr σ_bids_solm I)) "suck" 0
-                                  [.address (endPackVowAddr σ_bids_solm I),
-                                    .address (endPackVowAddr σ_bids_solm I),
+                            have hcallSuck1Stele :
+                                typedCallViaEVM config evmBidsStele
+                                  (EVM.address (endPackVatAddr σ_bids_stele I)) "suck" 0
+                                  [.address (endPackVowAddr σ_bids_stele I),
+                                    .address (endPackVowAddr σ_bids_stele I),
                                     .int (Int.ofNat (endSkipTabWord bidOut).toNat)]
-                                  (zSuck1, evmSuck1Solm, suck1Out) true := by
-                              change typedCallViaEVM config evmBidsSolm
-                                (EVM.address (endPackVatAddr σ_bids_solm I)) "suck" 0
-                                [.address (endPackVowAddr σ_bids_solm I),
-                                  .address (endPackVowAddr σ_bids_solm I),
+                                  (zSuck1, evmSuck1Stele, suck1Out) true := by
+                              change typedCallViaEVM config evmBidsStele
+                                (EVM.address (endPackVatAddr σ_bids_stele I)) "suck" 0
+                                [.address (endPackVowAddr σ_bids_stele I),
+                                  .address (endPackVowAddr σ_bids_stele I),
                                   .int (Int.ofNat (endSkipTabWord bidOut).toNat)]
                                 (zSuck1,
-                                  { evmBidsSolm with
-                                    accountMap := σ_suck1_solm
-                                    substate := A_suck1_solm
+                                  { evmBidsStele with
+                                    accountMap := σ_suck1_stele
+                                    substate := A_suck1_stele
  },
                                   suck1Out) true
                               rw [← hVatAddrSuck1, ← hVowAddrSuck1]
-                              exact hcallSuck1SolmRaw
+                              exact hcallSuck1SteleRaw
                             cases zSuck1
                             · have hsuck1Block :=
                                 endSkipCheckedSuck1Failure
-                                  (σ := σ_bids_solm) (I := I) (catOut := catOut)
+                                  (σ := σ_bids_stele) (I := I) (catOut := catOut)
                                   (vatOut := vatOut) (bidOut := bidOut)
-                                  (suckOut := suck1Out) (evm := evmBidsSolm)
-                                  (evmSuck := evmSuck1Solm)
-                                  hmapBidsSolm hownerBidsSolm hsuck1CodeSolmNE
-                                  hcallSuck1Solm
+                                  (suckOut := suck1Out) (evm := evmBidsStele)
+                                  (evmSuck := evmSuck1Stele)
+                                  hmapBidsStele hownerBidsStele hsuck1CodeSteleNE
+                                  hcallSuck1Stele
                               have htail := endSkipTailReverts_suck1 hsuck1Block
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm
+                                  ExecTransitionBody config contract evmStele
                                     (endSkipStore I) skipTransition.body .reverted := by
                                 exact endSkipBodyReverts_afterTabTailReverted
                                   hprefixTab htail
@@ -11138,23 +11142,23 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                   accountMap := σ_suck1
                                   substate := ASuck1
  }
-                              have hStateSuck1 : EVMStateEquiv evmSuck1Evm evmSuck1Solm := by
+                              have hStateSuck1 : EVMStateEquiv evmSuck1Evm evmSuck1Stele := by
                                 refine ⟨rfl, ?_⟩
-                                simpa [evmSuck1Evm, evmSuck1Solm] using hAccountsSuck1
-                              have hmapSuck1Solm :
-                                  evmSuck1Solm.accountMap = σ_suck1_solm := by
+                                simpa [evmSuck1Evm, evmSuck1Stele] using hAccountsSuck1
+                              have hmapSuck1Stele :
+                                  evmSuck1Stele.accountMap = σ_suck1_stele := by
                                 rfl
-                              have hownerSuck1Solm :
-                                  evmSuck1Solm.executionEnv.codeOwner = I.codeOwner := by
+                              have hownerSuck1Stele :
+                                  evmSuck1Stele.executionEnv.codeOwner = I.codeOwner := by
                                 rfl
                               have hsuck1Block :=
                                 endSkipCheckedSuck1Success
-                                  (σ := σ_bids_solm) (I := I) (catOut := catOut)
+                                  (σ := σ_bids_stele) (I := I) (catOut := catOut)
                                   (vatOut := vatOut) (bidOut := bidOut)
-                                  (suckOut := suck1Out) (evm := evmBidsSolm)
-                                  (evmSuck := evmSuck1Solm)
-                                  hmapBidsSolm hownerBidsSolm hsuck1CodeSolmNE
-                                  hcallSuck1Solm
+                                  (suckOut := suck1Out) (evm := evmBidsStele)
+                                  (evmSuck := evmSuck1Stele)
+                                  hmapBidsStele hownerBidsStele hsuck1CodeSteleNE
+                                  hcallSuck1Stele
                               have rd3821Succ := by
                                 simpa only [if_true] using rd3821
                               obtain ⟨_, _, rd3840⟩ :=
@@ -11162,19 +11166,19 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                               by_cases hsuck2Code :
                                   Reasoning.Theory.extCodeSizeWord σ_suck1
                                     (endPackVatWord σ_suck1 I) = ⟨0⟩
-                              · have hsuck2CodeSolm :
-                                    Reasoning.Theory.extCodeSizeWord σ_suck1_solm
-                                      (endPackVatWord σ_suck1_solm I) = ⟨0⟩ :=
+                              · have hsuck2CodeStele :
+                                    Reasoning.Theory.extCodeSizeWord σ_suck1_stele
+                                      (endPackVatWord σ_suck1_stele I) = ⟨0⟩ :=
                                   (by simpa only [hAccountsSuck1] using hsuck2Code)
                                 have hsuck2Block :=
                                   endSkipCheckedSuck2NoCode
-                                    (σ := σ_suck1_solm) (I := I) (catOut := catOut)
+                                    (σ := σ_suck1_stele) (I := I) (catOut := catOut)
                                     (vatOut := vatOut) (bidOut := bidOut)
-                                    (evm := evmSuck1Solm) hmapSuck1Solm hownerSuck1Solm
-                                    hsuck2CodeSolm
+                                    (evm := evmSuck1Stele) hmapSuck1Stele hownerSuck1Stele
+                                    hsuck2CodeStele
                                 have htail := endSkipTailReverts_suck2 hsuck1Block hsuck2Block
                                 have hbody :
-                                    ExecTransitionBody config contract evmSolm
+                                    ExecTransitionBody config contract evmStele
                                       (endSkipStore I) skipTransition.body .reverted := by
                                   exact endSkipBodyReverts_afterTabTailReverted
                                     hprefixTab htail
@@ -11187,9 +11191,9 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                               · have hsuck2CodeNE :
                                     Reasoning.Theory.extCodeSizeWord σ_suck1
                                       (endPackVatWord σ_suck1 I) ≠ ⟨0⟩ := hsuck2Code
-                                have hsuck2CodeSolmNE :
-                                    Reasoning.Theory.extCodeSizeWord σ_suck1_solm
-                                      (endPackVatWord σ_suck1_solm I) ≠ ⟨0⟩ :=
+                                have hsuck2CodeSteleNE :
+                                    Reasoning.Theory.extCodeSizeWord σ_suck1_stele
+                                      (endPackVatWord σ_suck1_stele I) ≠ ⟨0⟩ :=
                                   (by simpa only [hAccountsSuck1] using hsuck2CodeNE)
                                 obtain ⟨suck2GasWord, _, _, rdSuck2Ready⟩ :=
                                   endSkipX_suck2CallReady
@@ -11227,12 +11231,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                           hAddressId
                                             (AccountAddress.ofUInt256
                                               (endPackVatWord σ_suck1 I))
-                                obtain ⟨σ_suck2_solm, A_suck2_solm,
-                                    hcallSuck2SolmRaw, hAccountsSuck2,
+                                obtain ⟨σ_suck2_stele, A_suck2_stele,
+                                    hcallSuck2SteleRaw, hAccountsSuck2,
                                     hSubstateSuck2⟩ :=
                                   callMade_accountMapEq_with_substate
                                     (cfg := config) (evm_evm := evmSuck1Evm)
-                                    (evm_solm := evmSuck1Solm)
+                                    (evm_stele := evmSuck1Stele)
                                     (tgt := EVM.address (endPackVatAddr σ_suck1 I))
                                     (targetWord := endPackVatWord σ_suck1 I)
                                     (name := "suck")
@@ -11251,66 +11255,66 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                       catOut vatOut bidOut hloCat hloVat hloBid)
                                     (by simpa [evmSuck1Evm, evmBidsEvm, evmVatEvm,
                                       evmCatEvm, initState] using hΘSuck2Eq)
-                                    (by simpa [evmSuck1Evm, evmSuck1Solm] using
+                                    (by simpa [evmSuck1Evm, evmSuck1Stele] using
                                       hAccountsSuck1)
                                     (by rfl)
                                     (by simpa using hStateSuck1.executionEnv.symm)
                                 have hVatWordSuck2 :
                                     endPackVatWord σ_suck1 I =
-                                      endPackVatWord σ_suck1_solm I :=
+                                      endPackVatWord σ_suck1_stele I :=
                                   congrArg (fun m => endPackVatWord m I) hAccountsSuck1
                                 have hVatAddrSuck2 :
                                     endPackVatAddr σ_suck1 I =
-                                      endPackVatAddr σ_suck1_solm I := by
+                                      endPackVatAddr σ_suck1_stele I := by
                                   simp [endPackVatAddr, hVatWordSuck2]
                                 have hVowWordSuck2 :
                                     endPackVowWord σ_suck1 I =
-                                      endPackVowWord σ_suck1_solm I :=
+                                      endPackVowWord σ_suck1_stele I :=
                                   (congrArg (fun m => endPackVowWord m I) hAccountsSuck1)
                                 have hVowAddrSuck2 :
                                     endPackVowAddr σ_suck1 I =
-                                      endPackVowAddr σ_suck1_solm I := by
+                                      endPackVowAddr σ_suck1_stele I := by
                                   simp [endPackVowAddr, hVowWordSuck2]
-                                let evmSuck2Solm :=
-                                  { evmSuck1Solm with
-                                    accountMap := σ_suck2_solm
-                                    substate := A_suck2_solm
+                                let evmSuck2Stele :=
+                                  { evmSuck1Stele with
+                                    accountMap := σ_suck2_stele
+                                    substate := A_suck2_stele
  }
-                                have hcallSuck2Solm :
-                                    typedCallViaEVM config evmSuck1Solm
-                                      (EVM.address (endPackVatAddr σ_suck1_solm I))
+                                have hcallSuck2Stele :
+                                    typedCallViaEVM config evmSuck1Stele
+                                      (EVM.address (endPackVatAddr σ_suck1_stele I))
                                       "suck" 0
-                                      [.address (endPackVowAddr σ_suck1_solm I),
+                                      [.address (endPackVowAddr σ_suck1_stele I),
                                         .address I.codeOwner,
                                         .int (Int.ofNat (endSkipBidWord bidOut).toNat)]
-                                      (zSuck2, evmSuck2Solm, suck2Out) true := by
-                                  change typedCallViaEVM config evmSuck1Solm
-                                    (EVM.address (endPackVatAddr σ_suck1_solm I))
+                                      (zSuck2, evmSuck2Stele, suck2Out) true := by
+                                  change typedCallViaEVM config evmSuck1Stele
+                                    (EVM.address (endPackVatAddr σ_suck1_stele I))
                                     "suck" 0
-                                    [.address (endPackVowAddr σ_suck1_solm I),
+                                    [.address (endPackVowAddr σ_suck1_stele I),
                                       .address I.codeOwner,
                                       .int (Int.ofNat (endSkipBidWord bidOut).toNat)]
                                     (zSuck2,
-                                      { evmSuck1Solm with
-                                        accountMap := σ_suck2_solm
-                                        substate := A_suck2_solm
+                                      { evmSuck1Stele with
+                                        accountMap := σ_suck2_stele
+                                        substate := A_suck2_stele
  },
                                       suck2Out) true
                                   rw [← hVatAddrSuck2, ← hVowAddrSuck2]
-                                  exact hcallSuck2SolmRaw
+                                  exact hcallSuck2SteleRaw
                                 cases zSuck2
                                 · have hsuck2Block :=
                                     endSkipCheckedSuck2Failure
-                                      (σ := σ_suck1_solm) (I := I) (catOut := catOut)
+                                      (σ := σ_suck1_stele) (I := I) (catOut := catOut)
                                       (vatOut := vatOut) (bidOut := bidOut)
-                                      (suckOut := suck2Out) (evm := evmSuck1Solm)
-                                      (evmSuck := evmSuck2Solm)
-                                      hmapSuck1Solm hownerSuck1Solm hsuck2CodeSolmNE
-                                      hcallSuck2Solm
+                                      (suckOut := suck2Out) (evm := evmSuck1Stele)
+                                      (evmSuck := evmSuck2Stele)
+                                      hmapSuck1Stele hownerSuck1Stele hsuck2CodeSteleNE
+                                      hcallSuck2Stele
                                   have htail :=
                                     endSkipTailReverts_suck2 hsuck1Block hsuck2Block
                                   have hbody :
-                                      ExecTransitionBody config contract evmSolm
+                                      ExecTransitionBody config contract evmStele
                                         (endSkipStore I) skipTransition.body .reverted := by
                                     exact endSkipBodyReverts_afterTabTailReverted
                                       hprefixTab htail
@@ -11327,24 +11331,24 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                       substate := ASuck2
  }
                                   have hStateSuck2 :
-                                      EVMStateEquiv evmSuck2Evm evmSuck2Solm := by
+                                      EVMStateEquiv evmSuck2Evm evmSuck2Stele := by
                                     refine ⟨rfl, ?_⟩
-                                    simpa [evmSuck2Evm, evmSuck2Solm] using
+                                    simpa [evmSuck2Evm, evmSuck2Stele] using
                                       hAccountsSuck2
-                                  have hmapSuck2Solm :
-                                      evmSuck2Solm.accountMap = σ_suck2_solm := by
+                                  have hmapSuck2Stele :
+                                      evmSuck2Stele.accountMap = σ_suck2_stele := by
                                     rfl
-                                  have hownerSuck2Solm :
-                                      evmSuck2Solm.executionEnv.codeOwner = I.codeOwner := by
+                                  have hownerSuck2Stele :
+                                      evmSuck2Stele.executionEnv.codeOwner = I.codeOwner := by
                                     rfl
                                   have hsuck2Block :=
                                     endSkipCheckedSuck2Success
-                                      (σ := σ_suck1_solm) (I := I) (catOut := catOut)
+                                      (σ := σ_suck1_stele) (I := I) (catOut := catOut)
                                       (vatOut := vatOut) (bidOut := bidOut)
-                                      (suckOut := suck2Out) (evm := evmSuck1Solm)
-                                      (evmSuck := evmSuck2Solm)
-                                      hmapSuck1Solm hownerSuck1Solm hsuck2CodeSolmNE
-                                      hcallSuck2Solm
+                                      (suckOut := suck2Out) (evm := evmSuck1Stele)
+                                      (evmSuck := evmSuck2Stele)
+                                      hmapSuck1Stele hownerSuck1Stele hsuck2CodeSteleNE
+                                      hcallSuck2Stele
                                   have rd3940Succ := by
                                     simpa only [if_true] using rd3940
                                   obtain ⟨_, _, rd3959⟩ :=
@@ -11352,22 +11356,22 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                   by_cases hhopeCode :
                                       Reasoning.Theory.extCodeSizeWord σ_suck2
                                         (endPackVatWord σ_suck2 I) = ⟨0⟩
-                                  · have hhopeCodeSolm :
+                                  · have hhopeCodeStele :
                                         Reasoning.Theory.extCodeSizeWord
-                                          σ_suck2_solm
-                                          (endPackVatWord σ_suck2_solm I) = ⟨0⟩ :=
+                                          σ_suck2_stele
+                                          (endPackVatWord σ_suck2_stele I) = ⟨0⟩ :=
                                       (by simpa only [hAccountsSuck2] using hhopeCode)
                                     have hhopeBlock :=
                                       endSkipCheckedHopeNoCode
-                                        (σ := σ_suck2_solm) (I := I) (catOut := catOut)
+                                        (σ := σ_suck2_stele) (I := I) (catOut := catOut)
                                         (vatOut := vatOut) (bidOut := bidOut)
-                                        (evm := evmSuck2Solm) hmapSuck2Solm
-                                        hownerSuck2Solm hhopeCodeSolm
+                                        (evm := evmSuck2Stele) hmapSuck2Stele
+                                        hownerSuck2Stele hhopeCodeStele
                                     have htail :=
                                       endSkipTailReverts_hope hsuck1Block hsuck2Block
                                         hhopeBlock
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm
+                                        ExecTransitionBody config contract evmStele
                                           (endSkipStore I) skipTransition.body
                                           .reverted := by
                                       exact endSkipBodyReverts_afterTabTailReverted
@@ -11383,10 +11387,10 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                   · have hhopeCodeNE :
                                         Reasoning.Theory.extCodeSizeWord σ_suck2
                                           (endPackVatWord σ_suck2 I) ≠ ⟨0⟩ := hhopeCode
-                                    have hhopeCodeSolmNE :
+                                    have hhopeCodeSteleNE :
                                         Reasoning.Theory.extCodeSizeWord
-                                          σ_suck2_solm
-                                          (endPackVatWord σ_suck2_solm I) ≠ ⟨0⟩ :=
+                                          σ_suck2_stele
+                                          (endPackVatWord σ_suck2_stele I) ≠ ⟨0⟩ :=
                                       (by simpa only [hAccountsSuck2] using hhopeCodeNE)
                                     obtain ⟨hopeGasWord, _, _, rdHopeReady⟩ :=
                                       endSkipX_hopeCallReady
@@ -11426,11 +11430,11 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                               hAddressId
                                                 (AccountAddress.ofUInt256
                                                   (endPackVatWord σ_suck2 I))
-                                    obtain ⟨σ_hope_solm, A_hope_solm, hcallHopeSolmRaw,
+                                    obtain ⟨σ_hope_stele, A_hope_stele, hcallHopeSteleRaw,
                                         hAccountsHope, hSubstateHope⟩ :=
                                       callMade_accountMapEq_with_substate
                                         (cfg := config) (evm_evm := evmSuck2Evm)
-                                        (evm_solm := evmSuck2Solm)
+                                        (evm_stele := evmSuck2Stele)
                                         (tgt := EVM.address (endPackVatAddr σ_suck2 I))
                                         (targetWord := endPackVatWord σ_suck2 I)
                                         (name := "hope")
@@ -11447,55 +11451,55 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                         (by simpa [evmSuck2Evm, evmSuck1Evm, evmBidsEvm,
                                           evmVatEvm, evmCatEvm, initState] using
                                           hΘHopeEq)
-                                        (by simpa [evmSuck2Evm, evmSuck2Solm] using
+                                        (by simpa [evmSuck2Evm, evmSuck2Stele] using
                                           hAccountsSuck2)
                                         (by rfl)
                                         (by simpa using hStateSuck2.executionEnv.symm)
                                     have hVatWordHope :
                                         endPackVatWord σ_suck2 I =
-                                          endPackVatWord σ_suck2_solm I :=
+                                          endPackVatWord σ_suck2_stele I :=
                                       congrArg (fun m => endPackVatWord m I) hAccountsSuck2
                                     have hVatAddrHope :
                                         endPackVatAddr σ_suck2 I =
-                                          endPackVatAddr σ_suck2_solm I := by
+                                          endPackVatAddr σ_suck2_stele I := by
                                       simp [endPackVatAddr, hVatWordHope]
-                                    let evmHopeSolm :=
-                                      { evmSuck2Solm with
-                                        accountMap := σ_hope_solm
-                                        substate := A_hope_solm
+                                    let evmHopeStele :=
+                                      { evmSuck2Stele with
+                                        accountMap := σ_hope_stele
+                                        substate := A_hope_stele
  }
-                                    have hcallHopeSolm :
-                                        typedCallViaEVM config evmSuck2Solm
-                                          (EVM.address (endPackVatAddr σ_suck2_solm I))
+                                    have hcallHopeStele :
+                                        typedCallViaEVM config evmSuck2Stele
+                                          (EVM.address (endPackVatAddr σ_suck2_stele I))
                                           "hope" 0
                                           [.address (endSkipCatIlkFlipAddr catOut)]
-                                          (zHope, evmHopeSolm, hopeOut) true := by
-                                      change typedCallViaEVM config evmSuck2Solm
-                                        (EVM.address (endPackVatAddr σ_suck2_solm I))
+                                          (zHope, evmHopeStele, hopeOut) true := by
+                                      change typedCallViaEVM config evmSuck2Stele
+                                        (EVM.address (endPackVatAddr σ_suck2_stele I))
                                         "hope" 0
                                         [.address (endSkipCatIlkFlipAddr catOut)]
                                         (zHope,
-                                          { evmSuck2Solm with
-                                            accountMap := σ_hope_solm
-                                            substate := A_hope_solm
+                                          { evmSuck2Stele with
+                                            accountMap := σ_hope_stele
+                                            substate := A_hope_stele
  },
                                           hopeOut) true
                                       rw [← hVatAddrHope]
-                                      exact hcallHopeSolmRaw
+                                      exact hcallHopeSteleRaw
                                     cases zHope
                                     · have hhopeBlock :=
                                         endSkipCheckedHopeFailure
-                                          (σ := σ_suck2_solm) (I := I) (catOut := catOut)
+                                          (σ := σ_suck2_stele) (I := I) (catOut := catOut)
                                           (vatOut := vatOut) (bidOut := bidOut)
-                                          (hopeOut := hopeOut) (evm := evmSuck2Solm)
-                                          (evmHope := evmHopeSolm)
-                                          hmapSuck2Solm hownerSuck2Solm hhopeCodeSolmNE
-                                          hcallHopeSolm
+                                          (hopeOut := hopeOut) (evm := evmSuck2Stele)
+                                          (evmHope := evmHopeStele)
+                                          hmapSuck2Stele hownerSuck2Stele hhopeCodeSteleNE
+                                          hcallHopeStele
                                       have htail :=
                                         endSkipTailReverts_hope hsuck1Block hsuck2Block
                                           hhopeBlock
                                       have hbody :
-                                          ExecTransitionBody config contract evmSolm
+                                          ExecTransitionBody config contract evmStele
                                             (endSkipStore I) skipTransition.body
                                             .reverted := by
                                         exact endSkipBodyReverts_afterTabTailReverted
@@ -11513,21 +11517,21 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                           substate := AHope
  }
                                       have hStateHope :
-                                          EVMStateEquiv evmHopeEvm evmHopeSolm := by
+                                          EVMStateEquiv evmHopeEvm evmHopeStele := by
                                         refine ⟨rfl, ?_⟩
-                                        simpa [evmHopeEvm, evmHopeSolm] using
+                                        simpa [evmHopeEvm, evmHopeStele] using
                                           hAccountsHope
-                                      have hmapHopeSolm :
-                                          evmHopeSolm.accountMap = σ_hope_solm := by
+                                      have hmapHopeStele :
+                                          evmHopeStele.accountMap = σ_hope_stele := by
                                         rfl
                                       have hhopeBlock :=
                                         endSkipCheckedHopeSuccess
-                                          (σ := σ_suck2_solm) (I := I) (catOut := catOut)
+                                          (σ := σ_suck2_stele) (I := I) (catOut := catOut)
                                           (vatOut := vatOut) (bidOut := bidOut)
-                                          (hopeOut := hopeOut) (evm := evmSuck2Solm)
-                                          (evmHope := evmHopeSolm)
-                                          hmapSuck2Solm hownerSuck2Solm hhopeCodeSolmNE
-                                          hcallHopeSolm
+                                          (hopeOut := hopeOut) (evm := evmSuck2Stele)
+                                          (evmHope := evmHopeStele)
+                                          hmapSuck2Stele hownerSuck2Stele hhopeCodeSteleNE
+                                          hcallHopeStele
                                       have rd4042Succ := by
                                         simpa only [if_true] using rd4042
                                       obtain ⟨_, _, rd4063⟩ :=
@@ -11535,22 +11539,22 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                       by_cases hyankCode :
                                           Reasoning.Theory.extCodeSizeWord σ_hope
                                             (endSkipCatIlkFlipTargetWord catOut) = ⟨0⟩
-                                      · have hyankCodeSolm :
+                                      · have hyankCodeStele :
                                             Reasoning.Theory.extCodeSizeWord
-                                              σ_hope_solm
+                                              σ_hope_stele
                                               (endSkipCatIlkFlipTargetWord catOut) = ⟨0⟩ := by
                                           simpa only [hAccountsHope] using hyankCode
                                         have hyankBlock :=
                                           endSkipCheckedYankNoCode
-                                            (σ := σ_hope_solm) (I := I) (catOut := catOut)
+                                            (σ := σ_hope_stele) (I := I) (catOut := catOut)
                                             (vatOut := vatOut) (bidOut := bidOut)
-                                            (evm := evmHopeSolm) hmapHopeSolm
-                                            hyankCodeSolm
+                                            (evm := evmHopeStele) hmapHopeStele
+                                            hyankCodeStele
                                         have htail :=
                                           endSkipTailReverts_yank hsuck1Block hsuck2Block
                                             hhopeBlock hyankBlock
                                         have hbody :
-                                            ExecTransitionBody config contract evmSolm
+                                            ExecTransitionBody config contract evmStele
                                               (endSkipStore I) skipTransition.body
                                               .reverted := by
                                           exact endSkipBodyReverts_afterTabTailReverted
@@ -11567,9 +11571,9 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                             Reasoning.Theory.extCodeSizeWord σ_hope
                                               (endSkipCatIlkFlipTargetWord catOut) ≠ ⟨0⟩ :=
                                           hyankCode
-                                        have hyankCodeSolmNE :
+                                        have hyankCodeSteleNE :
                                             Reasoning.Theory.extCodeSizeWord
-                                              σ_hope_solm
+                                              σ_hope_stele
                                               (endSkipCatIlkFlipTargetWord catOut) ≠ ⟨0⟩ := by
                                           simpa only [hAccountsHope] using hyankCodeNE
                                         obtain ⟨yankGasWord, _, _, rdYankReady⟩ :=
@@ -11596,12 +11600,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                           have hbadVal : I.depth.val = 1024 :=
                                             congrArg Fin.val hbadI
                                           omega
-                                        obtain ⟨σ_yank_solm, A_yank_solm,
-                                            hcallYankSolmRaw, hAccountsYank,
+                                        obtain ⟨σ_yank_stele, A_yank_stele,
+                                            hcallYankSteleRaw, hAccountsYank,
                                             hSubstateYank⟩ :=
                                           callMade_accountMapEq_with_substate
                                             (cfg := config) (evm_evm := evmHopeEvm)
-                                            (evm_solm := evmHopeSolm)
+                                            (evm_stele := evmHopeStele)
                                             (tgt := EVM.address (endSkipCatIlkFlipAddr catOut))
                                             (targetWord := endSkipCatIlkFlipTargetWord catOut)
                                             (name := "yank")
@@ -11619,45 +11623,45 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                               evmSuck1Evm, evmBidsEvm, evmVatEvm,
                                               evmCatEvm, initState] using
                                               hΘYankEq)
-                                            (by simpa [evmHopeEvm, evmHopeSolm] using
+                                            (by simpa [evmHopeEvm, evmHopeStele] using
                                               hAccountsHope)
                                             (by rfl)
                                             (by simpa using hStateHope.executionEnv.symm)
-                                        let evmYankSolm :=
-                                          { evmHopeSolm with
-                                            accountMap := σ_yank_solm
-                                            substate := A_yank_solm
+                                        let evmYankStele :=
+                                          { evmHopeStele with
+                                            accountMap := σ_yank_stele
+                                            substate := A_yank_stele
  }
-                                        have hcallYankSolm :
-                                            typedCallViaEVM config evmHopeSolm
+                                        have hcallYankStele :
+                                            typedCallViaEVM config evmHopeStele
                                               (EVM.address (endSkipCatIlkFlipAddr catOut))
                                               "yank" 0
                                               [.int (Int.ofNat (endSkipIdWord I).toNat)]
-                                              (zYank, evmYankSolm, yankOut) true := by
-                                          change typedCallViaEVM config evmHopeSolm
+                                              (zYank, evmYankStele, yankOut) true := by
+                                          change typedCallViaEVM config evmHopeStele
                                             (EVM.address (endSkipCatIlkFlipAddr catOut))
                                             "yank" 0
                                             [.int (Int.ofNat (endSkipIdWord I).toNat)]
                                             (zYank,
-                                              { evmHopeSolm with
-                                                accountMap := σ_yank_solm
-                                                substate := A_yank_solm
+                                              { evmHopeStele with
+                                                accountMap := σ_yank_stele
+                                                substate := A_yank_stele
  },
                                               yankOut) true
-                                          exact hcallYankSolmRaw
+                                          exact hcallYankSteleRaw
                                         cases zYank
                                         · have hyankBlock :=
                                             endSkipCheckedYankFailure
-                                              (σ := σ_hope_solm) (I := I) (catOut := catOut)
+                                              (σ := σ_hope_stele) (I := I) (catOut := catOut)
                                               (vatOut := vatOut) (bidOut := bidOut)
-                                              (yankOut := yankOut) (evm := evmHopeSolm)
-                                              (evmYank := evmYankSolm)
-                                              hmapHopeSolm hyankCodeSolmNE hcallYankSolm
+                                              (yankOut := yankOut) (evm := evmHopeStele)
+                                              (evmYank := evmYankStele)
+                                              hmapHopeStele hyankCodeSteleNE hcallYankStele
                                           have htail :=
                                             endSkipTailReverts_yank hsuck1Block hsuck2Block
                                               hhopeBlock hyankBlock
                                           have hbody :
-                                              ExecTransitionBody config contract evmSolm
+                                              ExecTransitionBody config contract evmStele
                                                 (endSkipStore I) skipTransition.body
                                                 .reverted := by
                                             exact endSkipBodyReverts_afterTabTailReverted
@@ -11676,37 +11680,37 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
  }
                                           have hyankBlock :=
                                             endSkipCheckedYankSuccess
-                                              (σ := σ_hope_solm) (I := I) (catOut := catOut)
+                                              (σ := σ_hope_stele) (I := I) (catOut := catOut)
                                               (vatOut := vatOut) (bidOut := bidOut)
-                                              (yankOut := yankOut) (evm := evmHopeSolm)
-                                              (evmYank := evmYankSolm)
-                                              hmapHopeSolm hyankCodeSolmNE hcallYankSolm
+                                              (yankOut := yankOut) (evm := evmHopeStele)
+                                              (evmYank := evmYankStele)
+                                              hmapHopeStele hyankCodeSteleNE hcallYankStele
                                           have rd4136Succ := by
                                             simpa only [if_true] using rd4136
                                           obtain ⟨_, _, rd4157⟩ :=
                                             endSkipX_yankCallSucceeded
                                               (σpost := σ_yank) rd4136Succ
                                           have hStateYank :
-                                              EVMStateEquiv evmYankEvm evmYankSolm := by
+                                              EVMStateEquiv evmYankEvm evmYankStele := by
                                             refine ⟨?_, ?_⟩
-                                            · simpa [evmYankEvm, evmYankSolm] using
+                                            · simpa [evmYankEvm, evmYankStele] using
                                                 hStateHope.executionEnv
-                                            · simpa [evmYankEvm, evmYankSolm] using
+                                            · simpa [evmYankEvm, evmYankStele] using
                                                 hAccountsYank
                                           have hArtCoupleYank :
                                               endSkipArtOldWord σ_yank I =
-                                                endSkipArtOldWord σ_yank_solm I := by
+                                                endSkipArtOldWord σ_yank_stele I := by
                                             exact congrArg (fun m => endSkipArtOldWord m I)
                                               hAccountsYank
-                                          have hArtLoadSolm :
-                                              Solm.EVM.storageLoad evmYankSolm
-                                                evmYankSolm.executionEnv.codeOwner
+                                          have hArtLoadStele :
+                                              Stele.EVM.storageLoad evmYankStele
+                                                evmYankStele.executionEnv.codeOwner
                                                 (endSkipArtSlot I) =
-                                                  endSkipArtOldWord σ_yank_solm I := by
-                                            simp [evmYankSolm, Solm.EVM.storageLoad,
-                                              State.lookupAccount, evmHopeSolm,
-                                              evmSuck2Solm, evmSuck1Solm, evmBidsSolm,
-                                              evmVatSolm, evmCatSolm, evmSolm,
+                                                  endSkipArtOldWord σ_yank_stele I := by
+                                            simp [evmYankStele, Stele.EVM.storageLoad,
+                                              State.lookupAccount, evmHopeStele,
+                                              evmSuck2Stele, evmSuck1Stele, evmBidsStele,
+                                              evmVatStele, evmCatStele, evmStele,
                                               initState, endSkipArtOldWord, solcSlotWordAt,
                                               solcSlotWord, Account.lookupStorage]
                                           by_cases hrate :
@@ -11716,7 +11720,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                 hsuck1Block hsuck2Block hhopeBlock
                                                 hyankBlock
                                             have hbody :
-                                                ExecTransitionBody config contract evmSolm
+                                                ExecTransitionBody config contract evmStele
                                                   (endSkipStore I) skipTransition.body
                                                   .reverted := by
                                               exact endSkipBodyReverts_afterTabTailReverted
@@ -11752,18 +11756,18 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                 UInt256.size ≤
                                                   (endSkipArtOldWord σ_yank I).toNat +
                                                     (endSkipArtWord vatOut bidOut).toNat
-                                            · have hoverSolm :
+                                            · have hoverStele :
                                                   UInt256.size ≤
-                                                    (endSkipArtOldWord σ_yank_solm I).toNat +
+                                                    (endSkipArtOldWord σ_yank_stele I).toNat +
                                                       (endSkipArtWord vatOut bidOut).toNat := by
                                                 simpa [← hArtCoupleYank] using hover
                                               have htail :=
                                                 endSkipTailReverts_artAddOverflow
-                                                  hsz68 hArtLoadSolm hrateNE hoverSolm
+                                                  hsz68 hArtLoadStele hrateNE hoverStele
                                                   hsuck1Block hsuck2Block hhopeBlock
                                                   hyankBlock
                                               have hbody :
-                                                  ExecTransitionBody config contract evmSolm
+                                                  ExecTransitionBody config contract evmStele
                                                     (endSkipStore I) skipTransition.body
                                                     .reverted := by
                                                 exact endSkipBodyReverts_afterTabTailReverted
@@ -11780,8 +11784,8 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                     (endSkipArtWord vatOut bidOut).toNat <
                                                       UInt256.size :=
                                                 Nat.lt_of_not_ge hover
-                                              have hfitSolm :
-                                                  (endSkipArtOldWord σ_yank_solm I).toNat +
+                                              have hfitStele :
+                                                  (endSkipArtOldWord σ_yank_stele I).toNat +
                                                     (endSkipArtWord vatOut bidOut).toNat <
                                                       UInt256.size := by
                                                 simpa [← hArtCoupleYank] using hfit
@@ -11797,12 +11801,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                   (endSkipX_artStoreAtHashSplit hsz68 hloCat
                                                     hloVat hloBid rd4197)
                                                 have htail := (endSkipTailAfterTabReturnsSplit hsz68
-                                                  hArtLoadSolm hrateNE hfitSolm hsuck1Block
+                                                  hArtLoadStele hrateNE hfitStele hsuck1Block
                                                     hsuck2Block hhopeBlock hyankBlock).2
-                                                  (by simpa [evmYankSolm, evmHopeSolm,
-                                                    evmSuck2Solm, evmSuck1Solm, evmBidsSolm,
-                                                    evmVatSolm, evmCatSolm,
-                                                    evmSolm, initState] using hp)
+                                                  (by simpa [evmYankStele, evmHopeStele,
+                                                    evmSuck2Stele, evmSuck1Stele, evmBidsStele,
+                                                    evmVatStele, evmCatStele,
+                                                    evmStele, initState] using hp)
                                                 have hbody := ExecFuncBody.execBlockStatic
                                                   (endSkipBodyBlock_afterTabTailTerm hprefixTab
                                                     htail
@@ -11833,46 +11837,46 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                       (σpost := σ_yank) hperm hsz68
                                                       hloCat hloVat hloBid hlot hart rd4197
                                                   have htailOk :=
-                                                    endSkipTailAfterTabReturns hsz68
-                                                      hArtLoadSolm hrateNE hfitSolm hlot hart
+                                                    endSkipTailAfterTabReturns (hperm := by assumption) hsz68
+                                                      hArtLoadStele hrateNE hfitStele hlot hart
                                                       hsuck1Block hsuck2Block hhopeBlock
                                                       hyankBlock
                                                   let σ_post :=
                                                     endSkipPostArtAccountMap σ_yank I
                                                       (endSkipArtNewWord σ_yank I vatOut bidOut)
-                                                  let σ_post_solm :=
-                                                    endSkipPostArtAccountMap σ_yank_solm I
-                                                      (endSkipArtNewWord σ_yank_solm I vatOut
+                                                  let σ_post_stele :=
+                                                    endSkipPostArtAccountMap σ_yank_stele I
+                                                      (endSkipArtNewWord σ_yank_stele I vatOut
                                                         bidOut)
                                                   let evmPostEvm :=
                                                     endSkipPostArtState evmYankEvm I
                                                       (endSkipArtNewWord σ_yank I vatOut bidOut)
-                                                  let evmPostSolm :=
-                                                    endSkipPostArtState evmYankSolm I
-                                                      (endSkipArtNewWord σ_yank_solm I vatOut
+                                                  let evmPostStele :=
+                                                    endSkipPostArtState evmYankStele I
+                                                      (endSkipArtNewWord σ_yank_stele I vatOut
                                                         bidOut)
                                                   have hArtNewCouple :
                                                       endSkipArtNewWord σ_yank I vatOut bidOut =
-                                                        endSkipArtNewWord σ_yank_solm I vatOut
+                                                        endSkipArtNewWord σ_yank_stele I vatOut
                                                           bidOut := by
                                                     simp [endSkipArtNewWord, hArtCoupleYank]
                                                   have hStatePost :
-                                                      EVMStateEquiv evmPostEvm evmPostSolm := by
-                                                    simpa [evmPostEvm, evmPostSolm,
+                                                      EVMStateEquiv evmPostEvm evmPostStele := by
+                                                    simpa [evmPostEvm, evmPostStele,
                                                       endSkipPostArtState] using
                                                       hStateYank.storageStore_codeOwner
                                                         (endSkipArtSlot I) hArtNewCouple
                                                   have hAccountsPost :
-                                                      Eq σ_post σ_post_solm := by
-                                                    simpa [evmPostEvm, evmPostSolm, σ_post,
-                                                      σ_post_solm, endSkipPostArtState,
+                                                      Eq σ_post σ_post_stele := by
+                                                    simpa [evmPostEvm, evmPostStele, σ_post,
+                                                      σ_post_stele, endSkipPostArtState,
                                                       endSkipPostArtAccountMap,
                                                       storageStore_accountMap] using
                                                       hStatePost.accountMap
-                                                  have hmapPostSolm :
-                                                      evmPostSolm.accountMap = σ_post_solm := by
+                                                  have hmapPostStele :
+                                                      evmPostStele.accountMap = σ_post_stele := by
                                                     calc
-                                                      evmPostSolm.accountMap =
+                                                      evmPostStele.accountMap =
                                                           evmPostEvm.accountMap :=
                                                         hStatePost.accountMap.symm
                                                       _ = σ_post := by
@@ -11880,35 +11884,35 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                           endSkipPostArtAccountMap, σ_post,
                                                           evmYankEvm, evmHopeEvm, evmSuck2Evm,
                                                           evmSuck1Evm, evmBidsEvm, evmVatEvm,
-                                                          evmCatEvm, evmSolm, initState,
+                                                          evmCatEvm, evmStele, initState,
                                                           storageStore_accountMap]
-                                                      _ = σ_post_solm := hAccountsPost
-                                                  have hownerPostSolm :
-                                                      evmPostSolm.executionEnv.codeOwner =
+                                                      _ = σ_post_stele := hAccountsPost
+                                                  have hownerPostStele :
+                                                      evmPostStele.executionEnv.codeOwner =
                                                         I.codeOwner := by
-                                                    simp [evmPostSolm, endSkipPostArtState,
-                                                      evmYankSolm, evmHopeSolm, evmSuck2Solm,
-                                                      evmSuck1Solm, evmBidsSolm, evmVatSolm,
-                                                      evmCatSolm, evmSolm, initState,
+                                                    simp [evmPostStele, endSkipPostArtState,
+                                                      evmYankStele, evmHopeStele, evmSuck2Stele,
+                                                      evmSuck1Stele, evmBidsStele, evmVatStele,
+                                                      evmCatStele, evmStele, initState,
                                                       storageStore_executionEnv]
                                                   by_cases hgrabCode :
                                                       Reasoning.Theory.extCodeSizeWord σ_post
                                                         (endPackVatWord σ_post I) = ⟨0⟩
-                                                  · have hgrabCodeSolm :
+                                                  · have hgrabCodeStele :
                                                         Reasoning.Theory.extCodeSizeWord
-                                                          σ_post_solm
-                                                          (endPackVatWord σ_post_solm I) =
+                                                          σ_post_stele
+                                                          (endPackVatWord σ_post_stele I) =
                                                             ⟨0⟩ := by
                                                       exact (by simpa only [hAccountsPost] using hgrabCode)
                                                     have hgrabBlock :=
                                                       endSkipGrabTailReverts_noCodeFor
-                                                        (σCall := σ_post_solm)
-                                                        (σLoc := σ_yank_solm) (I := I)
+                                                        (σCall := σ_post_stele)
+                                                        (σLoc := σ_yank_stele) (I := I)
                                                         (catOut := catOut) (vatOut := vatOut)
-                                                        (bidOut := bidOut) (evm := evmPostSolm)
-                                                        hmapPostSolm hownerPostSolm hgrabCodeSolm
+                                                        (bidOut := bidOut) (evm := evmPostStele)
+                                                        hmapPostStele hownerPostStele hgrabCodeStele
                                                     have hbody :
-                                                        ExecTransitionBody config contract evmSolm
+                                                        ExecTransitionBody config contract evmStele
                                                           (endSkipStore I) skipTransition.body
                                                           .reverted := by
                                                       exact
@@ -11923,10 +11927,10 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                         Reasoning.Theory.extCodeSizeWord σ_post
                                                           (endPackVatWord σ_post I) ≠ ⟨0⟩ :=
                                                       hgrabCode
-                                                    have hgrabCodeSolmNE :
+                                                    have hgrabCodeSteleNE :
                                                         Reasoning.Theory.extCodeSizeWord
-                                                          σ_post_solm
-                                                          (endPackVatWord σ_post_solm I) ≠
+                                                          σ_post_stele
+                                                          (endPackVatWord σ_post_stele I) ≠
                                                             ⟨0⟩ := by
                                                       exact (by simpa only [hAccountsPost] using hgrabCodeNE)
                                                     obtain ⟨_, _, _, rd4412⟩ :=
@@ -11943,7 +11947,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                       simpa [evmPostEvm, endSkipPostArtState,
                                                         evmYankEvm, evmHopeEvm, evmSuck2Evm,
                                                         evmSuck1Evm, evmBidsEvm, evmVatEvm,
-                                                        evmCatEvm, evmSolm, initState,
+                                                        evmCatEvm, evmStele, initState,
                                                         storageStore_executionEnv] using hdepthNe
                                                     have htgtGrab :
                                                         EVM.address (endPackVatAddr σ_post I) =
@@ -11960,27 +11964,27 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                           hAddressId _
                                                     have hVatWordGrab :
                                                           endPackVatWord σ_post I =
-                                                            endPackVatWord σ_post_solm I :=
+                                                            endPackVatWord σ_post_stele I :=
                                                         congrArg (fun m => endPackVatWord m I) hAccountsPost
                                                     have hVatAddrGrab :
                                                           endPackVatAddr σ_post I =
-                                                            endPackVatAddr σ_post_solm I := by
+                                                            endPackVatAddr σ_post_stele I := by
                                                         simp [endPackVatAddr, hVatWordGrab]
                                                     have hVowWordGrab :
                                                           endPackVowWord σ_post I =
-                                                            endPackVowWord σ_post_solm I :=
+                                                            endPackVowWord σ_post_stele I :=
                                                         (congrArg (fun m => endPackVowWord m I) hAccountsPost)
                                                     have hVowAddrGrab :
                                                           endPackVowAddr σ_post I =
-                                                            endPackVowAddr σ_post_solm I := by
+                                                            endPackVowAddr σ_post_stele I := by
                                                         simp [endPackVowAddr, hVowWordGrab]
-                                                    obtain ⟨σ_grab_solm, A_grab_solm,
-                                                        hgrabCallSolmRaw, hAccountsGrab,
+                                                    obtain ⟨σ_grab_stele, A_grab_stele,
+                                                        hgrabCallSteleRaw, hAccountsGrab,
                                                         hSubstateGrab⟩ :=
                                                       callMade_accountMapEq_with_substate
                                                         (cfg := config)
                                                         (evm_evm := evmPostEvm)
-                                                        (evm_solm := evmPostSolm)
+                                                        (evm_stele := evmPostStele)
                                                         (tgt := EVM.address
                                                           (endPackVatAddr σ_post I))
                                                         (targetWord := endPackVatWord σ_post I)
@@ -12009,76 +12013,76 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                         (endSkipGrabEncodeForTrace_eq σ_post
                                                           σ_bids σ_suck1 I catOut vatOut bidOut
                                                           hsz68 hloCat hloVat hloBid hlot hart)
-                                                        (by simpa [evmPostEvm, evmPostSolm,
+                                                        (by simpa [evmPostEvm, evmPostStele,
                                                           endSkipPostArtState,
                                                           endSkipPostArtAccountMap, evmYankEvm,
-                                                          evmYankSolm, evmHopeEvm, evmHopeSolm,
-                                                          evmSuck2Evm, evmSuck2Solm,
-                                                          evmSuck1Evm, evmSuck1Solm,
-                                                          evmBidsEvm, evmBidsSolm, evmVatEvm,
-                                                          evmVatSolm, evmCatEvm, evmCatSolm,
-                                                          evmSolm, initState, σ_post, hperm,
+                                                          evmYankStele, evmHopeEvm, evmHopeStele,
+                                                          evmSuck2Evm, evmSuck2Stele,
+                                                          evmSuck1Evm, evmSuck1Stele,
+                                                          evmBidsEvm, evmBidsStele, evmVatEvm,
+                                                          evmVatStele, evmCatEvm, evmCatStele,
+                                                          evmStele, initState, σ_post, hperm,
                                                           storageStore_accountMap,
                                                           storageStore_executionEnv,
                                                           storageStore_σ₀] using
                                                           hΘGrabEq)
-                                                        (by simpa [evmPostEvm, evmPostSolm] using
+                                                        (by simpa [evmPostEvm, evmPostStele] using
                                                           hStatePost.accountMap)
-                                                        (by simp [evmPostEvm, evmPostSolm,
+                                                        (by simp [evmPostEvm, evmPostStele,
                                                           endSkipPostArtState,
-                                                          evmYankEvm, evmYankSolm,
-                                                          evmHopeEvm, evmHopeSolm,
-                                                          evmSuck2Evm, evmSuck2Solm,
-                                                          evmSuck1Evm, evmSuck1Solm,
-                                                          evmBidsEvm, evmBidsSolm, evmVatEvm,
-                                                          evmVatSolm, evmCatEvm, evmCatSolm,
-                                                          evmSolm, initState,
+                                                          evmYankEvm, evmYankStele,
+                                                          evmHopeEvm, evmHopeStele,
+                                                          evmSuck2Evm, evmSuck2Stele,
+                                                          evmSuck1Evm, evmSuck1Stele,
+                                                          evmBidsEvm, evmBidsStele, evmVatEvm,
+                                                          evmVatStele, evmCatEvm, evmCatStele,
+                                                          evmStele, initState,
                                                           storageStore_σ₀])
-                                                        (by simpa [evmPostEvm, evmPostSolm] using
+                                                        (by simpa [evmPostEvm, evmPostStele] using
                                                           hStatePost.executionEnv.symm)
-                                                    have hgrabCallSolm :
-                                                          typedCallViaEVM config evmPostSolm
+                                                    have hgrabCallStele :
+                                                          typedCallViaEVM config evmPostStele
                                                             (EVM.address
-                                                              (endPackVatAddr σ_post_solm I))
+                                                              (endPackVatAddr σ_post_stele I))
                                                             "grab" 0
                                                             [.fixedBytes bytes32Width
                                                                 (endBytes32ArgBytes I),
                                                               .address (endSkipUsrAddr bidOut),
                                                               .address I.codeOwner,
                                                               .address
-                                                                (endPackVowAddr σ_post_solm I),
+                                                                (endPackVowAddr σ_post_stele I),
                                                               .int (Int.ofNat
                                                                 (endSkipLotWord bidOut).toNat),
                                                               .int (Int.ofNat
                                                                 (endSkipArtWord vatOut bidOut).toNat)]
                                                             (zGrab,
-                                                              { evmPostSolm with
-                                                                accountMap := σ_grab_solm
-                                                                substate := A_grab_solm
+                                                              { evmPostStele with
+                                                                accountMap := σ_grab_stele
+                                                                substate := A_grab_stele
    },
                                                               ret) true := by
                                                         simpa [hVatAddrGrab, hVowAddrGrab] using
-                                                          hgrabCallSolmRaw
+                                                          hgrabCallSteleRaw
                                                     cases zGrab
                                                     · have hgrab :=
                                                           endSkipGrabTailReverts_callFailedFor
-                                                            (σCall := σ_post_solm)
-                                                            (σLoc := σ_yank_solm) (I := I)
+                                                            (σCall := σ_post_stele)
+                                                            (σLoc := σ_yank_stele) (I := I)
                                                             (catOut := catOut) (vatOut := vatOut)
                                                             (bidOut := bidOut) (grabOut := ret)
-                                                            (evm := evmPostSolm)
+                                                            (evm := evmPostStele)
                                                             (evmGrab :=
-                                                              { evmPostSolm with
-                                                                accountMap := σ_grab_solm
-                                                                substate := A_grab_solm
+                                                              { evmPostStele with
+                                                                accountMap := σ_grab_stele
+                                                                substate := A_grab_stele
    })
-                                                            hmapPostSolm hownerPostSolm
+                                                            hmapPostStele hownerPostStele
                                                             hlot hart
-                                                            hgrabCodeSolmNE
-                                                            (by simpa using hgrabCallSolm)
+                                                            hgrabCodeSteleNE
+                                                            (by simpa using hgrabCallStele)
                                                       have hbody :
                                                         ExecTransitionBody config contract
-                                                          evmSolm (endSkipStore I)
+                                                          evmStele (endSkipStore I)
                                                           skipTransition.body .reverted := by
                                                         exact
                                                         endSkipBodyReverts_afterTabTailGrabReverted
@@ -12095,18 +12099,18 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                           accountMap := σ_grab
                                                           substate := AGrab
  }
-                                                      let evmGrabSolm :=
-                                                        { evmPostSolm with
-                                                          accountMap := σ_grab_solm
-                                                          substate := A_grab_solm
+                                                      let evmGrabStele :=
+                                                        { evmPostStele with
+                                                          accountMap := σ_grab_stele
+                                                          substate := A_grab_stele
  }
                                                       have hStateGrab :
                                                           EVMStateEquiv evmGrabEvm
-                                                            evmGrabSolm := by
+                                                            evmGrabStele := by
                                                         refine ⟨?_, ?_⟩
-                                                        · simpa [evmGrabEvm, evmGrabSolm] using
+                                                        · simpa [evmGrabEvm, evmGrabStele] using
                                                             hStatePost.executionEnv
-                                                        · simpa [evmGrabEvm, evmGrabSolm] using
+                                                        · simpa [evmGrabEvm, evmGrabStele] using
                                                             hAccountsGrab
                                                       have rd4413Succ := by
                                                         simpa only [if_true] using rd4413
@@ -12121,28 +12125,28 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                           hperm hloCat hloVat hloBid rd4431
                                                       have hgrab :=
                                                         endSkipGrabTailReturns_successFor
-                                                          (σCall := σ_post_solm)
-                                                          (σLoc := σ_yank_solm) (I := I)
+                                                          (σCall := σ_post_stele)
+                                                          (σLoc := σ_yank_stele) (I := I)
                                                           (catOut := catOut) (vatOut := vatOut)
                                                           (bidOut := bidOut) (grabOut := ret)
-                                                          (evm := evmPostSolm)
-                                                          (evmGrab := evmGrabSolm)
-                                                          hmapPostSolm hownerPostSolm
+                                                          (evm := evmPostStele)
+                                                          (evmGrab := evmGrabStele)
+                                                          hmapPostStele hownerPostStele
                                                           hlot hart
-                                                          hgrabCodeSolmNE
-                                                          (by simpa [evmGrabSolm] using
-                                                            hgrabCallSolm)
+                                                          hgrabCodeSteleNE
+                                                          (by simpa [evmGrabStele] using
+                                                            hgrabCallStele)
                                                       have hbody :
                                                           ExecTransitionBody config contract
-                                                            evmSolm (endSkipStore I)
+                                                            evmStele (endSkipStore I)
                                                             skipTransition.body
                                                             (.returned
                                                               { contract := contract,
                                                                 locals :=
                                                                   endSkipStoreGrab
-                                                                    σ_yank_solm I catOut
+                                                                    σ_yank_stele I catOut
                                                                     vatOut bidOut }
-                                                              evmGrabSolm none) := by
+                                                              evmGrabStele none) := by
                                                         exact
                                                           endSkipBodyReturns_afterTabTailGrabSuccess
                                                             hprefixTab htailOk hgrab
@@ -12152,7 +12156,7 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                           calc
                                                             _ = evmGrabEvm.accountMap := by
                                                               simp [evmGrabEvm]
-                                                            _ = evmGrabSolm.accountMap :=
+                                                            _ = evmGrabStele.accountMap :=
                                                               hStateGrab.accountMap)
                                                         (by
                                                           simpa [skipTransition] using
@@ -12170,12 +12174,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                         (endSkipArtWord vatOut bidOut).toNat := by
                                                     simpa [hint256Bound] using hartOverflowBound
                                                   have htail :=
-                                                    endSkipTailReverts_intGuardArt hsz68
-                                                      hArtLoadSolm hrateNE hfitSolm hlot
+                                                    endSkipTailReverts_intGuardArt (hperm := by assumption) hsz68
+                                                      hArtLoadStele hrateNE hfitStele hlot
                                                       hartOverflow hsuck1Block hsuck2Block
                                                       hhopeBlock hyankBlock
                                                   have hbody :
-                                                      ExecTransitionBody config contract evmSolm
+                                                      ExecTransitionBody config contract evmStele
                                                         (endSkipStore I) skipTransition.body
                                                         .reverted := by
                                                     exact endSkipBodyReverts_afterTabTailReverted
@@ -12198,12 +12202,12 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
                                                       (endSkipLotWord bidOut).toNat := by
                                                   simpa [hint256Bound] using hlotOverflowBound
                                                 have htail :=
-                                                  endSkipTailReverts_intGuardLot hsz68
-                                                    hArtLoadSolm hrateNE hfitSolm hlotOverflow
+                                                  endSkipTailReverts_intGuardLot (hperm := by assumption) hsz68
+                                                    hArtLoadStele hrateNE hfitStele hlotOverflow
                                                     hsuck1Block hsuck2Block hhopeBlock
                                                     hyankBlock
                                                 have hbody :
-                                                    ExecTransitionBody config contract evmSolm
+                                                    ExecTransitionBody config contract evmStele
                                                       (endSkipStore I) skipTransition.body
                                                       .reverted := by
                                                   exact endSkipBodyReverts_afterTabTailReverted
@@ -12224,32 +12228,32 @@ theorem endSkipBody {σ σ₀ A I} {g : UInt256}
             endSkipX_catIlksCallDepthLimit
               (g := Sat256.ofUInt256 g) hcatReady hdepthEq
           let A_cat :=
-            (evmSolm.addAccessedAccount
+            (evmStele.addAccessedAccount
               (EVM.address (endSkipCatAddr σ I))).substate
-          have hcallSolm :
-              typedCallViaEVM config evmSolm
+          have hcallStele :
+              typedCallViaEVM config evmStele
                 (EVM.address (endSkipCatAddr σ I)) "catIlks" 0
                 [.fixedBytes bytes32Width (endBytes32ArgBytes I)]
-                (false, { evmSolm with substate := A_cat }, ByteArray.empty) true := by
+                (false, { evmStele with substate := A_cat }, ByteArray.empty) true := by
             simpa [A_cat] using
-              (callNotMade_depthLimit (cfg := config) (evm := evmSolm)
+              (callNotMade_depthLimit (cfg := config) (evm := evmStele)
                 (tgt := EVM.address (endSkipCatAddr σ I))
                 (name := "catIlks")
                 (args := [.fixedBytes bytes32Width (endBytes32ArgBytes I)])
                 (callPerm := true)
                 (endSkipCatIlksEncode_eq I hsz68 (endSkipCatIlksBaseMem_size I))
-                (by simpa [evmSolm, initState] using hdepthEq))
+                (by simpa [evmStele, initState] using hdepthEq))
           have hbody :
-              ExecTransitionBody config contract evmSolm (endSkipStore I)
+              ExecTransitionBody config contract evmStele (endSkipStore I)
                 skipTransition.body .reverted := by
-            simpa [evmSolm] using
+            simpa [evmStele] using
               endSkipBodyReverts_catIlksCallFailed
                 (σ := σ) (σ₀ := σ₀)
                 (A := A) (I := I) (g := g)
-                (evmCat := { evmSolm with substate := A_cat })
+                (evmCat := { evmStele with substate := A_cat })
                 (out := ByteArray.empty)
-                hwv hsz68 htagSolmNE hcatCodeSolmNE
-                (by simpa using hcallSolm)
+                hwv hsz68 htagSteleNE hcatCodeSteleNE
+                (by simpa using hcallStele)
           exact (endSkipX_catIlksCallFailed rd3395 (by native_decide))
             |>.reEquivExecutionRevert hcode hdispatch hdecode hbody
   · exact endSkipBodyCoreDecodeFailed_short hcode hsize hsz4 (by omega) hdispatch hreach

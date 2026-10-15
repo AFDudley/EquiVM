@@ -2,7 +2,7 @@ import Examples.UniswapV2Pair.MintFeeRootArithmeticReverts
 import Examples.UniswapV2Pair.MintFeeOnKLastNonzeroInitialOverflowCases
 import Examples.UniswapV2Pair.MintInternalMintReverts
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -395,7 +395,7 @@ theorem uniswapMintAfterMintFeeReverts_of_call
     (evm evm0 evm1 : EVM.State) (I : ExecutionEnv)
     {out0 out1 : ByteArray} {balance0 balance1 : UInt256}
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (hunlocked : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
+    (hunlocked : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩)
     (hguard0 :
       evalExpr? config
         { contract := contract, locals := mintReserveStore (uniswapLockEnteredState evm) I }
@@ -425,12 +425,13 @@ theorem uniswapMintAfterMintFeeReverts_of_call
         { contract := contract,
           locals := mintAmountStore (uniswapLockEnteredState evm) I balance0 balance1 }
         evm1 (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
-        .reverted) :
+        .reverted)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock config { contract := contract, locals := mintStore I } evm mintTransition.body
       .reverted := by
   let evmL := uniswapLockEnteredState evm
   have hprefix :=
-    uniswapMintAmountsPrefix evm evm0 evm1 I hwv hunlocked hguard0 hguard1 hcall0 hdec0
+    uniswapMintAmountsPrefix (hperm := by assumption) evm evm0 evm1 I hwv hunlocked hguard0 hguard1 hcall0 hdec0
       hcall1 hdec1 henough0 henough1
   have hfeeBlock :
       ExecBlock config
@@ -568,8 +569,8 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -679,7 +680,8 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
           outFee)
     (hcase :
       mintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCaseData feeToWord σFee
-        evmFeeS I) :
+        evmFeeS I)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hcase with ⟨hfeeToNonzero, hkLastNonzero, hrootCase⟩
   let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -749,8 +751,8 @@ theorem uniswapMintFeeOnKLastNonzeroRootArithmeticOverflowFromFactoryCase
     have hbody :
         ExecTransitionBody config contract evmS (mintStore I) mintTransition.body .reverted :=
       ExecFuncBody.execBlockRevert
-        (uniswapMintAfterMintFeeReverts_of_call evmS evm0S evm1S I
-          (by simp [evmS, initState]; exact hwv) hunlockedSolm hguard0 hguard1 hcall0
+        (uniswapMintAfterMintFeeReverts_of_call (hperm := by assumption) evmS evm0S evm1S I
+          (by simp [evmS, initState]; exact hwv) hunlockedStele hguard0 hguard1 hcall0
           hdec0 hcall1 hdec1 hle0Source hle1Source hfeeRevert)
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
   rcases hoverflow with hnumOverflow | hrest

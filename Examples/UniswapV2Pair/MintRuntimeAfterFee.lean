@@ -2,7 +2,7 @@ import Reasoning.Stepping
 import Reasoning.Reach
 import Examples.UniswapV2Pair.MintProportionalRuntimeCalls
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -352,7 +352,7 @@ theorem uniswapMintRuntimeProportionalLiquidity1MinEntry
 
 set_option maxHeartbeats 1000000 in
 /- Runtime-only shared `min(uint256,uint256)` routine.  The compiler pushes `y` above `x`; the
-routine returns the same word as the Solm `minFunctionResultWord x y`. -/
+routine returns the same word as the Stele `minFunctionResultWord x y`. -/
 theorem uniswapMinRuntimeReturns {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     {σ : AccountMap}
     {mem rdata : ByteArray} {aw : UInt256} {k C : ℕ}

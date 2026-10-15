@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.Common
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -120,7 +120,7 @@ theorem uniswapSqrtFunctionCallSuccess_le3 {caller : Frame} {evm : EVM.State}
     (name := "sqrt") (retVar := retVar) (args := args)
     (argVals := [sqrtFunctionYValue y])
     (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-    (calleeSolm := { contract := contract, locals := sqrtFunctionCallStore y })
+    (calleeStele := { contract := contract, locals := sqrtFunctionCallStore y })
     (value := some [sqrtFunctionSmallResultValue y])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -295,8 +295,12 @@ theorem execBlock_sqrtLoopBody (evm : EVM.State) (locals : Store) (y x z : Int)
     rw [sqrtLoopAfterZStore_y locals y x hy, sqrtLoopAfterZStore_x locals x hx]
     simp [evalBinaryOp?, sqrtLoopNextX, hx0]
   have hAssignX := assign_sqrtLoop_x evm locals y x hx
-  refine ExecBlock.consNormal (ExecStmt.assign hEvalX hAssignZ) ?_
-  exact ExecBlock.consNormal (ExecStmt.assign hEvalNext hAssignX) ExecBlock.nil
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    hEvalX hAssignZ) ?_
+  exact ExecBlock.consNormal (ExecStmt.assign
+    (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+    hEvalNext hAssignX) ExecBlock.nil
 
 set_option maxHeartbeats 1000000 in
 theorem execStmt_sqrtLoopTerminates (evm : EVM.State) (y : Int) (hypos : 0 < y) :
@@ -536,7 +540,7 @@ theorem uniswapSqrtFunctionCallSuccess {caller : Frame} {evm : EVM.State}
       (name := "sqrt") (retVar := retVar) (args := args)
       (argVals := [sqrtFunctionYValue y])
       (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-      (calleeSolm := { contract := contract, locals := locals' })
+      (calleeStele := { contract := contract, locals := locals' })
       (value := some [value])
       hargs
       (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -558,7 +562,7 @@ theorem uniswapSqrtFunctionCallSuccessInt {caller : Frame} {evm : EVM.State}
       (name := "sqrt") (retVar := retVar) (args := args)
       (argVals := [sqrtFunctionYValue y])
       (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-      (calleeSolm := { contract := contract, locals := locals' })
+      (calleeStele := { contract := contract, locals := locals' })
       (value := some [.int result])
       hargs
       (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -582,7 +586,7 @@ theorem uniswapSqrtFunctionCallSuccessIntBounded {caller : Frame} {evm : EVM.Sta
     (name := "sqrt") (retVar := retVar) (args := args)
     (argVals := [sqrtFunctionYValue y])
     (callee := sqrtFunction) (locals := sqrtFunctionCallStore y)
-    (calleeSolm := { contract := contract, locals := locals' })
+    (calleeStele := { contract := contract, locals := locals' })
     (value := some [.int result])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupSqrtFunction)
@@ -720,7 +724,7 @@ theorem uniswapMinFunctionCallSuccess {caller : Frame} {evm : EVM.State}
     (name := "min") (retVar := retVar) (args := args)
     (argVals := [minFunctionXValue x, minFunctionYValue y])
     (callee := minFunction) (locals := minFunctionCallStore x y)
-    (calleeSolm := { contract := contract, locals := minFunctionCallStore x y })
+    (calleeStele := { contract := contract, locals := minFunctionCallStore x y })
     (value := some [minFunctionResultValue x y])
     hargs
     (by simpa [hcontract, himm] using uniswapLookupMinFunction)

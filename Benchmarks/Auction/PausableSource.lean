@@ -1,6 +1,6 @@
 import Benchmarks.Auction.SetterSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Auction
 
@@ -47,11 +47,11 @@ theorem readNotPausedFalse (evm : EVM.State) (locals : Store)
 theorem pauseBlockSplit (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "_paused" = none)
     (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
-    (ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
+    (evm.executionEnv.perm = true → ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
       (.ok { contract := auctionContract, locals := locals }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))))) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩))))) ∧
       (evm.executionEnv.perm = false →
         ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
         [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
@@ -63,20 +63,22 @@ theorem pauseBlockSplit (evm : EVM.State) (locals : Store)
     (auctionBoolLoc ⟨51⟩) (.bool true) hbase (by native_decide) rfl (by exact Or.inl ⟨_, rfl⟩)
     (storageLocStore_bool_true_offset0 evm ⟨51⟩)
   constructor
-  · exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) (assignStorageBlock hvalue hassign)
+  · intro hperm
+    exact ExecBlock.consNormal (ExecStmt.requireTrue hguard) (assignStorageBlock hvalue hassign hperm)
   · intro hperm
     exact ExecBlock.consNormal (ExecStmt.requireTrue hguard)
       (ExecBlock.consStatic (ExecStmt.assignStatic hvalue hassign hperm))
 
 theorem pauseBlock (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "_paused" = none)
-    (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
+    (hp : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock auctionConfig { contract := auctionContract, locals := locals } evm
       [.require (.unary .not (.storage pausedRef)), .assign .storage pausedRef (.boolLit true)]
       (.ok { contract := auctionContract, locals := locals }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
-          (pauseWord (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)))) :=
-  (pauseBlockSplit evm locals hbase hp).1
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨51⟩
+          (pauseWord (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨51⟩)))) :=
+  (pauseBlockSplit evm locals hbase hp).1 hperm
 
 theorem pauseBlockReverts (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "_paused" = none)

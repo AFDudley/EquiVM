@@ -2,7 +2,7 @@ import Benchmarks.Morpho.MorphoBlue.AuthorizationSigRecoveryMemory
 import Benchmarks.Morpho.MorphoBlue.EcrecoverFacts
 import Benchmarks.Morpho.MorphoBlue.StaticCallBridge
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 namespace Benchmarks.Morpho.MorphoBlue
@@ -67,8 +67,8 @@ theorem morphoAuthorizationRecoverySource (v : MorphoImmutables) (a : Authorizat
       (.intLit 0) = .ok (.int 0) := by simp only [evalExpr?, pure]
   have hi := evalAuthorizationRecoveryInput v a cd locals imms evm hd hs
   cases z
-  · exact ExecStmt.lowLevelCallFailure ht hv hi (by simpa only [eVM_address_id] using hc)
-  · exact ExecStmt.lowLevelCallSuccess ht hv hi (by simpa only [eVM_address_id] using hc)
+  · exact ExecStmt.lowLevelCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hi (by simpa only [eVM_address_id] using hc)
+  · exact ExecStmt.lowLevelCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) ht hv hi (by simpa only [eVM_address_id] using hc)
 
 
 theorem morphoAuthorizationRecoveryCall {v : MorphoImmutables} {ee : ExecutionEnv} {g : Sat256}

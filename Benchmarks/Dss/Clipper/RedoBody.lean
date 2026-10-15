@@ -9,7 +9,7 @@ import Benchmarks.Dss.Clipper.RedoSuckEVM
 import Benchmarks.Dss.Clipper.RedoTailEVM
 import Benchmarks.Dss.Clipper.StatusPriceCall
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -201,7 +201,8 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
       let evmLock := clipperRedoLockedState evm0
       ExecStmt config { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
-        evmLock (.internalCall "status" [.var "tic", .var "top"] "st") .reverted) :
+        evmLock (.internalCall "status" [.var "tic", .var "top"] "st") .reverted)
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -214,7 +215,7 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config startFrame evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [startFrame, locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [startFrame, locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperLocked_zero_true v evm0 locals (by simp [locals]) hlocked
   have hlockRhs :
@@ -231,11 +232,11 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
     apply evalExpr_clipperRedoStopped_lt_two_true
     · simp [locals]
     · simpa [evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+        Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
         storageStore_executionEnv] using hstopped
   have husrLoad : clipperRedoSalesUsrEVMWord evmLock I ≠ ⟨0⟩ := by
     simpa [clipperRedoSalesUsrEVMWord, clipperRedoSalesUsrWord, evmLock,
-      clipperRedoLockedState, evm0, initState, solcSlotWord, Solm.EVM.storageLoad,
+      clipperRedoLockedState, evm0, initState, solcSlotWord, Stele.EVM.storageLoad,
       State.lookupAccount, storageStore_accountMap, storageStore_executionEnv] using husr
   have hletUsr :
       ExecStmt config startFrame evmLock
@@ -243,7 +244,7 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
         (.ok usrFrame evmLock) := by
     simpa [startFrame, usrFrame, locals, clipperRedoLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmLock) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evmLock) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evmLock I).toNat))
         (by simpa [startFrame, locals] using clipperEvalRedoSalesUsr v evmLock I))
@@ -253,7 +254,7 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
         (.ok ticFrame evmLock) := by
     simpa [usrFrame, ticFrame, clipperRedoLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evmLock) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evmLock) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperRedoSalesTicEVMWord evmLock I).toNat))
         (by simpa [usrFrame] using clipperEvalRedoSalesTicAfterUsr v evmLock I))
@@ -263,7 +264,7 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
         (.ok topFrame evmLock) := by
     simpa [ticFrame, topFrame, clipperRedoLocalsTop] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := ticFrame) (evm := evmLock) (name := "top")
+        (cfg := config) (stele := ticFrame) (evm := evmLock) (name := "top")
         (ty := some uint256) (expr := .storage (salesF (.var "id") "top"))
         (value := .int (Int.ofNat (clipperRedoSalesTopEVMWord evmLock I).toNat))
         (by simpa [ticFrame] using clipperEvalRedoSalesTopAfterTic v evmLock I))
@@ -282,7 +283,7 @@ theorem clipperRedoStatusSourceRevertsOfStatus {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -306,7 +307,8 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
       ExecStmt config { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
         evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
         (.ok { contract := contract, locals := clipperRedoLocalsSt evmLock I false price, immutables := immStore v }
-          evmPrice)) :
+          evmPrice))
+    (hperm : I.perm = true) :
     let locals := clipperRedoStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     ExecTransitionBody config contract evm0 locals redoTransition.body .reverted (immStore v) := by
@@ -320,7 +322,7 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
   have hlockedEval :
       evalExpr? config startFrame evm0
         (.binary .eq (.storage lockedRef) (.intLit 0)) = .ok (.bool true) := by
-    simpa [startFrame, locals, evm0, solcSlotWord, initState, Solm.EVM.storageLoad,
+    simpa [startFrame, locals, evm0, solcSlotWord, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       evalExpr_clipperLocked_zero_true v evm0 locals (by simp [locals]) hlocked
   have hlockRhs :
@@ -337,11 +339,11 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
     apply evalExpr_clipperRedoStopped_lt_two_true
     · simp [locals]
     · simpa [evmLock, clipperRedoLockedState, evm0, initState, solcSlotWord,
-        Solm.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
+        Stele.EVM.storageLoad, State.lookupAccount, storageStore_accountMap,
         storageStore_executionEnv] using hstopped
   have husrLoad : clipperRedoSalesUsrEVMWord evmLock I ≠ ⟨0⟩ := by
     simpa [clipperRedoSalesUsrEVMWord, clipperRedoSalesUsrWord, evmLock,
-      clipperRedoLockedState, evm0, initState, solcSlotWord, Solm.EVM.storageLoad,
+      clipperRedoLockedState, evm0, initState, solcSlotWord, Stele.EVM.storageLoad,
       State.lookupAccount, storageStore_accountMap, storageStore_executionEnv] using husr
   have hletUsr :
       ExecStmt config startFrame evmLock
@@ -349,7 +351,7 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok usrFrame evmLock) := by
     simpa [startFrame, usrFrame, locals, clipperRedoLocalsUsr] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := startFrame) (evm := evmLock) (name := "usr")
+        (cfg := config) (stele := startFrame) (evm := evmLock) (name := "usr")
         (ty := some addr) (expr := .storage (salesF (.var "id") "usr"))
         (value := .address (AccountAddress.ofNat (clipperRedoSalesUsrEVMWord evmLock I).toNat))
         (by simpa [startFrame, locals] using clipperEvalRedoSalesUsr v evmLock I))
@@ -359,7 +361,7 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok ticFrame evmLock) := by
     simpa [usrFrame, ticFrame, clipperRedoLocalsTic] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := usrFrame) (evm := evmLock) (name := "tic")
+        (cfg := config) (stele := usrFrame) (evm := evmLock) (name := "tic")
         (ty := some uint96) (expr := .storage (salesF (.var "id") "tic"))
         (value := .int (Int.ofNat (clipperRedoSalesTicEVMWord evmLock I).toNat))
         (by simpa [usrFrame] using clipperEvalRedoSalesTicAfterUsr v evmLock I))
@@ -369,7 +371,7 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
         (.ok topFrame evmLock) := by
     simpa [ticFrame, topFrame, clipperRedoLocalsTop] using
       (ExecStmt.letDecl
-        (cfg := config) (solm := ticFrame) (evm := evmLock) (name := "top")
+        (cfg := config) (stele := ticFrame) (evm := evmLock) (name := "top")
         (ty := some uint256) (expr := .storage (salesF (.var "id") "top"))
         (value := .int (Int.ofNat (clipperRedoSalesTopEVMWord evmLock I).toNat))
         (by simpa [ticFrame] using clipperEvalRedoSalesTopAfterTic v evmLock I))
@@ -392,7 +394,7 @@ theorem clipperRedoStatusFalseSourceReverts {σ σ₀ A I} {g : UInt256}
         refine ExecBlock.consNormal (ExecStmt.requireTrue ?_) ?_
         · exact evalCallvalueEq_true (by simp [evm0, initState]; exact hwv)
         refine ExecBlock.consNormal (ExecStmt.requireTrue hlockedEval) ?_
-        refine ExecBlock.consNormal (ExecStmt.assign hlockRhs hlockAssign) ?_
+        refine ExecBlock.consNormal (ExecStmt.assign (hperm := Or.inr hperm) hlockRhs hlockAssign) ?_
         refine ExecBlock.consNormal (ExecStmt.requireTrue hstoppedEval) ?_
         refine ExecBlock.consNormal hletUsr ?_
         refine ExecBlock.consNormal hletTic ?_
@@ -644,12 +646,12 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
           (σ := σLock) hpatch (by simpa [σLock] using hstoppedLt)
           (by simpa [σLock] using hreachLocked)
         by_cases husrEvm : clipperRedoSalesUsrWord σLock I = ⟨0⟩
-        · let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+        · let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
           have hbody :
-              ExecTransitionBody config contract evmSolm (clipperRedoStore I)
+              ExecTransitionBody config contract evmStele (clipperRedoStore I)
                 redoTransition.body .reverted (immStore v) := by
-            simpa [evmSolm, σLock] using
-              (clipperRedoInactiveSourceReverts
+            simpa [evmStele, σLock] using
+              (clipperRedoInactiveSourceReverts (hperm := by assumption)
                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                 hlockedEvm hstoppedLt husrEvm)
           have hrev := clipperRedoX_usrZero (v := v) (σ := σLock)
@@ -684,7 +686,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                 clipperRedoSalesTicWord σLock I := by
             exact u256LandMaskCleanOfToNat
               (clipperRedoSalesTicWord σLock I) clipperSalesUint96Mask hmask96 hticLt
-          have hticCleanSolm :
+          have hticCleanStele :
               UInt256.land (clipperRedoSalesTicWord σLock I) clipperSalesUint96Mask =
                 clipperRedoSalesTicWord σLock I := by
             rw [← hticWord]
@@ -705,57 +707,57 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                 (clipperRedoSalesHashMem_size I)
                 (clipperRedoSalesHashMem_read64 I)
                 (by simp only [List.length_cons, List.length_nil]; omega)
-            let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
-            let evmLockSolm := clipperRedoLockedState evmSolm
-            have hcalcSlotSolm :
+            let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
+            let evmLockStele := clipperRedoLockedState evmStele
+            have hcalcSlotStele :
                 solcSlotWord σLock I ⟨4⟩ = solcSlotWord σLock I ⟨4⟩ := rfl
-            have hticSolmLoad :
-                clipperRedoSalesTicEVMWord evmLockSolm I =
+            have hticSteleLoad :
+                clipperRedoSalesTicEVMWord evmLockStele I =
                   clipperRedoSalesTicWord σLock I := by
-              simp [σLock, evmLockSolm, evmSolm, clipperRedoLockedState, initState,
-                clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord, Solm.EVM.storageLoad,
+              simp [σLock, evmLockStele, evmStele, clipperRedoLockedState, initState,
+                clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord, Stele.EVM.storageLoad,
                 State.lookupAccount, Account.lookupStorage, solcSlotWord,
                 storageStore_accountMap, storageStore_executionEnv]
-            have htimestampSolm :
-                clipperTimestampWord evmLockSolm = UInt256.ofNat I.header.timestamp := by
-              simp [evmLockSolm, evmSolm, clipperRedoLockedState, initState,
+            have htimestampStele :
+                clipperTimestampWord evmLockStele = UInt256.ofNat I.header.timestamp := by
+              simp [evmLockStele, evmStele, clipperRedoLockedState, initState,
                 clipperTimestampWord, storageStore_executionEnv]
-            have hlePriceSolm :
-                (clipperRedoSalesTicEVMWord evmLockSolm I).toNat ≤
-                  (clipperTimestampWord evmLockSolm).toNat := by
-              simpa [hticSolmLoad, htimestampSolm, hticWord] using hlePrice
+            have hlePriceStele :
+                (clipperRedoSalesTicEVMWord evmLockStele I).toNat ≤
+                  (clipperTimestampWord evmLockStele).toNat := by
+              simpa [hticSteleLoad, htimestampStele, hticWord] using hlePrice
             by_cases hcalcCode :
                 Reasoning.Theory.extCodeSizeWord σLock calcAddr ≠ ⟨0⟩
             · have htopWord :
                   clipperRedoSalesTopWord σLock I =
                     clipperRedoSalesTopWord σLock I := rfl
-              have htopSolmLoad :
-                  clipperRedoSalesTopEVMWord evmLockSolm I =
+              have htopSteleLoad :
+                  clipperRedoSalesTopEVMWord evmLockStele I =
                     clipperRedoSalesTopWord σLock I := by
-                simp [σLock, evmLockSolm, evmSolm, clipperRedoLockedState, initState,
-                  clipperRedoSalesTopEVMWord, clipperRedoSalesTopWord, Solm.EVM.storageLoad,
+                simp [σLock, evmLockStele, evmStele, clipperRedoLockedState, initState,
+                  clipperRedoSalesTopEVMWord, clipperRedoSalesTopWord, Stele.EVM.storageLoad,
                   State.lookupAccount, Account.lookupStorage, solcSlotWord,
                   storageStore_accountMap, storageStore_executionEnv]
-              have hcalcAddrSolm :
-                  clipperStatusCalcAddress evmLockSolm = AccountAddress.ofUInt256 calcAddr := by
-                simp [σLock, evmLockSolm, evmSolm, clipperRedoLockedState,
+              have hcalcAddrStele :
+                  clipperStatusCalcAddress evmLockStele = AccountAddress.ofUInt256 calcAddr := by
+                simp [σLock, evmLockStele, evmStele, clipperRedoLockedState,
                   clipperStatusCalcAddress, clipperStatusCalcWord, calcAddr, initState,
-                  Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                  Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                   solcSlotWord, storageStore_accountMap, storageStore_executionEnv,
-                  hcalcSlotSolm]
-              have hcalcCodeSolmNE :
+                  hcalcSlotStele]
+              have hcalcCodeSteleNE :
                   Reasoning.Theory.extCodeSizeWord σLock calcAddr ≠ ⟨0⟩ := by
                 exact hcalcCode
-              have hcalcCodeSolm :
+              have hcalcCodeStele :
                   0 < (UInt256.ofNat
-                    ((evmLockSolm.lookupAccount (clipperStatusCalcAddress evmLockSolm)).option 0
+                    ((evmLockStele.lookupAccount (clipperStatusCalcAddress evmLockStele)).option 0
                       (fun acc => acc.code.size))).toNat := by
-                simpa [σLock, evmLockSolm, evmSolm, clipperRedoLockedState,
+                simpa [σLock, evmLockStele, evmStele, clipperRedoLockedState,
                   State.lookupAccount, initState, storageStore_accountMap] using
                   extCodeSizeWord_ne_zero_lookup_code_pos
                     (σ := σLock) (target := calcAddr)
-                    (addr := clipperStatusCalcAddress evmLockSolm)
-                    hcalcAddrSolm hcalcCodeSolmNE
+                    (addr := clipperStatusCalcAddress evmLockStele)
+                    hcalcAddrStele hcalcCodeSteleNE
               by_cases hdepth : I.depth.val < 1024
               · obtain ⟨σ', z, o, A', k8565, C8565, rd8565, hcallPrice, hout⟩ :=
                   RD.clipperStatusPricePostStaticcallFromCurrent
@@ -772,33 +774,33 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                     Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusPriceCallFailure
                       (v := v) hpatch (by simpa using rd8565) hout
                       (by simp only [List.length_cons, List.length_nil]; omega)
-                  let evmPriceSolm : EVM.State :=
-                    { evmLockSolm with accountMap := σ', substate := A' }
-                  have hlockStateSolm :
-                      evmLockSolm =
+                  let evmPriceStele : EVM.State :=
+                    { evmLockStele with accountMap := σ', substate := A' }
+                  have hlockStateStele :
+                      evmLockStele =
                         initState σLock σ₀ (Sat256.ofUInt256 g) A I := by
-                    unfold evmLockSolm evmSolm clipperRedoLockedState σLock
+                    unfold evmLockStele evmStele clipperRedoLockedState σLock
                     have hOne : ({ val := 1 } : UInt256) ≠ default := by native_decide
                     cases hacc : σ.get? I.codeOwner <;>
-                      simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                      simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                         State.setAccount, sstoreAccountMap, Account.updateStorage,
                         Option.option, hOne, hacc]
-                  have hcallPriceSolm :
-                      typedCallViaEVM config evmLockSolm
-                        (EVM.address (clipperStatusCalcAddress evmLockSolm)) "price" 0
-                        [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                  have hcallPriceStele :
+                      typedCallViaEVM config evmLockStele
+                        (EVM.address (clipperStatusCalcAddress evmLockStele)) "price" 0
+                        [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                           .int (Int.ofNat
-                            (UInt256.sub (clipperTimestampWord evmLockSolm)
-                              (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)]
-                        (false, evmPriceSolm, o) false := by
-                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                            (UInt256.sub (clipperTimestampWord evmLockStele)
+                              (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)]
+                        (false, evmPriceStele, o) false := by
+                    simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                       σLock, initState, clipperStatusCalcAddress, clipperStatusCalcWord,
                       clipperRedoSalesTopEVMWord, clipperRedoSalesTopWord,
                       clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord, clipperTimestampWord,
-                      Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                       solcSlotWord,
-                      hcalcSlotSolm, hcalcAddrSolm, htopSolmLoad, htopWord, hticSolmLoad,
-                      hticWord, htimestampSolm, hticClean, hticCleanSolm, calcAddr]
+                      hcalcSlotStele, hcalcAddrStele, htopSteleLoad, htopWord, hticSteleLoad,
+                      hticWord, htimestampStele, hticClean, hticCleanStele, calcAddr]
                       using hcallPrice
                   have hstatus :
                       let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -807,16 +809,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                         { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
                         evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
                         .reverted := by
-                    simpa [evmSolm, evmLockSolm] using
+                    simpa [evmStele, evmLockStele] using
                       clipperRedoStatusCallRevertsPriceCallFailure v
-                        (evm := evmLockSolm) (evmPrice := evmPriceSolm) I hlePriceSolm
-                        hcalcCodeSolm hcallPriceSolm
-                  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                        (evm := evmLockStele) (evmPrice := evmPriceStele) I hlePriceStele
+                        hcalcCodeStele hcallPriceStele
+                  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                   have hbody :
-                      ExecTransitionBody config contract evmSolm0 (clipperRedoStore I)
+                      ExecTransitionBody config contract evmStele0 (clipperRedoStore I)
                         redoTransition.body .reverted (immStore v) := by
-                    simpa [evmSolm0, σLock] using
-                      (clipperRedoStatusSourceRevertsOfStatus
+                    simpa [evmStele0, σLock] using
+                      (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                         hlockedEvm hstoppedLt husrEvm hstatus)
                   exact hrev.reEquivExecutionRevert hcode hdispatch
@@ -836,33 +838,33 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                     have hpriceDecode :
                         config.externalABI.decode? "price" o = none :=
                       clipperStatusPriceDecode_none_short hshortOut
-                    let evmPriceSolm : EVM.State :=
-                      { evmLockSolm with accountMap := σ', substate := A' }
-                    have hlockStateSolm :
-                        evmLockSolm =
+                    let evmPriceStele : EVM.State :=
+                      { evmLockStele with accountMap := σ', substate := A' }
+                    have hlockStateStele :
+                        evmLockStele =
                           initState σLock σ₀ (Sat256.ofUInt256 g) A I := by
-                      unfold evmLockSolm evmSolm clipperRedoLockedState σLock
+                      unfold evmLockStele evmStele clipperRedoLockedState σLock
                       have hOne : ({ val := 1 } : UInt256) ≠ default := by native_decide
                       cases hacc : σ.get? I.codeOwner <;>
-                        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                           State.setAccount, sstoreAccountMap, Account.updateStorage,
                           Option.option, hOne, hacc]
-                    have hcallPriceSolm :
-                        typedCallViaEVM config evmLockSolm
-                          (EVM.address (clipperStatusCalcAddress evmLockSolm)) "price" 0
-                          [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                    have hcallPriceStele :
+                        typedCallViaEVM config evmLockStele
+                          (EVM.address (clipperStatusCalcAddress evmLockStele)) "price" 0
+                          [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                             .int (Int.ofNat
-                              (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)]
-                          (true, evmPriceSolm, o) false := by
-                      simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                              (UInt256.sub (clipperTimestampWord evmLockStele)
+                                (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)]
+                          (true, evmPriceStele, o) false := by
+                      simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                         σLock, initState, clipperStatusCalcAddress, clipperStatusCalcWord,
                         clipperRedoSalesTopEVMWord, clipperRedoSalesTopWord,
                         clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord, clipperTimestampWord,
-                        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                         solcSlotWord,
-                        hcalcSlotSolm, hcalcAddrSolm, htopSolmLoad, htopWord, hticSolmLoad,
-                        hticWord, htimestampSolm, hticClean, hticCleanSolm, calcAddr]
+                        hcalcSlotStele, hcalcAddrStele, htopSteleLoad, htopWord, hticSteleLoad,
+                        hticWord, htimestampStele, hticClean, hticCleanStele, calcAddr]
                         using hcallPrice
                     have hstatus :
                         let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -871,16 +873,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                           { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
                           evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
                           .reverted := by
-                      simpa [evmSolm, evmLockSolm] using
+                      simpa [evmStele, evmLockStele] using
                         clipperRedoStatusCallRevertsPriceDecode v
-                          (evm := evmLockSolm) (evmPrice := evmPriceSolm) I hlePriceSolm
-                          hcalcCodeSolm hcallPriceSolm hpriceDecode
-                    let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                          (evm := evmLockStele) (evmPrice := evmPriceStele) I hlePriceStele
+                          hcalcCodeStele hcallPriceStele hpriceDecode
+                    let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                     have hbody :
-                        ExecTransitionBody config contract evmSolm0 (clipperRedoStore I)
+                        ExecTransitionBody config contract evmStele0 (clipperRedoStore I)
                           redoTransition.body .reverted (immStore v) := by
-                      simpa [evmSolm0, σLock] using
-                        (clipperRedoStatusSourceRevertsOfStatus
+                      simpa [evmStele0, σLock] using
+                        (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                           hlockedEvm hstoppedLt husrEvm hstatus)
                     exact hrev.reEquivExecutionRevert hcode hdispatch
@@ -898,33 +900,33 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                           some [.int (Int.ofNat priceWord.toNat)] := by
                       simpa [priceWord, clipperStatusPriceValues] using
                         clipperStatusPriceDecode_ok hloOut
-                    let evmPriceSolm : EVM.State :=
-                      { evmLockSolm with accountMap := σ', substate := A' }
-                    have hlockStateSolm :
-                        evmLockSolm =
+                    let evmPriceStele : EVM.State :=
+                      { evmLockStele with accountMap := σ', substate := A' }
+                    have hlockStateStele :
+                        evmLockStele =
                           initState σLock σ₀ (Sat256.ofUInt256 g) A I := by
-                      unfold evmLockSolm evmSolm clipperRedoLockedState σLock
+                      unfold evmLockStele evmStele clipperRedoLockedState σLock
                       have hOne : ({ val := 1 } : UInt256) ≠ default := by native_decide
                       cases hacc : σ.get? I.codeOwner <;>
-                        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Solm.EVM.storageStore, State.lookupAccount,
+                        simp [-Std.ExtTreeMap.get?_eq_getElem?, initState, Stele.EVM.storageStore, State.lookupAccount,
                           State.setAccount, sstoreAccountMap, Account.updateStorage,
                           Option.option, hOne, hacc]
-                    have hcallPriceSolm :
-                        typedCallViaEVM config evmLockSolm
-                          (EVM.address (clipperStatusCalcAddress evmLockSolm)) "price" 0
-                          [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                    have hcallPriceStele :
+                        typedCallViaEVM config evmLockStele
+                          (EVM.address (clipperStatusCalcAddress evmLockStele)) "price" 0
+                          [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                             .int (Int.ofNat
-                              (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)]
-                          (true, evmPriceSolm, o) false := by
-                      simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceSolm, hlockStateSolm,
+                              (UInt256.sub (clipperTimestampWord evmLockStele)
+                                (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)]
+                          (true, evmPriceStele, o) false := by
+                      simpa [-Std.ExtTreeMap.get?_eq_getElem?, evmPriceStele, hlockStateStele,
                         σLock, initState, clipperStatusCalcAddress, clipperStatusCalcWord,
                         clipperRedoSalesTopEVMWord, clipperRedoSalesTopWord,
                         clipperRedoSalesTicEVMWord, clipperRedoSalesTicWord, clipperTimestampWord,
-                        Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+                        Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
                         solcSlotWord,
-                        hcalcSlotSolm, hcalcAddrSolm, htopSolmLoad, htopWord, hticSolmLoad,
-                        hticWord, htimestampSolm, hticClean, hticCleanSolm, calcAddr]
+                        hcalcSlotStele, hcalcAddrStele, htopSteleLoad, htopWord, hticSteleLoad,
+                        hticWord, htimestampStele, hticClean, hticCleanStele, calcAddr]
                         using hcallPrice
                     let updatedTicPacked : UInt256 :=
                       UInt256.lor
@@ -950,7 +952,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                             (.ok
                               { contract := contract,
                                 locals := clipperRedoLocalsSt evmLock I true priceWord, immutables := immStore v }
-                              evmPriceSolm))
+                              evmPriceStele))
                         (hspotterZero :
                           Reasoning.Theory.extCodeSizeWord σTicEvm
                             (clipperSpotterTarget σTicEvm I) = ⟨0⟩)
@@ -998,31 +1000,31 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                             (clipperRedoSalesHashMem_size I)
                             (clipperRedoSalesHashMem_read64 I) hout)
                           (by simp only [List.length_cons, List.length_nil]; omega)
-                      have hnoCodeSolm :
+                      have hnoCodeStele :
                           (UInt256.ofNat
-                            (((clipperRedoPostTicState evmPriceSolm I).lookupAccount
+                            (((clipperRedoPostTicState evmPriceStele I).lookupAccount
                               (clipperGetFeedPriceSpotterAddress
-                                (clipperRedoPostTicState evmPriceSolm I))).option 0
+                                (clipperRedoPostTicState evmPriceStele I))).option 0
                                 (fun acc => acc.code.size))).toNat = 0 := by
                         exact
                           clipperRedoPostTicNoCode_of_accountMap_eq
                             (σ := σ') (I := I)
-                            (evm := evmPriceSolm)
-                            (by simp [evmPriceSolm])
-                            (by simp [evmPriceSolm, hlockStateSolm, initState])
+                            (evm := evmPriceStele)
+                            (by simp [evmPriceStele])
+                            (by simp [evmPriceStele, hlockStateStele, initState])
                             (by
                               simpa [σTicEvm, updatedTicPacked] using hspotterZero)
-                      let evmSolm0 :=
+                      let evmStele0 :=
                         initState σ σ₀ (Sat256.ofUInt256 g) A I
                       have hbody :
-                          ExecTransitionBody config contract evmSolm0
+                          ExecTransitionBody config contract evmStele0
                             (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                        simpa [evmSolm0, σLock] using
-                          (clipperRedoDoneTrueGetFeedPriceNoCodeSourceReverts
+                        simpa [evmStele0, σLock] using
+                          (clipperRedoDoneTrueGetFeedPriceNoCodeSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                            (g := g) (evmPrice := evmPriceSolm) v hwv
+                            (g := g) (evmPrice := evmPriceStele) v hwv
                             hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                            hnoCodeSolm)
+                            hnoCodeStele)
                       exact hrev.reEquivExecutionRevert hcode hdispatch
                         (clipperDecode_redo_ok hsz68) hbody
                     have hredoDoneTrueCodeRuntime
@@ -1038,7 +1040,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                             (.ok
                               { contract := contract,
                                 locals := clipperRedoLocalsSt evmLock I true priceWord, immutables := immStore v }
-                              evmPriceSolm))
+                              evmPriceStele))
                         (hspotterCode :
                           Reasoning.Theory.extCodeSizeWord σTicEvm
                             (clipperSpotterTarget σTicEvm I) ≠ ⟨0⟩)
@@ -1095,70 +1097,70 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                             (by simp only [List.length_cons, List.length_nil]; omega)
                         have hPostTicAccounts :
                             Eq σTicEvm
-                              (clipperRedoPostTicState evmPriceSolm I).accountMap := by
+                              (clipperRedoPostTicState evmPriceStele I).accountMap := by
                           simpa [σTicEvm, updatedTicPacked] using
                             clipperRedoPostTicAccountMap_eq
-                              (σ := σ') (I := I) (evm := evmPriceSolm)
-                              (by simp [evmPriceSolm])
-                              (by simp [evmPriceSolm, hlockStateSolm, initState])
-                        have htargetSolm :
+                              (σ := σ') (I := I) (evm := evmPriceStele)
+                              (by simp [evmPriceStele])
+                              (by simp [evmPriceStele, hlockStateStele, initState])
+                        have htargetStele :
                             clipperGetFeedPriceSpotterAddress
-                                (clipperRedoPostTicState evmPriceSolm I) =
+                                (clipperRedoPostTicState evmPriceStele I) =
                               AccountAddress.ofUInt256
                                 (clipperSpotterTarget σTicEvm I) := by
                           simpa [σTicEvm, updatedTicPacked] using
                             clipperRedoPostTicSpotterAddress_eq_of_accountMap_eq
-                              (σ := σ') (I := I) (evm := evmPriceSolm)
-                              (by simp [evmPriceSolm])
-                              (by simp [evmPriceSolm, hlockStateSolm, initState])
-                        obtain ⟨σIlksSolm, AIlksSolm, hcallIlksSolmRaw, _hIlksAccounts⟩ :=
+                              (σ := σ') (I := I) (evm := evmPriceStele)
+                              (by simp [evmPriceStele])
+                              (by simp [evmPriceStele, hlockStateStele, initState])
+                        obtain ⟨σIlksStele, AIlksStele, hcallIlksSteleRaw, _hIlksAccounts⟩ :=
                           Reasoning.Theory.typedCallViaEVM_sameInputs
                             (cfg := config) hcallIlks hPostTicAccounts
                             (by simp [clipperRedoPostTicState, storageStore_σ₀,
-                              evmPriceSolm, hlockStateSolm, initState])
+                              evmPriceStele, hlockStateStele, initState])
 
 
 
                             (by simp [clipperRedoPostTicState,
-                              storageStore_executionEnv, evmPriceSolm, hlockStateSolm,
+                              storageStore_executionEnv, evmPriceStele, hlockStateStele,
                               initState])
-                        have hcallIlksSolm :
-                            typedCallViaEVM config (clipperRedoPostTicState evmPriceSolm I)
+                        have hcallIlksStele :
+                            typedCallViaEVM config (clipperRedoPostTicState evmPriceStele I)
                               (EVM.address
                                 (clipperGetFeedPriceSpotterAddress
-                                  (clipperRedoPostTicState evmPriceSolm I)))
+                                  (clipperRedoPostTicState evmPriceStele I)))
                               "spotterIlks" 0 [v.ilk]
                               (false,
-                                { clipperRedoPostTicState evmPriceSolm I with
-                                  accountMap := σIlksSolm
-                                  substate := AIlksSolm
+                                { clipperRedoPostTicState evmPriceStele I with
+                                  accountMap := σIlksStele
+                                  substate := AIlksStele
                                    },
                                 outIlks) true := by
-                          simpa [htargetSolm, initState] using hcallIlksSolmRaw
-                        have hcodeSolm :
+                          simpa [htargetStele, initState] using hcallIlksSteleRaw
+                        have hcodeStele :
                             0 < (UInt256.ofNat
-                              (((clipperRedoPostTicState evmPriceSolm I).lookupAccount
+                              (((clipperRedoPostTicState evmPriceStele I).lookupAccount
                                 (clipperGetFeedPriceSpotterAddress
-                                  (clipperRedoPostTicState evmPriceSolm I))).option 0
+                                  (clipperRedoPostTicState evmPriceStele I))).option 0
                                   (fun acc => acc.code.size))).toNat := by
                           exact
                             clipperRedoPostTicCode_of_accountMap_eq
                               (σ := σ') (I := I)
-                              (evm := evmPriceSolm)
-                              (by simp [evmPriceSolm])
-                              (by simp [evmPriceSolm, hlockStateSolm, initState])
+                              (evm := evmPriceStele)
+                              (by simp [evmPriceStele])
+                              (by simp [evmPriceStele, hlockStateStele, initState])
                               (by simpa [σTicEvm, updatedTicPacked] using hspotterCode)
-                        let evmSolm0 :=
+                        let evmStele0 :=
                           initState σ σ₀ (Sat256.ofUInt256 g) A I
                         have hbody :
-                            ExecTransitionBody config contract evmSolm0
+                            ExecTransitionBody config contract evmStele0
                               (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                          simpa [evmSolm0, σLock] using
-                            (clipperRedoDoneTrueGetFeedPriceCallFailureSourceReverts
+                          simpa [evmStele0, σLock] using
+                            (clipperRedoDoneTrueGetFeedPriceCallFailureSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                               (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                              (g := g) (evmPrice := evmPriceSolm) v hwv
+                              (g := g) (evmPrice := evmPriceStele) v hwv
                               hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                              hcodeSolm hcallIlksSolm)
+                              hcodeStele hcallIlksStele)
                         exact hrev.reEquivExecutionRevert hcode hdispatch
                           (clipperDecode_redo_ok hsz68) hbody
                       · obtain ⟨k8861, C8861, rd8861⟩ :=
@@ -1213,75 +1215,75 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                               (by simp only [List.length_cons, List.length_nil]; omega)
                           have hPostTicAccounts :
                               Eq σTicEvm
-                                (clipperRedoPostTicState evmPriceSolm I).accountMap := by
+                                (clipperRedoPostTicState evmPriceStele I).accountMap := by
                             simpa [σTicEvm, updatedTicPacked] using
                               clipperRedoPostTicAccountMap_eq
-                                (σ := σ') (I := I) (evm := evmPriceSolm)
-                                (by simp [evmPriceSolm])
-                                (by simp [evmPriceSolm, hlockStateSolm, initState])
-                          have htargetSolm :
+                                (σ := σ') (I := I) (evm := evmPriceStele)
+                                (by simp [evmPriceStele])
+                                (by simp [evmPriceStele, hlockStateStele, initState])
+                          have htargetStele :
                               clipperGetFeedPriceSpotterAddress
-                                  (clipperRedoPostTicState evmPriceSolm I) =
+                                  (clipperRedoPostTicState evmPriceStele I) =
                                 AccountAddress.ofUInt256
                                   (clipperSpotterTarget σTicEvm I) := by
                             simpa [σTicEvm, updatedTicPacked] using
                               clipperRedoPostTicSpotterAddress_eq_of_accountMap_eq
-                                (σ := σ') (I := I) (evm := evmPriceSolm)
-                                (by simp [evmPriceSolm])
-                                (by simp [evmPriceSolm, hlockStateSolm, initState])
-                          obtain ⟨σIlksSolm, AIlksSolm, hcallIlksSolmRaw,
+                                (σ := σ') (I := I) (evm := evmPriceStele)
+                                (by simp [evmPriceStele])
+                                (by simp [evmPriceStele, hlockStateStele, initState])
+                          obtain ⟨σIlksStele, AIlksStele, hcallIlksSteleRaw,
                               _hIlksAccounts⟩ :=
                             Reasoning.Theory.typedCallViaEVM_sameInputs
                               (cfg := config) hcallIlks hPostTicAccounts
                               (by simp [clipperRedoPostTicState, storageStore_σ₀,
-                                evmPriceSolm, hlockStateSolm, initState])
+                                evmPriceStele, hlockStateStele, initState])
 
 
 
                               (by simp [clipperRedoPostTicState,
-                                storageStore_executionEnv, evmPriceSolm, hlockStateSolm,
+                                storageStore_executionEnv, evmPriceStele, hlockStateStele,
                                 initState])
-                          have hcallIlksSolm :
+                          have hcallIlksStele :
                               typedCallViaEVM config
-                                (clipperRedoPostTicState evmPriceSolm I)
+                                (clipperRedoPostTicState evmPriceStele I)
                                 (EVM.address
                                   (clipperGetFeedPriceSpotterAddress
-                                    (clipperRedoPostTicState evmPriceSolm I)))
+                                    (clipperRedoPostTicState evmPriceStele I)))
                                 "spotterIlks" 0 [v.ilk]
                                 (true,
-                                  { clipperRedoPostTicState evmPriceSolm I with
-                                    accountMap := σIlksSolm
-                                    substate := AIlksSolm
+                                  { clipperRedoPostTicState evmPriceStele I with
+                                    accountMap := σIlksStele
+                                    substate := AIlksStele
                                      },
                                   outIlks) true := by
-                            simpa [htargetSolm, initState] using hcallIlksSolmRaw
-                          have hcodeSolm :
+                            simpa [htargetStele, initState] using hcallIlksSteleRaw
+                          have hcodeStele :
                               0 < (UInt256.ofNat
-                                (((clipperRedoPostTicState evmPriceSolm I).lookupAccount
+                                (((clipperRedoPostTicState evmPriceStele I).lookupAccount
                                   (clipperGetFeedPriceSpotterAddress
-                                    (clipperRedoPostTicState evmPriceSolm I))).option 0
+                                    (clipperRedoPostTicState evmPriceStele I))).option 0
                                     (fun acc => acc.code.size))).toNat := by
                             exact
                               clipperRedoPostTicCode_of_accountMap_eq
                                 (σ := σ') (I := I)
-                                (evm := evmPriceSolm)
-                                (by simp [evmPriceSolm])
-                                (by simp [evmPriceSolm, hlockStateSolm, initState])
+                                (evm := evmPriceStele)
+                                (by simp [evmPriceStele])
+                                (by simp [evmPriceStele, hlockStateStele, initState])
                                 (by simpa [σTicEvm, updatedTicPacked] using hspotterCode)
                           have hdecIlks :
                               config.externalABI.decode? "spotterIlks" outIlks = none :=
                             clipperSpotterIlksDecode_none_short hshortIlks
-                          let evmSolm0 :=
+                          let evmStele0 :=
                             initState σ σ₀ (Sat256.ofUInt256 g) A I
                           have hbody :
-                              ExecTransitionBody config contract evmSolm0
+                              ExecTransitionBody config contract evmStele0
                                 (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                            simpa [evmSolm0, σLock] using
-                              (clipperRedoDoneTrueGetFeedPriceDecodeSourceReverts
+                            simpa [evmStele0, σLock] using
+                              (clipperRedoDoneTrueGetFeedPriceDecodeSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                                (g := g) (evmPrice := evmPriceSolm) v hwv
+                                (g := g) (evmPrice := evmPriceStele) v hwv
                                 hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                                hcodeSolm hcallIlksSolm hdecIlks)
+                                hcodeStele hcallIlksStele hdecIlks)
                           exact hrev.reEquivExecutionRevert hcode hdispatch
                             (clipperDecode_redo_ok hsz68) hbody
                         · have hloIlks : 64 ≤ outIlks.size := by omega
@@ -1338,95 +1340,95 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 (by simp only [List.length_cons, List.length_nil]; omega)
                             have hPostTicAccounts :
                                 Eq σTicEvm
-                                  (clipperRedoPostTicState evmPriceSolm I).accountMap := by
+                                  (clipperRedoPostTicState evmPriceStele I).accountMap := by
                               simpa [σTicEvm, updatedTicPacked] using
                                 clipperRedoPostTicAccountMap_eq
-                                  (σ := σ') (I := I) (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
-                            have htargetSolm :
+                                  (σ := σ') (I := I) (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
+                            have htargetStele :
                                 clipperGetFeedPriceSpotterAddress
-                                    (clipperRedoPostTicState evmPriceSolm I) =
+                                    (clipperRedoPostTicState evmPriceStele I) =
                                   AccountAddress.ofUInt256
                                     (clipperSpotterTarget σTicEvm I) := by
                               simpa [σTicEvm, updatedTicPacked] using
                                 clipperRedoPostTicSpotterAddress_eq_of_accountMap_eq
-                                  (σ := σ') (I := I) (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
-                            obtain ⟨σIlksSolm, AIlksSolm, hcallIlksSolmRaw,
+                                  (σ := σ') (I := I) (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
+                            obtain ⟨σIlksStele, AIlksStele, hcallIlksSteleRaw,
                                 hIlksAccountsRaw⟩ :=
                               Reasoning.Theory.typedCallViaEVM_sameInputs
                                 (cfg := config) hcallIlks hPostTicAccounts
                                 (by simp [clipperRedoPostTicState, storageStore_σ₀,
-                                  evmPriceSolm, hlockStateSolm, initState])
+                                  evmPriceStele, hlockStateStele, initState])
 
 
 
                                 (by simp [clipperRedoPostTicState,
-                                  storageStore_executionEnv, evmPriceSolm,
-                                  hlockStateSolm, initState])
-                            have hIlksAccounts : Eq σIlks σIlksSolm := by
+                                  storageStore_executionEnv, evmPriceStele,
+                                  hlockStateStele, initState])
+                            have hIlksAccounts : Eq σIlks σIlksStele := by
                               simpa [initState] using hIlksAccountsRaw
-                            have hcallIlksSolm :
+                            have hcallIlksStele :
                                 typedCallViaEVM config
-                                  (clipperRedoPostTicState evmPriceSolm I)
+                                  (clipperRedoPostTicState evmPriceStele I)
                                   (EVM.address
                                     (clipperGetFeedPriceSpotterAddress
-                                      (clipperRedoPostTicState evmPriceSolm I)))
+                                      (clipperRedoPostTicState evmPriceStele I)))
                                   "spotterIlks" 0 [v.ilk]
                                   (true,
-                                    { clipperRedoPostTicState evmPriceSolm I with
-                                      accountMap := σIlksSolm
-                                      substate := AIlksSolm
+                                    { clipperRedoPostTicState evmPriceStele I with
+                                      accountMap := σIlksStele
+                                      substate := AIlksStele
                                        },
                                     outIlks) true := by
-                              simpa [htargetSolm, initState] using hcallIlksSolmRaw
-                            have hcodeSolm :
+                              simpa [htargetStele, initState] using hcallIlksSteleRaw
+                            have hcodeStele :
                                 0 < (UInt256.ofNat
-                                  (((clipperRedoPostTicState evmPriceSolm I).lookupAccount
+                                  (((clipperRedoPostTicState evmPriceStele I).lookupAccount
                                     (clipperGetFeedPriceSpotterAddress
-                                      (clipperRedoPostTicState evmPriceSolm I))).option 0
+                                      (clipperRedoPostTicState evmPriceStele I))).option 0
                                       (fun acc => acc.code.size))).toNat := by
                               exact
                                 clipperRedoPostTicCode_of_accountMap_eq
                                   (σ := σ') (I := I)
-                                  (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
+                                  (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
                                   (by simpa [σTicEvm, updatedTicPacked] using hspotterCode)
                             have hdecIlks :
                                 config.externalABI.decode? "spotterIlks" outIlks =
                                   some (clipperSpotterIlksValues outIlks) :=
                               clipperSpotterIlksDecode_ok hloIlks
-                            have hnoCodePipSolm :
+                            have hnoCodePipStele :
                                 (UInt256.ofNat
-                                  ((σIlksSolm.get? (clipperSpotterIlksPipAddress outIlks))
+                                  ((σIlksStele.get? (clipperSpotterIlksPipAddress outIlks))
                                     |>.option 0 (fun acc => acc.code.size))).toNat = 0 := by
                               exact
                                 extCodeSizeWord_zero_lookup_code_zero
-                                  (σ := σIlksSolm)
+                                  (σ := σIlksStele)
                                   (target := clipperSpotterIlksPipTarget outIlks)
                                   (addr := clipperSpotterIlksPipAddress outIlks)
                                   (clipperSpotterIlksPipAddress_eq_target outIlks)
                                   (by simpa only [← hIlksAccounts] using hpipNoCode)
-                            let evmSolm0 :=
+                            let evmStele0 :=
                               initState σ σ₀ (Sat256.ofUInt256 g) A I
                             have hbody :
-                                ExecTransitionBody config contract evmSolm0
+                                ExecTransitionBody config contract evmStele0
                                   (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                              simpa [evmSolm0, σLock] using
-                                (clipperRedoDoneTrueGetFeedPricePipNoCodeSourceReverts
+                              simpa [evmStele0, σLock] using
+                                (clipperRedoDoneTrueGetFeedPricePipNoCodeSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                                  (g := g) (evmPrice := evmPriceSolm)
+                                  (g := g) (evmPrice := evmPriceStele)
                                   (evmIlks :=
-                                    { clipperRedoPostTicState evmPriceSolm I with
-                                      accountMap := σIlksSolm
-                                      substate := AIlksSolm
+                                    { clipperRedoPostTicState evmPriceStele I with
+                                      accountMap := σIlksStele
+                                      substate := AIlksStele
                                        })
                                   v hwv hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                                  hcodeSolm hcallIlksSolm hdecIlks
-                                  (by simpa using hnoCodePipSolm))
+                                  hcodeStele hcallIlksStele hdecIlks
+                                  (by simpa using hnoCodePipStele))
                             exact hrev.reEquivExecutionRevert hcode hdispatch
                               (clipperDecode_redo_ok hsz68) hbody
                           · have hspotterPostSize :
@@ -1502,77 +1504,77 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 (by simp only [List.length_cons, List.length_nil]; omega)
                             have hPostTicAccounts :
                                 Eq σTicEvm
-                                  (clipperRedoPostTicState evmPriceSolm I).accountMap := by
+                                  (clipperRedoPostTicState evmPriceStele I).accountMap := by
                               simpa [σTicEvm, updatedTicPacked] using
                                 clipperRedoPostTicAccountMap_eq
-                                  (σ := σ') (I := I) (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
-                            have htargetSolm :
+                                  (σ := σ') (I := I) (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
+                            have htargetStele :
                                 clipperGetFeedPriceSpotterAddress
-                                    (clipperRedoPostTicState evmPriceSolm I) =
+                                    (clipperRedoPostTicState evmPriceStele I) =
                                   AccountAddress.ofUInt256
                                     (clipperSpotterTarget σTicEvm I) := by
                               simpa [σTicEvm, updatedTicPacked] using
                                 clipperRedoPostTicSpotterAddress_eq_of_accountMap_eq
-                                  (σ := σ') (I := I) (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
-                            obtain ⟨σIlksSolm, AIlksSolm, hcallIlksSolmRaw,
+                                  (σ := σ') (I := I) (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
+                            obtain ⟨σIlksStele, AIlksStele, hcallIlksSteleRaw,
                                 hIlksAccountsRaw⟩ :=
                               Reasoning.Theory.typedCallViaEVM_sameInputs
                                 (cfg := config) hcallIlks hPostTicAccounts
                                 (by simp [clipperRedoPostTicState, storageStore_σ₀,
-                                  evmPriceSolm, hlockStateSolm, initState])
+                                  evmPriceStele, hlockStateStele, initState])
 
 
 
                                 (by simp [clipperRedoPostTicState,
-                                  storageStore_executionEnv, evmPriceSolm,
-                                  hlockStateSolm, initState])
-                            have hIlksAccounts : Eq σIlks σIlksSolm := by
+                                  storageStore_executionEnv, evmPriceStele,
+                                  hlockStateStele, initState])
+                            have hIlksAccounts : Eq σIlks σIlksStele := by
                               simpa [initState] using hIlksAccountsRaw
-                            let evmIlksSolm :
+                            let evmIlksStele :
                                 EVM.State :=
-                              { clipperRedoPostTicState evmPriceSolm I with
-                                accountMap := σIlksSolm
-                                substate := AIlksSolm
+                              { clipperRedoPostTicState evmPriceStele I with
+                                accountMap := σIlksStele
+                                substate := AIlksStele
                                  }
-                            have hcallIlksSolm :
+                            have hcallIlksStele :
                                 typedCallViaEVM config
-                                  (clipperRedoPostTicState evmPriceSolm I)
+                                  (clipperRedoPostTicState evmPriceStele I)
                                   (EVM.address
                                     (clipperGetFeedPriceSpotterAddress
-                                      (clipperRedoPostTicState evmPriceSolm I)))
+                                      (clipperRedoPostTicState evmPriceStele I)))
                                   "spotterIlks" 0 [v.ilk]
-                                  (true, evmIlksSolm, outIlks) true := by
-                              simpa [evmIlksSolm, htargetSolm, initState] using
-                                hcallIlksSolmRaw
-                            have hcodeSolm :
+                                  (true, evmIlksStele, outIlks) true := by
+                              simpa [evmIlksStele, htargetStele, initState] using
+                                hcallIlksSteleRaw
+                            have hcodeStele :
                                 0 < (UInt256.ofNat
-                                  (((clipperRedoPostTicState evmPriceSolm I).lookupAccount
+                                  (((clipperRedoPostTicState evmPriceStele I).lookupAccount
                                     (clipperGetFeedPriceSpotterAddress
-                                      (clipperRedoPostTicState evmPriceSolm I))).option 0
+                                      (clipperRedoPostTicState evmPriceStele I))).option 0
                                       (fun acc => acc.code.size))).toNat := by
                               exact
                                 clipperRedoPostTicCode_of_accountMap_eq
                                   (σ := σ') (I := I)
-                                  (evm := evmPriceSolm)
-                                  (by simp [evmPriceSolm])
-                                  (by simp [evmPriceSolm, hlockStateSolm, initState])
+                                  (evm := evmPriceStele)
+                                  (by simp [evmPriceStele])
+                                  (by simp [evmPriceStele, hlockStateStele, initState])
                                   (by simpa [σTicEvm, updatedTicPacked] using hspotterCode)
                             have hdecIlks :
                                 config.externalABI.decode? "spotterIlks" outIlks =
                                   some (clipperSpotterIlksValues outIlks) :=
                               clipperSpotterIlksDecode_ok hloIlks
-                            have hcodePipSolm :
+                            have hcodePipStele :
                                 0 < (UInt256.ofNat
-                                  ((evmIlksSolm.lookupAccount
+                                  ((evmIlksStele.lookupAccount
                                     (clipperSpotterIlksPipAddress outIlks)).option 0
                                       (fun acc => acc.code.size))).toNat := by
-                              simpa [evmIlksSolm, State.lookupAccount] using
+                              simpa [evmIlksStele, State.lookupAccount] using
                                 extCodeSizeWord_ne_zero_lookup_code_pos
-                                  (σ := σIlksSolm)
+                                  (σ := σIlksStele)
                                   (target := clipperSpotterIlksPipTarget outIlks)
                                   (addr := clipperSpotterIlksPipAddress outIlks)
                                   (clipperSpotterIlksPipAddress_eq_target outIlks)
@@ -1583,49 +1585,49 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                   (v := v) (hpatch := hpatch) (by simpa using rd8953)
                                   houtPeek
                                   (by simp only [List.length_cons, List.length_nil]; omega)
-                              obtain ⟨σPeekSolm, APeekSolm, hcallPeekSolmRaw,
+                              obtain ⟨σPeekStele, APeekStele, hcallPeekSteleRaw,
                                   _hPeekAccounts⟩ :=
                                 Reasoning.Theory.typedCallViaEVM_sameInputs
-                                  (cfg := config) (evm_solm := evmIlksSolm)
+                                  (cfg := config) (evm_stele := evmIlksStele)
                                   hcallPeek hIlksAccounts
-                                  (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                    storageStore_σ₀, evmPriceSolm, hlockStateSolm,
+                                  (by simp [evmIlksStele, clipperRedoPostTicState,
+                                    storageStore_σ₀, evmPriceStele, hlockStateStele,
                                     initState])
 
 
 
-                                  (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                    storageStore_executionEnv, evmPriceSolm,
-                                    hlockStateSolm, initState])
-                              have hcallPeekSolm :
-                                  typedCallViaEVM config evmIlksSolm
+                                  (by simp [evmIlksStele, clipperRedoPostTicState,
+                                    storageStore_executionEnv, evmPriceStele,
+                                    hlockStateStele, initState])
+                              have hcallPeekStele :
+                                  typedCallViaEVM config evmIlksStele
                                     (EVM.address (clipperSpotterIlksPipAddress outIlks))
                                     "peek" 0 []
                                     (false,
-                                      { evmIlksSolm with
-                                        accountMap := σPeekSolm
-                                        substate := APeekSolm
+                                      { evmIlksStele with
+                                        accountMap := σPeekStele
+                                        substate := APeekStele
                                          },
                                       outPeek) true := by
-                                simpa [evmIlksSolm, initState] using hcallPeekSolmRaw
-                              let evmSolm0 :=
+                                simpa [evmIlksStele, initState] using hcallPeekSteleRaw
+                              let evmStele0 :=
                                 initState σ σ₀ (Sat256.ofUInt256 g) A I
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm0
+                                  ExecTransitionBody config contract evmStele0
                                     (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                                simpa [evmSolm0, σLock, evmIlksSolm] using
-                                  (clipperRedoDoneTrueGetFeedPricePipCallFailureSourceReverts
+                                simpa [evmStele0, σLock, evmIlksStele] using
+                                  (clipperRedoDoneTrueGetFeedPricePipCallFailureSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                                    (g := g) (evmPrice := evmPriceSolm)
-                                    (evmIlks := evmIlksSolm)
+                                    (g := g) (evmPrice := evmPriceStele)
+                                    (evmIlks := evmIlksStele)
                                     (evmPeek :=
-                                      { evmIlksSolm with
-                                        accountMap := σPeekSolm
-                                        substate := APeekSolm
+                                      { evmIlksStele with
+                                        accountMap := σPeekStele
+                                        substate := APeekStele
                                          })
                                     v hwv hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                                    hcodeSolm hcallIlksSolm hdecIlks hcodePipSolm
-                                    hcallPeekSolm)
+                                    hcodeStele hcallIlksStele hdecIlks hcodePipStele
+                                    hcallPeekStele)
                               exact hrev.reEquivExecutionRevert hcode hdispatch
                                 (clipperDecode_redo_ok hsz68) hbody
                             · obtain ⟨k8974, C8974, rd8974⟩ :=
@@ -1641,52 +1643,52 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       hselectorRead64 houtPeek)
                                     hshortPeek houtPeek
                                     (by simp only [List.length_cons, List.length_nil]; omega)
-                                obtain ⟨σPeekSolm, APeekSolm, hcallPeekSolmRaw,
+                                obtain ⟨σPeekStele, APeekStele, hcallPeekSteleRaw,
                                     _hPeekAccounts⟩ :=
                                   Reasoning.Theory.typedCallViaEVM_sameInputs
-                                    (cfg := config) (evm_solm := evmIlksSolm)
+                                    (cfg := config) (evm_stele := evmIlksStele)
                                     hcallPeek hIlksAccounts
-                                    (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                      storageStore_σ₀, evmPriceSolm, hlockStateSolm,
+                                    (by simp [evmIlksStele, clipperRedoPostTicState,
+                                      storageStore_σ₀, evmPriceStele, hlockStateStele,
                                       initState])
 
 
 
-                                    (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                      storageStore_executionEnv, evmPriceSolm,
-                                      hlockStateSolm, initState])
-                                have hcallPeekSolm :
-                                    typedCallViaEVM config evmIlksSolm
+                                    (by simp [evmIlksStele, clipperRedoPostTicState,
+                                      storageStore_executionEnv, evmPriceStele,
+                                      hlockStateStele, initState])
+                                have hcallPeekStele :
+                                    typedCallViaEVM config evmIlksStele
                                       (EVM.address (clipperSpotterIlksPipAddress outIlks))
                                       "peek" 0 []
                                       (true,
-                                        { evmIlksSolm with
-                                          accountMap := σPeekSolm
-                                          substate := APeekSolm
+                                        { evmIlksStele with
+                                          accountMap := σPeekStele
+                                          substate := APeekStele
                                            },
                                         outPeek) true := by
-                                  simpa [evmIlksSolm, initState] using hcallPeekSolmRaw
+                                  simpa [evmIlksStele, initState] using hcallPeekSteleRaw
                                 have hdecPeek :
                                     config.externalABI.decode? "peek" outPeek = none :=
                                   clipperPipPeekDecode_none_short hshortPeek
-                                let evmSolm0 :=
+                                let evmStele0 :=
                                   initState σ σ₀ (Sat256.ofUInt256 g) A I
                                 have hbody :
-                                    ExecTransitionBody config contract evmSolm0
+                                    ExecTransitionBody config contract evmStele0
                                       (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                                  simpa [evmSolm0, σLock, evmIlksSolm] using
-                                    (clipperRedoDoneTrueGetFeedPricePipDecodeSourceReverts
+                                  simpa [evmStele0, σLock, evmIlksStele] using
+                                    (clipperRedoDoneTrueGetFeedPricePipDecodeSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                                      (g := g) (evmPrice := evmPriceSolm)
-                                      (evmIlks := evmIlksSolm)
+                                      (g := g) (evmPrice := evmPriceStele)
+                                      (evmIlks := evmIlksStele)
                                       (evmPeek :=
-                                        { evmIlksSolm with
-                                          accountMap := σPeekSolm
-                                          substate := APeekSolm
+                                        { evmIlksStele with
+                                          accountMap := σPeekStele
+                                          substate := APeekStele
                                            })
                                       v hwv hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                                      hcodeSolm hcallIlksSolm hdecIlks hcodePipSolm
-                                      hcallPeekSolm hdecPeek)
+                                      hcodeStele hcallIlksStele hdecIlks hcodePipStele
+                                      hcallPeekStele hdecPeek)
                                 exact hrev.reEquivExecutionRevert hcode hdispatch
                                   (clipperDecode_redo_ok hsz68) hbody
                               · have hloPeek : 64 ≤ outPeek.size := by omega
@@ -1703,94 +1705,94 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                         hloPeek houtPeek)
                                       hloPeek houtPeek hhasFalse
                                       (by simp only [List.length_cons, List.length_nil]; omega)
-                                  obtain ⟨σPeekSolm, APeekSolm, hcallPeekSolmRaw,
+                                  obtain ⟨σPeekStele, APeekStele, hcallPeekSteleRaw,
                                       _hPeekAccounts⟩ :=
                                     Reasoning.Theory.typedCallViaEVM_sameInputs
-                                      (cfg := config) (evm_solm := evmIlksSolm)
+                                      (cfg := config) (evm_stele := evmIlksStele)
                                       hcallPeek hIlksAccounts
-                                      (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                        storageStore_σ₀, evmPriceSolm, hlockStateSolm,
+                                      (by simp [evmIlksStele, clipperRedoPostTicState,
+                                        storageStore_σ₀, evmPriceStele, hlockStateStele,
                                         initState])
 
 
 
-                                      (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                        storageStore_executionEnv, evmPriceSolm,
-                                        hlockStateSolm, initState])
-                                  have hcallPeekSolm :
-                                      typedCallViaEVM config evmIlksSolm
+                                      (by simp [evmIlksStele, clipperRedoPostTicState,
+                                        storageStore_executionEnv, evmPriceStele,
+                                        hlockStateStele, initState])
+                                  have hcallPeekStele :
+                                      typedCallViaEVM config evmIlksStele
                                         (EVM.address (clipperSpotterIlksPipAddress outIlks))
                                         "peek" 0 []
                                         (true,
-                                          { evmIlksSolm with
-                                            accountMap := σPeekSolm
-                                            substate := APeekSolm
+                                          { evmIlksStele with
+                                            accountMap := σPeekStele
+                                            substate := APeekStele
                                              },
                                           outPeek) true := by
-                                    simpa [evmIlksSolm, initState] using hcallPeekSolmRaw
+                                    simpa [evmIlksStele, initState] using hcallPeekSteleRaw
                                   have hdecPeek :
                                       config.externalABI.decode? "peek" outPeek =
                                         some (clipperPipPeekValues outPeek) :=
                                     clipperPipPeekDecode_ok hloPeek
-                                  let evmSolm0 :=
+                                  let evmStele0 :=
                                     initState σ σ₀ (Sat256.ofUInt256 g) A I
                                   have hbody :
-                                      ExecTransitionBody config contract evmSolm0
+                                      ExecTransitionBody config contract evmStele0
                                         (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                                    simpa [evmSolm0, σLock, evmIlksSolm] using
-                                      (clipperRedoDoneTrueGetFeedPricePipHasFalseSourceReverts
+                                    simpa [evmStele0, σLock, evmIlksStele] using
+                                      (clipperRedoDoneTrueGetFeedPricePipHasFalseSourceReverts (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
-                                        (g := g) (evmPrice := evmPriceSolm)
-                                        (evmIlks := evmIlksSolm)
+                                        (g := g) (evmPrice := evmPriceStele)
+                                        (evmIlks := evmIlksStele)
                                         (evmPeek :=
-                                          { evmIlksSolm with
-                                            accountMap := σPeekSolm
-                                            substate := APeekSolm
+                                          { evmIlksStele with
+                                            accountMap := σPeekStele
+                                            substate := APeekStele
                                              })
                                         v hwv hlockedEvm hstoppedLt husrEvm priceWord hstatus
-                                        hcodeSolm hcallIlksSolm hdecIlks hcodePipSolm
-                                        hcallPeekSolm hdecPeek hhasFalse)
+                                        hcodeStele hcallIlksStele hdecIlks hcodePipStele
+                                        hcallPeekStele hdecPeek hhasFalse)
                                   exact hrev.reEquivExecutionRevert hcode hdispatch
                                     (clipperDecode_redo_ok hsz68) hbody
-                                · obtain ⟨σPeekSolm, APeekSolm, hcallPeekSolmRaw,
+                                · obtain ⟨σPeekStele, APeekStele, hcallPeekSteleRaw,
                                     hPeekAccountsRaw⟩ :=
                                     Reasoning.Theory.typedCallViaEVM_sameInputs
-                                      (cfg := config) (evm_solm := evmIlksSolm)
+                                      (cfg := config) (evm_stele := evmIlksStele)
                                       hcallPeek hIlksAccounts
-                                      (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                        storageStore_σ₀, evmPriceSolm, hlockStateSolm,
+                                      (by simp [evmIlksStele, clipperRedoPostTicState,
+                                        storageStore_σ₀, evmPriceStele, hlockStateStele,
                                         initState])
 
 
 
-                                      (by simp [evmIlksSolm, clipperRedoPostTicState,
-                                        storageStore_executionEnv, evmPriceSolm,
-                                        hlockStateSolm, initState])
-                                  have hPeekAccounts : Eq σPeek σPeekSolm := by
+                                      (by simp [evmIlksStele, clipperRedoPostTicState,
+                                        storageStore_executionEnv, evmPriceStele,
+                                        hlockStateStele, initState])
+                                  have hPeekAccounts : Eq σPeek σPeekStele := by
                                     simpa [initState] using hPeekAccountsRaw
-                                  let evmPeekSolm : EVM.State :=
-                                    { evmIlksSolm with
-                                      accountMap := σPeekSolm
-                                      substate := APeekSolm
+                                  let evmPeekStele : EVM.State :=
+                                    { evmIlksStele with
+                                      accountMap := σPeekStele
+                                      substate := APeekStele
                                        }
-                                  have hcallPeekSolm :
-                                      typedCallViaEVM config evmIlksSolm
+                                  have hcallPeekStele :
+                                      typedCallViaEVM config evmIlksStele
                                         (EVM.address (clipperSpotterIlksPipAddress outIlks))
-                                        "peek" 0 [] (true, evmPeekSolm, outPeek) true := by
-                                    simpa [evmPeekSolm, evmIlksSolm, initState] using
-                                      hcallPeekSolmRaw
+                                        "peek" 0 [] (true, evmPeekStele, outPeek) true := by
+                                    simpa [evmPeekStele, evmIlksStele, initState] using
+                                      hcallPeekSteleRaw
                                   have hdecPeek :
                                       config.externalABI.decode? "peek" outPeek =
                                         some (clipperPipPeekValues outPeek) :=
                                     clipperPipPeekDecode_ok hloPeek
                                   have hfeedPrefix := clipperGetFeedPricePrefixToHas v
-                                    hcodeSolm hcallIlksSolm hdecIlks hcodePipSolm
-                                    hcallPeekSolm hdecPeek hhasFalse
+                                    hcodeStele hcallIlksStele hdecIlks hcodePipStele
+                                    hcallPeekStele hdecPeek hhasFalse
                                   have finishFeedRevert
                                       (hfeedTail :
                                         ExecBlock config
                                           (Frame.mk contract (clipperGetFeedPriceHasLocals outIlks outPeek) (immStore v))
-                                          evmPeekSolm clipperGetFeedPriceSuccessTailStmts
+                                          evmPeekStele clipperGetFeedPriceSuccessTailStmts
                                           .reverted)
                                       (hrev : RDrev code (Sat256.ofUInt256 g)
                                         (initState σ σ₀
@@ -1799,25 +1801,25 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                         σ σ₀ g A I (immStore v) := by
                                     have hgetFeed :=
                                       clipperGetFeedPriceSuccessCallRevertsOfTail v
-                                        (clipperRedoLocalsLot evmLockSolm evmPriceSolm I priceWord)
+                                        (clipperRedoLocalsLot evmLockStele evmPriceStele I priceWord)
                                         "feedPrice" hfeedPrefix hfeedTail
                                     have hafter :
                                         ExecBlock config
                                           { contract := contract,
-                                            locals := clipperRedoLocalsLot evmLockSolm
-                                              evmPriceSolm I priceWord, immutables := immStore v }
-                                          (clipperRedoPostTicState evmPriceSolm I)
+                                            locals := clipperRedoLocalsLot evmLockStele
+                                              evmPriceStele I priceWord, immutables := immStore v }
+                                          (clipperRedoPostTicState evmPriceStele I)
                                           (clipperRedoAfterTicBody) .reverted := by
                                       simpa [clipperRedoAfterTicBody] using
                                         (ExecBlock.consRevert hgetFeed)
-                                    let evmSolm0 :=
+                                    let evmStele0 :=
                                       initState σ σ₀ (Sat256.ofUInt256 g) A I
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm0
+                                        ExecTransitionBody config contract evmStele0
                                           (clipperRedoStore I) redoTransition.body
                                           .reverted (immStore v) := by
-                                      simpa [evmSolm0, hlockStateSolm] using
-                                        (clipperRedoDoneTrueSourceRevertsOfAfterTic
+                                      simpa [evmStele0, hlockStateStele] using
+                                        (clipperRedoDoneTrueSourceRevertsOfAfterTic (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                           (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                           priceWord hstatus hafter)
@@ -1827,7 +1829,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       (hfeedTail :
                                         ExecBlock config
                                           (Frame.mk contract (clipperGetFeedPriceHasLocals outIlks outPeek) (immStore v))
-                                          evmPeekSolm clipperGetFeedPriceSuccessTailStmts
+                                          evmPeekStele clipperGetFeedPriceSuccessTailStmts
                                           .reverted)
                                       (hinv : RDinvalid code (Sat256.ofUInt256 g)
                                         (initState σ σ₀
@@ -1836,25 +1838,25 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                         σ σ₀ g A I (immStore v) := by
                                     have hgetFeed :=
                                       clipperGetFeedPriceSuccessCallRevertsOfTail v
-                                        (clipperRedoLocalsLot evmLockSolm evmPriceSolm I priceWord)
+                                        (clipperRedoLocalsLot evmLockStele evmPriceStele I priceWord)
                                         "feedPrice" hfeedPrefix hfeedTail
                                     have hafter :
                                         ExecBlock config
                                           { contract := contract,
-                                            locals := clipperRedoLocalsLot evmLockSolm
-                                              evmPriceSolm I priceWord, immutables := immStore v }
-                                          (clipperRedoPostTicState evmPriceSolm I)
+                                            locals := clipperRedoLocalsLot evmLockStele
+                                              evmPriceStele I priceWord, immutables := immStore v }
+                                          (clipperRedoPostTicState evmPriceStele I)
                                           (clipperRedoAfterTicBody) .reverted := by
                                       simpa [clipperRedoAfterTicBody] using
                                         (ExecBlock.consRevert hgetFeed)
-                                    let evmSolm0 :=
+                                    let evmStele0 :=
                                       initState σ σ₀ (Sat256.ofUInt256 g) A I
                                     have hbody :
-                                        ExecTransitionBody config contract evmSolm0
+                                        ExecTransitionBody config contract evmStele0
                                           (clipperRedoStore I) redoTransition.body
                                           .reverted (immStore v) := by
-                                      simpa [evmSolm0, hlockStateSolm] using
-                                        (clipperRedoDoneTrueSourceRevertsOfAfterTic
+                                      simpa [evmStele0, hlockStateStele] using
+                                        (clipperRedoDoneTrueSourceRevertsOfAfterTic (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                           (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                           (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                           priceWord hstatus hafter)
@@ -1879,7 +1881,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       (v := v) (hpatch := hpatch) rd9079 hvalMul
                                       (by simp only [List.length_cons, List.length_nil]; omega)
                                     have hfeedTail :=
-                                      clipperGetFeedPriceTailRevertsValBlnOverflow v evmPeekSolm
+                                      clipperGetFeedPriceTailRevertsValBlnOverflow v evmPeekStele
                                         outIlks outPeek (by omega) hvalMul
                                     exact finishFeedRevert hfeedTail hrev
                                   · have hvalMulOk :
@@ -1898,17 +1900,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                         (by simp only [List.length_cons, List.length_nil]; omega)
                                     have hspotterSlot :
                                         solcSlotWord σPeek I ⟨3⟩ =
-                                          solcSlotWord σPeekSolm I ⟨3⟩ :=
+                                          solcSlotWord σPeekStele I ⟨3⟩ :=
                                       congrArg (fun m => solcSlotWord m I ⟨3⟩) hPeekAccounts
                                     have hspotterAddr :
-                                        clipperGetFeedPriceSpotterAddress evmPeekSolm =
+                                        clipperGetFeedPriceSpotterAddress evmPeekStele =
                                           AccountAddress.ofUInt256
                                             (clipperSpotterTarget σPeek I) := by
-                                      have hPeekEnv : evmPeekSolm.executionEnv = I := by
-                                        unfold evmPeekSolm evmIlksSolm
+                                      have hPeekEnv : evmPeekStele.executionEnv = I := by
+                                        unfold evmPeekStele evmIlksStele
                                         rw [storageStore_executionEnv]
-                                        simp [evmPriceSolm, hlockStateSolm, initState]
-                                      have hPeekMap : evmPeekSolm.accountMap = σPeekSolm := rfl
+                                        simp [evmPriceStele, hlockStateStele, initState]
+                                      have hPeekMap : evmPeekStele.accountMap = σPeekStele := rfl
                                       simp [clipperGetFeedPriceSpotterAddress,
                                         clipperSpotterTarget, hPeekEnv, hPeekMap,
                                         ← hspotterSlot]
@@ -1918,21 +1920,21 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                     · have hrev := RD.clipperGetFeedPriceParNoCode
                                         (v := v) (hpatch := hpatch) rd9164 hparNoCode
                                         (by simp only [List.length_cons, List.length_nil]; omega)
-                                      have hnoCodeSolm :
-                                          (UInt256.ofNat ((evmPeekSolm.lookupAccount
-                                            (clipperGetFeedPriceSpotterAddress evmPeekSolm))
+                                      have hnoCodeStele :
+                                          (UInt256.ofNat ((evmPeekStele.lookupAccount
+                                            (clipperGetFeedPriceSpotterAddress evmPeekStele))
                                               |>.option 0 (fun acc => acc.code.size))).toNat = 0 := by
-                                        simpa [State.lookupAccount, evmPeekSolm] using
+                                        simpa [State.lookupAccount, evmPeekStele] using
                                           (extCodeSizeWord_zero_lookup_code_zero
-                                            (σ := σPeekSolm)
+                                            (σ := σPeekStele)
                                             (target := clipperSpotterTarget σPeek I)
                                             (addr := clipperGetFeedPriceSpotterAddress
-                                              evmPeekSolm)
+                                              evmPeekStele)
                                             hspotterAddr
                                             (by simpa only [← hPeekAccounts] using hparNoCode))
                                       have hfeedTail :=
-                                        clipperGetFeedPriceTailRevertsParNoCode v evmPeekSolm
-                                          outIlks outPeek (by omega) hvalMulOk hnoCodeSolm
+                                        clipperGetFeedPriceTailRevertsParNoCode v evmPeekStele
+                                          outIlks outPeek (by omega) hvalMulOk hnoCodeStele
                                       exact finishFeedRevert hfeedTail hrev
                                     · obtain ⟨σPar, zPar, outPar, APar, k9180,
                                           C9180, rd9180, hcallPar, houtPar⟩ :=
@@ -1944,45 +1946,45 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                           (by
                                             simp only [List.length_cons, List.length_nil]
                                             omega)
-                                      obtain ⟨σParSolm, AParSolm, hcallParSolmRaw,
+                                      obtain ⟨σParStele, AParStele, hcallParSteleRaw,
                                           hParAccountsRaw⟩ :=
                                         Reasoning.Theory.typedCallViaEVM_sameInputs
-                                          (cfg := config) (evm_solm := evmPeekSolm)
+                                          (cfg := config) (evm_stele := evmPeekStele)
                                           hcallPar hPeekAccounts
-                                          (by simp [evmPeekSolm, evmIlksSolm,
+                                          (by simp [evmPeekStele, evmIlksStele,
                                             clipperRedoPostTicState, storageStore_σ₀,
-                                            evmPriceSolm, hlockStateSolm, initState])
+                                            evmPriceStele, hlockStateStele, initState])
 
 
 
-                                          (by simp [evmPeekSolm, evmIlksSolm,
+                                          (by simp [evmPeekStele, evmIlksStele,
                                             clipperRedoPostTicState,
-                                            storageStore_executionEnv, evmPriceSolm,
-                                            hlockStateSolm, initState])
-                                      have hParAccounts : Eq σPar σParSolm := by
+                                            storageStore_executionEnv, evmPriceStele,
+                                            hlockStateStele, initState])
+                                      have hParAccounts : Eq σPar σParStele := by
                                         simpa [initState] using hParAccountsRaw
-                                      let evmParSolm : EVM.State :=
-                                        { evmPeekSolm with
-                                          accountMap := σParSolm
-                                          substate := AParSolm
+                                      let evmParStele : EVM.State :=
+                                        { evmPeekStele with
+                                          accountMap := σParStele
+                                          substate := AParStele
                                            }
-                                      have hcallParSolm :
-                                          typedCallViaEVM config evmPeekSolm
+                                      have hcallParStele :
+                                          typedCallViaEVM config evmPeekStele
                                             (EVM.address
-                                              (clipperGetFeedPriceSpotterAddress evmPeekSolm))
-                                            "par" 0 [] (zPar, evmParSolm, outPar) true := by
-                                        simpa only [evmParSolm, evmPeekSolm, evmIlksSolm,
-                                          hspotterAddr, initState] using hcallParSolmRaw
-                                      have hcodeParSolm :
-                                          0 < (UInt256.ofNat ((evmPeekSolm.lookupAccount
-                                            (clipperGetFeedPriceSpotterAddress evmPeekSolm))
+                                              (clipperGetFeedPriceSpotterAddress evmPeekStele))
+                                            "par" 0 [] (zPar, evmParStele, outPar) true := by
+                                        simpa only [evmParStele, evmPeekStele, evmIlksStele,
+                                          hspotterAddr, initState] using hcallParSteleRaw
+                                      have hcodeParStele :
+                                          0 < (UInt256.ofNat ((evmPeekStele.lookupAccount
+                                            (clipperGetFeedPriceSpotterAddress evmPeekStele))
                                               |>.option 0 (fun acc => acc.code.size))).toNat := by
-                                        simpa [State.lookupAccount, evmPeekSolm] using
+                                        simpa [State.lookupAccount, evmPeekStele] using
                                           (extCodeSizeWord_ne_zero_lookup_code_pos
-                                            (σ := σPeekSolm)
+                                            (σ := σPeekStele)
                                             (target := clipperSpotterTarget σPeek I)
                                             (addr := clipperGetFeedPriceSpotterAddress
-                                              evmPeekSolm)
+                                              evmPeekStele)
                                             hspotterAddr
                                             (by simpa only [← hPeekAccounts] using hparNoCode))
                                       cases zPar
@@ -1994,8 +1996,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                             omega)
                                         have hfeedTail :=
                                           clipperGetFeedPriceTailRevertsParCallFailure v
-                                            outIlks outPeek (by omega) hvalMulOk hcodeParSolm
-                                            (by simpa using hcallParSolm)
+                                            outIlks outPeek (by omega) hvalMulOk hcodeParStele
+                                            (by simpa using hcallParStele)
                                         exact finishFeedRevert hfeedTail hrev
                                       · obtain ⟨_, _, rd9201⟩ :=
                                           RD.clipperGetFeedPriceParCallSuccessToDecode
@@ -2022,7 +2024,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                           have hfeedTail :=
                                             clipperGetFeedPriceTailRevertsParDecode v
                                               outIlks outPeek (by omega) hvalMulOk
-                                              hcodeParSolm (by simpa using hcallParSolm)
+                                              hcodeParStele (by simpa using hcallParStele)
                                               (clipperSpotterParDecode_none_short hshortPar)
                                           exact finishFeedRevert hfeedTail hrev
                                         · have hloPar : 32 ≤ outPar.size := by omega
@@ -2060,13 +2062,13 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                 (by simp only [List.length_cons,
                                                   List.length_nil]; omega)
                                             have hrdiv :=
-                                              clipperGetFeedPriceRdivRevertsMul v evmParSolm
+                                              clipperGetFeedPriceRdivRevertsMul v evmParStele
                                                 outIlks outPeek outPar
                                                 (by simpa [valBln] using hrdivMul)
                                             have hfeedTail :=
                                               clipperGetFeedPriceTailOfParSuccess v
                                                 outIlks outPeek (by omega) hvalMulOk
-                                                hcodeParSolm (by simpa using hcallParSolm)
+                                                hcodeParStele (by simpa using hcallParStele)
                                                 hdecPar hrdiv
                                             exact finishFeedRevert hfeedTail hrev
                                           · have hrdivMulOk :
@@ -2083,13 +2085,13 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                     List.length_nil]; omega)
                                               have hrdiv :=
                                                 clipperGetFeedPriceRdivRevertsDivZero v
-                                                  evmParSolm outIlks outPeek outPar
+                                                  evmParStele outIlks outPeek outPar
                                                   (by simpa [valBln] using hrdivMulOk)
                                                   hparZero
                                               have hfeedTail :=
                                                 clipperGetFeedPriceTailOfParSuccess v
                                                   outIlks outPeek (by omega) hvalMulOk
-                                                  hcodeParSolm (by simpa using hcallParSolm)
+                                                  hcodeParStele (by simpa using hcallParStele)
                                                   hdecPar hrdiv
                                               exact finishFeedInvalid hfeedTail hinv
                                             · obtain ⟨_, _, rd7719⟩ :=
@@ -2104,55 +2106,55 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                 (UInt256.mul valBln clipperRayWord)
                                                 (clipperSpotterParWord outPar)
                                               have hrdivSource :=
-                                                clipperGetFeedPriceRdivReturns v evmParSolm
+                                                clipperGetFeedPriceRdivReturns v evmParStele
                                                   outIlks outPeek outPar
                                                   (by simpa [valBln] using hrdivMulOk)
                                                   hparZero
                                               have hfeedTail :=
                                                 clipperGetFeedPriceTailOfParSuccess v
                                                   outIlks outPeek (by omega) hvalMulOk
-                                                  hcodeParSolm (by simpa using hcallParSolm)
+                                                  hcodeParStele (by simpa using hcallParStele)
                                                   hdecPar hrdivSource
                                               have hgetFeed :
                                                   ExecStmt config
                                                     { contract := contract,
                                                       locals := clipperRedoLocalsLot
-                                                        evmLockSolm evmPriceSolm I priceWord, immutables := immStore v }
-                                                    (clipperRedoPostTicState evmPriceSolm I)
+                                                        evmLockStele evmPriceStele I priceWord, immutables := immStore v }
+                                                    (clipperRedoPostTicState evmPriceStele I)
                                                     (.internalCall "getFeedPrice" [] "feedPrice")
                                                     (.ok
                                                       { contract := contract,
                                                         locals := clipperRedoLocalsFeedPrice
-                                                          evmLockSolm evmPriceSolm I priceWord
+                                                          evmLockStele evmPriceStele I priceWord
                                                           feedPrice, immutables := immStore v }
-                                                      evmParSolm) := by
+                                                      evmParStele) := by
                                                 simpa [feedPrice, valBln,
                                                   clipperRedoLocalsFeedPrice] using
                                                   (clipperGetFeedPriceSuccessCallReturnsOfTail v
-                                                    (clipperRedoLocalsLot evmLockSolm
-                                                      evmPriceSolm I priceWord)
+                                                    (clipperRedoLocalsLot evmLockStele
+                                                      evmPriceStele I priceWord)
                                                     "feedPrice" hfeedPrefix hfeedTail)
                                               have finishAfterRevert
                                                   (hafter :
                                                     ExecBlock config
                                                       { contract := contract,
                                                         locals := clipperRedoLocalsLot
-                                                          evmLockSolm evmPriceSolm I priceWord, immutables := immStore v }
-                                                      (clipperRedoPostTicState evmPriceSolm I)
+                                                          evmLockStele evmPriceStele I priceWord, immutables := immStore v }
+                                                      (clipperRedoPostTicState evmPriceStele I)
                                                       (clipperRedoAfterTicBody) .reverted)
                                                   (hrev : RDrev code (Sat256.ofUInt256 g)
                                                     (initState σ σ₀
                                                       (Sat256.ofUInt256 g) A I)) :
                                                   runtimeRefinementFor config contract
                                                     σ σ₀ g A I (immStore v) := by
-                                                let evmSolm0 := initState σ σ₀
+                                                let evmStele0 := initState σ σ₀
                                                   (Sat256.ofUInt256 g) A I
                                                 have hbody :
                                                     ExecTransitionBody config contract
-                                                      evmSolm0 (clipperRedoStore I)
+                                                      evmStele0 (clipperRedoStore I)
                                                       redoTransition.body .reverted (immStore v) := by
-                                                  simpa [evmSolm0, hlockStateSolm] using
-                                                    (clipperRedoDoneTrueSourceRevertsOfAfterTic
+                                                  simpa [evmStele0, hlockStateStele] using
+                                                    (clipperRedoDoneTrueSourceRevertsOfAfterTic (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                                       (σ := σ) (σ₀ := σ₀) (A := A)
                                                       (I := I) (g := g) v hwv hlockedEvm
                                                       hstoppedLt husrEvm priceWord hstatus
@@ -2166,8 +2168,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                     ExecBlock config
                                                       { contract := contract,
                                                         locals := clipperRedoLocalsLot
-                                                          evmLockSolm evmPriceSolm I priceWord, immutables := immStore v }
-                                                      (clipperRedoPostTicState evmPriceSolm I)
+                                                          evmLockStele evmPriceStele I priceWord, immutables := immStore v }
+                                                      (clipperRedoPostTicState evmPriceStele I)
                                                       (clipperRedoAfterTicBody)
                                                       (.ok finalFrame evmFinal))
                                                   (hret : RDret code (Sat256.ofUInt256 g)
@@ -2179,15 +2181,15 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                       evmFinal.accountMap) :
                                                   runtimeRefinementFor config contract
                                                     σ σ₀ g A I (immStore v) := by
-                                                let evmSolm0 := initState σ σ₀
+                                                let evmStele0 := initState σ σ₀
                                                   (Sat256.ofUInt256 g) A I
                                                 have hbody :
                                                     ExecTransitionBody config contract
-                                                      evmSolm0 (clipperRedoStore I)
+                                                      evmStele0 (clipperRedoStore I)
                                                       redoTransition.body
                                                       (.returned finalFrame evmFinal none) (immStore v) := by
-                                                  simpa [evmSolm0, hlockStateSolm] using
-                                                    (clipperRedoDoneTrueSourceOkOfAfterTic
+                                                  simpa [evmStele0, hlockStateStele] using
+                                                    (clipperRedoDoneTrueSourceOkOfAfterTic (hperm := by assumption) (hpermPrice := by simpa only [evmPriceStele, hlockStateStele] using hperm)
                                                       (σ := σ) (σ₀ := σ₀) (A := A)
                                                       (I := I) (g := g) v hwv hlockedEvm
                                                       hstoppedLt husrEvm priceWord hstatus
@@ -2206,19 +2208,19 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                   (v := v) (hpatch := hpatch) rd7719
                                                   (by simp only [List.length_cons,
                                                     List.length_nil]; omega)
-                                              have hParEnv : evmParSolm.executionEnv = I := by
-                                                unfold evmParSolm evmPeekSolm evmIlksSolm
+                                              have hParEnv : evmParStele.executionEnv = I := by
+                                                unfold evmParStele evmPeekStele evmIlksStele
                                                 rw [storageStore_executionEnv]
-                                                simp [evmPriceSolm, hlockStateSolm, initState]
+                                                simp [evmPriceStele, hlockStateStele, initState]
                                               have hbufEq :
                                                   solcSlotWord σPar I ⟨5⟩ =
-                                                    Solm.EVM.storageLoad evmParSolm
-                                                      evmParSolm.executionEnv.codeOwner ⟨5⟩ := by
+                                                    Stele.EVM.storageLoad evmParStele
+                                                      evmParStele.executionEnv.codeOwner ⟨5⟩ := by
                                                 rw [hParEnv]
                                                 have hslot := congrArg (fun m => solcSlotWord m I ⟨5⟩) hParAccounts
-                                                simpa [Solm.EVM.storageLoad, State.lookupAccount,
+                                                simpa [Stele.EVM.storageLoad, State.lookupAccount,
                                                   Account.lookupStorage, solcSlotWord,
-                                                  evmParSolm] using hslot
+                                                  evmParStele] using hslot
                                               by_cases htopMul : UInt256.size ≤
                                                   (solcSlotWord σPar I ⟨5⟩).toNat *
                                                     feedPrice.toNat
@@ -2227,8 +2229,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                   (by simp only [List.length_cons,
                                                     List.length_nil]; omega)
                                                 have hrmul :=
-                                                  clipperRedoRmulCallReverts v evmLockSolm
-                                                    evmPriceSolm evmParSolm I priceWord feedPrice
+                                                  clipperRedoRmulCallReverts v evmLockStele
+                                                    evmPriceStele evmParStele I priceWord feedPrice
                                                     (by
                                                       rw [← hbufEq, Nat.mul_comm]
                                                       exact htopMul)
@@ -2236,8 +2238,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                     ExecBlock config
                                                       { contract := contract,
                                                         locals := clipperRedoLocalsLot
-                                                          evmLockSolm evmPriceSolm I priceWord, immutables := immStore v }
-                                                      (clipperRedoPostTicState evmPriceSolm I)
+                                                          evmLockStele evmPriceStele I priceWord, immutables := immStore v }
+                                                      (clipperRedoPostTicState evmPriceStele I)
                                                       (clipperRedoAfterTicBody) .reverted := by
                                                   simpa [clipperRedoAfterTicBody] using
                                                     (ExecBlock.consNormal hgetFeed
@@ -2249,8 +2251,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                   omega
                                                 let topNew := UInt256.div
                                                   (UInt256.mul feedPrice
-                                                    (Solm.EVM.storageLoad evmParSolm
-                                                      evmParSolm.executionEnv.codeOwner ⟨5⟩))
+                                                    (Stele.EVM.storageLoad evmParStele
+                                                      evmParStele.executionEnv.codeOwner ⟨5⟩))
                                                   clipperRayWord
                                                 obtain ⟨_, _, rd7733⟩ :=
                                                   RD.clipperRedoRmulSuccess
@@ -2262,21 +2264,21 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                     ExecStmt config
                                                       { contract := contract,
                                                         locals := clipperRedoLocalsFeedPrice
-                                                          evmLockSolm evmPriceSolm I priceWord
+                                                          evmLockStele evmPriceStele I priceWord
                                                           feedPrice, immutables := immStore v }
-                                                      evmParSolm
+                                                      evmParStele
                                                       (.internalCall "rmul"
                                                         [.var "feedPrice", .storage bufRef]
                                                         "topNew")
                                                       (.ok
                                                         { contract := contract,
                                                           locals := clipperRedoLocalsTopNew
-                                                            evmLockSolm evmPriceSolm I priceWord
+                                                            evmLockStele evmPriceStele I priceWord
                                                             feedPrice topNew, immutables := immStore v }
-                                                        evmParSolm) := by
+                                                        evmParStele) := by
                                                   simpa [topNew] using
-                                                    (clipperRedoRmulCallReturns v evmLockSolm
-                                                      evmPriceSolm evmParSolm I priceWord
+                                                    (clipperRedoRmulCallReturns v evmLockStele
+                                                      evmPriceStele evmParStele I priceWord
                                                       feedPrice (by
                                                         rw [← hbufEq, Nat.mul_comm]
                                                         exact htopMulOk))
@@ -2300,22 +2302,22 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                       ExecStmt config
                                                         { contract := contract,
                                                           locals := clipperRedoLocalsTopNew
-                                                            evmLockSolm evmPriceSolm I priceWord
+                                                            evmLockStele evmPriceStele I priceWord
                                                             feedPrice topNew, immutables := immStore v }
-                                                        evmParSolm
+                                                        evmParStele
                                                         (.require (.binary .gt
                                                           (.var "topNew") (.intLit 0)))
                                                         .reverted :=
                                                     ExecStmt.requireFalse
                                                       (clipperEvalRedoTopNewNotPositive v
-                                                        evmLockSolm evmPriceSolm evmParSolm I
+                                                        evmLockStele evmPriceStele evmParStele I
                                                         priceWord feedPrice topNew htopZero)
                                                   have hafter :
                                                       ExecBlock config
                                                         { contract := contract,
                                                           locals := clipperRedoLocalsLot
-                                                            evmLockSolm evmPriceSolm I priceWord, immutables := immStore v }
-                                                        (clipperRedoPostTicState evmPriceSolm I)
+                                                            evmLockStele evmPriceStele I priceWord, immutables := immStore v }
+                                                        (clipperRedoPostTicState evmPriceStele I)
                                                         (clipperRedoAfterTicBody)
                                                         .reverted := by
                                                     simpa [clipperRedoAfterTicBody] using
@@ -2348,7 +2350,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                       htopEvmPos hparPostSize hperm
                                                       (by simp)
                                                   let evmTop :=
-                                                    clipperRedoTopState evmParSolm I topNew
+                                                    clipperRedoTopState evmParStele I topNew
                                                   have hTopEnv :
                                                       evmTop.executionEnv = I := by
                                                     unfold evmTop clipperRedoTopState
@@ -2360,16 +2362,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                     simpa [σTop, topSlot, htopValueEq, evmTop]
                                                       using
                                                         (clipperRedoTopState_accounts_eq
-                                                          evmParSolm I topNew rfl hParEnv
+                                                          evmParStele I topNew rfl hParEnv
                                                           hParAccounts)
                                                   have htipEq :
                                                       clipperRedoTipWord σTop I =
-                                                        clipperRedoTipSolmWord evmTop :=
+                                                        clipperRedoTipSteleWord evmTop :=
                                                     clipperRedoTipWord_eq_of_accounts_eq
                                                       evmTop I hTopEnv hTopAccounts
                                                   have hchipEq :
                                                       clipperRedoChipWord σTop I =
-                                                        clipperRedoChipSolmWord evmTop :=
+                                                        clipperRedoChipSteleWord evmTop :=
                                                     clipperRedoChipWord_eq_of_accounts_eq
                                                       evmTop I hTopEnv hTopAccounts
                                                   have finishActive
@@ -2378,9 +2380,9 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                           clipperRedoChipWord σTop I ≠ ⟨0⟩) :
                                                       runtimeRefinementFor config contract
                                                         σ σ₀ g A I (immStore v) := by
-                                                    have hactiveSolm :
-                                                        clipperRedoTipSolmWord evmTop ≠ ⟨0⟩ ∨
-                                                          clipperRedoChipSolmWord evmTop ≠ ⟨0⟩ := by
+                                                    have hactiveStele :
+                                                        clipperRedoTipSteleWord evmTop ≠ ⟨0⟩ ∨
+                                                          clipperRedoChipSteleWord evmTop ≠ ⟨0⟩ := by
                                                       rcases hactiveEvm with htip | hchip
                                                       · exact Or.inl (fun hzero => htip (by
                                                           rw [htipEq, hzero]))
@@ -2396,13 +2398,13 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                           omega)
                                                     have hcond :=
                                                       clipperEvalRedoIncentiveActive v
-                                                        evmLockSolm evmPriceSolm evmTop evmTop I
-                                                        priceWord feedPrice topNew hactiveSolm
+                                                        evmLockStele evmPriceStele evmTop evmTop I
+                                                        priceWord feedPrice topNew hactiveStele
                                                     have hPriceEnv :
-                                                        evmPriceSolm.executionEnv = I := by
-                                                      simp [evmPriceSolm, hlockStateSolm, initState]
+                                                        evmPriceStele.executionEnv = I := by
+                                                      simp [evmPriceStele, hlockStateStele, initState]
                                                     have hPriceOwner :
-                                                        evmPriceSolm.executionEnv.codeOwner =
+                                                        evmPriceStele.executionEnv.codeOwner =
                                                           I.codeOwner := by
                                                       rw [hPriceEnv]
                                                     have htabEq :
@@ -2410,7 +2412,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                             (solcMappingSlot ⟨12⟩
                                                               (clipperRedoIdWord I) + ⟨1⟩) =
                                                           clipperRedoSalesTabEVMWord
-                                                            evmPriceSolm I := by
+                                                            evmPriceStele I := by
                                                       have hslot :
                                                           solcSlotWord σ' I (clipperRedoSalesTabSlot I) =
                                                             solcSlotWord σ' I (clipperRedoSalesTabSlot I) := rfl
@@ -2419,16 +2421,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                       simpa [
                                                         clipperRedoSalesTabSlot,
                                                         clipperRedoSalesBaseSlot_eq,
-                                                        Solm.EVM.storageLoad,
+                                                        Stele.EVM.storageLoad,
                                                         State.lookupAccount,
                                                         Account.lookupStorage, solcSlotWord,
-                                                        evmPriceSolm] using hslot
+                                                        evmPriceStele] using hslot
                                                     have hlotEq :
                                                         solcSlotWord σ' I
                                                             (solcMappingSlot ⟨12⟩
                                                               (clipperRedoIdWord I) + ⟨2⟩) =
                                                           clipperRedoSalesLotEVMWord
-                                                            evmPriceSolm I := by
+                                                            evmPriceStele I := by
                                                       have hslot :
                                                           solcSlotWord σ' I (clipperRedoSalesLotSlot I) =
                                                             solcSlotWord σ' I (clipperRedoSalesLotSlot I) := rfl
@@ -2437,17 +2439,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                       simpa [
                                                         clipperRedoSalesLotSlot,
                                                         clipperRedoSalesBaseSlot_eq,
-                                                        Solm.EVM.storageLoad,
+                                                        Stele.EVM.storageLoad,
                                                         State.lookupAccount,
                                                         Account.lookupStorage, solcSlotWord,
-                                                        evmPriceSolm] using hslot
+                                                        evmPriceStele] using hslot
                                                     have hchostEq :
                                                         clipperRedoChostWord σTop I =
                                                           clipperRedoChostWordSource evmTop := by
                                                       have hslot := congrArg (fun m => solcSlotWord m I ⟨9⟩) hTopAccounts
                                                       simpa [clipperRedoChostWord,
                                                         clipperRedoChostWordSource, hTopEnv,
-                                                        Solm.EVM.storageLoad,
+                                                        Stele.EVM.storageLoad,
                                                         State.lookupAccount,
                                                         Account.lookupStorage, solcSlotWord]
                                                         using hslot
@@ -2482,35 +2484,36 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                             omega)
                                                       have hincentive :=
                                                         clipperRedoActiveTabBelowBody v
-                                                          evmLockSolm evmPriceSolm evmTop I
+                                                          evmLockStele evmPriceStele evmTop I
                                                           priceWord feedPrice topNew
                                                           (by
                                                             rw [← htabEq, ← hchostEq]
                                                             exact htabBelow)
                                                       have htail :=
-                                                        clipperRedoIncentiveTailOk v
+                                                        clipperRedoIncentiveTailOk (hperm := by simpa only [hTopEnv] using hperm) v
                                                           { contract := contract,
                                                             locals := clipperRedoLocalsChip
-                                                              evmLockSolm evmPriceSolm evmTop I
+                                                              evmLockStele evmPriceStele evmTop I
                                                               priceWord feedPrice topNew, immutables := immStore v }
-                                                          (clipperRedoLocalsChost evmLockSolm
-                                                            evmPriceSolm evmTop I priceWord
+                                                          (clipperRedoLocalsChost evmLockStele
+                                                            evmPriceStele evmTop I priceWord
                                                             feedPrice topNew)
                                                           evmTop evmTop hcond hincentive
                                                           (clipperRedoLocalsChost_get_locked
-                                                            evmLockSolm evmPriceSolm evmTop I
+                                                            evmLockStele evmPriceStele evmTop I
                                                             priceWord feedPrice topNew)
                                                       have hafter :=
-                                                        clipperRedoAfterTicSuccessPrefix v
-                                                          evmLockSolm evmPriceSolm
-                                                          (clipperRedoPostTicState evmPriceSolm I)
-                                                          evmParSolm I priceWord feedPrice hgetFeed
+                                                        clipperRedoAfterTicSuccessPrefix
+                                                          (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                          evmLockStele evmPriceStele
+                                                          (clipperRedoPostTicState evmPriceStele I)
+                                                          evmParStele I priceWord feedPrice hgetFeed
                                                           (by
                                                             rw [← hbufEq, Nat.mul_comm]
                                                             exact htopMulOk)
                                                           htopPos htail
                                                       let evmFinal :=
-                                                        Solm.EVM.storageStore evmTop
+                                                        Stele.EVM.storageStore evmTop
                                                           evmTop.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
                                                       exact finishAfterOk hafter hret
 
@@ -2548,7 +2551,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                               omega)
                                                         have hincentive :=
                                                           clipperRedoActiveLotFeedOverflowBody v
-                                                            evmLockSolm evmPriceSolm evmTop I
+                                                            evmLockStele evmPriceStele evmTop I
                                                             priceWord feedPrice topNew
                                                             (by
                                                               rw [← htabEq, ← hchostEq]
@@ -2556,7 +2559,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                             (by
                                                               change UInt256.size ≤
                                                                 (clipperRedoSalesLotEVMWord
-                                                                  evmPriceSolm I).toNat *
+                                                                  evmPriceStele I).toNat *
                                                                   feedPrice.toNat
                                                               rw [← hlotEq]
                                                               exact hlotOverflow)
@@ -2564,15 +2567,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                           clipperRedoIncentiveTailReverts
                                                             { contract := contract,
                                                               locals := clipperRedoLocalsChip
-                                                                evmLockSolm evmPriceSolm evmTop I
+                                                                evmLockStele evmPriceStele evmTop I
                                                                 priceWord feedPrice topNew, immutables := immStore v }
                                                             evmTop hcond hincentive
                                                         have hafter :=
-                                                          clipperRedoAfterTicSuccessPrefix v
-                                                            evmLockSolm evmPriceSolm
+                                                          clipperRedoAfterTicSuccessPrefix
+                                                            (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                            evmLockStele evmPriceStele
                                                             (clipperRedoPostTicState
-                                                              evmPriceSolm I)
-                                                            evmParSolm I priceWord feedPrice
+                                                              evmPriceStele I)
+                                                            evmParStele I priceWord feedPrice
                                                             hgetFeed
                                                             (by
                                                               rw [← hbufEq, Nat.mul_comm]
@@ -2628,7 +2632,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                 omega)
                                                           have hincentive :=
                                                             clipperRedoActiveLotFeedBelowBody v
-                                                              evmLockSolm evmPriceSolm evmTop I
+                                                              evmLockStele evmPriceStele evmTop I
                                                               priceWord feedPrice topNew
                                                               (by
                                                                 rw [← htabEq, ← hchostEq]
@@ -2636,7 +2640,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                               (by
                                                                 change
                                                                   (clipperRedoSalesLotEVMWord
-                                                                    evmPriceSolm I).toNat *
+                                                                    evmPriceStele I).toNat *
                                                                     feedPrice.toNat < UInt256.size
                                                                 rw [← hlotEq]
                                                                 exact hlotMulOk)
@@ -2646,32 +2650,33 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   ← hlotEq,
                                                                   ← hchostEq] using hlotBelow)
                                                           have htail :=
-                                                            clipperRedoIncentiveTailOk v
+                                                            clipperRedoIncentiveTailOk (hperm := by simpa only [hTopEnv] using hperm) v
                                                               { contract := contract,
                                                                 locals := clipperRedoLocalsChip
-                                                                  evmLockSolm evmPriceSolm
+                                                                  evmLockStele evmPriceStele
                                                                   evmTop I priceWord feedPrice
                                                                   topNew, immutables := immStore v }
                                                               (clipperRedoLocalsLotFeed
-                                                                evmLockSolm evmPriceSolm evmTop I
+                                                                evmLockStele evmPriceStele evmTop I
                                                                 priceWord feedPrice topNew)
                                                               evmTop evmTop hcond hincentive
                                                               (clipperRedoLocalsLotFeed_get_locked
-                                                                evmLockSolm evmPriceSolm evmTop I
+                                                                evmLockStele evmPriceStele evmTop I
                                                                 priceWord feedPrice topNew)
                                                           have hafter :=
-                                                            clipperRedoAfterTicSuccessPrefix v
-                                                              evmLockSolm evmPriceSolm
+                                                            clipperRedoAfterTicSuccessPrefix
+                                                              (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                              evmLockStele evmPriceStele
                                                               (clipperRedoPostTicState
-                                                                evmPriceSolm I)
-                                                              evmParSolm I priceWord feedPrice
+                                                                evmPriceStele I)
+                                                              evmParStele I priceWord feedPrice
                                                               hgetFeed
                                                               (by
                                                                 rw [← hbufEq, Nat.mul_comm]
                                                                 exact htopMulOk)
                                                               htopPos htail
                                                           let evmFinal :=
-                                                            Solm.EVM.storageStore evmTop
+                                                            Stele.EVM.storageStore evmTop
                                                               evmTop.executionEnv.codeOwner
                                                               ⟨13⟩ ⟨0⟩
                                                           exact finishAfterOk hafter hret
@@ -2717,7 +2722,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   omega)
                                                             have hpayout :=
                                                               clipperRedoPayoutWmulOverflow v
-                                                                evmLockSolm evmPriceSolm evmTop I
+                                                                evmLockStele evmPriceStele evmTop I
                                                                 priceWord feedPrice topNew
                                                                 (by
                                                                   rw [← hchipEq, ← htabEq,
@@ -2725,7 +2730,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   exact hwmulOverflow)
                                                             have hincentive :=
                                                               clipperRedoActiveLotFeedBodyOfPayout v
-                                                                evmLockSolm evmPriceSolm evmTop I
+                                                                evmLockStele evmPriceStele evmTop I
                                                                 priceWord feedPrice topNew
                                                                 (by
                                                                   rw [← htabEq, ← hchostEq]
@@ -2733,7 +2738,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                 (by
                                                                   change
                                                                     (clipperRedoSalesLotEVMWord
-                                                                      evmPriceSolm I).toNat *
+                                                                      evmPriceStele I).toNat *
                                                                       feedPrice.toNat <
                                                                       UInt256.size
                                                                   rw [← hlotEq]
@@ -2748,16 +2753,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                               clipperRedoIncentiveTailReverts
                                                                 { contract := contract,
                                                                   locals := clipperRedoLocalsChip
-                                                                    evmLockSolm evmPriceSolm
+                                                                    evmLockStele evmPriceStele
                                                                     evmTop I priceWord feedPrice
                                                                     topNew, immutables := immStore v }
                                                                 evmTop hcond hincentive
                                                             have hafter :=
-                                                              clipperRedoAfterTicSuccessPrefix v
-                                                                evmLockSolm evmPriceSolm
+                                                              clipperRedoAfterTicSuccessPrefix
+                                                                (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                                evmLockStele evmPriceStele
                                                                 (clipperRedoPostTicState
-                                                                  evmPriceSolm I)
-                                                                evmParSolm I priceWord feedPrice
+                                                                  evmPriceStele I)
+                                                                evmParStele I priceWord feedPrice
                                                                 hgetFeed
                                                                 (by
                                                                   rw [← hbufEq, Nat.mul_comm]
@@ -2789,7 +2795,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                               ⟨1000000000000000000⟩
                                                             have hchipCoinEq : chipCoin =
                                                                 clipperRedoChipCoinWord
-                                                                  evmPriceSolm evmTop I := by
+                                                                  evmPriceStele evmTop I := by
                                                               simp [chipCoin,
                                                                 clipperRedoChipCoinWord,
                                                                 ← hchipEq, ← htabEq,
@@ -2808,14 +2814,14 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     omega)
                                                               have hadd :=
                                                                 clipperRedoAfterWmulAddOverflow v
-                                                                  evmLockSolm evmPriceSolm evmTop I
+                                                                  evmLockStele evmPriceStele evmTop I
                                                                   priceWord feedPrice topNew
                                                                   (by
                                                                     rw [← htipEq, ← hchipCoinEq]
                                                                     exact haddOverflow)
                                                               have hpayout :=
                                                                 clipperRedoPayoutOfWmulSuccess v
-                                                                  evmLockSolm evmPriceSolm evmTop I
+                                                                  evmLockStele evmPriceStele evmTop I
                                                                   priceWord feedPrice topNew
                                                                   (by
                                                                     rw [← hchipEq, ← htabEq,
@@ -2824,7 +2830,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   hadd
                                                               have hincentive :=
                                                                 clipperRedoActiveLotFeedBodyOfPayout v
-                                                                  evmLockSolm evmPriceSolm evmTop I
+                                                                  evmLockStele evmPriceStele evmTop I
                                                                   priceWord feedPrice topNew
                                                                   (by
                                                                     rw [← htabEq, ← hchostEq]
@@ -2832,7 +2838,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   (by
                                                                     change
                                                                       (clipperRedoSalesLotEVMWord
-                                                                        evmPriceSolm I).toNat *
+                                                                        evmPriceStele I).toNat *
                                                                         feedPrice.toNat <
                                                                         UInt256.size
                                                                     rw [← hlotEq]
@@ -2847,16 +2853,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                 clipperRedoIncentiveTailReverts
                                                                   { contract := contract,
                                                                     locals := clipperRedoLocalsChip
-                                                                      evmLockSolm evmPriceSolm
+                                                                      evmLockStele evmPriceStele
                                                                       evmTop I priceWord feedPrice
                                                                       topNew, immutables := immStore v }
                                                                   evmTop hcond hincentive
                                                               have hafter :=
-                                                                clipperRedoAfterTicSuccessPrefix v
-                                                                  evmLockSolm evmPriceSolm
+                                                                clipperRedoAfterTicSuccessPrefix
+                                                                  (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                                  evmLockStele evmPriceStele
                                                                   (clipperRedoPostTicState
-                                                                    evmPriceSolm I)
-                                                                  evmParSolm I priceWord feedPrice
+                                                                    evmPriceStele I)
+                                                                  evmParStele I priceWord feedPrice
                                                                   hgetFeed
                                                                   (by
                                                                     rw [← hbufEq, Nat.mul_comm]
@@ -2880,7 +2887,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                 clipperRedoTipWord σTop I + chipCoin
                                                               have hcoinEq : coin =
                                                                   clipperRedoCoinWord
-                                                                    evmPriceSolm evmTop I := by
+                                                                    evmPriceStele evmTop I := by
                                                                 simp [coin, clipperRedoCoinWord,
                                                                   ← htipEq, ← hchipCoinEq]
                                                               have hincentiveMemSize :=
@@ -2913,8 +2920,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       { contract := contract,
                                                                         locals :=
                                                                           clipperRedoLocalsCoin
-                                                                            evmLockSolm
-                                                                            evmPriceSolm evmTop I
+                                                                            evmLockStele
+                                                                            evmPriceStele evmTop I
                                                                             priceWord feedPrice
                                                                             topNew, immutables := immStore v }
                                                                       evmTop
@@ -2929,8 +2936,8 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       { contract := contract,
                                                                         locals :=
                                                                           clipperRedoLocalsChip
-                                                                            evmLockSolm
-                                                                            evmPriceSolm evmTop I
+                                                                            evmLockStele
+                                                                            evmPriceStele evmTop I
                                                                             priceWord feedPrice
                                                                             topNew, immutables := immStore v }
                                                                       evmTop
@@ -2938,7 +2945,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       result := by
                                                                 have haddSource :=
                                                                   clipperRedoAddSuccessBlock v
-                                                                    evmLockSolm evmPriceSolm evmTop I
+                                                                    evmLockStele evmPriceStele evmTop I
                                                                     priceWord feedPrice topNew
                                                                     (by
                                                                       rw [← htipEq,
@@ -2948,7 +2955,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                   execBlock_append haddSource hsuck
                                                                 have hpayout :=
                                                                   clipperRedoPayoutOfWmulSuccess v
-                                                                    evmLockSolm evmPriceSolm evmTop I
+                                                                    evmLockStele evmPriceStele evmTop I
                                                                     priceWord feedPrice topNew
                                                                     (by
                                                                       rw [← hchipEq, ← htabEq,
@@ -2957,7 +2964,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     hafterAdd
                                                                 exact
                                                                   clipperRedoActiveLotFeedBodyOfPayout
-                                                                    v evmLockSolm evmPriceSolm evmTop I
+                                                                    v evmLockStele evmPriceStele evmTop I
                                                                     priceWord feedPrice topNew
                                                                     (by
                                                                       rw [← htabEq, ← hchostEq]
@@ -2965,7 +2972,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     (by
                                                                       change
                                                                         (clipperRedoSalesLotEVMWord
-                                                                          evmPriceSolm I).toNat *
+                                                                          evmPriceStele I).toNat *
                                                                           feedPrice.toNat <
                                                                           UInt256.size
                                                                       rw [← hlotEq]
@@ -2988,7 +2995,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       simp only [List.length_cons,
                                                                         List.length_nil]
                                                                       omega)
-                                                                have hvatNoCodeSolm :
+                                                                have hvatNoCodeStele :
                                                                     (UInt256.ofNat
                                                                       ((evmTop.lookupAccount v.vat)
                                                                         |>.option 0
@@ -3005,9 +3012,9 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       (by simpa only [← hTopAccounts] using hvatNoCode))
                                                                 have hsuck :=
                                                                   clipperRedoSuckNoCodeSource v
-                                                                    evmLockSolm evmPriceSolm evmTop I
+                                                                    evmLockStele evmPriceStele evmTop I
                                                                     priceWord feedPrice topNew
-                                                                    hvatNoCodeSolm
+                                                                    hvatNoCodeStele
                                                                 have hincentive :=
                                                                   hincentiveOfSuck hsuck
                                                                 have htail :=
@@ -3015,16 +3022,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     { contract := contract,
                                                                       locals :=
                                                                         clipperRedoLocalsChip
-                                                                          evmLockSolm evmPriceSolm
+                                                                          evmLockStele evmPriceStele
                                                                           evmTop I priceWord
                                                                           feedPrice topNew, immutables := immStore v }
                                                                     evmTop hcond hincentive
                                                                 have hafter :=
-                                                                  clipperRedoAfterTicSuccessPrefix v
-                                                                    evmLockSolm evmPriceSolm
+                                                                  clipperRedoAfterTicSuccessPrefix
+                                                                    (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                                    evmLockStele evmPriceStele
                                                                     (clipperRedoPostTicState
-                                                                      evmPriceSolm I)
-                                                                    evmParSolm I priceWord feedPrice
+                                                                      evmPriceStele I)
+                                                                    evmParStele I priceWord feedPrice
                                                                     hgetFeed
                                                                     (by
                                                                       rw [← hbufEq, Nat.mul_comm]
@@ -3051,42 +3059,42 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     Eq evmTopEvm.accountMap
                                                                       evmTop.accountMap := by
                                                                   simpa [evmTopEvm] using hTopAccounts
-                                                                obtain ⟨σSuckSolm, ASuckSolm,
-                                                                    hcallSuckSolmRaw,
+                                                                obtain ⟨σSuckStele, ASuckStele,
+                                                                    hcallSuckSteleRaw,
                                                                     hSuckAccountsRaw⟩ :=
                                                                   Reasoning.Theory.typedCallViaEVM_sameInputs
                                                                     (cfg := config)
-                                                                    (evm_solm := evmTop) hcallSuck
+                                                                    (evm_stele := evmTop) hcallSuck
                                                                     hTopStateAccounts
                                                                     (by
                                                                       simp [evmTopEvm, evmTop,
                                                                         clipperRedoTopState,
-                                                                        evmParSolm, evmPeekSolm,
-                                                                        evmIlksSolm,
+                                                                        evmParStele, evmPeekStele,
+                                                                        evmIlksStele,
                                                                         clipperRedoPostTicState,
                                                                         storageStore_σ₀,
-                                                                        evmPriceSolm,
-                                                                        hlockStateSolm, initState])
+                                                                        evmPriceStele,
+                                                                        hlockStateStele, initState])
 
 
 
                                                                     (by
                                                                       simp [evmTopEvm, evmTop,
                                                                         clipperRedoTopState,
-                                                                        evmParSolm, evmPeekSolm,
-                                                                        evmIlksSolm,
+                                                                        evmParStele, evmPeekStele,
+                                                                        evmIlksStele,
                                                                         clipperRedoPostTicState,
                                                                         storageStore_executionEnv,
-                                                                        evmPriceSolm,
-                                                                        hlockStateSolm, initState])
+                                                                        evmPriceStele,
+                                                                        hlockStateStele, initState])
                                                                 have hSuckAccounts :
-                                                                    Eq σSuck σSuckSolm := by
+                                                                    Eq σSuck σSuckStele := by
                                                                   simpa [initState] using
                                                                     hSuckAccountsRaw
-                                                                let evmSuckSolm : EVM.State :=
+                                                                let evmSuckStele : EVM.State :=
                                                                   { evmTop with
-                                                                    accountMap := σSuckSolm
-                                                                    substate := ASuckSolm
+                                                                    accountMap := σSuckStele
+                                                                    substate := ASuckStele
                                                                      }
                                                                 have hvowSlot :=
                                                                   congrArg
@@ -3130,7 +3138,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                     clipperRedoKprValue] using
                                                                     (Reasoning.Theory.solcAddressValue_masked
                                                                       (clipperRedoKprWord I)).symm
-                                                                have hvatCodeSolm :
+                                                                have hvatCodeStele :
                                                                     0 < (UInt256.ofNat
                                                                       ((evmTop.lookupAccount v.vat)
                                                                         |>.option 0
@@ -3144,7 +3152,7 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       (addr := v.vat)
                                                                       (clipperRedoVatTargetAddress v).symm
                                                                       (by simpa only [← hTopAccounts] using hvatNoCode))
-                                                                have hcallSuckSolm :
+                                                                have hcallSuckStele :
                                                                     typedCallViaEVM config evmTop
                                                                       (EVM.address v.vat) "suck" 0
                                                                       [.address
@@ -3153,18 +3161,18 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                         clipperRedoKprValue I,
                                                                         .int (Int.ofNat
                                                                           (clipperRedoCoinWord
-                                                                            evmPriceSolm evmTop
+                                                                            evmPriceStele evmTop
                                                                             I).toNat)]
-                                                                      (zSuck, evmSuckSolm,
+                                                                      (zSuck, evmSuckStele,
                                                                         outSuck) true := by
                                                                   rw [hvowEq, hkprEq]
-                                                                    at hcallSuckSolmRaw
+                                                                    at hcallSuckSteleRaw
                                                                   have hcoinEqExpanded := hcoinEq
                                                                   simp only [coin, chipCoin] at hcoinEqExpanded
-                                                                  rw [hcoinEqExpanded] at hcallSuckSolmRaw
-                                                                  simpa [evmSuckSolm, evmTopEvm,
+                                                                  rw [hcoinEqExpanded] at hcallSuckSteleRaw
+                                                                  simpa [evmSuckStele, evmTopEvm,
                                                                     initState] using
-                                                                      hcallSuckSolmRaw
+                                                                      hcallSuckSteleRaw
                                                                 cases zSuck
                                                                 · have hrev :=
                                                                     RD.clipperRedoSuckCallFailure
@@ -3177,10 +3185,10 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                         omega)
                                                                   have hsuck :=
                                                                     clipperRedoSuckCallFailureSource v
-                                                                      evmLockSolm evmPriceSolm evmTop
-                                                                      evmSuckSolm I priceWord feedPrice
-                                                                      topNew outSuck hvatCodeSolm
-                                                                      (by simpa using hcallSuckSolm)
+                                                                      evmLockStele evmPriceStele evmTop
+                                                                      evmSuckStele I priceWord feedPrice
+                                                                      topNew outSuck hvatCodeStele
+                                                                      (by simpa using hcallSuckStele)
                                                                   have hincentive :=
                                                                     hincentiveOfSuck hsuck
                                                                   have htail :=
@@ -3188,17 +3196,18 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                       { contract := contract,
                                                                         locals :=
                                                                           clipperRedoLocalsChip
-                                                                            evmLockSolm
-                                                                            evmPriceSolm evmTop I
+                                                                            evmLockStele
+                                                                            evmPriceStele evmTop I
                                                                             priceWord feedPrice
                                                                             topNew, immutables := immStore v }
                                                                       evmTop hcond hincentive
                                                                   have hafter :=
-                                                                    clipperRedoAfterTicSuccessPrefix v
-                                                                      evmLockSolm evmPriceSolm
+                                                                    clipperRedoAfterTicSuccessPrefix
+                                                                      (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                                      evmLockStele evmPriceStele
                                                                       (clipperRedoPostTicState
-                                                                        evmPriceSolm I)
-                                                                      evmParSolm I priceWord feedPrice
+                                                                        evmPriceStele I)
+                                                                      evmParStele I priceWord feedPrice
                                                                       hgetFeed
                                                                       (by
                                                                         rw [← hbufEq, Nat.mul_comm]
@@ -3233,51 +3242,52 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                                         omega)
                                                                   have hsuck :=
                                                                     clipperRedoSuckCallSuccessSource v
-                                                                      evmLockSolm evmPriceSolm evmTop
-                                                                      evmSuckSolm I priceWord feedPrice
-                                                                      topNew outSuck hvatCodeSolm
-                                                                      (by simpa using hcallSuckSolm)
+                                                                      evmLockStele evmPriceStele evmTop
+                                                                      evmSuckStele I priceWord feedPrice
+                                                                      topNew outSuck hvatCodeStele
+                                                                      (by simpa using hcallSuckStele)
                                                                   have hincentive :=
                                                                     hincentiveOfSuck hsuck
                                                                   have htail :=
-                                                                    clipperRedoIncentiveTailOk v
+                                                                    clipperRedoIncentiveTailOk (hperm := by simpa only [evmSuckStele, hTopEnv] using hperm) v
                                                                       { contract := contract,
                                                                         locals :=
                                                                           clipperRedoLocalsChip
-                                                                            evmLockSolm
-                                                                            evmPriceSolm evmTop I
+                                                                            evmLockStele
+                                                                            evmPriceStele evmTop I
                                                                             priceWord feedPrice
                                                                             topNew, immutables := immStore v }
                                                                       (clipperRedoLocalsSuckRet
-                                                                        evmLockSolm evmPriceSolm
+                                                                        evmLockStele evmPriceStele
                                                                         evmTop I priceWord feedPrice
                                                                         topNew)
-                                                                      evmTop evmSuckSolm hcond
+                                                                      evmTop evmSuckStele hcond
                                                                       hincentive
                                                                       (by
                                                                         simp [clipperRedoLocalsSuckRet,
                                                                           clipperRedoLocalsCoin_get_locked])
                                                                   have hafter :=
-                                                                    clipperRedoAfterTicSuccessPrefix v
-                                                                      evmLockSolm evmPriceSolm
+                                                                    clipperRedoAfterTicSuccessPrefix
+                                                                      (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                                      evmLockStele evmPriceStele
                                                                       (clipperRedoPostTicState
-                                                                        evmPriceSolm I)
-                                                                      evmParSolm I priceWord feedPrice
+                                                                        evmPriceStele I)
+                                                                      evmParStele I priceWord feedPrice
                                                                       hgetFeed
                                                                       (by
                                                                         rw [← hbufEq, Nat.mul_comm]
                                                                         exact htopMulOk)
                                                                       htopPos htail
                                                                   let evmFinal :=
-                                                                    Solm.EVM.storageStore evmSuckSolm
-                                                                      evmSuckSolm.executionEnv.codeOwner
+                                                                    Stele.EVM.storageStore evmSuckStele
+                                                                      evmSuckStele.executionEnv.codeOwner
                                                                       ⟨13⟩ ⟨0⟩
                                                                   exact finishAfterOk hafter hret
 
                                                                     (by
                                                                       have hSuckEnv :
-                                                                          evmSuckSolm.executionEnv = I := by
-                                                                        simp [evmSuckSolm, hTopEnv]
+                                                                          evmSuckStele.executionEnv = I := by
+                                                                        simp [evmSuckStele, hTopEnv]
                                                                       simpa [evmFinal,
                                                                         storageStore_accountMap,
                                                                         hSuckEnv] using
@@ -3314,31 +3324,33 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                                             simp only [List.length_cons,
                                                               List.length_nil]
                                                             omega)
-                                                      have htipSolmZero :
-                                                          clipperRedoTipSolmWord evmTop = ⟨0⟩ := by
+                                                      have htipSteleZero :
+                                                          clipperRedoTipSteleWord evmTop = ⟨0⟩ := by
                                                         rw [← htipEq]
                                                         exact htipZero
-                                                      have hchipSolmZero :
-                                                          clipperRedoChipSolmWord evmTop = ⟨0⟩ := by
+                                                      have hchipSteleZero :
+                                                          clipperRedoChipSteleWord evmTop = ⟨0⟩ := by
                                                         rw [← hchipEq]
                                                         exact hchipZero
                                                       have htail :=
-                                                        clipperRedoIncentiveInactiveTail v
-                                                          evmLockSolm evmPriceSolm evmTop I
+                                                        clipperRedoIncentiveInactiveTail
+                                                          (hperm := (congrArg ExecutionEnv.perm hTopEnv).trans hperm) v
+                                                          evmLockStele evmPriceStele evmTop I
                                                           priceWord feedPrice topNew
-                                                          htipSolmZero hchipSolmZero
+                                                          htipSteleZero hchipSteleZero
                                                       have hafter :=
-                                                        clipperRedoAfterTicSuccessPrefix v
-                                                          evmLockSolm evmPriceSolm
-                                                          (clipperRedoPostTicState evmPriceSolm I)
-                                                          evmParSolm I
+                                                        clipperRedoAfterTicSuccessPrefix
+                                                          (hperm := (congrArg ExecutionEnv.perm hParEnv).trans hperm) v
+                                                          evmLockStele evmPriceStele
+                                                          (clipperRedoPostTicState evmPriceStele I)
+                                                          evmParStele I
                                                           priceWord feedPrice hgetFeed
                                                           (by
                                                             rw [← hbufEq, Nat.mul_comm]
                                                             exact htopMulOk)
                                                           htopPos htail
                                                       let evmFinal :=
-                                                        Solm.EVM.storageStore evmTop
+                                                        Stele.EVM.storageStore evmTop
                                                           evmTop.executionEnv.codeOwner ⟨13⟩ ⟨0⟩
                                                       exact finishAfterOk hafter hret
 
@@ -3352,10 +3364,10 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                     by_cases hleDone :
                         (clipperRedoSalesTicWord σLock I).toNat ≤
                           (UInt256.ofNat I.header.timestamp).toNat
-                    · have hleDoneSolm :
-                        (clipperRedoSalesTicEVMWord evmLockSolm I).toNat ≤
-                          (clipperTimestampWord evmPriceSolm).toNat := by
-                        simpa [evmPriceSolm, htimestampSolm, hticSolmLoad, ← hticWord]
+                    · have hleDoneStele :
+                        (clipperRedoSalesTicEVMWord evmLockStele I).toNat ≤
+                          (clipperTimestampWord evmPriceStele).toNat := by
+                        simpa [evmPriceStele, htimestampStele, hticSteleLoad, ← hticWord]
                           using hleDone
                       by_cases htailLt :
                           (solcSlotWord σ' I ⟨6⟩).toNat <
@@ -3401,22 +3413,22 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                               (clipperRedoSalesHashMem_size I)
                               (clipperRedoSalesHashMem_read64 I) hout)
                             (by simp only [List.length_cons, List.length_nil]; omega)
-                        have htailSlotSolm :
+                        have htailSlotStele :
                             solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ' I ⟨6⟩ := by
                           rfl
-                        have hpriceOwner : evmPriceSolm.executionEnv.codeOwner = I.codeOwner := by
-                          simp [evmPriceSolm, hlockStateSolm, initState]
-                        have hlockOwner : evmLockSolm.executionEnv.codeOwner = I.codeOwner := by
-                          rw [hlockStateSolm]
+                        have hpriceOwner : evmPriceStele.executionEnv.codeOwner = I.codeOwner := by
+                          simp [evmPriceStele, hlockStateStele, initState]
+                        have hlockOwner : evmLockStele.executionEnv.codeOwner = I.codeOwner := by
+                          rw [hlockStateStele]
                           simp [initState]
-                        have htailSolmLt :
-                            (clipperStatusTailWord evmPriceSolm).toNat <
-                              (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat := by
-                          simpa [evmPriceSolm, clipperStatusTailWord,
-                            clipperTimestampWord, Solm.EVM.storageLoad, State.lookupAccount,
-                            Account.lookupStorage, solcSlotWord, htailSlotSolm,
-                            htimestampSolm, hticSolmLoad, ← hticWord, hticClean, hpriceOwner,
+                        have htailSteleLt :
+                            (clipperStatusTailWord evmPriceStele).toNat <
+                              (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                (clipperRedoSalesTicEVMWord evmLockStele I)).toNat := by
+                          simpa [evmPriceStele, clipperStatusTailWord,
+                            clipperTimestampWord, Stele.EVM.storageLoad, State.lookupAccount,
+                            Account.lookupStorage, solcSlotWord, htailSlotStele,
+                            htimestampStele, hticSteleLoad, ← hticWord, hticClean, hpriceOwner,
                             hlockOwner]
                             using htailLt
                         have hstatus :
@@ -3431,12 +3443,12 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                               (.ok
                                 { contract := contract,
                                   locals := clipperRedoLocalsSt evmLock I true priceWord, immutables := immStore v }
-                                evmPriceSolm) := by
-                          simpa [evmSolm, evmLockSolm] using
+                                evmPriceStele) := by
+                          simpa [evmStele, evmLockStele] using
                             clipperRedoStatusCallReturnsDoneTailTrue v
-                              (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                              I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                              hcallPriceSolm hdecPrice hleDoneSolm htailSolmLt
+                              (evm := evmLockStele) (evmPrice := evmPriceStele)
+                              I priceWord (out := o) hlePriceStele hcalcCodeStele
+                              hcallPriceStele hdecPrice hleDoneStele htailSteleLt
                         by_cases hspotterZero :
                             Reasoning.Theory.extCodeSizeWord σTicEvm
                               (clipperSpotterTarget σTicEvm I) = ⟨0⟩
@@ -3454,20 +3466,20 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 clipperSalesUint96Mask)).toNat ≤
                             (solcSlotWord σ' I ⟨6⟩).toNat := by
                           exact Nat.le_of_not_gt htailLt
-                        have htailSlotSolm :
+                        have htailSlotStele :
                             solcSlotWord σ' I ⟨6⟩ = solcSlotWord σ' I ⟨6⟩ := by
                           rfl
-                        have hlockOwner : evmLockSolm.executionEnv.codeOwner = I.codeOwner := by
-                          rw [hlockStateSolm]
+                        have hlockOwner : evmLockStele.executionEnv.codeOwner = I.codeOwner := by
+                          rw [hlockStateStele]
                           simp [initState]
-                        have htailSolm :
-                            (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat ≤
-                              (clipperStatusTailWord evmPriceSolm).toNat := by
-                          simpa [evmPriceSolm, clipperStatusTailWord,
-                            clipperTimestampWord, Solm.EVM.storageLoad, State.lookupAccount,
-                            Account.lookupStorage, solcSlotWord, htailSlotSolm,
-                            htimestampSolm, hticSolmLoad, ← hticWord, hticClean, hlockOwner]
+                        have htailStele :
+                            (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                (clipperRedoSalesTicEVMWord evmLockStele I)).toNat ≤
+                              (clipperStatusTailWord evmPriceStele).toNat := by
+                          simpa [evmPriceStele, clipperStatusTailWord,
+                            clipperTimestampWord, Stele.EVM.storageLoad, State.lookupAccount,
+                            Account.lookupStorage, solcSlotWord, htailSlotStele,
+                            htimestampStele, hticSteleLoad, ← hticWord, hticClean, hlockOwner]
                             using htailLe
                         by_cases hmul : priceWord.toNat * clipperRayWord.toNat < UInt256.size
                         · by_cases htopZero : clipperRedoSalesTopWord σLock I = ⟨0⟩
@@ -3477,9 +3489,9 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 (by simpa [hticClean] using hleDone) htailLe
                                 (by simpa [priceWord] using hmul) htopZero
                                 (by simp only [List.length_cons, List.length_nil]; omega)
-                            have htopSolmZero :
-                                clipperRedoSalesTopEVMWord evmLockSolm I = ⟨0⟩ := by
-                              simpa [htopSolmLoad, ← htopWord] using htopZero
+                            have htopSteleZero :
+                                clipperRedoSalesTopEVMWord evmLockStele I = ⟨0⟩ := by
+                              simpa [htopSteleLoad, ← htopWord] using htopZero
                             have hstatus :
                                 let evm0 := initState σ σ₀
                                   (Sat256.ofUInt256 g) A I
@@ -3490,19 +3502,19 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                   evmLock
                                   (.internalCall "status" [.var "tic", .var "top"] "st")
                                   .reverted := by
-                              simpa [evmSolm, evmLockSolm] using
+                              simpa [evmStele, evmLockStele] using
                                 clipperRedoStatusCallRevertsRdivDivZero v
-                                  (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                  I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                  hcallPriceSolm hdecPrice hleDoneSolm htailSolm hmul
-                                  htopSolmZero
-                            let evmSolm0 :=
+                                  (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                  I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                  hcallPriceStele hdecPrice hleDoneStele htailStele hmul
+                                  htopSteleZero
+                            let evmStele0 :=
                               initState σ σ₀ (Sat256.ofUInt256 g) A I
                             have hbody :
-                                ExecTransitionBody config contract evmSolm0
+                                ExecTransitionBody config contract evmStele0
                                   (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                              simpa [evmSolm0, σLock] using
-                                (clipperRedoStatusSourceRevertsOfStatus
+                              simpa [evmStele0, σLock] using
+                                (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                   (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                   hstatus)
@@ -3520,24 +3532,24 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 (clipperRedoSalesTopWord σLock I)
                             let cuspWord : UInt256 := solcSlotWord σ' I ⟨7⟩
                             let doneWord : UInt256 := UInt256.lt ratioWord cuspWord
-                            have hcuspWordSolm :
-                                cuspWord = clipperStatusCuspWord evmPriceSolm := by
-                              simp [cuspWord, evmPriceSolm, hlockOwner, clipperStatusCuspWord,
-                                initState, Solm.EVM.storageLoad, State.lookupAccount,
+                            have hcuspWordStele :
+                                cuspWord = clipperStatusCuspWord evmPriceStele := by
+                              simp [cuspWord, evmPriceStele, hlockOwner, clipperStatusCuspWord,
+                                initState, Stele.EVM.storageLoad, State.lookupAccount,
                                 Account.lookupStorage, solcSlotWord]
-                            have hratioWordSolm :
+                            have hratioWordStele :
                                 ratioWord =
                                   UInt256.div (UInt256.mul priceWord clipperRayWord)
-                                    (clipperRedoSalesTopEVMWord evmLockSolm I) := by
-                              simp [ratioWord, htopSolmLoad, ← htopWord]
+                                    (clipperRedoSalesTopEVMWord evmLockStele I) := by
+                              simp [ratioWord, htopSteleLoad, ← htopWord]
                             by_cases hratio :
                                 ratioWord.toNat <
-                                  (clipperStatusCuspWord evmPriceSolm).toNat
+                                  (clipperStatusCuspWord evmPriceStele).toNat
                             · have hdoneWordOne : doneWord = ⟨1⟩ := by
                                 unfold doneWord
                                 exact ult_one
                                   (by
-                                    simpa [cuspWord, hcuspWordSolm] using hratio)
+                                    simpa [cuspWord, hcuspWordStele] using hratio)
                               obtain ⟨_, _, rd7651⟩ :=
                                 RD.clipperRedoStatusTrueToDoneBranch (v := v)
                                   (hpatch := hpatch)
@@ -3578,28 +3590,28 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                   evalExpr? config
                                     { contract := contract,
                                       locals := clipperStatusRatioLocals
-                                        (clipperRedoSalesTicEVMWord evmLockSolm I)
-                                        (clipperRedoSalesTopEVMWord evmLockSolm I)
-                                        (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                          (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                        (clipperRedoSalesTicEVMWord evmLockStele I)
+                                        (clipperRedoSalesTopEVMWord evmLockStele I)
+                                        (UInt256.sub (clipperTimestampWord evmLockStele)
+                                          (clipperRedoSalesTicEVMWord evmLockStele I))
                                         priceWord
-                                        (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                          (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                        (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                          (clipperRedoSalesTicEVMWord evmLockStele I))
                                         (UInt256.div
                                           (UInt256.mul priceWord clipperRayWord)
-                                          (clipperRedoSalesTopEVMWord evmLockSolm I)), immutables := immStore v }
-                                    evmPriceSolm
+                                          (clipperRedoSalesTopEVMWord evmLockStele I)), immutables := immStore v }
+                                    evmPriceStele
                                       (.binary .lt (.var "ratio") (.storage cuspRef)) =
                                     .ok (.bool true) := by
-                                rw [← hratioWordSolm]
-                                exact clipperEvalStatusRatioCuspCond_true v evmPriceSolm
-                                  (clipperRedoSalesTicEVMWord evmLockSolm I)
-                                  (clipperRedoSalesTopEVMWord evmLockSolm I)
-                                  (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                    (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                rw [← hratioWordStele]
+                                exact clipperEvalStatusRatioCuspCond_true v evmPriceStele
+                                  (clipperRedoSalesTicEVMWord evmLockStele I)
+                                  (clipperRedoSalesTopEVMWord evmLockStele I)
+                                  (UInt256.sub (clipperTimestampWord evmLockStele)
+                                    (clipperRedoSalesTicEVMWord evmLockStele I))
                                   priceWord
-                                  (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                    (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                  (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                    (clipperRedoSalesTicEVMWord evmLockStele I))
                                   ratioWord hratio
                               have hstatus :
                                   let evm0 := initState σ σ₀
@@ -3614,17 +3626,17 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       { contract := contract,
                                         locals :=
                                           clipperRedoLocalsSt evmLock I true priceWord, immutables := immStore v }
-                                      evmPriceSolm) := by
-                                simpa [evmSolm, evmLockSolm] using
+                                      evmPriceStele) := by
+                                simpa [evmStele, evmLockStele] using
                                   clipperRedoStatusCallReturnsRdivBranch v
-                                    (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                    I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                    hcallPriceSolm hdecPrice hleDoneSolm htailSolm hmul
+                                    (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                    I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                    hcallPriceStele hdecPrice hleDoneStele htailStele hmul
                                     (by
                                       intro hzero
                                       exact htopZero
                                         (by
-                                          simpa [htopSolmLoad, ← htopWord]
+                                          simpa [htopSteleLoad, ← htopWord]
                                             using hzero))
                                     true hdoneEval
                               by_cases hspotterZero :
@@ -3641,41 +3653,41 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       clipperRedoSalesPackedSlot,
                                       clipperRedoSalesBaseSlot_eq] using rd8728)
                             · have hratioLe :
-                                  (clipperStatusCuspWord evmPriceSolm).toNat ≤
+                                  (clipperStatusCuspWord evmPriceStele).toNat ≤
                                     ratioWord.toNat := by
                                 exact Nat.le_of_not_gt hratio
                               have hdoneEval :
                                   evalExpr? config
                                     { contract := contract,
                                       locals := clipperStatusRatioLocals
-                                        (clipperRedoSalesTicEVMWord evmLockSolm I)
-                                        (clipperRedoSalesTopEVMWord evmLockSolm I)
-                                        (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                          (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                        (clipperRedoSalesTicEVMWord evmLockStele I)
+                                        (clipperRedoSalesTopEVMWord evmLockStele I)
+                                        (UInt256.sub (clipperTimestampWord evmLockStele)
+                                          (clipperRedoSalesTicEVMWord evmLockStele I))
                                         priceWord
-                                        (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                          (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                        (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                          (clipperRedoSalesTicEVMWord evmLockStele I))
                                         (UInt256.div
                                           (UInt256.mul priceWord clipperRayWord)
-                                          (clipperRedoSalesTopEVMWord evmLockSolm I)), immutables := immStore v }
-                                    evmPriceSolm
+                                          (clipperRedoSalesTopEVMWord evmLockStele I)), immutables := immStore v }
+                                    evmPriceStele
                                       (.binary .lt (.var "ratio") (.storage cuspRef)) =
                                     .ok (.bool false) := by
-                                rw [← hratioWordSolm]
-                                exact clipperEvalStatusRatioCuspCond_false v evmPriceSolm
-                                  (clipperRedoSalesTicEVMWord evmLockSolm I)
-                                  (clipperRedoSalesTopEVMWord evmLockSolm I)
-                                  (UInt256.sub (clipperTimestampWord evmLockSolm)
-                                    (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                rw [← hratioWordStele]
+                                exact clipperEvalStatusRatioCuspCond_false v evmPriceStele
+                                  (clipperRedoSalesTicEVMWord evmLockStele I)
+                                  (clipperRedoSalesTopEVMWord evmLockStele I)
+                                  (UInt256.sub (clipperTimestampWord evmLockStele)
+                                    (clipperRedoSalesTicEVMWord evmLockStele I))
                                   priceWord
-                                  (UInt256.sub (clipperTimestampWord evmPriceSolm)
-                                    (clipperRedoSalesTicEVMWord evmLockSolm I))
+                                  (UInt256.sub (clipperTimestampWord evmPriceStele)
+                                    (clipperRedoSalesTicEVMWord evmLockStele I))
                                   ratioWord hratioLe
                               have hdoneWordZero : doneWord = ⟨0⟩ := by
                                 unfold doneWord
                                 exact ult_zero
                                   (by
-                                    simpa [ratioWord, cuspWord, hcuspWordSolm]
+                                    simpa [ratioWord, cuspWord, hcuspWordStele]
                                       using hratioLe)
                               have hrev :=
                                 RD.clipperRedoStatusFalseReverts (v := v)
@@ -3709,26 +3721,26 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                       { contract := contract,
                                         locals :=
                                           clipperRedoLocalsSt evmLock I false priceWord, immutables := immStore v }
-                                      evmPriceSolm) := by
-                                simpa [evmSolm, evmLockSolm] using
+                                      evmPriceStele) := by
+                                simpa [evmStele, evmLockStele] using
                                   clipperRedoStatusCallReturnsRdivBranch v
-                                    (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                    I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                    hcallPriceSolm hdecPrice hleDoneSolm htailSolm hmul
+                                    (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                    I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                    hcallPriceStele hdecPrice hleDoneStele htailStele hmul
                                     (by
                                       intro hzero
                                       exact htopZero
                                         (by
-                                          simpa [htopSolmLoad, ← htopWord]
+                                          simpa [htopSteleLoad, ← htopWord]
                                             using hzero))
                                     false hdoneEval
-                              let evmSolm0 :=
+                              let evmStele0 :=
                                 initState σ σ₀ (Sat256.ofUInt256 g) A I
                               have hbody :
-                                  ExecTransitionBody config contract evmSolm0
+                                  ExecTransitionBody config contract evmStele0
                                     (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                                simpa [evmSolm0, σLock] using
-                                  (clipperRedoStatusFalseSourceReverts
+                                simpa [evmStele0, σLock] using
+                                  (clipperRedoStatusFalseSourceReverts (hperm := by assumption)
                                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                     (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                     priceWord hstatus)
@@ -3753,18 +3765,18 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                                 evmLock
                                 (.internalCall "status" [.var "tic", .var "top"] "st")
                                 .reverted := by
-                            simpa [evmSolm, evmLockSolm] using
+                            simpa [evmStele, evmLockStele] using
                               clipperRedoStatusCallRevertsRdivMul v
-                                (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                                I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                                hcallPriceSolm hdecPrice hleDoneSolm htailSolm hover
-                          let evmSolm0 :=
+                                (evm := evmLockStele) (evmPrice := evmPriceStele)
+                                I priceWord (out := o) hlePriceStele hcalcCodeStele
+                                hcallPriceStele hdecPrice hleDoneStele htailStele hover
+                          let evmStele0 :=
                             initState σ σ₀ (Sat256.ofUInt256 g) A I
                           have hbody :
-                              ExecTransitionBody config contract evmSolm0
+                              ExecTransitionBody config contract evmStele0
                                 (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                            simpa [evmSolm0, σLock] using
-                              (clipperRedoStatusSourceRevertsOfStatus
+                            simpa [evmStele0, σLock] using
+                              (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                                 (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
                                 (g := g) v hwv hlockedEvm hstoppedLt husrEvm
                                 hstatus)
@@ -3779,10 +3791,10 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                         Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusAgeForDoneRevert
                           (v := v) (hpatch := hpatch) rd8606 hltDone
                           (by simp only [List.length_cons, List.length_nil]; omega)
-                      have hltDoneSolm :
-                          (clipperTimestampWord evmPriceSolm).toNat <
-                            (clipperRedoSalesTicEVMWord evmLockSolm I).toNat := by
-                        simpa [evmPriceSolm, htimestampSolm, hticSolmLoad, ← hticWord]
+                      have hltDoneStele :
+                          (clipperTimestampWord evmPriceStele).toNat <
+                            (clipperRedoSalesTicEVMWord evmLockStele I).toNat := by
+                        simpa [evmPriceStele, htimestampStele, hticSteleLoad, ← hticWord]
                           using Nat.lt_of_not_ge hleDone
                       have hstatus :
                           let evm0 := initState σ σ₀
@@ -3793,18 +3805,18 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                               locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
                             evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
                             .reverted := by
-                        simpa [evmSolm, evmLockSolm] using
+                        simpa [evmStele, evmLockStele] using
                           clipperRedoStatusCallRevertsAgeForDone v
-                            (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                            I priceWord (out := o) hlePriceSolm hcalcCodeSolm
-                            hcallPriceSolm hdecPrice hltDoneSolm
-                      let evmSolm0 :=
+                            (evm := evmLockStele) (evmPrice := evmPriceStele)
+                            I priceWord (out := o) hlePriceStele hcalcCodeStele
+                            hcallPriceStele hdecPrice hltDoneStele
+                      let evmStele0 :=
                         initState σ σ₀ (Sat256.ofUInt256 g) A I
                       have hbody :
-                          ExecTransitionBody config contract evmSolm0
+                          ExecTransitionBody config contract evmStele0
                             (clipperRedoStore I) redoTransition.body .reverted (immStore v) := by
-                        simpa [evmSolm0, σLock] using
-                          (clipperRedoStatusSourceRevertsOfStatus
+                        simpa [evmStele0, σLock] using
+                          (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                             hlockedEvm hstoppedLt husrEvm hstatus)
                       exact hrev.reEquivExecutionRevert hcode hdispatch
@@ -3829,20 +3841,20 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                 let ageForPrice : UInt256 :=
                   UInt256.sub (UInt256.ofNat I.header.timestamp)
                     (UInt256.land (clipperRedoSalesTicWord σLock I) clipperSalesUint96Mask)
-                have hdepthInit : evmLockSolm.executionEnv.depth = 1024 := by
-                  simpa [evmLockSolm, evmSolm, clipperRedoLockedState, initState,
+                have hdepthInit : evmLockStele.executionEnv.depth = 1024 := by
+                  simpa [evmLockStele, evmStele, clipperRedoLockedState, initState,
                     storageStore_executionEnv] using hdepthEq
-                let evmPriceSolm : EVM.State :=
-                  { evmLockSolm with
+                let evmPriceStele : EVM.State :=
+                  { evmLockStele with
                     substate :=
-                      (evmLockSolm.addAccessedAccount
-                        (EVM.address (clipperStatusCalcAddress evmLockSolm))).substate }
+                      (evmLockStele.addAccessedAccount
+                        (EVM.address (clipperStatusCalcAddress evmLockStele))).substate }
                 have hcd :
                     config.externalABI.encode? "price"
-                      [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                      [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                         .int (Int.ofNat
-                          (UInt256.sub (clipperTimestampWord evmLockSolm)
-                            (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)] =
+                          (UInt256.sub (clipperTimestampWord evmLockStele)
+                            (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)] =
                       some ((clipperStatusPriceCalldataMem
                         (clipperRedoSalesTopWord σLock I) ageForPrice
                         (clipperRedoSalesHashMem I)).readWithPadding 128 68) := by
@@ -3857,34 +3869,34 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                       clipperStatusPriceEncode_eq
                         (clipperRedoSalesTopWord σLock I) ageForPrice
                         (clipperRedoSalesHashMem_size I)
-                  have htopEvmSolm :
-                      clipperRedoSalesTopEVMWord evmLockSolm I =
+                  have htopEvmStele :
+                      clipperRedoSalesTopEVMWord evmLockStele I =
                         clipperRedoSalesTopWord σLock I := by
-                    rw [htopSolmLoad, ← htopWord]
-                  have hageForPriceSolm :
-                      UInt256.sub (clipperTimestampWord evmLockSolm)
-                          (clipperRedoSalesTicEVMWord evmLockSolm I) =
+                    rw [htopSteleLoad, ← htopWord]
+                  have hageForPriceStele :
+                      UInt256.sub (clipperTimestampWord evmLockStele)
+                          (clipperRedoSalesTicEVMWord evmLockStele I) =
                         ageForPrice := by
-                    simp [ageForPrice, htimestampSolm, hticSolmLoad, ← hticWord, hticClean]
-                  rw [htopEvmSolm, hageForPriceSolm]
+                    simp [ageForPrice, htimestampStele, hticSteleLoad, ← hticWord, hticClean]
+                  rw [htopEvmStele, hageForPriceStele]
                   exact hcdRaw
-                have hcallPriceSolm :
-                    typedCallViaEVM config evmLockSolm
-                      (EVM.address (clipperStatusCalcAddress evmLockSolm)) "price" 0
-                      [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                have hcallPriceStele :
+                    typedCallViaEVM config evmLockStele
+                      (EVM.address (clipperStatusCalcAddress evmLockStele)) "price" 0
+                      [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                         .int (Int.ofNat
-                          (UInt256.sub (clipperTimestampWord evmLockSolm)
-                            (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)]
-                      (false, evmPriceSolm, ByteArray.empty) false := by
-                  simpa [evmPriceSolm] using
-                    (callNotMade_depthLimit (cfg := config) (evm := evmLockSolm)
-                      (tgt := EVM.address (clipperStatusCalcAddress evmLockSolm))
+                          (UInt256.sub (clipperTimestampWord evmLockStele)
+                            (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)]
+                      (false, evmPriceStele, ByteArray.empty) false := by
+                  simpa [evmPriceStele] using
+                    (callNotMade_depthLimit (cfg := config) (evm := evmLockStele)
+                      (tgt := EVM.address (clipperStatusCalcAddress evmLockStele))
                       (name := "price")
                       (args :=
-                        [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockSolm I).toNat),
+                        [.int (Int.ofNat (clipperRedoSalesTopEVMWord evmLockStele I).toNat),
                           .int (Int.ofNat
-                            (UInt256.sub (clipperTimestampWord evmLockSolm)
-                              (clipperRedoSalesTicEVMWord evmLockSolm I)).toNat)])
+                            (UInt256.sub (clipperTimestampWord evmLockStele)
+                              (clipperRedoSalesTicEVMWord evmLockStele I)).toNat)])
                       (callPerm := false)
                       (calldata :=
                         (clipperStatusPriceCalldataMem
@@ -3898,16 +3910,16 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                       { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
                       evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
                       .reverted := by
-                  simpa [evmSolm, evmLockSolm] using
+                  simpa [evmStele, evmLockStele] using
                     clipperRedoStatusCallRevertsPriceCallFailure v
-                      (evm := evmLockSolm) (evmPrice := evmPriceSolm)
-                      I (out := ByteArray.empty) hlePriceSolm hcalcCodeSolm hcallPriceSolm
-                let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                      (evm := evmLockStele) (evmPrice := evmPriceStele)
+                      I (out := ByteArray.empty) hlePriceStele hcalcCodeStele hcallPriceStele
+                let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                 have hbody :
-                    ExecTransitionBody config contract evmSolm0 (clipperRedoStore I)
+                    ExecTransitionBody config contract evmStele0 (clipperRedoStore I)
                       redoTransition.body .reverted (immStore v) := by
-                  simpa [evmSolm0, σLock] using
-                    (clipperRedoStatusSourceRevertsOfStatus
+                  simpa [evmStele0, σLock] using
+                    (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                       hlockedEvm hstoppedLt husrEvm hstatus)
                 exact hrev.reEquivExecutionRevert hcode hdispatch
@@ -3920,30 +3932,30 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                   (v := v) hpatch rd8549
                   (by simpa [calcAddr] using hcalcZero)
                   (by simp only [List.length_cons, List.length_nil]; omega)
-              have hcalcAddrSolm :
-                  clipperStatusCalcAddress evmLockSolm = AccountAddress.ofUInt256 calcAddr := by
-                simp [σLock, evmLockSolm, evmSolm, clipperRedoLockedState,
+              have hcalcAddrStele :
+                  clipperStatusCalcAddress evmLockStele = AccountAddress.ofUInt256 calcAddr := by
+                simp [σLock, evmLockStele, evmStele, clipperRedoLockedState,
                   clipperStatusCalcAddress,
-                  clipperStatusCalcWord, calcAddr, initState, Solm.EVM.storageLoad,
+                  clipperStatusCalcWord, calcAddr, initState, Stele.EVM.storageLoad,
                   State.lookupAccount, Account.lookupStorage, solcSlotWord,
-                  storageStore_accountMap, storageStore_executionEnv, hcalcSlotSolm]
-              have hcalcZeroSolm :
+                  storageStore_accountMap, storageStore_executionEnv, hcalcSlotStele]
+              have hcalcZeroStele :
                   Reasoning.Theory.extCodeSizeWord σLock calcAddr = ⟨0⟩ := by
                 exact hcalcZero
-              have hnoCodeSolm :
+              have hnoCodeStele :
                   (UInt256.ofNat
-                    ((evmLockSolm.lookupAccount (clipperStatusCalcAddress evmLockSolm)).option 0
+                    ((evmLockStele.lookupAccount (clipperStatusCalcAddress evmLockStele)).option 0
                       (fun acc => acc.code.size))).toNat = 0 := by
-                rw [hcalcAddrSolm]
-                unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroSolm
-                simp [-Std.ExtTreeMap.get?_eq_getElem?, evmLockSolm, evmSolm, clipperRedoLockedState, State.lookupAccount,
-                  initState, storageStore_accountMap] at hcalcZeroSolm ⊢
+                rw [hcalcAddrStele]
+                unfold Reasoning.Theory.extCodeSizeWord at hcalcZeroStele
+                simp [-Std.ExtTreeMap.get?_eq_getElem?, evmLockStele, evmStele, clipperRedoLockedState, State.lookupAccount,
+                  initState, storageStore_accountMap] at hcalcZeroStele ⊢
                 cases hacc : σLock.get? (AccountAddress.ofUInt256 calcAddr) with
                 | none =>
                     native_decide
                 | some acc =>
-                    simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroSolm ⊢
-                    exact congrArg UInt256.toNat hcalcZeroSolm
+                    simp [-Std.ExtTreeMap.get?_eq_getElem?, hacc] at hcalcZeroStele ⊢
+                    exact congrArg UInt256.toNat hcalcZeroStele
               have hstatus :
                   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
                   let evmLock := clipperRedoLockedState evm0
@@ -3951,15 +3963,15 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                     { contract := contract, locals := clipperRedoLocalsTop evmLock I, immutables := immStore v }
                     evmLock (.internalCall "status" [.var "tic", .var "top"] "st")
                     .reverted := by
-                simpa [evmSolm, evmLockSolm] using
-                  clipperRedoStatusCallRevertsPriceNoCode v evmLockSolm I
-                    hlePriceSolm hnoCodeSolm
-              let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+                simpa [evmStele, evmLockStele] using
+                  clipperRedoStatusCallRevertsPriceNoCode v evmLockStele I
+                    hlePriceStele hnoCodeStele
+              let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
               have hbody :
-                  ExecTransitionBody config contract evmSolm0 (clipperRedoStore I)
+                  ExecTransitionBody config contract evmStele0 (clipperRedoStore I)
                     redoTransition.body .reverted (immStore v) := by
-                simpa [evmSolm0, σLock] using
-                  (clipperRedoStatusSourceRevertsOfStatus
+                simpa [evmStele0, σLock] using
+                  (clipperRedoStatusSourceRevertsOfStatus (hperm := by assumption)
                     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
                     hlockedEvm hstoppedLt husrEvm hstatus)
               exact hrev.reEquivExecutionRevert hcode hdispatch
@@ -3968,19 +3980,19 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (clipperRedoSalesTicWord σLock I).toNat := by
               omega
-            have hltSolm :
+            have hltStele :
                 (UInt256.ofNat I.header.timestamp).toNat <
                   (clipperRedoSalesTicWord σLock I).toNat := by
               rw [← hticWord]
               exact hltEvm
-            let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+            let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
             have hbody :
-                ExecTransitionBody config contract evmSolm (clipperRedoStore I)
+                ExecTransitionBody config contract evmStele (clipperRedoStore I)
                   redoTransition.body .reverted (immStore v) := by
-              simpa [evmSolm, σLock] using
-                (clipperRedoStatusAgeForPriceSourceReverts
+              simpa [evmStele, σLock] using
+                (clipperRedoStatusAgeForPriceSourceReverts (hperm := by assumption)
                   (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
-                  hlockedEvm hstoppedLt husrEvm hltSolm)
+                  hlockedEvm hstoppedLt husrEvm hltStele)
             have hrev :=
               Benchmarks.Dss.Clipper.Reasoning.Reach.RD.clipperStatusAgeForPriceRevert
                 (v := v) hpatch _hreachStatus
@@ -3990,12 +4002,12 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
               hbody
       · have hstoppedEvmGe : 2 ≤ (solcSlotWord σLock I ⟨14⟩).toNat := by
           omega
-        let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+        let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
         have hbody :
-            ExecTransitionBody config contract evmSolm (clipperRedoStore I)
+            ExecTransitionBody config contract evmStele (clipperRedoStore I)
               redoTransition.body .reverted (immStore v) := by
-          simpa [evmSolm, σLock] using
-            (clipperRedoStoppedSourceReverts
+          simpa [evmStele, σLock] using
+            (clipperRedoStoppedSourceReverts (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv
               hlockedEvm hstoppedEvmGe)
         have hrev := clipperRedoX_stoppedClosed (v := v) (σ := σLock)
@@ -4003,11 +4015,11 @@ theorem clipperRedoBody (v : ClipperImmutables) {code : ByteArray}
           (by simpa [σLock] using hreachLocked)
         exact hrev.reEquivExecutionRevert hcode hdispatch (clipperDecode_redo_ok hsz68)
           hbody
-    · let evmSolm := initState σ σ₀ (Sat256.ofUInt256 g) A I
+    · let evmStele := initState σ σ₀ (Sat256.ofUInt256 g) A I
       have hbody :
-          ExecTransitionBody config contract evmSolm (clipperRedoStore I)
+          ExecTransitionBody config contract evmStele (clipperRedoStore I)
             redoTransition.body .reverted (immStore v) := by
-        simpa [evmSolm] using
+        simpa [evmStele] using
           (clipperRedoLockedSourceReverts
             (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) v hwv hlockedEvm)
       have hrev := clipperRedoX_locked (v := v) hpatch hlockedEvm hreachBody

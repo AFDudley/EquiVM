@@ -1,7 +1,7 @@
 import Reasoning.ABIViews
 import Benchmarks.Dss.Vat.Rely
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 50000000
 set_option maxHeartbeats 0
@@ -83,7 +83,7 @@ theorem evalExpr_initStorageRate (evm : EVM.State) (I : ExecutionEnv)
         .ok (.int (Int.ofNat
           (solcSlotWordAt (initRateSlot I) evm.accountMap evm.executionEnv).toNat)) := by
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := { contract := contract, locals := initStore I }) (evm := evm)
+    (cfg := config) (stele := { contract := contract, locals := initStore I }) (evm := evm)
     (slot := ilksF (.var "ilk") "rate") (er := initRateEvaledRef I)
     (t := .int uint256Int) (loc := wordLoc (initRateSlot I))
     (value := .int (Int.ofNat
@@ -135,7 +135,7 @@ theorem evalExpr_initRateEqZero_false {evm : EVM.State} {I : ExecutionEnv}
 
 theorem assign_initRateStorage (evm : EVM.State) (I : ExecutionEnv)
     (hsz36 : 36 ≤ I.calldata.size) :
-    let evm' := Solm.EVM.storageStore evm evm.executionEnv.codeOwner (initRateSlot I)
+    let evm' := Stele.EVM.storageStore evm evm.executionEnv.codeOwner (initRateSlot I)
       initRayWord
     assignStorageRef? config { contract := contract, locals := initStore I } evm
       .storage (ilksF (.var "ilk") "rate") (.int (Int.ofNat initRayWord.toNat)) =
@@ -165,9 +165,9 @@ theorem vatInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     (hrate : solcSlotWordAt (initRateSlot I) σ I = ⟨0⟩) :
     let locals := initStore I
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-    let evm1 := Solm.EVM.storageStore evm0 I.codeOwner (initRateSlot I) initRayWord
-    ExecTransitionBody config contract evm0 locals initTransition.body
-      (.returned { contract := contract, locals := locals } evm1 none) ∧
+    let evm1 := Stele.EVM.storageStore evm0 I.codeOwner (initRateSlot I) initRayWord
+    (I.perm = true → ExecTransitionBody config contract evm0 locals initTransition.body
+      (.returned { contract := contract, locals := locals } evm1 none)) ∧
     (I.perm = false →
       ExecTransitionBody config contract evm0 locals initTransition.body
         .staticViolation) := by
@@ -205,9 +205,9 @@ theorem vatInitSourceBodySplit {σ σ₀ A I} {g : UInt256}
     refine ExecBlock.consNormal (ExecStmt.requireTrue hguard) ?_
     refine ExecBlock.consNormal (ExecStmt.requireTrue hrateGuard) ?_
     exact execBlock_singleton h
-  refine ⟨?_, fun hpf => ?_⟩
+  refine ⟨fun hperm => ?_, fun hpf => ?_⟩
   · simpa [ExecTransitionBody, locals, evm0, evm1] using
-      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign hray hassign))
+      ExecFuncBody.execBlockOK (hbody _ (ExecStmt.assign (hperm := Or.inr hperm) hray hassign))
   · simpa [ExecTransitionBody, locals, evm0] using ExecFuncBody.execBlockStatic
       (hbody _ (ExecStmt.assignStatic hray hassign (by simp [evm0, initState]; exact hpf)))
 
@@ -226,7 +226,7 @@ theorem vatInitSourceBodyAuthReverts {σ σ₀ A I} {g : UInt256}
   simpa [initTransition, nonpayable, auth] using
     nonpayableSecondRequireReverts
       (cfg := config)
-      (solm := { contract := contract, locals := locals })
+      (stele := { contract := contract, locals := locals })
       (evm := evm0)
       (guard := .binary .eq (.storage (wardsRef sender)) (.intLit 1))
       (rest := [.require (.binary .eq (.storage (ilksF (.var "ilk") "rate")) (.intLit 0)),
@@ -266,17 +266,17 @@ theorem vatInitSourceBodyAlreadyInit {σ σ₀ A I} {g : UInt256}
 
 theorem vatDecode_init_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (_hsize : I.calldata.size < UInt256.size) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata = some (initStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = _
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = _
   simpa [config, initStore, initIlkValue, bytes32] using
     decodeCalldataWithMode_legacyBytes32_ok (cd := I.calldata) (x := "ilk") hsz36
 
 theorem vatDecode_init_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
       (transitionSignature initTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["ilk"] [bytes32] I.calldata = none
+  show config.externalABI.decodeCalldata? ["ilk"] [bytes32] I.calldata = none
   simpa [config, bytes32] using
     decodeCalldataWithMode_legacyBytes32_none_short (cd := I.calldata) (x := "ilk") hsz4 hshort
 
@@ -658,7 +658,7 @@ theorem vatInitBodyCoreOk
     (hrate : solcSlotWordAt (initRateSlot I) σ I = ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]
@@ -667,13 +667,13 @@ theorem vatInitBodyCoreOk
   let slot := initRateSlot I
   let locals := initStore I
   let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evm1 := Solm.EVM.storageStore evm0 I.codeOwner slot initRayWord
+  let evm1 := Stele.EVM.storageStore evm0 I.codeOwner slot initRayWord
   have hboth := vatInitSourceBodySplit (σ := σ)
     (σ₀ := σ₀) (A := A) (I := I) (g := g) hwv hsz36 hauth hrate
-  have hbody :
+  have hbody (hperm : I.perm = true) :
       ExecTransitionBody config contract evm0 locals initTransition.body
         (.returned { contract := contract, locals := locals } evm1 none) := by
-    simpa [evm0, evm1, locals, slot] using hboth.1
+    simpa [evm0, evm1, locals, slot] using hboth.1 hperm
   obtain ⟨_, _, hdecoded⟩ := vatInitX_decoded (g := Sat256.ofUInt256 g)
     hsz36 hsize hreach
   have hauthSolc :
@@ -713,7 +713,7 @@ theorem vatInitBodyCoreOk
       unfold vatInitStoreRayWf initRayWord
       repeat' first | apply And.intro | native_decide)
     (by jump_dest) hrateMem (by simp) with
-    ⟨_, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
+    ⟨hperm, _, _, hretPc⟩ | ⟨hpf, hstatic⟩
   swap
   · exact hstatic.reEquivStaticHalt hcode hdispatch hdecode (hboth.2 hpf)
   have hretPc' := hretPc.jumpdest (by native_decide) (by evm_ov)
@@ -729,7 +729,7 @@ theorem vatInitBodyCoreOk
   have henc : returnEquiv ByteArray.empty none initTransition.returnType := by
     rw [show initTransition.returnType = [] by rfl]
     exact returnEquiv.fallthrough rfl (by rfl) (by native_decide)
-  exact hret.reEquivExecutionGen hcode hdispatch hdecode hbody
+  exact hret.reEquivExecutionGen hcode hdispatch hdecode (hbody hperm)
     haccounts henc
 
 theorem vatInitBodyCoreUnauthorized
@@ -740,7 +740,7 @@ theorem vatInitBodyCoreUnauthorized
     (hauth : solcSlotWordAt (vatCallerWardsSlot I) σ I ≠ ⟨1⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]
@@ -780,7 +780,7 @@ theorem vatInitBodyCoreAlreadyInit
     (hrate : solcSlotWordAt (initRateSlot I) σ I ≠ ⟨0⟩)
     (hdispatch : dispatchMsg contract I.calldata = some initTransition)
     (hdecode :
-      decodeCalldataWithMode config.abiDecodeMode (initTransition.params.map Param.name)
+      config.externalABI.decodeCalldata? (initTransition.params.map Param.name)
         (transitionSignature initTransition).paramTypes I.calldata = some (initStore I))
     (hreach : ∃ k C, RD vatBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨682⟩ [sel]

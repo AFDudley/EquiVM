@@ -5,7 +5,7 @@ import Reasoning.Constructor
 import Reasoning.Solc
 import Reasoning.Storage
 import Reasoning.Dispatch
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 /-!

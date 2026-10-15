@@ -1,6 +1,6 @@
 import Examples.Ballot.DelegateTail
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 1000000
@@ -231,7 +231,7 @@ theorem evalExpr_delegate_loopLocals_to_ne_sender_false (evm : EVM.State)
   simp [evalExpr?, EvalResult.bind, bind, htoExpr, hsenderExpr, delegateCurrentToValue, haddr,
     evalBinaryOp?]
 
-theorem ballotDelegateSolm_loopContinueBodyLocals (evm : EVM.State) (I : ExecutionEnv)
+theorem ballotDelegateStele_loopContinueBodyLocals (evm : EVM.State) (I : ExecutionEnv)
     (w : UInt256) (L : Store) (hL : delegateLoopLocals I w L)
     (hsrc : evm.executionEnv.source = I.source)
     (hcanonNext : (delegateCurrentVoterDelegateWordCurrent evm w).toNat < EVM.addressModulus)
@@ -245,7 +245,9 @@ theorem ballotDelegateSolm_loopContinueBodyLocals (evm : EVM.State) (I : Executi
   have hL' : delegateLoopLocals I (delegateCurrentVoterDelegateWordCurrent evm w) L' := by
     simpa [L'] using delegateLoopLocals_insert_to_next evm I w L hL
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
       (assign_delegate_loopLocals_to_next evm I w L hL))
     (ExecBlock.consNormal
       (ExecStmt.requireTrue
@@ -253,7 +255,7 @@ theorem ballotDelegateSolm_loopContinueBodyLocals (evm : EVM.State) (I : Executi
           (delegateCurrentVoterDelegateWordCurrent evm w) L' hL' hsrc hcanonNext hnotSender))
       ExecBlock.nil)
 
-theorem ballotDelegateSolm_loopRevertSenderLocals (evm : EVM.State)
+theorem ballotDelegateStele_loopRevertSenderLocals (evm : EVM.State)
     (I : ExecutionEnv) (w : UInt256) (L : Store)
     (hL : delegateLoopLocals I w L) (hsrc : evm.executionEnv.source = I.source)
     (hdelegate : delegateCurrentVoterDelegateWordCurrent evm w ≠ ⟨0⟩)
@@ -269,7 +271,9 @@ theorem ballotDelegateSolm_loopRevertSenderLocals (evm : EVM.State)
     simpa [L'] using delegateLoopLocals_insert_to_next evm I w L hL
   refine ExecStmt.whileRevert (evalExpr_delegate_loopLocals_continues evm I w L hL hdelegate) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
+    (ExecStmt.assign
+      (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)
+      (evalExpr_delegate_loopLocals_voter_delegate evm I w L hL)
       (assign_delegate_loopLocals_to_next evm I w L hL))
     (ExecBlock.consRevert
       (ExecStmt.requireFalse
@@ -361,7 +365,7 @@ theorem ballotDelegateChainReachHeaderFrom972Current {σ σ₀ A I} {g : Sat256}
   subst i
   exact ⟨k', C', hrdFinal⟩
 
-theorem ballotDelegateSolm_chainExit {σ σ₀ A I} {g : Sat256}
+theorem ballotDelegateStele_chainExit {σ σ₀ A I} {g : Sat256}
     {target : Nat}
     (hnext0 : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩)
     (hcycle0 : delegateVoterDelegateWord σ I (delegateToWord I) ≠ delegateSourceWord I)
@@ -446,7 +450,7 @@ theorem ballotDelegateSolm_chainExit {σ σ₀ A I} {g : Sat256}
       simpa [hcur] using hnotSender
     refine ⟨L', ?_, ?_⟩
     · simpa [body, L'] using
-        ballotDelegateSolm_loopContinueBodyLocals evm I (delegateChainWord σ I i) L hL
+        ballotDelegateStele_loopContinueBodyLocals evm I (delegateChainWord σ I i) L hL
           (by simp [evm, initState]) hcanonNext hnotSenderCurrent
     · refine ⟨i + 1, by omega, ?_⟩
       have hLnext := delegateLoopLocals_insert_to_next evm I (delegateChainWord σ I i) L hL
@@ -460,7 +464,7 @@ theorem ballotDelegateSolm_chainExit {σ σ₀ A I} {g : Sat256}
   subst i
   exact ⟨L, by simpa [evm, cond, body] using hwhile, hL⟩
 
-theorem ballotDelegateSolm_chainSenderRevert {σ σ₀ A I} {g : Sat256}
+theorem ballotDelegateStele_chainSenderRevert {σ σ₀ A I} {g : Sat256}
     {target : Nat}
     (hnext0 : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩)
     (hcycle0 : delegateVoterDelegateWord σ I (delegateToWord I) ≠ delegateSourceWord I)
@@ -532,7 +536,7 @@ theorem ballotDelegateSolm_chainSenderRevert {σ σ₀ A I} {g : Sat256}
       simpa [hcur] using hnotSender
     refine ⟨L', ?_, ?_⟩
     · simpa [body, L'] using
-        ballotDelegateSolm_loopContinueBodyLocals evm I (delegateChainWord σ I i) L hL
+        ballotDelegateStele_loopContinueBodyLocals evm I (delegateChainWord σ I i) L hL
           (by simp [evm, initState]) hcanonNext hnotSenderCurrent
     · refine ⟨i + 1, by omega, ?_⟩
       have hLnext := delegateLoopLocals_insert_to_next evm I (delegateChainWord σ I i) L hL
@@ -564,7 +568,7 @@ theorem ballotDelegateSolm_chainSenderRevert {σ σ₀ A I} {g : Sat256}
       rw [hSender]
       exact delegateSourceWord_canonical I
     simpa [cond, body] using
-      ballotDelegateSolm_loopRevertSenderLocals evm I (delegateChainWord σ I target) L hL
+      ballotDelegateStele_loopRevertSenderLocals evm I (delegateChainWord σ I target) L hL
         (by simp [evm, initState]) hnextCurrent hcanonSender hSender
   have hrun : ∀ v L, P v L →
       ExecStmt ballotConfig { contract := ballotContract, locals := L } evm
@@ -793,7 +797,7 @@ theorem ballotDelegateBodyReverts_chainSender {σ σ₀ A I} {g : Sat256}
     (ExecStmt.requireTrue (evalExpr_delegate_to_ne_sender_true
       (initState σ σ₀ g A I) I (by simp [initState]) hcanon hnotself)) ?_
   exact ExecBlock.consRevert
-    (ballotDelegateSolm_chainSenderRevert
+    (ballotDelegateStele_chainSenderRevert
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g)
       (target := target) hnext0 hcycle0 hhit hnext hcontinue)
 
@@ -821,20 +825,20 @@ theorem ballotDelegateChainSenderRevertEquiv
       σ σ₀ g A I := by
   have hd := ballotDispatch_delegate (cd := I.calldata) hsel
   have hdec := ballotDecode_delegate_ok (I := I) hsz36 hbig hcanon
-  have hweightSolm : delegateSenderWeightWord σ I ≠ ⟨0⟩ := hweight
-  have hvotedSolm : delegateSenderVotedByte σ I = ⟨0⟩ := hvoted
-  have hnext0Solm : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := hnext0
-  have hcycle0Solm :
+  have hweightStele : delegateSenderWeightWord σ I ≠ ⟨0⟩ := hweight
+  have hvotedStele : delegateSenderVotedByte σ I = ⟨0⟩ := hvoted
+  have hnext0Stele : delegateVoterDelegateWord σ I (delegateToWord I) ≠ ⟨0⟩ := hnext0
+  have hcycle0Stele :
       delegateVoterDelegateWord σ I (delegateToWord I) ≠ delegateSourceWord I := hcycle0
-  have hhitSolm : delegateChainHitsSenderAt σ I target := hhit
-  have hnextSolm :
+  have hhitStele : delegateChainHitsSenderAt σ I target := hhit
+  have hnextStele :
       delegateVoterDelegateWord σ I (delegateChainWord σ I target) ≠ ⟨0⟩ := hnext
-  have hcontinueSolm :
+  have hcontinueStele :
       ∀ i, 1 ≤ i → i < target → delegateChainContinuesAt σ I i := hcontinue
   have hbody := ballotDelegateBodyReverts_chainSender
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
-    (target := target) hwv hcanon hweightSolm hvotedSolm hnotself hnext0Solm hcycle0Solm
-    hhitSolm hnextSolm hcontinueSolm
+    (target := target) hwv hcanon hweightStele hvotedStele hnotself hnext0Stele hcycle0Stele
+    hhitStele hnextStele hcontinueStele
   exact (ballotDelegateChainSenderRevertFrom245
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := Sat256.ofUInt256 g)
       (sel := sel) (target := target) hsz36 hsize hbig hcanon hweight hvoted hnotself
@@ -842,7 +846,7 @@ theorem ballotDelegateChainSenderRevertEquiv
     |>.reEquivExecutionRevert hcode hd hdec hbody
 
 /-
-Missing shared source-side lemma proposal (`Reasoning/SolmBody.lean` or a small
+Missing shared source-side lemma proposal (`Reasoning/SteleBody.lean` or a small
 `Reasoning/Store.lean`):
 
   theorem execWhile_var_extensional_locals

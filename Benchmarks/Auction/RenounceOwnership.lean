@@ -1,7 +1,7 @@
 import Benchmarks.Auction.OwnershipRoutine
 import Benchmarks.Auction.AddressSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -10,11 +10,11 @@ namespace Auction
 theorem renounceOwnershipBodySplit (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
-    (ExecTransitionBody auctionConfig auctionContract evm ∅ renounceOwnershipTransition.body
+    (evm.executionEnv.perm = true → ExecTransitionBody auctionConfig auctionContract evm ∅ renounceOwnershipTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none)) ∧
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none)) ∧
       (evm.executionEnv.perm = false →
         ExecTransitionBody auctionConfig auctionContract evm ∅
           renounceOwnershipTransition.body .staticViolation) := by
@@ -22,21 +22,23 @@ theorem renounceOwnershipBodySplit (evm : EVM.State)
   have hvalue := evalZeroAddr auctionConfig { contract := auctionContract, locals := ∅ } evm
   have hassign := assignOwner evm ∅ ⟨0⟩ (by simp) (by decide)
   constructor
-  · exact ExecFuncBody.execBlockOK
-      (nonpayableRequireAssignStorageBlock hwv howner hvalue hassign)
+  · intro hperm
+    exact ExecFuncBody.execBlockOK
+      (nonpayableRequireAssignStorageBlock hwv howner hvalue hassign hperm)
   · intro hperm
     exact ExecFuncBody.execBlockStatic
       (nonpayableRequireAssignStorageBlockStatic hwv howner hvalue hassign hperm)
 
 theorem renounceOwnershipBody (evm : EVM.State)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
-    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv) :
+    (ho : solcSourceWord evm.executionEnv = ownerWord evm.accountMap evm.executionEnv)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm ∅ renounceOwnershipTransition.body
       (.returned { contract := auctionContract, locals := ∅ }
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨151⟩
           (setAddressOffset0Word
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none) :=
-  (renounceOwnershipBodySplit evm hwv ho).1
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨151⟩) ⟨0⟩)) none) :=
+  (renounceOwnershipBodySplit evm hwv ho).1 hperm
 
 theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
     (hcode : I.code = auctionBytecode) (_hsize : I.calldata.size < UInt256.size)
@@ -46,7 +48,7 @@ theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
   by_cases hwv : I.weiValue = ⟨0⟩
   · have hd := dispatchEntry 8 hsel
     have hsz := calldata_size_ge_of_selIs I (entryBytes 8) (entryBytes_size 8) hsel
-    have hdec : decodeCalldataWithMode auctionConfig.abiDecodeMode
+    have hdec : auctionConfig.externalABI.decodeCalldata?
         (renounceOwnershipTransition.params.map Param.name)
         (transitionSignature renounceOwnershipTransition).paramTypes I.calldata = some ∅ :=
       decodeCalldata_empty_ok hsz
@@ -64,7 +66,7 @@ theorem renounceOwnershipBodyCore {σ σ₀ A I} {g : UInt256}
           ((renounceOwnershipBodySplit
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho).2 hperm)
       obtain ⟨_, _, rd413⟩ := auctionInternalReturn rd1163 (by jump_dest) (by evm_ov)
-      have hbody := renounceOwnershipBody
+      have hbody := renounceOwnershipBody (hperm := _hperm)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) hwv ho
       exact (auctionStop rd413 (by evm_ov)).reEquivExecutionGen
         hcode hd hdec hbody (by

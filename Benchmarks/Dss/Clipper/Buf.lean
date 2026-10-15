@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Clipper.Fallback
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -39,16 +39,16 @@ theorem clipperDispatch_buf {I : ExecutionEnv}
 
 theorem clipperDecode_buf {I : ExecutionEnv}
     (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (bufTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (bufTransition.params.map Param.name)
       (transitionSignature bufTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  change decodeCalldataWithMode .legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldataWithMode_empty_ok hsz
 
 theorem clipperEvalBuf (v : ClipperImmutables) (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "buf" = none) :
     evalExpr? config { contract := contract, locals := locals, immutables := immStore v } evm
       (.storage bufRef) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat)) := by
   let er : EvaledStorageRef := { base := "buf", steps := [] }
   have her : evalStorageRef config
       { contract := contract, locals := locals, immutables := immStore v } evm bufRef = .ok er := by
@@ -67,7 +67,7 @@ theorem clipperBufBodyReturns (v : ClipperImmutables) (evm : EVM.State) (locals 
     ExecTransitionBody config contract evm locals bufTransition.body
       (.returned { contract := contract, locals := locals, immutables := immStore v } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat))])) (immStore v) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩).toNat))])) (immStore v) := by
   simpa [bufTransition] using
     nonpayableReturnExprBodyReturns (cfg := config) (contract := contract) h
       (clipperEvalBuf v evm locals hbase)
@@ -276,7 +276,7 @@ theorem clipperBufBody (v : ClipperImmutables) {code : ByteArray}
         (.returned { contract := contract, locals := ∅, immutables := immStore v }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (solcSlotWord σ I ⟨5⟩).toNat))])) (immStore v) := by
-    simpa [solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       clipperBufBodyReturns v
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

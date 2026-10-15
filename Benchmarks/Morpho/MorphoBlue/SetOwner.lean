@@ -5,11 +5,11 @@ import Benchmarks.Morpho.MorphoBlue.AdminCommon
 # Morpho `setOwner(address)`
 
 Per-function proof: calldata decode facts, the EVM trace from the dispatcher arm through the
-body, the Solm body evaluation, and the `…Body` theorem `Correct.lean` consumes.
+body, the Stele body evaluation, and the `…Body` theorem `Correct.lean` consumes.
 Dispatcher arm entry: pc 11152; reach lemma `morphoReachSetOwnerBody`.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Reasoning.Immutables
 open Benchmarks.Morpho.MorphoBlue.Immutables
 
@@ -31,12 +31,12 @@ theorem morphoSetOwnerBodySplit (v : MorphoImmutables) (evm : EVM.State)
     (ho : solcSourceWord evm.executionEnv = solcAddressSlotWord ⟨0⟩ evm.accountMap evm.executionEnv)
     (hne : calldataWord evm.executionEnv.calldata 4 ≠
       solcAddressSlotWord ⟨0⟩ evm.accountMap evm.executionEnv) :
-    ExecTransitionBody config contract evm (setOwnerArgs evm.executionEnv.calldata)
+    (evm.executionEnv.perm = true → ExecTransitionBody config contract evm (setOwnerArgs evm.executionEnv.calldata)
       setOwnerTransition.body
       (.returned (setOwnerFrame v evm.executionEnv.calldata)
-        (Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
-          (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
-            (calldataWord evm.executionEnv.calldata 4))) none) (immStore v) ∧
+        (Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩
+          (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩)
+            (calldataWord evm.executionEnv.calldata 4))) none) (immStore v)) ∧
     (evm.executionEnv.perm = false →
       ExecTransitionBody config contract evm (setOwnerArgs evm.executionEnv.calldata)
         setOwnerTransition.body .staticViolation (immStore v)) := by
@@ -288,7 +288,7 @@ theorem morphoSetOwnerBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
   by_cases hlen : 36 ≤ I.calldata.size
   · by_cases hbound : I.calldata.size < 2 ^ 255 + 4
     · by_cases hcanon : (calldataWord I.calldata 4).toNat < EVM.addressModulus
-      · have hdec : decodeCalldataWithMode config.abiDecodeMode
+      · have hdec : config.externalABI.decodeCalldata?
             (setOwnerTransition.params.map Param.name)
             (transitionSignature setOwnerTransition).paramTypes I.calldata =
             some (setOwnerArgs I.calldata) := decodeCalldata_address_ok hlen hbound hcanon
@@ -302,7 +302,7 @@ theorem morphoSetOwnerBody {σ σ₀ A I} {g : UInt256} (v : MorphoImmutables)
                 hcv hbound hcanon ho heq
               rcases morphoSetOwnerXSplit (g := .ofUInt256 g) (σ₀ := σ₀) (A := A)
                 v hcode hsize hsel hcv hlen hbound hcanon ho heq with ⟨hp, hx⟩ | ⟨hp, hx⟩
-              · exact reEquivSelectorExecutionGen hcode hx hd hdec hbody.1
+              · exact reEquivSelectorExecutionGen hcode hx hd hdec (hbody.1 (by assumption))
                   (by rw [storageStore_accountMap]; rfl) (.fallthrough rfl rfl (by native_decide))
               · exact reEquivSelectorStatic hcode hx hd hdec (hbody.2 hp)
           · exact reEquivSelectorRevert hcode

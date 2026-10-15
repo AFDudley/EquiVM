@@ -1,7 +1,7 @@
 import Reasoning.ABIComposite
 import Examples.UniswapV2Pair.MutatorDispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -102,7 +102,7 @@ theorem permitDecodeABIValues_ok_core {I : ExecutionEnv} (hsz228 : 228 ≤ I.cal
 
 theorem uniswapDecode_permit_none_short_core {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 228) :
-    decodeCalldataWithMode config.abiDecodeMode (permitTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (permitTransition.params.map Param.name)
       (transitionSignature permitTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.legacySolc05
     ["owner", "spender", "value", "deadline", "v", "r", "s"]

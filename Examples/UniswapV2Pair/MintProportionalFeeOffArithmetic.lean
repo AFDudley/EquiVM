@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintProportionalFactoryArithmetic
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
@@ -16,8 +16,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroArithmeticFromFactoryCases
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -137,7 +137,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroArithmeticFromFactoryCases
           solcAddrMask =
         ⟨0⟩)
     (hkLastZero : mintFeeKLastSlotWord σFee I = ⟨0⟩)
-    (htotalNonzero : totalSupply ≠ ⟨0⟩) :
+    (htotalNonzero : totalSupply ≠ ⟨0⟩)
+    (hperm : I.perm = true) :
     (mintAmountProductNat amount0 totalSupply < UInt256.size ∧
       reserve0 ≠ ⟨0⟩ ∧ mintAmountProductNat amount1 totalSupply < UInt256.size ∧
       reserve1 ≠ ⟨0⟩) ∨
@@ -210,8 +211,8 @@ theorem uniswapMintProportionalFeeOffKLastZeroArithmeticFromFactoryCases
       rw [← hruntimeReserve1]
       dsimp [reserve1Word]
       exact reserve112Word_lt _)
-  exact uniswapMintProportionalArithmeticAfterMintFeeCases nextFrame.locals
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+  exact uniswapMintProportionalArithmeticAfterMintFeeCases (hperm := hperm) nextFrame.locals
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source hfee (by
       simpa [memFee, hruntimeReserve0, hruntimeReserve1] using rd3701)
     hbase hamount0Get hamount1Get hreserve0Get hreserve1Get htotalEq htotalSlot
@@ -230,8 +231,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroArithmeticFromFactoryCases
     (hsz36 : 36 ≤ I.calldata.size)
     (hperm : I.perm = true)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -411,7 +412,10 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroArithmeticFromFactoryCases
         evm1S (.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn")
         (.ok { contract := contract, locals := nextFrame.locals } evmAfterFee) := by
     simpa [nextFrame, evmL, evmS, evmAfterFee, resumeAfterInternalCall] using
-      uniswapMintFeeCallFromMint_feeOff_kLastNonzero evmL evm1S evmFeeS I balance0
+      uniswapMintFeeCallFromMint_feeOff_kLastNonzero (hperm := by
+        simpa only [typedCallViaEVM_executionEnv_eq hcall1,
+          typedCallViaEVM_executionEnv_eq hcall0, uniswapLockEnteredState,
+          uniswapUnlockedState, storageStore_executionEnv, initState] using hperm) evmL evm1S evmFeeS I balance0
         balance1 feeTo (by simpa [evmL, evmS] using hfeeGuard) hfeeCall hfeeDec
         hfeeToAddr hkLastSource
   have hbase : nextFrame.locals.get? "totalSupply" = none := by
@@ -442,9 +446,9 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroArithmeticFromFactoryCases
       rw [← hruntimeReserve1]
       dsimp [reserve1Word]
       exact reserve112Word_lt _)
-  exact uniswapMintProportionalArithmeticAfterMintFeeCases
+  exact uniswapMintProportionalArithmeticAfterMintFeeCases (hperm := hperm)
     (σFee := σCleared) (evmFeeS := evmAfterFee) nextFrame.locals
-    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
     hle0Source hle1Source hfee (by
       simpa [memFee, hcleared, hruntimeReserve0, hruntimeReserve1] using rd3701)
     hbase hamount0Get hamount1Get hreserve0Get hreserve1Get htotalEq htotalSlot

@@ -1,6 +1,6 @@
 import Examples.UniswapV2Pair.MintLiquidityZeroCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -19,8 +19,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -147,7 +147,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroFromFactoryCase
       reserve0 ≠ ⟨0⟩ ∧ reserve1 ≠ ⟨0⟩ ∧
       minFunctionResultWord ((amount0.mul totalSupply).div reserve0)
           ((amount1.mul totalSupply).div reserve1) =
-        ⟨0⟩) :
+        ⟨0⟩)
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hzero with
     ⟨hfeeToNonzero, hkLastZero, htotalNonzero, hmulFit0, hmulFit1, hreserve0Nonzero,
@@ -209,8 +210,8 @@ theorem uniswapMintProportionalFeeOnKLastZeroLiquidityZeroFromFactoryCase
     feeToStaticcallMem_read64_of_size_ge
       (UInt256.ofNat I.codeOwner.val) o o1 outFee ho32 hoSize ho132 ho1Size houtFee32
       houtFeeSize
-  exact uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase
-    feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+  exact uniswapMintProportionalFeeOnKLastZeroLiquidityZeroCase (hperm := by assumption)
+    feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToAddr hkLastSource rd3701
     htotalEq htotalSlot htotalNonzero hreserve0Eq hreserve1Eq hamount0Eq hamount1Eq hclean0
     hclean1 hmulFit0 hmulFit1 hreserve0Nonzero hreserve1Nonzero hliqZero hliqSource hmem
@@ -228,8 +229,8 @@ theorem uniswapMintProportionalKLastZeroLiquidityZeroFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -367,19 +368,20 @@ theorem uniswapMintProportionalKLastZeroLiquidityZeroFromFactoryCase
         reserve0 ≠ ⟨0⟩ ∧ reserve1 ≠ ⟨0⟩ ∧
         minFunctionResultWord ((amount0.mul totalSupply).div reserve0)
             ((amount1.mul totalSupply).div reserve1) =
-          ⟨0⟩)) :
+          ⟨0⟩))
+    (hperm : I.perm = true) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
   rcases hzero with hzero | hzero
   · exact
-      uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase
-        feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+      uniswapMintProportionalFeeOffKLastZeroLiquidityZeroFromFactoryCase (hperm := by assumption)
+        feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
         hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781
         ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq
         htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq hreserve1Eq hamount0Eq
         hamount1Eq hzero
   · exact
-      uniswapMintProportionalFeeOnKLastZeroLiquidityZeroFromFactoryCase
-        feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0
+      uniswapMintProportionalFeeOnKLastZeroLiquidityZeroFromFactoryCase (hperm := by assumption)
+        feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0
         hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToEq rd7781
         ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32 hkLastEq htotalEq
         htotalSlot hruntimeReserve0 hruntimeReserve1 hreserve0Eq hreserve1Eq hamount0Eq
@@ -398,8 +400,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroFromFactoryCase
     (hdispatch : dispatchMsg contract I.calldata = some mintTransition)
     (hsz36 : 36 ≤ I.calldata.size)
     (hwv : I.weiValue = ⟨0⟩)
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -606,8 +608,8 @@ theorem uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroFromFactoryCase
     feeToStaticcallMem_read64_of_size_ge
       (UInt256.ofNat I.codeOwner.val) o o1 outFee ho32 hoSize ho132 ho1Size houtFee32
       houtFeeSize
-  exact uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase
-    feeTo hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1
+  exact uniswapMintProportionalFeeOffKLastNonzeroLiquidityZeroCase (hperm := by assumption)
+    feeTo hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
     hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hfeeToAddr hkLastSource rd3701
     htotalEq htotalSlot htotalNonzero hreserve0Eq hreserve1Eq hamount0Eq hamount1Eq hclean0
     hclean1 hmulFit0 hmulFit1 hreserve0Nonzero hreserve1Nonzero hliqZero hliqSource hmem

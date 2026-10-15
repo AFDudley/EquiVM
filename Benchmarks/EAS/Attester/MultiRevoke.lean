@@ -14,7 +14,7 @@ code, and out-of-gas paths. Do not add a permission or canonical-ABI preconditio
 Generated RD summaries stop at CALL; compose that boundary using the shared call machinery.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables
 
 namespace Benchmarks.EAS.Attester

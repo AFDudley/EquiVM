@@ -1,6 +1,6 @@
 import Examples.BlindAuction.Reveal.Nonempty
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
@@ -93,7 +93,7 @@ theorem scratch_revealLoopBody_refundOverflow_from1247_pair {I} {g : Sat256}
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : L.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -107,10 +107,10 @@ theorem scratch_revealLoopBody_refundOverflow_from1247_pair {I} {g : Sat256}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
     (hhash :
       evalExpr? blindAuctionConfig
@@ -759,7 +759,7 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : L.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -773,10 +773,10 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
     (hfakeWord : fakeWord = if fake then (⟨1⟩ : UInt256) else ⟨0⟩)
     (hfit : refund.toNat + deposit.toNat < UInt256.size)
@@ -823,8 +823,8 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
     exact packedUint256BoolBytes32Hash_eq_of_u256_eq_one
       (blinded := blinded) (value := value) (secret := secret) (fake := fake) hflag
   have hhashEval := scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret fake
-  have hsrc :=
-    scratch_revealLoopBody_ok_noPlace_of_get evm L values fakes secrets curLen refund i value
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_noPlace_of_get (hperm := hp) evm L values fakes secrets curLen refund i value
       secret blinded deposit fake fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value fake secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -887,7 +887,7 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
           with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
         swap
         · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-        exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+        exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
           simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5]
             using rdNext⟩⟩
   | true =>
@@ -904,7 +904,7 @@ theorem scratch_revealLoopBody_hashMatch_noPlace_fromPacked_pair {I} {g : Sat256
         with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
       swap
       · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-      exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+      exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
         simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5]
           using rdNext⟩⟩
 
@@ -1125,10 +1125,10 @@ theorem scratch_revealLoopAdvance_refundAdded_zeroBlinded {I} {g : Sat256}
       simp [nextCursor, nextIdx, hadd]
       omega
     · simpa [scratch_revealZeroBlindedState, storageStore_executionEnv, henv] using henv
-    · unfold scratch_revealZeroBlindedState Solm.EVM.storageStore State.lookupAccount
+    · unfold scratch_revealZeroBlindedState Stele.EVM.storageStore State.lookupAccount
       cases h : evm.accountMap.get? evm.executionEnv.codeOwner <;>
         simp [Option.option, State.setAccount, Account.updateStorage, h, hσ0]
-    · unfold scratch_revealZeroBlindedState Solm.EVM.storageStore State.lookupAccount
+    · unfold scratch_revealZeroBlindedState Stele.EVM.storageStore State.lookupAccount
       cases h : evm.accountMap.get? evm.executionEnv.codeOwner <;>
         simp [Option.option, State.setAccount, Account.updateStorage, h, hsub]
     · simpa [nextCursor] using haccountsNext
@@ -1409,11 +1409,11 @@ theorem scratch_revealLoopAdvance_refundAddedOk_zeroBlinded {I} {g : Sat256}
       hvaluesL1 hfakesL1 hsecretsL1
       (by simpa [scratch_revealZeroBlindedState, storageStore_executionEnv, henv] using henv)
       (by
-        unfold scratch_revealZeroBlindedState Solm.EVM.storageStore State.lookupAccount
+        unfold scratch_revealZeroBlindedState Stele.EVM.storageStore State.lookupAccount
         cases h : evm.accountMap.get? evm.executionEnv.codeOwner <;>
           simp [Option.option, State.setAccount, Account.updateStorage, h, hσ0])
       (by
-        unfold scratch_revealZeroBlindedState Solm.EVM.storageStore State.lookupAccount
+        unfold scratch_revealZeroBlindedState Stele.EVM.storageStore State.lookupAccount
         cases h : evm.accountMap.get? evm.executionEnv.codeOwner <;>
           simp [Option.option, State.setAccount, Account.updateStorage, h, hsub])
       haccountsNext hawNext hawNextSmall hfpNext hreadNext hmemNext96 hmemNextLe
@@ -1600,11 +1600,11 @@ theorem scratch_revealLoopAdvance_refundPlaced_zeroBlinded_placeBidZero {I} {g :
     simp [henv]
   have hwordEq :
       scratch_placeBidHighestBidderWord (scratch_placeBidStoreHighMap a.acc I value) I =
-        Solm.EVM.storageLoad (scratch_placeBidAfterHigh evm value)
+        Stele.EVM.storageLoad (scratch_placeBidAfterHigh evm value)
           (scratch_placeBidAfterHigh evm value).executionEnv.codeOwner ⟨5⟩ := by
     unfold scratch_placeBidHighestBidderWord
     rw [hhighAccounts]
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       scratch_placeBidAfterHigh, storageStore_executionEnv, henv]
   have hpbAccounts :
       scratch_placeBidStoreBidderMap (scratch_placeBidStoreHighMap a.acc I value) I
@@ -1761,11 +1761,11 @@ theorem scratch_revealLoopAdvance_refundPlaced_zeroBlinded_placeBidNonzero {I} {
             (scratch_placeBidStorePendingMap a.acc I
               (scratch_placeBidHighestBidWord a.acc I + scratch_placeBidPendingWord a.acc I))
             I value) I =
-        Solm.EVM.storageLoad (scratch_placeBidAfterHigh evmPending value)
+        Stele.EVM.storageLoad (scratch_placeBidAfterHigh evmPending value)
           (scratch_placeBidAfterHigh evmPending value).executionEnv.codeOwner ⟨5⟩ := by
     unfold scratch_placeBidHighestBidderWord
     rw [hhighAccounts]
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       scratch_placeBidAfterHigh, storageStore_executionEnv, evmPending,
       scratch_placeBidAfterPending, henv]
   have hpbAccounts :
@@ -1884,7 +1884,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : L.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -1898,12 +1898,12 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
     (hfakeWord : fakeWord = (⟨0⟩ : UInt256))
     (hfit : refund.toNat + deposit.toNat < UInt256.size)
     (hdepositGe : value.toNat ≤ deposit.toNat)
@@ -1954,8 +1954,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_false_of_get evm L values fakes secrets curLen refund i
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_false_of_get (hperm := hp) evm L values fakes secrets curLen refund i
       value secret blinded deposit high fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2013,7 +2013,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidFalse_fromPacked_pair {I} {g : 
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5] using rdNext⟩⟩
 
 theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
@@ -2074,7 +2074,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : L.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -2088,13 +2088,13 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (hfakeWord : fakeWord = (⟨0⟩ : UInt256))
     (hfit : refund.toNat + deposit.toNat < UInt256.size)
     (hdepositGe : value.toNat ≤ deposit.toNat)
@@ -2152,8 +2152,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_true_zero_of_get evm L values fakes secrets curLen refund i
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_true_zero_of_get (hperm := hp) evm L values fakes secrets curLen refund i
       value secret blinded deposit high old fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2219,7 +2219,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueZero_fromPacked_pair {I}
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5] using rdNext⟩⟩
 
 theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
@@ -2280,7 +2280,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
     (hi : L.get? "i" = some (.int (Int.ofNat i.toNat)))
     (hrefund : L.get? "refund" = some (.int (Int.ofNat refund.toNat)))
     (hlen :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (bidsBase (.address evm.executionEnv.source)) = curLen)
     (hboundBids : i.toNat < curLen.toNat)
     (hboundValues : i.toNat < values.length)
@@ -2294,16 +2294,16 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
       lookupNth? secrets i.toNat =
         some (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret)))
     (hblinded :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidBlindedSlot evm i) = blinded)
     (hdeposit :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (scratch_revealBidDepositSlot evm i) = deposit)
-    (hhigh : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
-    (hold : Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
+    (hhigh : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨6⟩ = high)
+    (hold : Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩ = old)
     (holdAddr : oldAddr = AccountAddress.ofNat (UInt256.land old solcAddrMask).toNat)
     (hpending :
-      Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (pendingReturnsSlot (.address oldAddr)) = pending)
     (hfakeWord : fakeWord = (⟨0⟩ : UInt256))
     (hfit : refund.toNat + deposit.toNat < UInt256.size)
@@ -2380,8 +2380,8 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
       (blinded := blinded) (value := value) (secret := secret) (fake := false) hflag
   have hhashEval :=
     scratch_evalExpr_revealPackedHash_of_secretStoreOf evm L i value secret false
-  have hsrc :=
-    scratch_revealLoopBody_ok_placeBid_true_nonzero_of_get evm L values fakes secrets curLen
+  have hsrc := fun hp : evm.executionEnv.perm = true =>
+    scratch_revealLoopBody_ok_placeBid_true_nonzero_of_get (hperm := hp) evm L values fakes secrets curLen
       refund i value secret blinded deposit high old pending oldAddr fakeRaw
       (KEC (ByteArray.mk (packedUint256BoolBytes32Bytes value false secret).toArray)).toList
       hbids hvalues hfakes hsecrets hi hrefund hlen hboundBids hboundValues hboundFakes
@@ -2447,7 +2447,7 @@ theorem scratch_revealLoopBody_hashMatch_placeBidTrueNonzero_fromPacked_pair {I}
     with ⟨hp, k4, C4, rdNext⟩ | ⟨hpf, hst⟩
   swap
   · exact Or.inr ⟨hpf, hsrcStatic (hpermEvm.trans hpf), hst⟩
-  exact Or.inl ⟨hp, hsrc, ⟨k4, C4, by
+  exact Or.inl ⟨hp, hsrc (hpermEvm.trans hp), ⟨k4, C4, by
     simpa [base, newFree, packedLen, mem4, mem5, aw1, aw2, aw3, aw4, aw5,
       key, awPB1, awPB2, awPB3] using rdNext⟩⟩
 

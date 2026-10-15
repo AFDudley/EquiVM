@@ -1,9 +1,9 @@
 import Examples.UniswapV2Pair.Spec
-import Solm.Semantics
+import Stele.Semantics
 import Ethereum.Semantics
 import Reasoning.JumpDest
 
-open Solm Ethereum Ethereum.EVM
+open Stele Ethereum Ethereum.EVM
 
 set_option maxRecDepth 2000000
 
@@ -397,7 +397,7 @@ def uniswapV2PairBytecode : ByteArray :=
 
 /-! ## Selector facts
 
-The Solm dispatcher computes selectors with `KEC`. The facts below tie the ABI signatures to
+The Stele dispatcher computes selectors with `KEC`. The facts below tie the ABI signatures to
 the selector bytes in the runtime dispatcher.
 -/
 
@@ -409,7 +409,7 @@ theorem uniswapSwapSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.swapTransition))).extract 0 4
       = ⟨#[0x02, 0x2c, 0x0d, 0x9f]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.swapTransition = "swap(uint256,uint256,address,bytes)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.swapTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel
   rw [hsig]
@@ -430,7 +430,7 @@ theorem uniswapApproveSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.approveTransition))).extract 0 4
       = ⟨#[0x09, 0x5e, 0xa7, 0xb3]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.approveTransition = "approve(address,uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.approveTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel
   rw [hsig]
@@ -451,7 +451,7 @@ theorem uniswapTransferFromSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.transferFromTransition))).extract 0 4
       = ⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.transferFromTransition = "transferFrom(address,address,uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.transferFromTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel
   rw [hsig]
@@ -477,7 +477,7 @@ theorem uniswapInitializeSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.initializeTransition))).extract 0 4
       = ⟨#[0x48, 0x5c, 0xc9, 0x55]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.initializeTransition = "initialize(address,address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.initializeTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -498,7 +498,7 @@ theorem uniswapMintSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.mintTransition))).extract 0 4
       = ⟨#[0x6a, 0x62, 0x78, 0x42]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.mintTransition = "mint(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.mintTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -509,7 +509,7 @@ theorem uniswapBalanceOfSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.balanceOfTransition))).extract 0 4
       = ⟨#[0x70, 0xa0, 0x82, 0x31]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.balanceOfTransition = "balanceOf(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.balanceOfTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -525,7 +525,7 @@ theorem uniswapNoncesSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.noncesTransition))).extract 0 4
       = ⟨#[0x7e, 0xce, 0xbe, 0x00]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.noncesTransition = "nonces(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.noncesTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -536,7 +536,7 @@ theorem uniswapBurnSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.burnTransition))).extract 0 4
       = ⟨#[0x89, 0xaf, 0xcb, 0x44]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.burnTransition = "burn(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.burnTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -552,7 +552,7 @@ theorem uniswapTransferSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.transferTransition))).extract 0 4
       = ⟨#[0xa9, 0x05, 0x9c, 0xbb]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.transferTransition = "transfer(address,uint256)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.transferTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel
   rw [hsig]
@@ -568,7 +568,7 @@ theorem uniswapSkimSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.skimTransition))).extract 0 4
       = ⟨#[0xbc, 0x25, 0xcf, 0x77]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.skimTransition = "skim(address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.skimTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]
@@ -589,7 +589,7 @@ theorem uniswapPermitSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.permitTransition))).extract 0 4
       = ⟨#[0xd5, 0x05, 0xac, 0xcf]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.permitTransition = "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.permitTransition, legacyAddr, addr, uint256, uint256Int, uint8, uint8Int, bytes32, bytes32Width, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 8 = "8" by decide +kernel, show Nat.repr 32 = "32" by decide +kernel, show Nat.repr 256 = "256" by decide +kernel]
     decide +kernel
   rw [hsig]
@@ -600,7 +600,7 @@ theorem uniswapAllowanceSelectorBytes :
     (KEC (String.toByteArray (transitionSigStr UniswapV2Pair.allowanceTransition))).extract 0 4
       = ⟨#[0xdd, 0x62, 0xed, 0x3e]⟩ := by
   have hsig : transitionSigStr UniswapV2Pair.allowanceTransition = "allowance(address,address)" := by
-    simp [Solm.transitionSigStr, ABI.printSignature, transitionSignature,
+    simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.allowanceTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
     decide +kernel
   rw [hsig]

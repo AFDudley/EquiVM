@@ -1,8 +1,8 @@
 import Benchmarks.Dss.Cure.Spec
-import Solm.Notation
+import Stele.Notation
 
 /-!
-# Cure spec in the Solidity-faithful Solm frontend
+# Cure spec in the Solidity-faithful Stele frontend
 
 The whole `cure.sol` spec written with `solidity%` and proven definitionally equal to the AST
 spec in `Spec.lean`.  Checked-math helpers (`_add`/`_sub`) and the checked external call in
@@ -10,7 +10,7 @@ spec in `Spec.lean`.  Checked-math helpers (`_add`/`_sub`) and the checked exter
 explicit `% #wordModulus` wrap.  Transition order matches `contract.transitions` (selector order).
 -/
 
-open Solm Solm.Notation Benchmarks.Dss.Cure
+open Stele Stele.Notation Benchmarks.Dss.Cure
 
 namespace Benchmarks.Dss.Cure.Syntax
 

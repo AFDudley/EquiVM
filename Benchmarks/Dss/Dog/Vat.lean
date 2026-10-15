@@ -1,12 +1,12 @@
 import Benchmarks.Dss.Dog.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Dog.Immutables
 
 namespace Benchmarks.Dss.Dog
 
 theorem dogDecode_vat {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (vatTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (vatTransition.params.map Param.name)
       (transitionSignature vatTransition).paramTypes I.calldata = some ∅ := by
   show decodeCalldataWithMode DecodeMode.legacySolc05 [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz

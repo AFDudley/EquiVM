@@ -1,7 +1,7 @@
 import Examples.UniswapV2Pair.BurnUpdatedBalanceCallRuntime
 import Examples.UniswapV2Pair.PairBalanceCallCases
 import Examples.UniswapV2Pair.BalanceCallSource
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 namespace UniswapV2Pair
 set_option maxRecDepth 2000000
 

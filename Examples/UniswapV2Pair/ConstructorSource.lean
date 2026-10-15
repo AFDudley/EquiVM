@@ -1,19 +1,19 @@
 import Examples.UniswapV2Pair.ConstructorDomainSource
 import Examples.UniswapV2Pair.Bytes32WordSource
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace UniswapV2Pair
 
 set_option maxRecDepth 2000
 
 def constructorDomainState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨3⟩
     (constructorDomainHashWord (UInt256.ofNat evm.executionEnv.codeOwner.val))
 
 def constructorFactoryState (evm : EVM.State) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
-    (setAddressOffset0Word (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨5⟩
+    (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨5⟩)
       (uniswapSourceWord evm.executionEnv))
 
 theorem constructorAssignDomain (evm : EVM.State) :
@@ -45,27 +45,37 @@ theorem constructorAssignFactory (evm : EVM.State) :
   · rw [← uniswapSource_ofNat evm.executionEnv]
     exact storageLocStore_address_offset0 evm _ _ (uniswapSourceWord_canonical _)
 
-theorem uniswapConstructorSourceReturns (evm : EVM.State) (hwv : evm.executionEnv.weiValue = ⟨0⟩) :
+theorem uniswapConstructorSourceReturns (evm : EVM.State) (hwv : evm.executionEnv.weiValue = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ constructorDecl.body
       (.returned { contract := contract, locals := ∅ }
         (constructorFactoryState (constructorDomainState (uniswapLockExitedState evm))) none) := by
   apply ExecFuncBody.execBlockOK
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure])
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := Or.inr hperm)
+    (by simp only [evalExpr?, pure])
     (uniswapAssignUnlockedOne evm ∅
       (by simp only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_empty]))) ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true
     (by simpa only [uniswapLockExitedState, uniswapUnlockedState, storageStore_executionEnv]
       using hwv))) ?_
   refine ExecBlock.consNormal
-    (ExecStmt.assign (evalExpr_constructor_domain _) (constructorAssignDomain _)) ?_
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [uniswapLockExitedState, uniswapUnlockedState] using hperm))
+      (evalExpr_constructor_domain _) (constructorAssignDomain _)) ?_
   exact ExecBlock.consNormal
-    (ExecStmt.assign (by simp only [sender, evalExpr?, envValue, pure])
+    (ExecStmt.assign
+      (hperm := Or.inr (by simpa [constructorDomainState, uniswapLockExitedState, uniswapUnlockedState] using hperm))
+      (by simp only [sender, evalExpr?, envValue, pure])
       (constructorAssignFactory _)) ExecBlock.nil
 
-theorem uniswapConstructorSourceReverts (evm : EVM.State) (hwv : evm.executionEnv.weiValue ≠ ⟨0⟩) :
+theorem uniswapConstructorSourceReverts (evm : EVM.State) (hwv : evm.executionEnv.weiValue ≠ ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody config contract evm ∅ constructorDecl.body .reverted := by
   apply ExecFuncBody.execBlockRevert
-  refine ExecBlock.consNormal (ExecStmt.assign (by simp only [evalExpr?, pure])
+  refine ExecBlock.consNormal (ExecStmt.assign
+    (hperm := Or.inr hperm)
+    (by simp only [evalExpr?, pure])
     (uniswapAssignUnlockedOne evm ∅
       (by simp only [Std.HashMap.get?_eq_getElem?, Std.HashMap.getElem?_empty]))) ?_
   exact ExecBlock.consRevert (ExecStmt.requireFalse (evalCallvalueEq_false

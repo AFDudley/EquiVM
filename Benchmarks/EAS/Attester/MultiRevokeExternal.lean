@@ -2,7 +2,7 @@ import Benchmarks.EAS.Attester.MultiRevokeSource
 import Benchmarks.EAS.Attester.MultiRevokeCallTrace
 import Benchmarks.EAS.Attester.MultiRevokeStartTrace
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach Reasoning.Immutables
 open Benchmarks.EAS.Attester.Immutables attesterRuntimeBlocks
 
 namespace Benchmarks.EAS.Attester
@@ -80,7 +80,7 @@ theorem multiRevokeExternalCorrect (imms : Store) (hfit : immutablesFit contract
         (restrictImmutables contract imms) := by
     apply ExecFuncBody.execBlockRevert
     apply multiRevokeSourceSuffix hp
-    exact checkedExternalCallVarFailure hguard hlocalEas hargs
+    exact checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hlocalEas hargs
       (by simpa only [address_of_val] using hcall)
   by_cases hdepth : I.depth = 1024
   · obtain ⟨k', C', rd'⟩ := RD.callDepthLimit rd hcallDec hdepth (by simp)
@@ -102,7 +102,7 @@ theorem multiRevokeExternalCorrect (imms : Store) (hfit : immutablesFit contract
         hcode hdispatch hdec (hfailure hcall)
   | true =>
       have hsource := ExecFuncBody.execBlockOK
-        (multiRevokeSourceSuffix hp (checkedExternalCallVarSuccess hguard hlocalEas hargs
+        (multiRevokeSourceSuffix hp (checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hguard hlocalEas hargs
           (by simpa only [address_of_val] using hcall) (by rfl)))
       exact (multiRevokeAfterCallSuccess rd').reEquivExecutionGen hcode hdispatch hdec hsource rfl
         (.fallthrough rfl rfl (by native_decide))

@@ -1,9 +1,10 @@
 import Reasoning.WordArithmetic
+import Reasoning.Vyper
 import Examples.VyperERC20.Bytecode
 import Examples.VyperERC20.Storage
 import Examples.ERC20.Common
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -43,7 +44,7 @@ theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
     (hlocals : locals.get? "totalSupply" = none) :
     ExecTransitionBody vyperERC20Config erc20Contract evm locals ERC20.totalSupplyTransition.body
       (.returned { contract := erc20Contract, locals := locals } evm
-        (some [(.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
+        (some [(.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨2⟩).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       have her : evalStorageRef vyperERC20Config { contract := erc20Contract, locals := locals } evm
@@ -53,9 +54,8 @@ theorem erc20TotalSupplyBodyReturns (evm : EVM.State) (locals : Store)
       have hty : storageTypeAt? erc20Contract.storage ({ base := "totalSupply", steps := [] } : EvaledStorageRef)
           = some (.elem (.int uint256Int)) := by
         decide
-      erw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hlocals) (her := her)
-        (hty := hty) (hloc := vyperERC20Config_storage_totalSupply),
-        storageLocLoad_uint256])
+      exact evalExpr_storage_vyper_uint256_backend (hbackend := rfl) (hcheck := by rfl) (hbase := hlocals)
+        (her := her) (hty := hty) (hloc := vyperERC20Config_storage_totalSupply))
 
 macro "vyper_erc20_runtime_decode" : tactic =>
   `(tactic| native_decide)
@@ -204,8 +204,8 @@ theorem erc20Dispatch_totalSupply {cd : ByteArray}
     (byteArray_eq_of_beq hsel).symm
   refine dispatchMsg_eq_some_of_split (contract := erc20Contract)
     (pre := [ERC20.approveTransition])
-    (post := [ERC20.transferFromTransition, ERC20.balanceOfTransition,
-      ERC20.transferTransition, ERC20.allowanceTransition])
+    (post := [transferFromTransition, ERC20.balanceOfTransition,
+      transferTransition, ERC20.allowanceTransition])
     (hfallback := rfl) (htr := rfl) ?_
     (by rw [selectorOf, vyperERC20TotalSupplySelectorBytes]; exact hsel)
   · intro t ht
@@ -231,11 +231,11 @@ theorem erc20TotalSupplyBodyCore
   have hsz := erc20TotalSupplySelector_size hsel
   have hd := erc20Dispatch_totalSupply (cd := I.calldata) hsel
   have hdec :
-      decodeCalldataWithMode vyperERC20Config.abiDecodeMode
+      vyperERC20Config.externalABI.decodeCalldata?
         (ERC20.totalSupplyTransition.params.map Param.name)
         (transitionSignature ERC20.totalSupplyTransition).paramTypes I.calldata =
           some ∅ := by
-    simpa [vyperERC20Config, erc20Contract, ERC20.erc20Contract, ERC20.totalSupplyTransition]
+    simpa [vyperERC20Config, erc20Contract, ERC20.totalSupplyTransition]
       using
       (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   have hbody :
@@ -244,7 +244,7 @@ theorem erc20TotalSupplyBodyCore
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
       erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)

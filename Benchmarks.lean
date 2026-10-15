@@ -1,5 +1,12 @@
 import Benchmarks.Auction.Correct
 import Benchmarks.WETH9.Correct
+import Benchmarks.Safe.Main.Correct
+import Benchmarks.Safe.Runs1e6.Correct
+import Benchmarks.Safe.V0_cdb2eb5.Correct
+import Benchmarks.Safe.V1_0227664.Correct
+import Benchmarks.Safe.V2_0e91d99.Correct
+import Benchmarks.Safe.V3_77901a5.Correct
+import Benchmarks.Safe.ViaIR.Correct
 import Benchmarks.Dss.Dai.Correct
 import Benchmarks.Dss.Jug.Correct
 import Benchmarks.Dss.Vat.Correct
@@ -20,3 +27,9 @@ import Benchmarks.Dss.Flopper.Correct
 import Benchmarks.Dss.GemJoin.Correct
 import Benchmarks.Dss.DaiJoin.Correct
 import Benchmarks.EAS.Attester.Correct
+import Benchmarks.EAS.EAS.Correct
+import Benchmarks.CurveVault.Correct
+import Benchmarks.CompoundIII.Comet.Correct
+import Benchmarks.Morpho.MorphoBlue.Correct
+import Benchmarks.UniswapV3.Pool.Correct
+import Benchmarks.UniswapV4PoolManager.Correct

@@ -3,13 +3,13 @@ import Benchmarks.Dss.Clipper.Arithmetic
 import Reasoning.ExternalCall
 import Benchmarks.Dss.Clipper.GetStatusEVM
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Clipper
 
@@ -263,7 +263,7 @@ theorem clipperGetFeedPriceSpotterIlksCallFailure (v : ClipperImmutables)
   have hguard := clipperEvalGetFeedPriceSpotterCodeGuard_true v evm ∅ (by simp) hcode
   have hreceiver := clipperEvalGetFeedPriceSpotterTarget v evm ∅ (by simp)
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallFailure
+    checkedExternalCallFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := ∅) (receiver := .storage spotterRef) (retVar := "spotterIlk")
       (name := "spotterIlks") (target := clipperGetFeedPriceSpotterAddress evm)
@@ -767,7 +767,7 @@ theorem clipperGetFeedPricePipPeekCallFailure
         some (.address (clipperSpotterIlksPipAddress outIlks)) := by
     simp [clipperGetFeedPricePipLocals]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallVarFailure
+    checkedExternalCallVarFailure (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := clipperGetFeedPricePipLocals outIlks) (receiver := "pip")
       (retVar := "peekRet") (name := "peek")
@@ -795,7 +795,7 @@ theorem clipperGetFeedPricePipPeekDecodeRevert
         some (.address (clipperSpotterIlksPipAddress outIlks)) := by
     simp [clipperGetFeedPricePipLocals]
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallVarDecodeRevert
+    checkedExternalCallVarDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := clipperGetFeedPricePipLocals outIlks) (receiver := "pip")
       (retVar := "peekRet") (name := "peek")
@@ -846,7 +846,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekBlock
   have hcallBlock :
       ExecBlock config emptyFrame evm callStmts (.ok spotterFrame evmIlks) := by
     simpa [emptyFrame, spotterFrame, callStmts, clipperGetFeedPriceSpotterIlkLocals] using
-      checkedExternalCallSuccess
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm) (evm' := evmIlks)
         (locals := ∅) (receiver := .storage spotterRef) (retVar := "spotterIlk")
         (name := "spotterIlks") (target := clipperGetFeedPriceSpotterAddress evm)
@@ -860,7 +860,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekBlock
     simpa [spotterFrame, pipFrame, clipperGetFeedPricePipLocals] using
       ExecStmt.letDecl
         (cfg := config)
-        (solm := spotterFrame)
+        (stele := spotterFrame)
         (evm := evmIlks) (name := "pip") (ty := some addr)
         (expr := tuple0 (.var "spotterIlk"))
         (value := .address (clipperSpotterIlksPipAddress outIlks))
@@ -1012,7 +1012,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
   have hcallBlock :
       ExecBlock config emptyFrame evm callStmts (.ok spotterFrame evmIlks) := by
     simpa [emptyFrame, spotterFrame, callStmts, clipperGetFeedPriceSpotterIlkLocals] using
-      checkedExternalCallSuccess
+      checkedExternalCallSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evm) (evm' := evmIlks)
         (locals := ∅) (receiver := .storage spotterRef) (retVar := "spotterIlk")
         (name := "spotterIlks") (target := clipperGetFeedPriceSpotterAddress evm)
@@ -1026,7 +1026,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
     simpa [spotterFrame, pipFrame, clipperGetFeedPricePipLocals] using
       ExecStmt.letDecl
         (cfg := config)
-        (solm := spotterFrame)
+        (stele := spotterFrame)
         (evm := evmIlks) (name := "pip") (ty := some addr)
         (expr := tuple0 (.var "spotterIlk"))
         (value := .address (clipperSpotterIlksPipAddress outIlks))
@@ -1042,7 +1042,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
   have hpeekBlock :
       ExecBlock config pipFrame evmIlks peekStmts (.ok peekFrame evmPeek) := by
     simpa [pipFrame, peekFrame, peekStmts, clipperGetFeedPricePeekLocals] using
-      checkedExternalCallVarSuccess
+      checkedExternalCallVarSuccess (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
         (cfg := config) (C := contract) (evm := evmIlks) (evm' := evmPeek)
         (locals := clipperGetFeedPricePipLocals outIlks) (receiver := "pip")
         (retVar := "peekRet") (name := "peek")
@@ -1056,7 +1056,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
         (.ok valFrame evmPeek) := by
     simpa [peekFrame, valFrame, clipperGetFeedPriceValLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := peekFrame) (evm := evmPeek)
+        (cfg := config) (stele := peekFrame) (evm := evmPeek)
         (name := "val") (ty := some bytes32) (expr := tuple0 (.var "peekRet"))
         (value := .fixedBytes abiBytes32Width (clipperPipPeekValueBytes outPeek))
         (clipperEvalGetFeedPricePeekVal v evmPeek outIlks outPeek)
@@ -1066,7 +1066,7 @@ theorem clipperGetFeedPriceFunctionRevertsPipPeekHasFalse
         (.ok hasFrame evmPeek) := by
     simpa [valFrame, hasFrame, clipperGetFeedPriceHasLocals] using
       ExecStmt.letDecl
-        (cfg := config) (solm := valFrame) (evm := evmPeek)
+        (cfg := config) (stele := valFrame) (evm := evmPeek)
         (name := "has") (ty := some boolTy) (expr := tuple1 (.var "peekRet"))
         (value := .bool (clipperPipPeekHasWord outPeek != ⟨0⟩))
         (clipperEvalGetFeedPricePeekHas v evmPeek outIlks outPeek)
@@ -1253,7 +1253,7 @@ theorem clipperGetFeedPriceSpotterIlksDecodeRevert
   have hguard := clipperEvalGetFeedPriceSpotterCodeGuard_true v evm ∅ (by simp) hcode
   have hreceiver := clipperEvalGetFeedPriceSpotterTarget v evm ∅ (by simp)
   simpa [checkedExternalCallStmts] using
-    checkedExternalCallDecodeRevert
+    checkedExternalCallDecodeRevert (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›)
       (cfg := config) (C := contract) (evm := evm) (evm' := evm')
       (locals := ∅) (receiver := .storage spotterRef) (retVar := "spotterIlk")
       (name := "spotterIlks") (target := clipperGetFeedPriceSpotterAddress evm)

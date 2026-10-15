@@ -8,7 +8,7 @@ Dispatch, revert, getter, malformed calldata/header, zero-header empty-string, v
 old-long, and short non-empty old-short execution branches are proved in imported modules.
 -/
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 20000000
@@ -60,47 +60,47 @@ theorem stringStoreLiteClearCurrentLongValid
   have hsplit := stringStoreLiteX_clearCurrentLongValidGenerated
     (g := Sat256.ofUInt256 g) (len := len)
     hreach hflag (by simpa [len] using hvalid) hlen hnonzero hgt31
-  let evmSolm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
-  let evmSolmLen := Solm.EVM.storageStore evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ ⟨0⟩
-  let evmSolm1 := clearSolidityBytesDataWordsFrom evmSolmLen ⟨0⟩ 0 ((len.toNat + 31) / 32)
+  let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
+  let evmSteleLen := Stele.EVM.storageStore evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ ⟨0⟩
+  let evmStele1 := clearSolidityBytesDataWordsFrom evmSteleLen ⟨0⟩ 0 ((len.toNat + 31) / 32)
   have hload :
-      Solm.EVM.storageLoad evmSolm0 evmSolm0.executionEnv.codeOwner ⟨0⟩ =
+      Stele.EVM.storageLoad evmStele0 evmStele0.executionEnv.codeOwner ⟨0⟩ =
         currentLengthHeaderWord σ I := by
-    simp [evmSolm0, Solm.EVM.storageLoad, initState, State.lookupAccount,
+    simp [evmStele0, Stele.EVM.storageLoad, initState, State.lookupAccount,
       Account.lookupStorage, currentLengthHeaderWord]
   obtain ⟨copy, hread, hcopySize⟩ :=
-    readCurrentLongExists (evm := evmSolm0)
+    readCurrentLongExists (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := len)
       hload hflag hlen (by simpa [len] using hvalid)
   have hdel :
       deleteStorage? stringStoreLiteConfig
         { contract := stringStoreLiteContract,
           locals := (∅ : Store).insert "copy" (.bytes copy) }
-        evmSolm0 currentRef = .ok evmSolm1 := by
-    simpa [evmSolm0, evmSolmLen, evmSolm1, initState, hlen] using
+        evmStele0 currentRef = .ok evmStele1 := by
+    simpa [evmStele0, evmSteleLen, evmStele1, initState, hlen] using
       deleteCurrentLongPrepared
-        (evm := evmSolm0) (copy := copy)
+        (evm := evmStele0) (copy := copy)
         (header := currentLengthHeaderWord σ I) (len := len)
         hload hflag hlen (by simpa [len] using hvalid)
-  have hbodyBytes := clearCurrentBodyReturnsBytes (evm := evmSolm0) (evm' := evmSolm1)
-    (copy := copy) (by simp [evmSolm0, initState]; exact hwv) hread hdel
-  have hbody :
-      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmSolm0 ∅
-        clearCurrentTransition.body
-        (.returned
-          { contract := stringStoreLiteContract,
-            locals := (∅ : Store).insert "copy" (.bytes copy) }
-          evmSolm1 (some [(.int len.toNat)])) := by
-    simpa [hcopySize] using hbodyBytes
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm
     exact (permSplit_false hpf hsplit).reEquivStaticHalt hcode hd hdec
-      (clearCurrentBodyStatic (evm := evmSolm0) (by simp [evmSolm0, initState]; exact hwv)
-        hread hdel (by simp [evmSolm0, initState]; exact hpf))
+      (clearCurrentBodyStatic (evm := evmStele0) (by simp [evmStele0, initState]; exact hwv)
+        hread hdel (by simp [evmStele0, initState]; exact hpf))
+  have hbodyBytes := clearCurrentBodyReturnsBytes (hperm := by assumption) (evm := evmStele0) (evm' := evmStele1)
+    (copy := copy) (by simp [evmStele0, initState]; exact hwv) hread hdel
+  have hbody :
+      ExecTransitionBody stringStoreLiteConfig stringStoreLiteContract evmStele0 ∅
+        clearCurrentTransition.body
+        (.returned
+          { contract := stringStoreLiteContract,
+            locals := (∅ : Store).insert "copy" (.bytes copy) }
+          evmStele1 (some [(.int len.toNat)])) := by
+    simpa [hcopySize] using hbodyBytes
   exact (permSplit_true hperm hsplit).reEquivExecutionGen hcode hd hdec hbody
     (by
-      simp [evmSolm1, evmSolmLen, evmSolm0, clearSolidityBytesDataWordsFrom_accountMap,
+      simp [evmStele1, evmSteleLen, evmStele0, clearSolidityBytesDataWordsFrom_accountMap,
         storageStore_accountMap, storageStore_executionEnv, initState, hcountNat,
         clearCurrentBaseWord_eq_solidityBytesDataBaseSlot]
       rfl)

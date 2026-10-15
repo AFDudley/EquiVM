@@ -8,7 +8,7 @@ import Examples.VyperERC20.Allowance
 import Examples.VyperERC20.Approve
 import Examples.VyperERC20.Transfer
 import Examples.VyperERC20.TransferFromRuntime
-import Solm.Refine
+import Stele.Refine
 import Reasoning.ABI
 import Reasoning.Dispatch
 import Reasoning.Stepping
@@ -16,7 +16,7 @@ import Reasoning.Reach
 import Reasoning.Solc
 import Reasoning.Initcode
 import Reasoning.Memory
-import Reasoning.SolmBody
+import Reasoning.SteleBody
 import Mathlib.Tactic.IntervalCases
 
 
@@ -24,14 +24,14 @@ import Mathlib.Tactic.IntervalCases
 # Vyper ERC20 — correctness entrypoints
 
 This file wires the Vyper-compiled ERC20 artifact into the same equivalence statements used by the
-Solidity ERC20 example.  The source-level behavior and ABI are the existing ERC20 Solm contract;
+Solidity ERC20 example.  The source-level behavior and ABI are the existing ERC20 Stele contract;
 the storage layout and bytecode are Vyper-specific.
 
 The constructor/initcode trace is proven below.  Runtime dispatch and function-body equivalence is
 still the remaining Vyper bytecode proof obligation.
 -/
 
-open Solm
+open Stele
 open ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
@@ -40,7 +40,7 @@ set_option linter.unusedSimpArgs false
 section
 set_option maxRecDepth 2000000
 set_option maxHeartbeats 2000000
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace VyperERC20
 
@@ -79,24 +79,24 @@ def erc20CtorLocals (initialSupply : Int) : Store :=
 theorem erc20CtorLocals_get_initialSupply (initialSupply : Int) :
     (erc20CtorLocals initialSupply).get? "initialSupply" = some (.int initialSupply) := by
   unfold erc20CtorLocals
-  simp [erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
+  simp [erc20Contract, constructorDecl]
 
 theorem erc20CtorLocals_get_balanceOf (initialSupply : Int) :
     (erc20CtorLocals initialSupply).get? "balanceOf" = none := by
   unfold erc20CtorLocals
-  simp [erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
+  simp [erc20Contract, constructorDecl]
 
 theorem erc20CtorLocals_get_totalSupply (initialSupply : Int) :
     (erc20CtorLocals initialSupply).get? "totalSupply" = none := by
   unfold erc20CtorLocals
-  simp [erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
+  simp [erc20Contract, constructorDecl]
 
 def erc20CtorBalancePostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore evm evm.executionEnv.codeOwner
+  Stele.EVM.storageStore evm evm.executionEnv.codeOwner
     (erc20BalanceOfSlot (.address evm.executionEnv.source)) initialSupply
 
 def erc20CtorPostState (evm : EVM.State) (initialSupply : UInt256) : EVM.State :=
-  Solm.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
+  Stele.EVM.storageStore (erc20CtorBalancePostState evm initialSupply)
     (erc20CtorBalancePostState evm initialSupply).executionEnv.codeOwner ⟨2⟩ initialSupply
 
 theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray} :
@@ -111,14 +111,14 @@ theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray}
   cases args with
   | nil =>
       simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-        ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
+        constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
         abiTupleHeadSize?, uint256, uint256Int, ERC20.uint256, ERC20.uint256Int] at h
   | cons arg rest =>
       cases rest with
       | cons arg2 rest =>
           cases arg <;>
             simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-              ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
+              constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
               abiTupleHeadSize?, uint256, uint256Int, ERC20.uint256, ERC20.uint256Int,
               staticABIEncodedSize?, isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
       | nil =>
@@ -126,7 +126,7 @@ theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray}
           | int i =>
               by_cases hbounds : 0 ≤ i ∧ i < Int.ofNat (EVM.twoPow 256)
               · simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                  ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
+                  constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
                   abiTupleHeadSize?, uint256, uint256Int, ERC20.uint256, ERC20.uint256Int,
                   staticABIEncodedSize?, isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
                 change (((if 0 ≤ i ∧ i < Int.ofNat (EVM.twoPow 256) then
@@ -140,7 +140,7 @@ theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray}
                 · rename_i hnot
                   exact False.elim (hnot hbounds)
               · simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                  ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
+                  constructorDecl, encodeABIValues?, encodeABIValuesFrom?,
                   abiTupleHeadSize?, uint256, uint256Int, ERC20.uint256, ERC20.uint256Int,
                   staticABIEncodedSize?, isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
                 change (((if 0 ≤ i ∧ i < Int.ofNat (EVM.twoPow 256) then
@@ -154,47 +154,47 @@ theorem erc20Deployment_shape {args : List Value} {deployedInitcode : ByteArray}
                 · simp at h
           | bool b =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | address a =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | array xs =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | tuple xs =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | fixedBytes n bs =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | bytes =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | struct name fields =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | unit =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
           | storageRef er ty =>
               simp [config, vyperERC20Config, genSolidityConstructorDeployment, erc20Contract,
-                ERC20.erc20Contract, ERC20.constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
+                constructorDecl, encodeABIValues?, encodeABIValuesFrom?, abiTupleHeadSize?,
                 uint256, ERC20.uint256, ERC20.uint256Int, staticABIEncodedSize?,
                 isDynamicABIType, encodeABIValue?, encodeABIWord?] at h
 
@@ -206,14 +206,14 @@ theorem erc20CtorAssignBalance (evm : EVM.State) (initialSupply : Int)
       evm .storage (balanceOfRef sender) (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
           erc20CtorBalancePostState evm (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_balanceOf initialSupply)
       (her := by
         simp [evalStorageRef, evalStorageRefStep, evalStorageRefSteps, balanceOfRef, sender,
           ERC20.balanceOfRef, ERC20.sender, envValue, valueToKey?, EvalResult.bind, EvalResult.ofOption, bind,
           pure, evalExpr?])
-      (hty := by simp [storageTypeAt?, erc20Contract, ERC20.erc20Contract,
+      (hty := by simp [storageTypeAt?, erc20Contract,
         ERC20.erc20StorageDecls, uint256Storage, ERC20.uint256Storage, storageTypeStep?])
       (hloc := vyperERC20Config_storage_balanceOf (.address evm.executionEnv.source))
   have hword :
@@ -236,15 +236,15 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
       { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
       evm .storage totalSupplyRef (.int initialSupply) =
         .ok ({ contract := erc20Contract, locals := erc20CtorLocals initialSupply },
-          Solm.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
+          Stele.EVM.storageStore evm evm.executionEnv.codeOwner ⟨2⟩
             (EVM.word initialSupply.toNat)) := by
-  apply assignStorageRef_storage_scalar (hbackend := rfl)
+  apply assignStorageRef_storage_vyper_scalar (hbackend := rfl) (hcheck := by rfl)
       (hleaf := Or.inl ⟨_, rfl⟩) (ty := uint256Storage)
       (hbase := erc20CtorLocals_get_totalSupply initialSupply)
       (her := by
         simp [evalStorageRef, evalStorageRefSteps, totalSupplyRef, ERC20.totalSupplyRef,
           EvalResult.bind, pure, bind])
-      (hty := by simp [storageTypeAt?, erc20Contract, ERC20.erc20Contract,
+      (hty := by simp [storageTypeAt?, erc20Contract,
         ERC20.erc20StorageDecls, uint256Storage, ERC20.uint256Storage])
       (hloc := vyperERC20Config_storage_totalSupply)
   have hword :
@@ -259,7 +259,7 @@ theorem erc20CtorAssignTotalSupply (evm : EVM.State) (initialSupply : Int)
   conv_lhs => rw [← hint]
   erw [storageLocStore_uint256]
 
-theorem erc20SolmCtorExecReverts_nonpayable
+theorem erc20SteleCtorExecReverts_nonpayable
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -267,18 +267,18 @@ theorem erc20SolmCtorExecReverts_nonpayable
     {I : ExecutionEnv}
     (initialSupply : Int)
     (hwv : I.weiValue ≠ ⟨0⟩) :
-    solmCtorExec config erc20Contract [.int initialSupply]
+    steleCtorExec config erc20Contract [.int initialSupply]
       σ σ₀ g A I .reverted := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
   · rfl
-  · simp [erc20CtorLocals, erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
+  · simp [erc20CtorLocals, erc20Contract, constructorDecl]
   · exact bodyReverts_nonPayable (cfg := config) (contract := erc20Contract)
       (locals := erc20CtorLocals initialSupply) hwv
 
-theorem erc20SolmCtorExecSuccess
+theorem erc20SteleCtorExecSuccess
     {σ : AccountMap}
     {σ₀ : AccountMap}
     {g : UInt256}
@@ -287,8 +287,9 @@ theorem erc20SolmCtorExecSuccess
     (initialSupply : Int)
     (h0 : 0 ≤ initialSupply)
     (hlt : initialSupply < Int.ofNat (EVM.twoPow 256))
-    (hwv : I.weiValue = ⟨0⟩) :
-    solmCtorExec config erc20Contract [.int initialSupply]
+    (hwv : I.weiValue = ⟨0⟩)
+    (hperm : I.perm = true) :
+    steleCtorExec config erc20Contract [.int initialSupply]
       σ σ₀ g A I
       (.returned
         { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
@@ -296,21 +297,23 @@ theorem erc20SolmCtorExecSuccess
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (EVM.word initialSupply.toNat))
         none) := by
-  refine solmCtorExec.intro
+  refine steleCtorExec.intro
     (evmState := initState σ σ₀ (Sat256.ofUInt256 g) A I)
     (argsStore := erc20CtorLocals initialSupply)
     ?_ rfl ?_ ?_
   · rfl
-  · simp [erc20CtorLocals, erc20Contract, ERC20.erc20Contract, ERC20.constructorDecl]
+  · simp [erc20CtorLocals, erc20Contract, constructorDecl]
   · refine ExecFuncBody.execBlockOK ?_
     let frame : Frame := { contract := erc20Contract, locals := erc20CtorLocals initialSupply }
     let evm0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
     let evm1 := erc20CtorBalancePostState evm0 (EVM.word initialSupply.toNat)
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm0)
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm0)
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := config)
-        (solm := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
-    refine ExecBlock.consNormal (solm' := frame) (evm' := evm1) ?_ ?_
-    · exact ExecStmt.assign (value := .int initialSupply)
+        (stele := frame) (evm := evm0) (by simpa [evm0, initState] using hwv))) ?_
+    refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
+    · exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm0, initState] using hperm))
+        (value := .int initialSupply)
         (by
           show evalExpr? config frame evm0 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -321,7 +324,9 @@ theorem erc20SolmCtorExecSuccess
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             initialSupply h0 hlt)
     · refine ExecBlock.consNormal ?_ ExecBlock.nil
-      exact ExecStmt.assign (value := .int initialSupply)
+      exact ExecStmt.assign
+        (hperm := Or.inr (by simpa [evm1, evm0, erc20CtorBalancePostState, initState] using hperm))
+        (value := .int initialSupply)
         (by
           show evalExpr? config frame evm1 (.var "initialSupply") = .ok (.int initialSupply)
           unfold frame
@@ -742,7 +747,7 @@ theorem erc20Dispatch_none_short {cd : ByteArray} (h : cd.size < 4) :
     dispatchMsg erc20Contract cd = none := by
   refine dispatchMsg_none_of_all_ne (contract := erc20Contract) (hfallback := rfl) (hreceive := rfl) ?_
   intro t ht
-  simp [erc20Contract, ERC20.erc20Contract] at ht
+  simp [erc20Contract] at ht
   rcases ht with rfl | rfl | rfl | rfl | rfl | rfl
   · have hfalse : ((⟨#[0x09, 0x5e, 0xa7, 0xb3]⟩ : ByteArray) == cd.extract 0 4) = false := by
       by_cases hbeq : ((⟨#[0x09, 0x5e, 0xa7, 0xb3]⟩ : ByteArray) == cd.extract 0 4) = true
@@ -798,7 +803,7 @@ theorem erc20Dispatch_none_nomatch {cd : ByteArray}
     dispatchMsg erc20Contract cd = none := by
   refine dispatchMsg_none_of_all_ne (contract := erc20Contract) (hfallback := rfl) (hreceive := rfl) ?_
   intro t ht
-  simp [erc20Contract, ERC20.erc20Contract] at ht
+  simp [erc20Contract] at ht
   rcases ht with rfl | rfl | rfl | rfl | rfl | rfl
   · simpa [selectorOf, vyperERC20ApproveSelectorBytes] using hnm 0 (by decide)
   · simpa [selectorOf, vyperERC20TotalSupplySelectorBytes] using hnm 1 (by decide)
@@ -1154,7 +1159,7 @@ theorem erc20TransferFromRuntime
         (byteArray_eq_of_beq hsel).symm
       refine dispatchMsg_eq_some_of_split
         (pre := [ERC20.approveTransition, ERC20.totalSupplyTransition])
-        (post := [ERC20.balanceOfTransition, ERC20.transferTransition, ERC20.allowanceTransition])
+        (post := [ERC20.balanceOfTransition, transferTransition, ERC20.allowanceTransition])
         rfl rfl ?_ (by rw [selectorOf, vyperERC20TransferFromSelectorBytes]; exact hsel)
       intro t ht
       simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
@@ -1301,7 +1306,7 @@ theorem erc20RuntimeNonPayableOfDispatch
     (hrev : RDrev vyperERC20Bytecode (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)) :
     runtimeRefinementFor config contract σ σ₀ g A I := by
-  by_cases hdec : decodeCalldataWithMode config.abiDecodeMode (t.params.map Param.name)
+  by_cases hdec : config.externalABI.decodeCalldata? (t.params.map Param.name)
       (transitionSignature t).paramTypes I.calldata = none
   · exact hrev.reEquivDecodingFailed hcode hd hdec
   · obtain ⟨callargs, hca⟩ := Option.ne_none_iff_exists'.mp hdec
@@ -1355,12 +1360,12 @@ theorem erc20TotalSupplyNonPayableRuntime
 
 theorem erc20Dispatch_transferFrom {cd : ByteArray}
     (hsel : ((⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ : ByteArray) == cd.extract 0 4) = true) :
-    dispatchMsg erc20Contract cd = some ERC20.transferFromTransition := by
+    dispatchMsg erc20Contract cd = some transferFromTransition := by
   have hcd : cd.extract 0 4 = (⟨#[0x23, 0xb8, 0x72, 0xdd]⟩ : ByteArray) :=
     (byteArray_eq_of_beq hsel).symm
   refine dispatchMsg_eq_some_of_split
     (pre := [ERC20.approveTransition, ERC20.totalSupplyTransition])
-    (post := [ERC20.balanceOfTransition, ERC20.transferTransition, ERC20.allowanceTransition])
+    (post := [ERC20.balanceOfTransition, transferTransition, ERC20.allowanceTransition])
     rfl rfl ?_ (by rw [selectorOf, vyperERC20TransferFromSelectorBytes]; exact hsel)
   intro t ht
   simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
@@ -1557,7 +1562,7 @@ theorem constructorCorrect :
         hacc
       rw [hσ'] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
-        (erc20SolmCtorExecSuccess
+        (erc20SteleCtorExecSuccess (hperm := by assumption)
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply h0 hlt hwv) ?_
       refine ctorResultEquiv.success rfl rfl ?_ rfl
@@ -1572,7 +1577,7 @@ theorem constructorCorrect :
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
     · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
     · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
-        (erc20SolmCtorExecReverts_nonpayable
+        (erc20SteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply hwv) ?_
       exact ctorResultEquiv.revert rfl rfl

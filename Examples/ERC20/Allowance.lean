@@ -1,7 +1,7 @@
 import Examples.ERC20.Common
 import Reasoning.Storage
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -116,7 +116,7 @@ theorem evalExpr_allowance_storage (evm : EVM.State) (I : ExecutionEnv) :
     evalExpr? erc20Config { contract := erc20Contract, locals := allowanceStore I } evm
       (.storage (allowanceRef (.var "owner") (.var "spender"))) =
         .ok (.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat)) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat)) := by
   have hgowner := allowanceStore_owner_getElem? I
   have hgspender := allowanceStore_spender_getElem? I
   have her : evalStorageRef erc20Config { contract := erc20Contract, locals := allowanceStore I }
@@ -154,7 +154,7 @@ theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
     ExecTransitionBody erc20Config erc20Contract evm (allowanceStore I) allowanceTransition.body
       (.returned { contract := erc20Contract, locals := allowanceStore I } evm
         (some [(.int (Int.ofNat
-          (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
+          (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (allowanceSlot I)).toNat))])) := by
   exact ExecFuncBody.execBlockRet <|
     (ABlock.start.requireStep (evalCallvalueEq_true h)).returns (by
       simpa [allowanceRef] using evalExpr_allowance_storage evm I)
@@ -731,21 +731,18 @@ theorem erc20AllowanceSelector_size {I : ExecutionEnv}
 theorem erc20Dispatch_allowance {cd : ByteArray}
     (hsel : ((⟨#[0xdd, 0x62, 0xed, 0x3e]⟩ : ByteArray) == cd.extract 0 4) = true) :
     dispatchMsg erc20Contract cd = some allowanceTransition := by
-  have hcd : cd.extract 0 4 = (⟨#[0xdd, 0x62, 0xed, 0x3e]⟩ : ByteArray) :=
-    (byteArray_eq_of_beq hsel).symm
+  have hcd := (byteArray_eq_of_beq hsel).symm
   refine dispatchMsg_eq_some_of_split
-    (pre := [approveTransition, totalSupplyTransition, transferFromTransition, balanceOfTransition,
-      transferTransition])
-    (post := [])
+    (pre := [transferTransition, approveTransition, transferFromTransition, balanceOfTransition])
+    (post := [totalSupplyTransition])
     rfl rfl ?_ (by rw [selectorOf, erc20AllowanceSelectorBytes]; exact hsel)
   intro t ht
   simp only [List.mem_cons, List.not_mem_nil, or_false] at ht
-  rcases ht with rfl | rfl | rfl | rfl | rfl
+  rcases ht with rfl | rfl | rfl | rfl
+  · rw [selectorOf, erc20TransferSelectorBytes, hcd]; decide
   · rw [selectorOf, erc20ApproveSelectorBytes, hcd]; decide
-  · rw [selectorOf, erc20TotalSupplySelectorBytes, hcd]; decide
   · rw [selectorOf, erc20TransferFromSelectorBytes, hcd]; decide
   · rw [selectorOf, erc20BalanceOfSelectorBytes, hcd]; decide
-  · rw [selectorOf, erc20TransferSelectorBytes, hcd]; decide
 
 theorem erc20AllowanceBodyCore
     {σ σ₀ A I} {g : UInt256} {sel : UInt256}
@@ -772,7 +769,7 @@ theorem erc20AllowanceBodyCore
                 (.returned { contract := erc20Contract, locals := allowanceStore I }
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-            simpa [allowanceWord, allowanceSlot, initState, Solm.EVM.storageLoad,
+            simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
               State.lookupAccount] using erc20AllowanceBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)

@@ -11,7 +11,8 @@ proofs factored into ERC20-local helper files.
 Expected local validation:
 
 ```bash
-lake build Examples.ERC20.Correct
+lake build Examples.ERC20.Correct Examples.ERC20.SpecSyntax Proofs.ERC20.Bytecode
+lake env lean --run Examples/ERC20/SpecTests.lean
 ```
 
 ERC20 should have no `sorry` or `admit`:
@@ -30,11 +31,16 @@ the source semantics and bytecode storage reads exactly.
 ## File Roles
 
 - `Correct.lean` is the top-level dispatcher and final assembly. Preserve its shape.
+  `erc20ContractSyntaxCorrect` certifies the surface specification directly.
 - `TotalSupply.lean`, `BalanceOf.lean`, `Allowance.lean`, `Approve.lean`, `Transfer.lean`, and
   `TransferFrom.lean` contain function-specific source/EVM/refinement proofs.
 - `Common.lean` contains ERC20-wide ABI, memory, selector, and return helpers.
 - `Storage.lean` contains ERC20-wide storage load/store, RBMap preservation, and bool-return facts.
-- `Spec.lean` defines the Solm ERC20 spec and storage layout. Do not silently change it.
+- `Spec.lean` defines the Stele ERC20 spec and storage layout. Do not silently change it.
+- `SpecSyntax.lean` follows the Solidity constructor and mutators, with explicit getters at the
+  end. Its equality theorem checks that the surface spec is exactly the AST in `Spec.lean`.
+- `SpecTests.lean` checks concrete boundary cases and generated executions against the bytecode,
+  independently of the refinement proofs.
 - `Bytecode.lean` defines runtime bytecode, selector theorems, and the verified
   jump-destination fact.
 
@@ -52,7 +58,7 @@ The top-level theorem follows the standard solc dispatcher path:
 Each function proof follows the same broad pattern:
 
 1. Prove ABI decoding for valid calldata and all malformed calldata branches.
-2. Prove the Solm source body result.
+2. Prove the Stele source body result.
 3. Prove EVM reachability through natural phases.
 4. Connect source and EVM results with `reEquiv`.
 
@@ -82,7 +88,7 @@ Useful libraries in this proof were:
 - `Reasoning.Solc` for solc guards, selector load, and common wrappers.
 - `Reasoning.Reach` for EVM stepping and reachability.
 - `Reasoning.Memory` for mapping-slot and storage-load coupling.
-- `Reasoning.SolmBody` and `Reasoning.Refinement` for source execution and equivalence.
+- `Reasoning.SteleBody` and `Reasoning.Refinement` for source execution and equivalence.
 
 ### Prove Storage Map Behavior Separately From Layout
 
@@ -109,15 +115,15 @@ balanceOf[from] -= value;
 ```
 
 The `require` reads `balanceOf[from]`, but the compound assignment `balanceOf[from] -= value`
-performs another storage read at the assignment site. The Solm spec must model that second read:
+performs another storage read at the assignment site. The Stele spec must model that second read:
 
 ```lean
-.assign (balanceOfRef (.var "from"))
+.assign .storage (balanceOfRef (.var "from"))
   (valueInUInt256
     (.binary .sub (.storage (balanceOfRef (.var "from"))) (.var "value")))
 ```
 
-Do not replace this with subtraction from the earlier `fromBalance` local. That shortcut creates a
+Do not replace this with subtraction from a balance cached before the allowance write. That creates a
 false mismatch: the EVM proof then needs to show that writing `allowance[from][msg.sender]` cannot
 affect `balanceOf[from]`, which is a Keccak noncollision fact unavailable in the current model.
 
@@ -130,13 +136,22 @@ The correct proof split has two balance facts:
 If `hbalanceDebit` fails, both source and bytecode revert through the Solidity checked-subtraction
 panic path. This branch lets the proof avoid an unsupported Keccak noncollision assumption.
 
+The surface spec writes both recipient additions with `as uint256`, and also checks this
+post-allowance balance subtraction. `transfer`'s sender debit and the allowance debit need no
+explicit range assertion: their preceding guards bound the operands and there is no intervening
+write that can change them. No changes to the frontend's arithmetic semantics are needed.
+
+The constructor event is present in the spec to match `ERC20.sol`. The hand-assembled creation
+wrapper in `Bytecode.lean` does not emit it; the refinement relation compares storage and deployed
+code but excludes logs and revert payloads.
+
 ### Avoiding New Axioms
 
 Before adding any axiom, run through this checklist:
 
 1. Identify the exact source expression and the exact bytecode read/write sequence.
 2. Check whether a source storage compound assignment should be modeled as a fresh storage read.
-3. Check whether an optimizer-style local in the Solm spec is stronger than the Solidity source.
+3. Check whether an optimizer-style local in the Stele spec is stronger than the Solidity source.
 4. Prove ordinary map behavior over `RBMap`/storage maps locally; do not axiomatize map updates.
 5. If the remaining obligation is truly cryptographic, isolate it behind a narrow, documented
    boundary and first ask whether the spec/proof can be refactored to avoid depending on it.

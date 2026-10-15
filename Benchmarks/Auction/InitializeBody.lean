@@ -1,6 +1,6 @@
 import Benchmarks.Auction.InitializeSourceStores
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 100000
 
@@ -18,7 +18,8 @@ theorem initializePrefixSourceSplit (evm : EVM.State) (args : InitializeArgs)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hg : initializingWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ ∨
       initializedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
-    (ExecBlock auctionConfig { contract := auctionContract, locals := args.locals } evm
+    ((initializeTop evm = true → evm.executionEnv.perm = true) →
+      ExecBlock auctionConfig { contract := auctionContract, locals := args.locals } evm
       initializePrefixStatements
       (.ok { contract := auctionContract, locals := args.bodyLocals (initializeTop evm) }
         (initializerEnteredState evm))) ∧
@@ -42,29 +43,32 @@ theorem initializePrefixSourceSplit (evm : EVM.State) (args : InitializeArgs)
     apply ExecBlock.consNormal (ExecStmt.letDecl
       (readNotInitializing evm args.locals (by simp [InitializeArgs.locals])))
     exact htail
-  exact ⟨hprefix (ExecBlock.consNormal hbegin.1 ExecBlock.nil),
+  exact ⟨fun hperm ↦ hprefix (ExecBlock.consNormal (hbegin.1 hperm) ExecBlock.nil),
     fun hperm htop ↦ hprefix (ExecBlock.consStatic (hbegin.2 hperm htop))⟩
 
 theorem initializePrefixSource (evm : EVM.State) (args : InitializeArgs)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩)
     (hg : initializingWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ ∨
-      initializedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
+      initializedWord evm.accountMap evm.executionEnv = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecBlock auctionConfig { contract := auctionContract, locals := args.locals } evm
       initializePrefixStatements
       (.ok { contract := auctionContract, locals := args.bodyLocals (initializeTop evm) }
         (initializerEnteredState evm)) :=
-  (initializePrefixSourceSplit evm args hwv hg).1
+  (initializePrefixSourceSplit evm args hwv hg).1 (fun _ ↦ hperm)
 
 theorem initializeBody (evm : EVM.State) (args : InitializeArgs)
     (hwv : evm.executionEnv.weiValue = ⟨0⟩) (hc : args.canonical)
     (hg : initializingWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ ∨
-      initializedWord evm.accountMap evm.executionEnv = ⟨0⟩) :
+      initializedWord evm.accountMap evm.executionEnv = ⟨0⟩)
+    (hperm : evm.executionEnv.perm = true) :
     ExecTransitionBody auctionConfig auctionContract evm args.locals initializeTransition.body
       (.returned { contract := auctionContract, locals := args.bodyLocals (initializeTop evm) }
         (initializeFinalState args evm) none) := by
-  have hp := initializePrefixSource evm args hwv hg
+  have hp := initializePrefixSource evm args hwv hg hperm
   generalize hE : initializerEnteredState evm = evmE at hp
-  have hs := initializeSetupSource evmE (args.bodyLocals (initializeTop evm))
+  have hs := initializeSetupSource (hperm := by
+    rw [← hE, initializerEnteredState_env]; exact hperm) evmE (args.bodyLocals (initializeTop evm))
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals])
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals])
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals])
@@ -80,15 +84,18 @@ theorem initializeBody (evm : EVM.State) (args : InitializeArgs)
     rw [hBfull] at heq
     rw [henvB, ← heq]
     exact initializeBaseMap_unpaused _ _
-  have hpa := pauseBlock evmB (args.bodyLocals (initializeTop evm))
+  have hpa := pauseBlock (hperm := by rw [henvB]; exact hperm) evmB (args.bodyLocals (initializeTop evm))
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals]) hBp
-  generalize hP : Solm.EVM.storageStore evmB evmB.executionEnv.codeOwner ⟨51⟩
-    (pauseWord (Solm.EVM.storageLoad evmB evmB.executionEnv.codeOwner ⟨51⟩)) = evmP at hpa
+  generalize hP : Stele.EVM.storageStore evmB evmB.executionEnv.codeOwner ⟨51⟩
+    (pauseWord (Stele.EVM.storageLoad evmB evmB.executionEnv.codeOwner ⟨51⟩)) = evmP at hpa
   have hPfull : initializePausedState evm = evmP := by
     rw [initializePausedState, hBfull]; exact hP
   have ha := initializeParamsSource evmP args (initializeTop evm) hc
+    (by rw [← hPfull, initializePausedState_env]; exact hperm)
   generalize hA : args.storeState evmP = evmA at ha
-  have he := initializerExitSource evmA (args.bodyLocals (initializeTop evm)) (initializeTop evm)
+  have he := initializerExitSource (hperm := by
+    rw [← hA, InitializeArgs.storeState_env, ← hPfull, initializePausedState_env]
+    exact hperm) evmA (args.bodyLocals (initializeTop evm)) (initializeTop evm)
     (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals])
     (by simp [InitializeArgs.bodyLocals])
   rw [initializeFinalState, hPfull, hA]
@@ -108,7 +115,7 @@ theorem initializeBodyStatic (evm : EVM.State) (args : InitializeArgs)
     (initializePrefixStatements ++ initializeTransition.body.drop 4) .staticViolation
   by_cases htop : initializeTop evm = true
   · exact execBlock_append_term (hp.2 hperm htop) (by intro _ _ h; cases h)
-  · apply execBlock_append hp.1
+  · apply execBlock_append (hp.1 (fun hb ↦ (htop hb).elim))
     have hs := initializeSetupSourceSplit (initializerEnteredState evm)
       (args.bodyLocals (initializeTop evm))
       (by simp [InitializeArgs.bodyLocals, InitializeArgs.locals])

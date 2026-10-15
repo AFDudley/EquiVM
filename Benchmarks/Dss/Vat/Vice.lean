@@ -1,6 +1,6 @@
 import Benchmarks.Dss.Vat.Dispatch
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 namespace Benchmarks.Dss.Vat
 
@@ -10,9 +10,9 @@ def viceWord (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   solcSlotWordAt ⟨8⟩ σ I
 
 theorem vatDecode_vice {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (viceTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (viceTransition.params.map Param.name)
       (transitionSignature viceTransition).paramTypes I.calldata = some ∅ := by
-  show decodeCalldataWithMode config.abiDecodeMode [] [] I.calldata = some ∅
+  show config.externalABI.decodeCalldata? [] [] I.calldata = some ∅
   exact decodeCalldata_empty_ok hsz
 
 theorem vatReachViceBody {σ σ₀ A I} {g : Sat256}
@@ -58,7 +58,7 @@ theorem vatViceBodyCore : VatBodyTheoremAnyPerm 26 := by
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (viceWord σ I).toNat))])) := by
-    simpa [viceTransition, viceWord, solcSlotWordAt, initState, Solm.EVM.storageLoad,
+    simpa [viceTransition, viceWord, solcSlotWordAt, initState, Stele.EVM.storageLoad,
       State.lookupAccount] using
       vatUint256GetterBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅

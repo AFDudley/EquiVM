@@ -3,7 +3,7 @@ import Examples.UniswapV2Pair.MintInternalMintRuntime
 import Examples.UniswapV2Pair.MintFeeSqrtSmall
 import Examples.UniswapV2Pair.SyncCumulative
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 
 set_option maxRecDepth 2000000
 
@@ -208,10 +208,10 @@ theorem uniswapMintFinishProportionalFeeOffCumulative
     simp [postMint, mintFunctionPostState, mintFunctionAfterTotalSupplyState, henvFeeI,
       storageStore_executionEnv]
   have hslot8 :
-      Solm.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σAfterMint I := by
     have hword := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hMintAccounts
-    simpa [postMint, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [postMint, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henvMint] using hword.symm
   have hreserve0Lt : reserve0.toNat < 2 ^ 112 := by
     rw [← hclean0]
@@ -367,10 +367,10 @@ theorem uniswapMintFinishProportionalFeeOnCumulativeKLastUpdated
     simp [postMint, mintFunctionPostState, mintFunctionAfterTotalSupplyState, henvFeeI,
       storageStore_executionEnv]
   have hslot8 :
-      Solm.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σAfterMint I := by
     have hword := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hMintAccounts
-    simpa [postMint, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [postMint, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henvMint] using hword.symm
   have hreserve0Lt : reserve0.toNat < 2 ^ 112 := by
     rw [← hclean0]
@@ -379,10 +379,10 @@ theorem uniswapMintFinishProportionalFeeOnCumulativeKLastUpdated
     rw [← hclean1]
     simpa [u256_land_comm] using uniswapUint112Masked_lt reserve1
   let evmP0 :=
-    Solm.EVM.storageStore postMint I.codeOwner ⟨9⟩
+    Stele.EVM.storageStore postMint I.codeOwner ⟨9⟩
       (EVM.wordOfInt (syncPrice0CumulativeIntAtWith postMint postMint reserve0 reserve1))
   let evmP1 :=
-    Solm.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
+    Stele.EVM.storageStore evmP0 I.codeOwner ⟨10⟩
       (EVM.wordOfInt (syncPrice1CumulativeIntAtWith evmP0 postMint reserve0 reserve1))
   let σP1 : AccountMap := uniswapUpdatePrice1CumulativeMapWith σAfterMint I reserve0 reserve1
   let packedCumulative : UInt256 :=
@@ -396,10 +396,10 @@ theorem uniswapMintFinishProportionalFeeOnCumulativeKLastUpdated
   have henvP1 : evmP1.executionEnv = I := by
     simp [evmP1, storageStore_executionEnv, henvP0]
   have hslot8P1 :
-      Solm.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad evmP1 evmP1.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σP1 I := by
     have h := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hP1Accounts
-    simp [Solm.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
+    simp [Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
       solcSlotWordAt, solcSlotWord, henvP1] at h ⊢
     exact h.symm
   have hPackedAccountsStep :
@@ -417,10 +417,10 @@ theorem uniswapMintFinishProportionalFeeOnCumulativeKLastUpdated
     simp [syncState, syncUpdateCumulativePackedReserveStateWith, syncUpdatePackedReserveState,
       postMint, henvMint, storageStore_executionEnv]
   have hslot8Sync :
-      Solm.EVM.storageLoad syncState syncState.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad syncState syncState.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σCumulative I := by
     have hword := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hPackedAccounts
-    simpa [syncState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [syncState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henvSync, henvMint] using hword.symm
   have hsyncReserve0 :
       uniswapReserve0Word syncState =
@@ -590,10 +590,10 @@ theorem uniswapMintFinishProportionalFeeOnKLastUpdated
     simp [postMint, mintFunctionPostState, mintFunctionAfterTotalSupplyState, henvFeeI,
       storageStore_executionEnv]
   have hslot8 :
-      Solm.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad postMint postMint.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σAfterMint I := by
     have hword := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hMintAccounts
-    simpa [postMint, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [postMint, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henvMint] using hword.symm
   have hPackedAccounts : Eq σPacked syncState.accountMap := by
     exact syncUpdatePackedReserveState_accountMap_eq hMintAccounts henvMint hslot8 rfl
@@ -601,10 +601,10 @@ theorem uniswapMintFinishProportionalFeeOnKLastUpdated
     simp [syncState, postMint, syncUpdatePackedReserveState, henvMint,
       storageStore_executionEnv]
   have hslot8Sync :
-      Solm.EVM.storageLoad syncState syncState.executionEnv.codeOwner ⟨8⟩ =
+      Stele.EVM.storageLoad syncState syncState.executionEnv.codeOwner ⟨8⟩ =
         solcSlotWordAt ⟨8⟩ σPacked I := by
     have hword := congrArg (fun m => solcSlotWordAt ⟨8⟩ m I) hPackedAccounts
-    simpa [syncState, solcSlotWordAt, solcSlotWord, Solm.EVM.storageLoad, State.lookupAccount,
+    simpa [syncState, solcSlotWordAt, solcSlotWord, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, henvSync, henvMint] using hword.symm
   have hsyncReserve0 :
       uniswapReserve0Word syncState =
@@ -669,8 +669,8 @@ theorem uniswapMintFeeOnKLastNonzeroNoMintCase
     (houtFee32 : 32 ≤ outFee.size)
     (hfeeToWord : feeToWord = UInt256.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
     (hfeeTo : feeTo = AccountAddress.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -938,8 +938,8 @@ theorem uniswapMintFeeOnKLastNonzeroNoMintCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint evmS evm0S evm1S evmFeeS I
-        feeTo rootK rootKLast (by simpa [evmS, initState] using hwv) hunlockedSolm
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroNoMint (hperm := by assumption) evmS evm0S evm1S evmFeeS I
+        feeTo rootK rootKLast (by simpa [evmS, initState] using hwv) hunlockedStele
         hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard
         hfeeCall hfeeDec hfeeToAddr hkLastSource hprefix hrootNoMint htotalSourceNonzero
         hfitSource0 hfitSource1 hreserve0Source hreserve1Source hliquiditySource
@@ -972,8 +972,8 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveNoLiquidityCase
     (houtFee32 : 32 ≤ outFee.size)
     (hfeeToWord : feeToWord = UInt256.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
     (hfeeTo : feeTo = AccountAddress.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1249,9 +1249,9 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveNoLiquidityCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveNoLiquidity (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I feeTo rootK rootKLast
-        (by simpa [evmS, initState] using hwv) hunlockedSolm hguard0 hguard1 hcall0
+        (by simpa [evmS, initState] using hwv) hunlockedStele hguard0 hguard1 hcall0
         hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
         hfeeToAddr hkLastSource hprefix hroot hrootKNonneg hrootKSize
         hrootKLastNonneg hnumFit hrootFiveFit hdenFit hdenom hfeeLiq
@@ -1302,8 +1302,8 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveWithLiquidityCase
         uniswapInternalMintLogMem (mintFeeLiquidityWord evmFeeS rootK rootKLast)
           (uniswapInternalMintBalanceHashMem feeToWord
             (uniswapInternalMintBalanceHashMem feeToWord memFee)))
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1615,9 +1615,9 @@ theorem uniswapMintFeeOnKLastNonzeroPositiveWithLiquidityCase
     exact_mod_cast hnat
   have hbody :=
     ExecFuncBody.execBlockRet
-      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity
+      (uniswapMintProportionalFeeOnReturn_kLastNonzeroPositiveWithLiquidity (hperm := by assumption)
         evmS evm0S evm1S evmFeeS I feeTo rootK rootKLast
-        (by simpa [evmS, initState] using hwv) hunlockedSolm hguard0 hguard1 hcall0
+        (by simpa [evmS, initState] using hwv) hunlockedStele hguard0 hguard1 hcall0
         hdec0 hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
         hfeeToAddr hkLastSource hprefix hroot hrootKNonneg hrootKSize
         hrootKLastNonneg hnumFit hrootFiveFit hdenFit hdenom hfeeLiq hfeeLiqFit
@@ -1663,8 +1663,8 @@ theorem uniswapMintFeeOnKLastNonzeroSmallNoMintCase
     (houtFee32 : 32 ≤ outFee.size)
     (hfeeToWord : feeToWord = UInt256.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
     (hfeeTo : feeTo = AccountAddress.ofNat (fromByteArrayBigEndian (outFee.extract 0 32)))
-    (hunlockedSolm :
-      Solm.EVM.storageLoad
+    (hunlockedStele :
+      Stele.EVM.storageLoad
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner
           ⟨12⟩ =
@@ -1880,7 +1880,7 @@ theorem uniswapMintFeeOnKLastNonzeroSmallNoMintCase
         hprodSmall
         (by simpa [hkLastEq] using hkLastSmall)
   exact uniswapMintFeeOnKLastNonzeroNoMintCase rootK rootKLast hcode hdispatch hsz36
-    hperm hwv houtFee32 hfeeToWord hfeeTo hunlockedSolm hguard0 hguard1 hcall0 hdec0
+    hperm hwv houtFee32 hfeeToWord hfeeTo hunlockedStele hguard0 hguard1 hcall0 hdec0
     hcall1 hdec1 hle0Source hle1Source hfeeGuard hfeeCall hfeeDec hPostAccountsFee
     henvFeeI hreserve0Eq hreserve1Eq hamount0 hamount1 hkLastEq htotalSlot
     htotalEq hprefix hrootNoMint rd3701 hfeeToNonzero hkLastNonzero htotalNonzero

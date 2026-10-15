@@ -2,7 +2,7 @@ import Reasoning.ABIViews
 import Benchmarks.Dss.Clipper.UintEntry
 import Reasoning.MemCascade
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -65,18 +65,18 @@ def clipperSalesPackedTicWord (w : UInt256) : UInt256 :=
 
 theorem clipperDecode_sales_ok {I : ExecutionEnv}
     (hsz36 : 36 ≤ I.calldata.size) :
-    decodeCalldataWithMode config.abiDecodeMode (salesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (salesTransition.params.map Param.name)
       (transitionSignature salesTransition).paramTypes I.calldata =
         some (clipperSalesStore I) := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = _
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = _
   simpa [config, clipperSalesStore, clipperSalesArgValue, clipperSalesArgWord] using
     decodeCalldata_legacyUInt256_ok (cd := I.calldata) (x := "arg0") hsz36
 
 theorem clipperDecode_sales_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
-    decodeCalldataWithMode config.abiDecodeMode (salesTransition.params.map Param.name)
+    config.externalABI.decodeCalldata? (salesTransition.params.map Param.name)
       (transitionSignature salesTransition).paramTypes I.calldata = none := by
-  show decodeCalldataWithMode config.abiDecodeMode ["arg0"] [uint256] I.calldata = none
+  show config.externalABI.decodeCalldata? ["arg0"] [uint256] I.calldata = none
   simpa [config] using
     decodeCalldata_legacyUInt256_none_short (cd := I.calldata) (x := "arg0")
       hsz4 hshort
@@ -84,7 +84,7 @@ theorem clipperDecode_sales_none_short {I : ExecutionEnv}
 theorem clipperStorageLocLoad_uint96 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (uint96Loc slot ⟨20, by decide⟩ (by decide)) =
       .int (Int.ofNat (UInt256.land
-        (UInt256.div (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
+        (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩))
         (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨96⟩) ⟨1⟩)).toNat) := by
   have h := storageLocLoad_uint_offset (evm := evm) (slot := slot)
@@ -169,29 +169,29 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
       salesTransition.body
       (.returned { contract := contract, locals := clipperSalesStore I, immutables := immStore v } evm
         (some [
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesPosSlot I)).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesTabSlot I)).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesLotSlot I)).toNat),
           .address (AccountAddress.ofNat
-            (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperSalesPackedSlot I)) solcAddrMask).toNat),
           .int (Int.ofNat (clipperSalesPackedTicWord
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperSalesPackedSlot I))).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesTopSlot I)).toNat)])) (immStore v) := by
   let frame : Frame := { contract := contract, locals := clipperSalesStore I, immutables := immStore v }
   have hpos : evalExpr? config frame evm (.storage (salesF (.var "arg0") "pos")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesPosSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "pos") (er := clipperSalesPosRef I)
       (t := .int uint256Int) (loc := wordLoc (clipperSalesPosSlot I))
-      (value := .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (value := .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesPosSlot I)).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -205,13 +205,13 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
       (by simpa [clipperSalesPosSlot, clipperSalesBaseSlot, wordLoc, uint256Loc] using
         storageLocLoad_uint256 evm (clipperSalesPosSlot I))
   have htab : evalExpr? config frame evm (.storage (salesF (.var "arg0") "tab")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesTabSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "tab") (er := clipperSalesTabRef I)
       (t := .int uint256Int) (loc := wordLoc (clipperSalesTabSlot I))
-      (value := .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (value := .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesTabSlot I)).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -225,13 +225,13 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
       (by simpa [clipperSalesTabSlot, clipperSalesBaseSlot, wordLoc, uint256Loc] using
         storageLocLoad_uint256 evm (clipperSalesTabSlot I))
   have hlot : evalExpr? config frame evm (.storage (salesF (.var "arg0") "lot")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesLotSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "lot") (er := clipperSalesLotRef I)
       (t := .int uint256Int) (loc := wordLoc (clipperSalesLotSlot I))
-      (value := .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (value := .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesLotSlot I)).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -246,14 +246,14 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
         storageLocLoad_uint256 evm (clipperSalesLotSlot I))
   have husr : evalExpr? config frame evm (.storage (salesF (.var "arg0") "usr")) =
       .ok (.address (AccountAddress.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperSalesPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperSalesPackedSlot I))
         solcAddrMask).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "usr") (er := clipperSalesUsrRef I)
       (t := .address) (loc := addrLoc (clipperSalesPackedSlot I))
       (value := .address (AccountAddress.ofNat (UInt256.land
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperSalesPackedSlot I))
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperSalesPackedSlot I))
         solcAddrMask).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -268,15 +268,15 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
         storageLocLoad_address_offset0 evm (clipperSalesPackedSlot I))
   have htic : evalExpr? config frame evm (.storage (salesF (.var "arg0") "tic")) =
       .ok (.int (Int.ofNat (clipperSalesPackedTicWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperSalesPackedSlot I))).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "tic") (er := clipperSalesTicRef I)
       (t := .int uint96Int)
       (loc := uint96Loc (clipperSalesPackedSlot I) ⟨20, by decide⟩ (by decide))
       (value := .int (Int.ofNat (clipperSalesPackedTicWord
-        (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperSalesPackedSlot I))).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -290,13 +290,13 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
       (by simpa [clipperSalesPackedTicWord, clipperSalesPackedSlot, clipperSalesBaseSlot] using
         clipperStorageLocLoad_uint96 evm (clipperSalesPackedSlot I))
   have htop : evalExpr? config frame evm (.storage (salesF (.var "arg0") "top")) =
-      .ok (.int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      .ok (.int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesTopSlot I)).toNat)) := by
     exact evalExpr_storage_scalar_value (hbackend := rfl)
-      (cfg := config) (solm := frame) (evm := evm)
+      (cfg := config) (stele := frame) (evm := evm)
       (slot := salesF (.var "arg0") "top") (er := clipperSalesTopRef I)
       (t := .int uint256Int) (loc := wordLoc (clipperSalesTopSlot I))
-      (value := .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+      (value := .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
         (clipperSalesTopSlot I)).toNat))
       (by simp [frame, salesF, clipperSalesStore])
       (by
@@ -314,19 +314,19 @@ theorem clipperSalesBodyReturns (v : ClipperImmutables) (evm : EVM.State)
         .storage (salesF (.var "arg0") "lot"), .storage (salesF (.var "arg0") "usr"),
         .storage (salesF (.var "arg0") "tic"), .storage (salesF (.var "arg0") "top") ] =
       .ok [
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesPosSlot I)).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesTabSlot I)).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesLotSlot I)).toNat),
           .address (AccountAddress.ofNat
-            (UInt256.land (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperSalesPackedSlot I)) solcAddrMask).toNat),
           .int (Int.ofNat (clipperSalesPackedTicWord
-            (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+            (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (clipperSalesPackedSlot I))).toNat),
-          .int (Int.ofNat (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+          .int (Int.ofNat (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
             (clipperSalesTopSlot I)).toNat)] := by
     simp [evalExprs?, hpos, htab, hlot, husr, htic, htop, EvalResult.bind, bind, pure]
   simpa [salesTransition, nonpayable, frame] using
@@ -1393,7 +1393,7 @@ theorem clipperSalesBody (v : ClipperImmutables) {code : ByteArray}
               .int (Int.ofNat (solcSlotWord σ I (base + ⟨4⟩)).toNat)])) (immStore v) := by
       simpa [key, base, clipperSalesPosSlot, clipperSalesTabSlot, clipperSalesLotSlot,
         clipperSalesPackedSlot, clipperSalesTopSlot, clipperSalesBaseSlot_eq I,
-        solcSlotWord, initState, Solm.EVM.storageLoad, State.lookupAccount] using
+        solcSlotWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
         clipperSalesBodyReturns v
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
           (by simp only [initState]; exact hwv)

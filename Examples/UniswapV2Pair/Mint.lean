@@ -3,7 +3,7 @@ import Examples.UniswapV2Pair.BalanceCallSource
 import Examples.UniswapV2Pair.MintFeeFactoryCompleteCases
 import Examples.UniswapV2Pair.MintSimpleFactoryCompleteCases
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 set_option maxRecDepth 2000000
 namespace UniswapV2Pair
 set_option maxHeartbeats 3000000 in
@@ -36,9 +36,9 @@ theorem uniswapMintBody
       have hlockEntered := uniswapMintX_lockEntered (g := Sat256.ofUInt256 g)
         hperm hunlocked hdecoded
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad, Ethereum.State.lookupAccount,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad, Ethereum.State.lookupAccount,
           Ethereum.Account.lookupStorage] using hunlocked
       by_cases htoken0NoCode :
         extCodeSizeWord (sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨0⟩)
@@ -52,9 +52,9 @@ theorem uniswapMintBody
         have hbody :
             ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
               .reverted := by
-          exact uniswapMintBodyReverts_firstNoCode evmS I
+          exact uniswapMintBodyReverts_firstNoCode (hperm := by assumption) evmS I
             (by simp only [evmS, initState]; exact hwv)
-            hunlockedSolm hguard0
+            hunlockedStele hguard0
         exact (uniswapMintRuntimeFirstBalanceOfMissingCodeReverts
             (g := g) hlockEntered htoken0NoCode).reEquivExecutionRevert
           hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
@@ -82,9 +82,9 @@ theorem uniswapMintBody
                     (false, evm0S, o) false := by
                   simpa [evmS, hz, initState, uniswapLockEnteredState,
                     uniswapUnlockedState, storageStore_executionEnv] using hcallAll
-                exact uniswapMintBodyReverts_firstCallFailure evmS evm0S I
+                exact uniswapMintBodyReverts_firstCallFailure (hperm := by assumption) evmS evm0S I
                   (by simp only [evmS, initState]; exact hwv)
-                  hunlockedSolm hguard0 hcall0)
+                  hunlockedStele hguard0 hcall0)
           · by_cases hshort : o.size < 32
             · have hzTrue : z = true := Bool.eq_true_of_not_eq_false hz
               have hcall0 : typedCallViaEVM config (uniswapLockEnteredState evmS)
@@ -102,9 +102,9 @@ theorem uniswapMintBody
               have hbody :
                   ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                     .reverted := by
-                exact uniswapMintBodyReverts_firstCallDecode evmS evm0S I
+                exact uniswapMintBodyReverts_firstCallDecode (hperm := by assumption) evmS evm0S I
                   (by simp only [evmS, initState]; exact hwv)
-                  hunlockedSolm hguard0 hcall0 hdec0
+                  hunlockedStele hguard0 hcall0 hdec0
               exact (hrevShort hzTrue hshort).reEquivExecutionRevert hcode hdispatch
                 (uniswapDecode_mint_ok hsz36) hbody
             · have hzTrue : z = true := Bool.eq_true_of_not_eq_false hz
@@ -139,9 +139,9 @@ theorem uniswapMintBody
                       (reserveEvm := uniswapLockEnteredState evmS)
                       (balance0 := uniswapUint256Value balance0)
                       hPostAccounts0 henv0I htoken1NoCode
-                  exact uniswapMintBodyReverts_secondNoCode evmS evm0S I
+                  exact uniswapMintBodyReverts_secondNoCode (hperm := by assumption) evmS evm0S I
                     (by simp only [evmS, initState]; exact hwv)
-                    hunlockedSolm hguard0 hcall0 hdec0 hguard1
+                    hunlockedStele hguard0 hcall0 hdec0 hguard1
                 exact (uniswapMintRuntimeSecondBalanceOfMissingCodeFromExtcodesize
                   rd3573 htoken1NoCode).reEquivExecutionRevert hcode hdispatch
                     (uniswapDecode_mint_ok hsz36) hbody
@@ -172,9 +172,9 @@ theorem uniswapMintBody
                   have hbody :
                       ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                         .reverted := by
-                    exact uniswapMintBodyReverts_secondCallFailure evmS evm0S evm1S I
+                    exact uniswapMintBodyReverts_secondCallFailure (hperm := by assumption) evmS evm0S evm1S I
                       (by simp only [evmS, initState]; exact hwv)
-                      hunlockedSolm hguard0 hcall0 hdec0 hguard1 hcall1
+                      hunlockedStele hguard0 hcall0 hdec0 hguard1 hcall1
                   exact (hrev1 hz1).reEquivExecutionRevert hcode hdispatch
                     (uniswapDecode_mint_ok hsz36) hbody
                 · by_cases hshort1 : o1.size < 32
@@ -191,9 +191,9 @@ theorem uniswapMintBody
                     have hbody :
                         ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                           .reverted := by
-                      exact uniswapMintBodyReverts_secondCallDecode evmS evm0S evm1S I
+                      exact uniswapMintBodyReverts_secondCallDecode (hperm := by assumption) evmS evm0S evm1S I
                         (by simp only [evmS, initState]; exact hwv)
-                        hunlockedSolm hguard0 hcall0 hdec0 hguard1 hcall1 hdec1
+                        hunlockedStele hguard0 hcall0 hdec0 hguard1 hcall1 hdec1
                     exact (hrevShort1 hz1True hshort1).reEquivExecutionRevert hcode hdispatch
                       (uniswapDecode_mint_ok hsz36) hbody
                   · have hz1True : z1 = true := Bool.eq_true_of_not_eq_false hz1
@@ -233,9 +233,9 @@ theorem uniswapMintBody
                       have hbody :
                           ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                             .reverted := by
-                        exact uniswapMintBodyReverts_amount0Underflow evmS evm0S evm1S I
+                        exact uniswapMintBodyReverts_amount0Underflow (hperm := by assumption) evmS evm0S evm1S I
                           (by simp only [evmS, initState]; exact hwv)
-                          hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hlt0Source
+                          hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1 hlt0Source
                       exact (uniswapMintRuntimeAmount0SubUnderflowFromBalances
                         rd3630 hlt0 ho32 hoSize ho132 ho1Size).reEquivExecutionRevert
                           hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
@@ -259,9 +259,9 @@ theorem uniswapMintBody
                         have hbody :
                             ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                               .reverted := by
-                          exact uniswapMintBodyReverts_amount1Underflow evmS evm0S evm1S I
+                          exact uniswapMintBodyReverts_amount1Underflow (hperm := by assumption) evmS evm0S evm1S I
                             (by simp only [evmS, initState]; exact hwv)
-                            hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+                            hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                             hle0Source hlt1Source
                         exact (uniswapMintRuntimeAmount1SubUnderflowFromAmount0
                           rd3661 hlt1 ho32 hoSize ho132 ho1Size).reEquivExecutionRevert
@@ -309,9 +309,9 @@ theorem uniswapMintBody
                           have hbody :
                               ExecTransitionBody config contract evmS (mintStore I)
                                 mintTransition.body .reverted := by
-                            exact uniswapMintBodyReverts_mintFeeNoCode evmS evm0S evm1S I
+                            exact uniswapMintBodyReverts_mintFeeNoCode (hperm := by assumption) evmS evm0S evm1S I
                               (by simp only [evmS, initState]; exact hwv)
-                              hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+                              hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                               hle0Source hle1Source hfeeGuard
                           exact (uniswapMintFeeRuntimeFactoryMissingCodeReverts rd7765
                               hfactoryNoCode).reEquivExecutionRevert
@@ -355,10 +355,10 @@ theorem uniswapMintBody
                             have hbody :
                                 ExecTransitionBody config contract evmS (mintStore I)
                                   mintTransition.body .reverted := by
-                              exact uniswapMintBodyReverts_mintFeeCallFailure
+                              exact uniswapMintBodyReverts_mintFeeCallFailure (hperm := by assumption)
                                 evmS evm0S evm1S evmFeeS I
                                 (by simp only [evmS, initState]; exact hwv)
-                                hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+                                hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                                 hle0Source hle1Source hfeeGuard hfeeCall
                             exact (hFeeRev hzFee).reEquivExecutionRevert
                               hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
@@ -373,10 +373,10 @@ theorem uniswapMintBody
                               have hbody :
                                   ExecTransitionBody config contract evmS (mintStore I)
                                     mintTransition.body .reverted := by
-                                exact uniswapMintBodyReverts_mintFeeDecode
+                                exact uniswapMintBodyReverts_mintFeeDecode (hperm := by assumption)
                                   evmS evm0S evm1S evmFeeS I
                                   (by simp only [evmS, initState]; exact hwv)
-                                  hunlockedSolm hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
+                                  hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
                                   hle0Source hle1Source hfeeGuard hfeeCall hfeeDec
                               exact (hFeeRevShort hzFeeTrue houtFeeShort).reEquivExecutionRevert
                                 hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
@@ -412,7 +412,7 @@ theorem uniswapMintBody
                               by_cases hfeeToNonzero : UInt256.land feeToWord solcAddrMask ≠ ⟨0⟩
                               · by_cases hkLastNonzero : mintFeeKLastSlotWord σFee I ≠ ⟨0⟩
                                 · exact uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases feeTo
-                                    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1
+                                    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1
                                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
                                     hfeeGuard hfeeCall hfeeDec rfl rd7781 ho32 hoSize
                                     ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
@@ -422,7 +422,7 @@ theorem uniswapMintBody
                                     hfeeToNonzero hkLastNonzero
                                     hPostAccountsFee henvFeeI hσ0Fee rfl hperm
                                 · exact uniswapMintFeeOnKLastZeroCompleteFromFactoryCases feeTo
-                                    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1
+                                    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1
                                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
                                     hfeeGuard hfeeCall hfeeDec rfl rd7781 ho32 hoSize
                                     ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
@@ -434,7 +434,7 @@ theorem uniswapMintBody
                               · have hfeeToZero := not_not.mp hfeeToNonzero
                                 by_cases hkLastNonzero : mintFeeKLastSlotWord σFee I ≠ ⟨0⟩
                                 · exact uniswapMintFeeOffKLastNonzeroCompleteFromFactoryCases feeTo
-                                    hcode hdispatch hsz36 hperm hwv hunlockedSolm hguard0 hguard1
+                                    hcode hdispatch hsz36 hperm hwv hunlockedStele hguard0 hguard1
                                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
                                     hfeeGuard hfeeCall hfeeDec rfl hPostAccountsFee henvFeeI rfl
                                     rd7781 ho32 hoSize ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
@@ -443,7 +443,7 @@ theorem uniswapMintBody
                                     (by simpa [mintAmount1Word, amount1, evmS] using hamount1Eq)
                                     hfeeToZero hkLastNonzero rfl
                                 · exact uniswapMintFeeOffKLastZeroCompleteFromFactoryCases feeTo
-                                    hcode hdispatch hsz36 hwv hunlockedSolm hguard0 hguard1
+                                    hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1
                                     hcall0 hdec0 hcall1 hdec1 hle0Source hle1Source
                                     hfeeGuard hfeeCall hfeeDec rfl rd7781 ho32 hoSize
                                     ho132 ho1Size houtFeeSize hzFeeTrue houtFee32
@@ -460,7 +460,7 @@ theorem uniswapMintBody
             mintToken0GuardTrue_initState_of_code
               (σ₀ := σ₀) (A := A) (I := I)
               (g := Sat256.ofUInt256 g) htoken0NoCode
-          have hdepthSolm : evmL.executionEnv.depth = 1024 := by
+          have hdepthStele : evmL.executionEnv.depth = 1024 := by
             simpa [evmL, evmS, uniswapLockEnteredState, uniswapUnlockedState, initState,
               storageStore_executionEnv] using hdepth1024
           have hcall0 : typedCallViaEVM config evmL target "balanceOf" 0
@@ -472,14 +472,14 @@ theorem uniswapMintBody
               (name := "balanceOf") (args := [.address evmL.executionEnv.codeOwner])
               (callPerm := false)
               (balanceOfThisCalldataMem_encode evmL.executionEnv.codeOwner)
-              hdepthSolm
+              hdepthStele
           have hbody :
               ExecTransitionBody config contract evmS (mintStore I) mintTransition.body
                 .reverted := by
-            exact uniswapMintBodyReverts_firstCallFailure evmS
+            exact uniswapMintBodyReverts_firstCallFailure (hperm := by assumption) evmS
               { evmL with substate := (evmL.addAccessedAccount target).substate } I
               (by simp only [evmS, initState]; exact hwv)
-              hunlockedSolm hguard0 hcall0
+              hunlockedStele hguard0 hcall0
           have hRuntime :
               RDrev uniswapV2PairBytecode (Sat256.ofUInt256 g)
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) := by
@@ -522,15 +522,15 @@ theorem uniswapMintBodyAnyPerm
           σ k C :=
         uniswapReachMintBody (g := Sat256.ofUInt256 g) hcode hwv hsz4 hsize hsel
       let evmS := initState σ σ₀ (Sat256.ofUInt256 g) A I
-      have hunlockedSolm :
-          Solm.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
-        simpa [evmS, initState, Solm.EVM.storageLoad, Ethereum.State.lookupAccount,
+      have hunlockedStele :
+          Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨12⟩ = ⟨1⟩ := by
+        simpa [evmS, initState, Stele.EVM.storageLoad, Ethereum.State.lookupAccount,
           Ethereum.Account.lookupStorage] using hunlocked
       exact (uniswapMintX_lockEnteredStatic (g := Sat256.ofUInt256 g) hperm hunlocked
           (uniswapMintX_decoded_masked (g := Sat256.ofUInt256 g) hsz36 hsize hreach))
         |>.reEquivStaticHalt hcode hdispatch (uniswapDecode_mint_ok hsz36)
           (uniswapMintBodyStatic evmS I (by simp only [evmS, initState]; exact hwv)
-            hunlockedSolm (by simp only [evmS, initState]; exact hperm))
+            hunlockedStele (by simp only [evmS, initState]; exact hperm))
   · exact uniswapMintBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
 end UniswapV2Pair

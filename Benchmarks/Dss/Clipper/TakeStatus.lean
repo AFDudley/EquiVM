@@ -6,7 +6,7 @@ import Benchmarks.Dss.Clipper.GetStatusReverts
 import Benchmarks.Dss.Clipper.Sales
 import Benchmarks.Dss.Clipper.Take
 
-open Solm ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
+open Stele ABI Ethereum Ethereum.EVM Reasoning.Theory Reasoning.Reach
 open Benchmarks.Dss.Clipper.Immutables
 
 namespace Benchmarks.Dss.Clipper
@@ -74,24 +74,24 @@ abbrev clipperTakeSalesTopRef (I : ExecutionEnv) : EvaledStorageRef :=
 
 abbrev clipperTakeSalesUsrEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land
-    (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesPackedSlot I))
+    (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesPackedSlot I))
     solcAddrMask
 
 abbrev clipperTakeSalesTicEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
   UInt256.land
     (UInt256.div
-      (Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesPackedSlot I))
+      (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesPackedSlot I))
       (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩))
     (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨96⟩) ⟨1⟩)
 
 abbrev clipperTakeSalesTopEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesTopSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesTopSlot I)
 
 abbrev clipperTakeSalesTabEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesTabSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesTabSlot I)
 
 abbrev clipperTakeSalesLotEVMWord (evm : EVM.State) (I : ExecutionEnv) : UInt256 :=
-  Solm.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesLotSlot I)
+  Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (clipperTakeSalesLotSlot I)
 
 abbrev clipperTakeDogTarget (σ : AccountMap) (I : ExecutionEnv) : UInt256 :=
   UInt256.land (solcSlotWord σ I ⟨1⟩) solcAddrMask
@@ -288,7 +288,7 @@ theorem clipperEvalTakeSalesLotAtPrice (v : ClipperImmutables)
   let frame : Frame :=
     { contract := contract, locals := clipperTakeLocalsPrice evmLoc I done price, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evmRead)
+    (cfg := config) (stele := frame) (evm := evmRead)
     (slot := salesF (.var "id") "lot") (er := clipperTakeSalesLotRef I)
     (t := .int uint256Int) (loc := wordLoc (clipperTakeSalesLotSlot I))
     (value := .int (Int.ofNat (clipperTakeSalesLotEVMWord evmRead I).toNat))
@@ -333,7 +333,7 @@ theorem clipperEvalTakeSalesTabAfterLot (v : ClipperImmutables)
   let frame : Frame :=
     { contract := contract, locals := clipperTakeLocalsLot evmLoc evmRead I done price, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evmRead)
+    (cfg := config) (stele := frame) (evm := evmRead)
     (slot := salesF (.var "id") "tab") (er := clipperTakeSalesTabRef I)
     (t := .int uint256Int) (loc := wordLoc (clipperTakeSalesTabSlot I))
     (value := .int (Int.ofNat (clipperTakeSalesTabEVMWord evmRead I).toNat))
@@ -654,7 +654,7 @@ theorem clipperTakeAssignOweToTab (v : ClipperImmutables)
       .ok (oweTabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, oweFrame, oweTabFrame,
       clipperTakeLocalsOweTab, clipperTakeLocalsOwe, pure, bind, EvalResult.bind]
-  simpa [oweFrame, oweTabFrame] using ExecStmt.assign hrhs hassign
+  simpa [oweFrame, oweTabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeVarOweAtOweTab (v : ClipperImmutables)
     (evmLoc evmRead evmEval : EVM.State) (I : ExecutionEnv)
@@ -741,7 +741,7 @@ theorem clipperTakeAssignSliceFromOweTab (v : ClipperImmutables)
       .ok (sliceFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, oweTabFrame, sliceFrame,
       clipperTakeLocalsOweTabSlice, pure, bind, EvalResult.bind]
-  simpa [oweTabFrame, sliceFrame] using ExecStmt.assign hrhs hassign
+  simpa [oweTabFrame, sliceFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeVarTabAtOweTabSlice (v : ClipperImmutables)
     (evmLoc evmRead evmEval : EVM.State) (I : ExecutionEnv)
@@ -909,7 +909,7 @@ theorem clipperTakeLetTabNew (v : ClipperImmutables)
         slice'
   simpa [sliceFrame, tabNewFrame, clipperTakeLocalsTabNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := sliceFrame) (evm := evmRead) (name := "tabNew")
+      (cfg := config) (stele := sliceFrame) (evm := evmRead) (name := "tabNew")
       (ty := some uint256) (expr := wrap256 (.binary .sub (.var "tab") (.var "owe")))
       (value := .int (Int.ofNat tabNew.toNat)) hrhs)
 
@@ -1013,7 +1013,7 @@ theorem clipperTakeLetLotNew (v : ClipperImmutables)
         tabNew hsliceLot
   simpa [tabNewFrame, lotNewFrame, clipperTakeLocalsLotNew] using
     (ExecStmt.letDecl
-      (cfg := config) (solm := tabNewFrame) (evm := evmRead) (name := "lotNew")
+      (cfg := config) (stele := tabNewFrame) (evm := evmRead) (name := "lotNew")
       (ty := some uint256)
       (expr := wrap256 (.binary .sub (.var "lot") (.var "slice")))
       (value := .int (Int.ofNat lotNew.toNat)) hrhs)
@@ -1052,7 +1052,7 @@ theorem clipperTakeAssignTabFromTabNew (v : ClipperImmutables)
         (.int (Int.ofNat tabNew.toNat)) = .ok (tabFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, lotNewFrame, tabFrame,
       clipperTakeLocalsTabAssigned, pure, bind, EvalResult.bind]
-  simpa [lotNewFrame, tabFrame] using ExecStmt.assign hrhs hassign
+  simpa [lotNewFrame, tabFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperTakeAssignLotFromLotNew (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv)
@@ -1088,7 +1088,7 @@ theorem clipperTakeAssignLotFromLotNew (v : ClipperImmutables)
         (.int (Int.ofNat lotNew.toNat)) = .ok (lotFrame, evmRead) := by
     simp [assignStorageRef?, updateLocalPath?, varRef, tabFrame, lotFrame,
       clipperTakeLocalsLotAssigned, pure, bind, EvalResult.bind]
-  simpa [tabFrame, lotFrame] using ExecStmt.assign hrhs hassign
+  simpa [tabFrame, lotFrame] using ExecStmt.assign (hperm := by first | exact Or.inl rfl | assumption | exact Or.inr ‹_›) hrhs hassign
 
 theorem clipperEvalTakeCheckedOwe0Require_true (v : ClipperImmutables)
     (evmLoc evmRead : EVM.State) (I : ExecutionEnv) (price slice : UInt256)
@@ -1155,7 +1155,7 @@ theorem clipperTakePostLotWord_eq {σ τ : AccountMap} {evm : EVM.State}
       (fun m => solcSlotWord m I (solcMappingSlot ⟨12⟩ (clipperTakeIdWord I) + ⟨2⟩))
       hAccounts
   simpa [clipperTakeSalesLotEVMWord, clipperTakeSalesLotSlot,
-    clipperTakeSalesBaseSlot_eq I, solcSlotWord, Solm.EVM.storageLoad,
+    clipperTakeSalesBaseSlot_eq I, solcSlotWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, hacc, howner] using hslot
 
 theorem clipperTakePostTabWord_eq {σ τ : AccountMap} {evm : EVM.State}
@@ -1168,7 +1168,7 @@ theorem clipperTakePostTabWord_eq {σ τ : AccountMap} {evm : EVM.State}
       (fun m => solcSlotWord m I (solcMappingSlot ⟨12⟩ (clipperTakeIdWord I) + ⟨1⟩))
       hAccounts
   simpa [clipperTakeSalesTabEVMWord, clipperTakeSalesTabSlot,
-    clipperTakeSalesBaseSlot_eq I, solcSlotWord, Solm.EVM.storageLoad,
+    clipperTakeSalesBaseSlot_eq I, solcSlotWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, hacc, howner] using hslot
 
 abbrev clipperTakeSalesHashMem (I : ExecutionEnv) : ByteArray :=
@@ -1214,7 +1214,7 @@ theorem clipperEvalTakeSalesUsr (v : ClipperImmutables) (evm : EVM.State)
       .ok (.address (AccountAddress.ofNat (clipperTakeSalesUsrEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperTakeStore I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "usr") (er := clipperTakeSalesUsrRef I)
     (t := .address) (loc := addrLoc (clipperTakeSalesPackedSlot I))
     (value := .address (AccountAddress.ofNat (clipperTakeSalesUsrEVMWord evm I).toNat))
@@ -1250,7 +1250,7 @@ theorem clipperEvalTakeSalesTicAfterUsr (v : ClipperImmutables)
       .ok (.int (Int.ofNat (clipperTakeSalesTicEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperTakeLocalsUsr evm I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "tic") (er := clipperTakeSalesTicRef I)
     (t := .int uint96Int)
     (loc := uint96Loc (clipperTakeSalesPackedSlot I) ⟨20, by decide⟩ (by decide))
@@ -1310,7 +1310,7 @@ theorem clipperEvalTakeUsrNeZeroAfterTic_true (v : ClipperImmutables)
       AccountAddress.ofNat 0 := by
     simpa [clipperTakeSalesUsrEVMWord] using
       maskedAddress_ne_zero_of_mask_ne_zero
-        (w := Solm.EVM.storageLoad evm evm.executionEnv.codeOwner
+        (w := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
           (clipperTakeSalesPackedSlot I))
         (by simpa [clipperTakeSalesUsrEVMWord] using husr)
   simp [evalBinaryOp?, haddr]
@@ -1345,7 +1345,7 @@ theorem clipperEvalTakeSalesTopAfterTic (v : ClipperImmutables)
       .ok (.int (Int.ofNat (clipperTakeSalesTopEVMWord evm I).toNat)) := by
   let frame : Frame := { contract := contract, locals := clipperTakeLocalsTic evm I, immutables := immStore v }
   exact evalExpr_storage_scalar_value (hbackend := rfl)
-    (cfg := config) (solm := frame) (evm := evm)
+    (cfg := config) (stele := frame) (evm := evm)
     (slot := salesF (.var "id") "top") (er := clipperTakeSalesTopRef I)
     (t := .int uint256Int) (loc := wordLoc (clipperTakeSalesTopSlot I))
     (value := .int (Int.ofNat (clipperTakeSalesTopEVMWord evm I).toNat))
@@ -1434,7 +1434,7 @@ theorem clipperTakeStatusCallReturnsDoneTailTrue (v : ClipperImmutables)
       (callee := statusFunction)
       (locals := clipperStatusLocals (clipperTakeSalesTicEVMWord evm I)
         (clipperTakeSalesTopEVMWord evm I))
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := clipperStatusDoneTrueLocals (clipperTakeSalesTicEVMWord evm I)
             (clipperTakeSalesTopEVMWord evm I)
@@ -1497,7 +1497,7 @@ theorem clipperTakeStatusCallReturnsRdivBranch (v : ClipperImmutables)
       (callee := statusFunction)
       (locals := clipperStatusLocals (clipperTakeSalesTicEVMWord evm I)
         (clipperTakeSalesTopEVMWord evm I))
-      (calleeSolm :=
+      (calleeStele :=
         { contract := contract,
           locals := clipperStatusDoneFromRatioLocals (clipperTakeSalesTicEVMWord evm I)
             (clipperTakeSalesTopEVMWord evm I)
