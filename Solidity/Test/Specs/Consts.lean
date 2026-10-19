@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Consts (`Solidity/Test/Fixtures/Consts.sol`): typed constants and file-level constants, errors
 and events.  Harness input only. -/

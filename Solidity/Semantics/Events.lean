@@ -1,4 +1,4 @@
-import Solidity.Elab
+import Solidity.Syntax.Elab
 import Solidity.Value
 import ABI.Encode
 

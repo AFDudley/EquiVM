@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Truth (`Examples/Truth/Truth.sol`) in the Solidity spec language. -/
 

@@ -1,8 +1,8 @@
-import Solidity.Elab
-import Solidity.Layout
+import Solidity.Syntax.Elab
+import Solidity.Semantics.Layout
 import Solidity.Value
-import Solidity.Errors
-import Solidity.Events
+import Solidity.Semantics.Errors
+import Solidity.Semantics.Events
 import ABI.Decode
 
 /-!

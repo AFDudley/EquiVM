@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Recv (`Solidity/Test/Fixtures/Recv.sol`).  Harness input only. -/
 

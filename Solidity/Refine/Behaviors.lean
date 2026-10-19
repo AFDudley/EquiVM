@@ -1,4 +1,4 @@
-import Solidity.Refine
+import Solidity.Refine.Basic
 
 /-!
 # Behavioural corollaries of runtime refinement

@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Yul (`Solidity/Test/Fixtures/Yul.sol`): inline assembly, level 1.  Harness input only. -/
 

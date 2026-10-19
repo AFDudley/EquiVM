@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Reuse (`Examples/Reuse/C.sol`) in the Solidity spec language: a public function that is also
 called internally. -/

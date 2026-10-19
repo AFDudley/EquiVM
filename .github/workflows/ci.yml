@@ -64,7 +64,7 @@ jobs:
 
       # Interpreter/relation equivalence theorems of the Solidity spec language.
       - name: Build Solidity proofs
-        run: lake build Solidity.Theory.InterpEquiv
+        run: lake build Solidity.Interp.Equiv
 
       # ERC20 (solc 0.8.35, optimizer on) refines its Solidity spec: deployment + every call.
       - name: Build Solidity ERC20 proof

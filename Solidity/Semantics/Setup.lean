@@ -1,4 +1,4 @@
-import Solidity.Semantics
+import Solidity.Semantics.Dispatch
 
 /-!
 # Default configuration of a flattened contract

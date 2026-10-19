@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-!
 # OpenZeppelin utility bases (Solidity spec language)

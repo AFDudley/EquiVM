@@ -1,5 +1,5 @@
-import Solidity.Errors
-import Solidity.Events
+import Solidity.Semantics.Errors
+import Solidity.Semantics.Events
 import Reasoning.JumpDest
 
 /-!

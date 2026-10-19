@@ -1,4 +1,4 @@
-import Solidity.Syntax
+import Solidity.Syntax.Basic
 import ABI.Signature
 
 /-!

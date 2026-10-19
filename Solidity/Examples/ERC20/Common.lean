@@ -1,7 +1,7 @@
 import Solidity.Test.Specs.ERC20
 import Solidity.Examples.ERC20.Bytecode
 import Solidity.Theory.Derivations
-import Solidity.Setup
+import Solidity.Semantics.Setup
 import Solidity.Theory.Decode
 import Reasoning.SolcTrace
 

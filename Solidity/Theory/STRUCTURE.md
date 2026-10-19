@@ -2,7 +2,7 @@
 
 Proof infrastructure for the Solidity spec language: the interpreter/rules equivalence, and the
 coupling of `solidityExec` derivations with EVM traces (`Reasoning/Trace.lean` and its solc
-shape lemmas) into the refinement relation of `Solidity/Refine.lean`.  Everything is in namespace
+shape lemmas) into the refinement relation of `Solidity/Refine/Basic.lean`.  Everything is in namespace
 `Solidity`.  Nothing here mentions a particular contract; per-contract proofs supply the pinned
 bytecode, its selector/jump-destination facts, the storage leaf facts and the keccak facts.
 
@@ -10,7 +10,7 @@ bytecode, its selector/jump-destination facts, the storage leaf facts and the ke
 
 | File | Contents |
 |---|---|
-| `InterpLemmas.lean`, `Sound/*.lean`, `Sound.lean`, `InterpSound.lean`, `Complete.lean`, `InterpEquiv.lean` | The fuel interpreter agrees with the relational rules: soundness, completeness (`Complete.lean` is generated), determinism, `solidityExec_iff`. |
+| `Interp/Lemmas.lean`, `Sound/*.lean`, `Sound.lean`, `Interp/Equiv.lean`, `Interp/Complete.lean`, `Interp/Equiv.lean` | The fuel interpreter agrees with the relational rules: soundness, completeness (`Interp/Complete.lean` is generated), determinism, `solidityExec_iff`. |
 | `Slots.lean` | Storage-location facts missing from `Reasoning/Storage.lean`: `int256` slots (`int256Loc`, `s256OfWord`, `storageLocLoad/Store_int256`), full-word loads, packed `uintN`/`intN` fields at an offset (`setPackedWordNat`, `sextAt`, `storageLocLoad_sint_offset`, `storageLocStore_int_packed`), `normalizeInt` of a `uint`/`int` word. |
 | `Backend.lean` | The proof interface to the storage backend: `Config.Leaf cfg er loc` (the backend reads, writes and clears the scalar reference `er` at `loc`), its construction from a locator (`Config.leaf_of_locate`) or a layout table (`Config.leaf_of_table`), the `storageTypeOf_*` simp lemmas, and the solc backend's length/push on dynamic arrays (`solidity_length_dynArray/array`, `solidity_push_none`). |
 | `Decode.lean` | `decodeCalldataValues?` (the positional calldata decoder over `ABI.decodeCalldata`) on the fixed argument shapes `()`, `(address)`, `(address,uint256)`, `(address,address)`, `(address,address,uint256)`: success and the short/huge/non-canonical failures (`decodeCalldataValues_*`). |
@@ -31,7 +31,7 @@ Decode (on Reasoning.ABI's `decodeCalldata_*`)
 ```
 
 `Body`, `Trace`, `Derivations`, `Strings` and `Usage` are in the `Solidity` umbrella (CI).  There is
-one refinement relation (`Solidity/Refine.lean`: accounts, return data, exact revert data, logs).
+one refinement relation (`Solidity/Refine/Basic.lean`: accounts, return data, exact revert data, logs).
 
 ## Where to look
 
@@ -101,7 +101,7 @@ data), `bytesN(b)` on a byte array (`explicitConv_bytes_fixedBytes`), `bytesN` i
 (`fixedBytesIndex_ok/oob`, `EvalExpr.indexFixedBytesNat`).
 
 Changed 2026-10-03: the core relation (`…Core`), the `RD`-based `Dispatch.lean` and the ERC20
-core proof are deleted; `Solidity/Refine.lean` has one relation.  Its `decodingFailed` case accepts
+core proof are deleted; `Solidity/Refine/Basic.lean` has one relation.  Its `decodingFailed` case accepts
 empty revert data, or `Panic(0x41)` when the dispatched function decodes a dynamic argument into
 memory (`hasDynamicMemoryParam`, `decodeFailureData`); bridges `Reverted.specDecodingFailed`
 (empty) and `Reverted.specDecodingPanic`.

@@ -1,5 +1,5 @@
 import Lean
-import Solidity.Syntax
+import Solidity.Syntax.Basic
 
 /-!
 # `sol%` — Solidity surface syntax

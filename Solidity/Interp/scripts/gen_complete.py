@@ -137,5 +137,5 @@ for fam,rules in R.items():
         out.append(head+'\n'+'\n'.join(lines))
     out.append('')
 header=open(SP+'complete_header.lean').read()
-open('Solidity/Theory/Complete.lean','w').write(header+'\nmutual\n\n'+'\n'.join(out)+'\nend\n\nend Solidity\n')
+open('Solidity/Interp/Complete.lean','w').write(header+'\nmutual\n\n'+'\n'.join(out)+'\nend\n\nend Solidity\n')
 print('generated')

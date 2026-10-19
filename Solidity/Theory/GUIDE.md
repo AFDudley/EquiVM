@@ -116,7 +116,7 @@ Case-split on the selector bytes (`I.calldata.extract 0 4`) and `I.calldata.size
 each function on the conditions that choose the path (balance checks, overflow bounds, custom-error
 guards).  The EVM side of the dispatcher is shared (`Run.dispatchNoMatch`,
 `Run.solcDispatch{NonPayable,Short,NoMatch}Revert`).  Combine the cases into the ∀-closed
-`runtimeRefinement*` statements of `Solidity/Refine.lean` and `Behaviors.lean`.
+`runtimeRefinement*` statements of `Solidity/Refine/Basic.lean` and `Refine/Behaviors.lean`.
 
 ## 3. Rules that save hours
 

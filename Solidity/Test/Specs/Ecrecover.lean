@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Ec (`Solidity/Test/Fixtures/Ecrecover.sol`): the `ecrecover` global function.  Harness input only. -/
 

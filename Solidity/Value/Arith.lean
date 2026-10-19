@@ -1,4 +1,4 @@
-import Solidity.Types
+import Solidity.Syntax.Types
 
 /-!
 # Integer arithmetic and conversions (Solidity 0.8)

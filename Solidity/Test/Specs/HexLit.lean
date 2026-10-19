@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! HexLit (`Solidity/Test/Fixtures/HexLit.sol`): number literals converting to `bytesN` (zero always,
 hex literals only with exactly `2N` digits) in assignments, comparisons, explicit conversions and

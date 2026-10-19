@@ -1,4 +1,4 @@
-import Solidity.Theory.InterpLemmas
+import Solidity.Interp.Lemmas
 
 /-! # Soundness steps: calls (`evalCall`) and builtins (`evalBuiltin`). -/
 

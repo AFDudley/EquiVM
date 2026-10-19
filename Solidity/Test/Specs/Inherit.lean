@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Inherit (`Solidity/Test/Fixtures/Inherit.sol`).  Harness input only. -/
 

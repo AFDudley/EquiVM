@@ -1,4 +1,4 @@
-import Solidity.Theory.InterpLemmas
+import Solidity.Interp.Lemmas
 
 /-! # Soundness steps: member access, `abi.*`, named calls and member calls. -/
 

@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Arith (`Solidity/Test/Fixtures/Arith.sol`): arithmetic and types.  Harness input only. -/
 

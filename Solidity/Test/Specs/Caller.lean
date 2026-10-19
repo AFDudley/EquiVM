@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Caller (`Examples/Caller/Caller.sol`) in the Solidity spec language: the `IPow` interface and
 the calling contract. -/

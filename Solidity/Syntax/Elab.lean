@@ -1,4 +1,4 @@
-import Solidity.Types
+import Solidity.Syntax.Types
 
 /-!
 # Elaboration: program + target contract → `FlatContract`

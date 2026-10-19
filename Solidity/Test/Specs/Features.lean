@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Features / IKicker / Child (`Solidity/Test/Fixtures/Features.sol`): free functions, named
 arguments, `.selector`, `address.code.length`, literal arithmetic, overloaded events, slices,

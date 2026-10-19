@@ -1,5 +1,5 @@
 import Solidity.Interp
-import Solidity.Setup
+import Solidity.Semantics.Setup
 import Solidity.Refine
 
 /-!

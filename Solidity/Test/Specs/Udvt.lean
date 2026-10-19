@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Udvt (`Solidity/Test/Fixtures/Udvt.sol`).  Harness input only. -/
 

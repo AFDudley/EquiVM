@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! SimpleAuction (`Examples/SimpleAuction/SimpleAuction.sol`, Solidity docs "Simple Open
 Auction") in the Solidity spec language. -/

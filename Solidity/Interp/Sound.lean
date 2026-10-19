@@ -1,8 +1,8 @@
-import Solidity.Theory.Sound.Small
-import Solidity.Theory.Sound.Stmt
-import Solidity.Theory.Sound.Member
-import Solidity.Theory.Sound.Call
-import Solidity.Theory.Sound.Expr
+import Solidity.Interp.Sound.Small
+import Solidity.Interp.Sound.Stmt
+import Solidity.Interp.Sound.Member
+import Solidity.Interp.Sound.Call
+import Solidity.Interp.Sound.Expr
 
 /-!
 # Soundness of the interpreter

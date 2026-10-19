@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! CtorStore (`Examples/CtorStore/CtorStore.sol`) in the Solidity spec language. -/
 

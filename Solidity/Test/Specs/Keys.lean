@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Keys (`Solidity/Test/Fixtures/Keys.sol`): mapping keys of every kind.  Harness input only. -/
 

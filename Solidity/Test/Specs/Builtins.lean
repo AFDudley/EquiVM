@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Builtins (`Solidity/Test/Fixtures/Builtins.sol`).  Harness input only. -/
 

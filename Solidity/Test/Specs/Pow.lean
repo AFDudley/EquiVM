@@ -1,4 +1,4 @@
-import Solidity.Notation
+import Solidity.Syntax.Notation
 
 /-! Pow (`Examples/Pow/Pow.sol`) in the Solidity spec language. -/
 
