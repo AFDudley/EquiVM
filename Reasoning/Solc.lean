@@ -27,6 +27,16 @@ namespace Reasoning.Theory
 
 open ABI Ethereum Ethereum.EVM Reasoning.Reach
 
+/-- Small `UInt256` literal `toNat` values. v4.33.1 no longer reduces `⟨N⟩.toNat`
+    to `N` inside the segment proofs, so register the ones they use as simp lemmas. -/
+@[simp] theorem u256_toNat_lit0 : (⟨0⟩ : UInt256).toNat = 0 := by decide
+@[simp] theorem u256_toNat_lit1 : (⟨1⟩ : UInt256).toNat = 1 := by decide
+@[simp] theorem u256_toNat_lit4 : (⟨4⟩ : UInt256).toNat = 4 := by decide
+@[simp] theorem u256_toNat_lit32 : (⟨32⟩ : UInt256).toNat = 32 := by decide
+@[simp] theorem u256_toNat_lit64 : (⟨64⟩ : UInt256).toNat = 64 := by decide
+@[simp] theorem u256_toNat_lit128 : (⟨128⟩ : UInt256).toNat = 128 := by decide
+@[simp] theorem u256_toNat_lit160 : (⟨160⟩ : UInt256).toNat = 160 := by decide
+
 /-! ## Selector word -/
 
 /-- The 4-byte selector word computed by solc's `CALLDATALOAD(0); SHR 224` sequence. -/
@@ -8225,8 +8235,7 @@ theorem addressValueTransport (a : AccountAddress) :
       (lt_of_lt_of_le a.isLt (show AccountAddress.size ≤ UInt256.size from by decide))
   have hcanon : (EVM.Word.ofNat a.toNat).toNat < EVM.addressModulus := by
     rw [hword]
-    change a.toNat < EVM.twoPow 160
-    simp [EVM.twoPow, AccountAddress.size]
+    exact a.isLt
   rw [solcAddrMask_clean hcanon, hword]
 
 theorem shortL1_size (v : UInt256) : (writeWord solcFreePtrMem 64 v).size = 96 := by
