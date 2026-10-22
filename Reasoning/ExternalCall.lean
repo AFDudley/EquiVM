@@ -291,7 +291,7 @@ theorem rawZeroCall_source_of_theta
       (z, { evmE with accountMap := σ', substate := A' }, out) := by
     refine callViaEVM.callMade (perm := true) (g' := g') wordOfInt_zero.symm ?_ rfl ?_ ?_
     · refine ⟨callGas, A_in, ?_⟩
-      simpa only [evmE, hperm, accountAddress_roundtrip] using hΘ
+      simpa only [evmE, hperm, accountAddress_roundtrip, Bool.and_self] using hΘ
     · exact Fin.zero_le _
     · intro h
       have hlt := hdepth
@@ -362,7 +362,7 @@ theorem callStateMade {s0 I σ evm} (hs : SourceState s0 I σ evm)
   · refine ⟨callGas, AIn, ?_⟩
     simp only [callState, hs.env]
     rw [hs.world]
-    simpa only [accountAddress_roundtrip, hperm] using hΘ
+    simpa only [accountAddress_roundtrip, hperm, Bool.and_self] using hΘ
   · simpa only [callState, hs.env] using hbalance
   · simp only [callState, hs.env]
     intro hd
@@ -460,7 +460,7 @@ theorem extCodeSizeWord_ne_zero_lookup_code_pos {σ : AccountMap} {target : UInt
   | some acc =>
       have hwordNe : UInt256.ofNat acc.code.size ≠ (⟨0⟩ : UInt256) := by
         intro hzero
-        exact hne (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using hzero)
+        exact hne (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option] using hzero)
       have htoNatNe : (UInt256.ofNat acc.code.size).toNat ≠ 0 := by
         intro hzeroNat
         apply hwordNe
@@ -469,7 +469,7 @@ theorem extCodeSizeWord_ne_zero_lookup_code_pos {σ : AccountMap} {target : UInt
             cases val using Fin.cases
             · rfl
             · simp [UInt256.toNat, hword] at hzeroNat
-      simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using Nat.pos_of_ne_zero htoNatNe
+      simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option] using Nat.pos_of_ne_zero htoNatNe
 
 theorem extCodeSizeWord_zero_lookup_code_zero {σ : AccountMap} {target : UInt256}
     {addr : AccountAddress}
@@ -485,7 +485,7 @@ theorem extCodeSizeWord_zero_lookup_code_zero {σ : AccountMap} {target : UInt25
         (show (UInt256.ofNat 0).toNat = 0 from by decide)
   | some acc =>
       have hword := congrArg UInt256.toNat hzero
-      simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using hword
+      simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option] using hword
 
 theorem lowLevelCallSource {cfg : Config} {frame : Frame} {evm evm' : EVM.State}
     {receiver eth cdata : Expr} {target : AccountAddress} {value : Int} {calldata out : ByteArray}
@@ -528,7 +528,7 @@ theorem evalExpr_extCodeGuard_true {cfg : Config} {contract : ContractDecl} {evm
       0 < (UInt256.ofNat ((evm.lookupAccount target).option 0 (fun acc => acc.code.size))).toNat) :
     evalExpr? cfg { contract := contract, locals := locals } evm
       (.binary .gt (.extCodeSize receiver) (.intLit 0)) = .ok (.bool true) := by
-  simp [evalExpr?, EvalResult.bind, bind, hreceiver, evalBinaryOp?, EVM.Word.ofNat, hcode]
+  simp [evalExpr?, EvalResult.bind, bind, pure, hreceiver, evalBinaryOp?, EVM.Word.ofNat, hcode]
 
 theorem evalExpr_extCodeGuard_false {cfg : Config} {contract : ContractDecl} {evm : EVM.State}
     {locals : Store}
@@ -541,7 +541,7 @@ theorem evalExpr_extCodeGuard_false {cfg : Config} {contract : ContractDecl} {ev
         0) :
     evalExpr? cfg { contract := contract, locals := locals } evm
       (.binary .gt (.extCodeSize receiver) (.intLit 0)) = .ok (.bool false) := by
-  simp [evalExpr?, EvalResult.bind, bind, hreceiver, evalBinaryOp?, EVM.Word.ofNat, hcode]
+  simp [evalExpr?, EvalResult.bind, bind, pure, hreceiver, evalBinaryOp?, EVM.Word.ofNat, hcode]
 
 theorem evalExpr_codeGuard_of_accounts_eq {cfg : Config}
     {σ : AccountMap} {evm : EVM.State} {frame : Frame} {receiver : Expr}
@@ -864,7 +864,7 @@ theorem code_zero_of_state_codeSize_zero {evm : EVM.State} {targetWord : UInt256
         (show (UInt256.ofNat 0).toNat = 0 from by decide)
   | some acc =>
       have hword := congrArg UInt256.toNat hzero
-      simpa [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount, hacc] using hword
+      simpa [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount, hacc, Option.option] using hword
 
 theorem code_pos_of_state_codeSize_ne {evm : EVM.State} {targetWord : UInt256}
     (hne :
@@ -881,7 +881,7 @@ theorem code_pos_of_state_codeSize_ne {evm : EVM.State} {targetWord : UInt256}
   | some acc =>
       have hwordNe : UInt256.ofNat acc.code.size ≠ (⟨0⟩ : UInt256) := by
         intro hzero
-        exact hne (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using hzero)
+        exact hne (by simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc, Option.option] using hzero)
       have htoNatNe : (UInt256.ofNat acc.code.size).toNat ≠ 0 := by
         intro hzeroNat
         apply hwordNe
@@ -891,7 +891,7 @@ theorem code_pos_of_state_codeSize_ne {evm : EVM.State} {targetWord : UInt256}
             · rfl
             · simp [UInt256.toNat, hword] at hzeroNat
       simpa [-Std.ExtTreeMap.get?_eq_getElem?, State.lookupAccount,
-        hacc] using Nat.pos_of_ne_zero htoNatNe
+        hacc, Option.option] using Nat.pos_of_ne_zero htoNatNe
 
 theorem addressWordCode_zero_of_state {evm : EVM.State} (target : UInt256)
     (hzero : Reasoning.Theory.extCodeSizeWord evm.accountMap target = ⟨0⟩) :
