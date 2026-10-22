@@ -1146,7 +1146,7 @@ theorem patchRuntime_wordWrites_eq_writeCascade
       simp only [List.map_cons, patchRuntime, List.foldlM_cons,
         Option.bind_eq_bind, toByteArray_size, ↓reduceIte]
       rw [spliceBytes_toByteArray_eq_writeWord mem off word hoff]
-      simpa [writeCascade] using ih (writeWord mem off word) hrest
+      simpa [writeCascade, patchRuntime] using ih (writeWord mem off word) hrest
 
 theorem get?_eq_of_extract_one' (a b : ByteArray) (i : Nat) (ha : i < a.size) (hb : i < b.size)
     (h : a.extract i (i + 1) = b.extract i (i + 1)) :

@@ -15,7 +15,8 @@ theorem byteArray_eq_of_read_one (a b : ByteArray) (hs : a.size = b.size)
   have ha : 0 < (a.extract i (i + 1)).size := by rw [ByteArray.size_extract]; omega
   have hb : 0 < (b.extract i (i + 1)).size := by rw [ByteArray.size_extract]; omega
   simp only [ByteArray.get?, dif_pos ha, dif_pos hb, Option.some.injEq] at he
-  simpa only [ByteArray.get, ByteArray.data_extract, Array.getElem_extract, Nat.add_zero] using he
+  simp only [ByteArray.get, ByteArray.data_extract, Array.getElem_extract, Nat.add_zero] at he
+  exact he
 
 -- LIBRARY CANDIDATE: a contained word write only changes the bytes of its own window.
 theorem writeWord_read_one (mem : ByteArray) (off i : Nat) (word : UInt256)

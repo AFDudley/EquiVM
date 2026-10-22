@@ -1187,7 +1187,7 @@ theorem decodeCalldataWithMode_empty_ok {mode : DecodeMode} {cd : ByteArray}
       rw [byteArray_toList_eq, Array.length_toList]; rfl
     simp [decodeCalldataWithMode, decodeCalldata, htlen, hsz4,
       ABI.Solc08Calldata.decodeArgs?, decodeCalldata.insertValues]
-  · simpa [decodeCalldataWithMode] using decodeCalldata_empty_ok (cd := cd) hsz4
+  · exact decodeCalldata_empty_ok (cd := cd) hsz4
 
 theorem decodeScalarWords_uint256_ok {bytes : List UInt8}
     (hlen0 : (bytes.take 32).length = 32) :
@@ -2062,7 +2062,7 @@ theorem decodeScalarWord_bool_none_noncanon {bytes : List UInt8} {start : Nat}
     intro h
     apply hno
     apply u256_inj
-    simpa [UInt256.toNat] using h
+    exact h
   dsimp only [Option.bind]
   rw [if_neg (by simpa [UInt256.toNat] using hnzNat),
     if_neg (by simpa [UInt256.toNat] using hnoNat)]
@@ -4467,10 +4467,10 @@ theorem decodeScalarWord_uint_result (bits : BitWidth) {bytes : List UInt8} {sta
     decodeABIWord?]
   rw [if_neg (Nat.ne_of_gt bits.property.1)]
   by_cases hc : (ABI.bytesToWord ((bytes.drop start).take 32)).toNat < EVM.twoPow bits.val
-  · dsimp only [UInt256.toNat] at hc
-    simp only [UInt256.toNat, if_pos hc]
-  · dsimp only [UInt256.toNat] at hc
-    simp only [UInt256.toNat, if_neg hc]
+  · dsimp only [UInt256.toNat] at hc ⊢
+    simp only [hc, if_true, reduceIte]
+  · dsimp only [UInt256.toNat] at hc ⊢
+    simp only [hc, if_false, reduceIte]
 
 theorem decodeCalldata_uint_result (bits : BitWidth) {cd : ByteArray} {name : Ident}
     (hlen : 36 ≤ cd.size) (hhi : cd.size < 2 ^ 255 + 4) :
@@ -4787,6 +4787,6 @@ theorem copiedSelector {mem out} (hm : 96 ≤ mem.size)
   have hx := copyWindow_extract out mem 0 0 4 0 4 (by decide) hl (by omega) (by decide)
   have ht := congrArg (fun b : ByteArray ↦ b.data.toList) hx
   simpa only [ByteArray.data_extract, Array.toList_extract, List.extract_eq_take_drop,
-    List.drop_zero] using congrArg fromBytesBigEndian ht
+    List.drop_zero, Nat.add_zero, Nat.zero_add, Nat.sub_zero] using congrArg fromBytesBigEndian ht
 
 end Reasoning.Theory
