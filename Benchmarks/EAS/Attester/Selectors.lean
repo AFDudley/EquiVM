@@ -28,7 +28,6 @@ theorem attestSelectorOf :
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel,
       show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   unfold selectorOf
   rw [hsig]
   decide +kernel
@@ -42,7 +41,6 @@ theorem revokeSelectorOf :
     simp [transitionSigStr, transitionSignature, ABI.printSignature,
       revokeTransition, contract, Syntax.contractSyntax, ABI.abiToSigStr,
       ABI.elemToSigStr, show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   unfold selectorOf
   rw [hsig]
   decide +kernel
@@ -58,7 +56,6 @@ theorem multiAttestSelectorOf :
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel,
       show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   unfold selectorOf
   rw [hsig]
   decide +kernel
@@ -72,7 +69,6 @@ theorem multiRevokeSelectorOf :
     simp [transitionSigStr, transitionSignature, ABI.printSignature,
       multiRevokeTransition, contract, Syntax.contractSyntax, ABI.abiToSigStr,
       ABI.elemToSigStr, show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   unfold selectorOf
   rw [hsig]
   decide +kernel

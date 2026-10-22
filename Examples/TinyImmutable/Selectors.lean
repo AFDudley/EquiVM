@@ -35,7 +35,6 @@ theorem quoteSelectorOf :
       quoteTransition, uint256, uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   unfold selectorOf
   rw [hsig]
   decide +kernel

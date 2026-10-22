@@ -237,7 +237,8 @@ theorem simpleAuctionReachSplit {σ σ₀ A I} {g : Sat256}
   obtain ⟨k3, C3, h3⟩ := solcSelectorLoad h2 (by decide) (by decide) (by decide) (by decide)
     (by simp)
   refine ⟨k3, C3, ?_⟩
-  simpa [simpleAuctionSelWord] using h3
+  simp only [simpleAuctionSelWord] at h3 ⊢
+  exact h3
 
 theorem simpleAuctionReachHighBody {σ σ₀ A I} {g : Sat256}
     (i : ℕ) (hi : i ≤ 3) (bodyPC : UInt256)
@@ -267,15 +268,11 @@ theorem simpleAuctionReachHighBody {σ σ₀ A I} {g : Sat256}
       RD.selectorSplitNotTakenAuto hsplit simpleAuctionSplitWellFormed hpivot (by simp)
   exact RD.dispatchTo bodyPC i hfirst
     (fun j hj => by
-      simpa [simpleAuctionHighFirstArmPc, simpleAuctionSplitPc, selArmNextPc, armTgtWidth,
-        selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-        simpleAuctionHighArmsWellFormed j (le_trans hj hi))
+      exact simpleAuctionHighArmsWellFormed j (le_trans hj hi))
     (fun j hj => by
-      simpa [simpleAuctionHighFirstArmPc, simpleAuctionSplitPc, selArmNextPc, armTgtWidth,
-        selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using heq0 j hj)
+      exact heq0 j hj)
     (by
-      simpa [simpleAuctionHighFirstArmPc, simpleAuctionSplitPc, selArmNextPc, armTgtWidth,
-        selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using htake)
+      exact htake)
     (by
       change (D_J simpleAuctionBytecode 0).contains
         (armTgt simpleAuctionBytecode
@@ -319,15 +316,11 @@ theorem simpleAuctionReachLowBody {σ σ₀ A I} {g : Sat256}
       hlowJd.jumpdest (by decide) (by simp)
   exact RD.dispatchTo bodyPC i hfirst
     (fun j hj => by
-      simpa [simpleAuctionLowFirstArmPc, simpleAuctionLowJumpdestPc, simpleAuctionSplitPc,
-        armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-        simpleAuctionLowArmsWellFormed j (le_trans hj hi))
+      exact simpleAuctionLowArmsWellFormed j (le_trans hj hi))
     (fun j hj => by
-      simpa [simpleAuctionLowFirstArmPc, simpleAuctionLowJumpdestPc, simpleAuctionSplitPc,
-        armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using heq0 j hj)
+      exact heq0 j hj)
     (by
-      simpa [simpleAuctionLowFirstArmPc, simpleAuctionLowJumpdestPc, simpleAuctionSplitPc,
-        armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using htake)
+      exact htake)
     (by
       change (D_J simpleAuctionBytecode 0).contains
         (armTgt simpleAuctionBytecode
@@ -464,8 +457,7 @@ theorem simpleAuctionX_noMatch {σ σ₀ A I} {g : Sat256}
     have h73' : ∃ k C, RD simpleAuctionBytecode I g (initState σ σ₀ g A I) ⟨73⟩
         [simpleAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 5 + 5 + 5 + 5, CS + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [simpleAuctionHighFirstArmPc, simpleAuctionSplitPc, nthArmPc, selArmNextPc,
-        armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h73
+      exact h73
     obtain ⟨_, _, h73rd⟩ := h73'
     exact h73rd.revertStub (by decide) (by decide) (by decide) (by simp)
   · have h76 := RD.selectorSplitTakenAuto hsplit simpleAuctionSplitWellFormed hpivot
@@ -481,9 +473,7 @@ theorem simpleAuctionX_noMatch {σ σ₀ A I} {g : Sat256}
     have h110' : ∃ k C, RD simpleAuctionBytecode I g (initState σ σ₀ g A I) ⟨110⟩
         [simpleAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 1 + 5 + 5 + 5, CS + 22 + 1 + 22 + 22 + 22, ?_⟩
-      simpa [simpleAuctionLowFirstArmPc, simpleAuctionLowJumpdestPc, simpleAuctionSplitPc,
-        nthArmPc, selArmNextPc, armTgtWidth, armTgt, pushAt, selArmJumpiPc, selArmPushTgtPc,
-        selArmEqPc, selArmPush4Pc] using h110
+      exact h110
     obtain ⟨_, _, h110rd⟩ := h110'
     have h111 := h110rd.jumpdest (by decide) (by simp)
     exact h111.revertStub (by decide) (by decide) (by decide) (by simp)
@@ -519,7 +509,7 @@ theorem RD.simpleAuctionRoutineEncodeAddress {g : Sat256} {s0 : State} {ee : Exe
         rfl)
       (by decide) (by evm_ov),
     push1 ⟨32⟩, add]
-  exact ⟨_, _, by simpa using rd⟩
+  exact ⟨_, _, by exact rd⟩
 
 theorem RD.simpleAuctionReturnOneWord194 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     {k C : ℕ} {val : UInt256} {R : List UInt256} {rdata : ByteArray}

@@ -110,10 +110,10 @@ theorem reEquivReturnElim {imms : Store} {cfg c σ σ₀ σ' A I} {g : Sat256}
   rcases h with hoog | ⟨s, hX, hacc⟩
   · exact reEquiv_outOfGas (Xi_error_of_X (g := g.toUInt256) (by
       rw [← hcode] at hoog
-      simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hoog))
+      simpa [initState] using hoog))
   · have hxi := Xi_success_of_X (g := g.toUInt256) (by
       rw [← hcode] at hX
-      simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hX)
+      simpa [initState] using hX)
     rw [hacc] at hxi
     exact next _ _ hxi
 
