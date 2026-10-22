@@ -2,6 +2,9 @@
 .lake/
 /.lake
 
+# worker build trees, logs and scratch files
+.scratch/
+
 # lean-lsp MCP scratch snippets
 _mcp_snippet_*.lean
 .mcp/uv-cache/
