@@ -266,8 +266,6 @@ theorem nat_lor_shift_add (a b k : Nat) (ha : a < 2 ^ k) :
       have ha0 : a = 0 := by omega
       subst a
       norm_num
-      change (0 ||| b) = b
-      simp
   | succ k ih =>
       have hdiv : Nat.div2 a < 2 ^ k := by
         rw [Nat.div2_val]
@@ -481,7 +479,7 @@ theorem u256_land_high_mask_toNat (old : UInt256) (k : Nat) (hk : k ≤ 256) :
   rw [nat_land_comm]
   rw [natLandClearLow old.toNat k hk (by
     change old.val.val < 2 ^ 256
-    simp [UInt256.size])]
+    exact old.val.isLt)]
   have hlt : old.toNat / 2 ^ k * 2 ^ k < UInt256.size :=
     lt_of_le_of_lt (Nat.div_mul_le_self _ _) old.val.isLt
   rw [Nat.mod_eq_of_lt hlt]
