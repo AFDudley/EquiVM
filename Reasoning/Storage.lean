@@ -127,7 +127,7 @@ theorem storageLocLoad_uint256 (evm : EVM.State) (slot : UInt256) :
     exact htakeNat
   unfold storageLocLoad uint256Loc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
-  rw [normalizeInt_uint_eq_self]
+  erw [normalizeInt_uint_eq_self]
   · congr
     rw [htakeFin, fromBytes'_toBytesLEWithSizeProof]
     rfl
@@ -628,7 +628,7 @@ theorem packedAddressAfterBoolTrueNat_lt_size (old val : UInt256)
     apply Nat.div_lt_of_lt_mul
     rw [show 2 ^ 168 * 2 ^ 88 = (2 : Nat) ^ 256 by rw [← Nat.pow_add]]
     change old.val.val < 2 ^ 256
-    simp [UInt256.size]
+    exact old.val.isLt
   have hv : val.toNat < 2 ^ 160 := by
     simpa [EVM.addressModulus, EVM.twoPow] using hcanon
   have hvle : val.toNat ≤ 2 ^ 160 - 1 := Nat.le_pred_of_lt hv
@@ -679,7 +679,7 @@ theorem packedAddressAfterBoolTrueWord_eq (old val : UInt256)
     apply Nat.div_lt_of_lt_mul
     rw [show 2 ^ 168 * 2 ^ 88 = (2 : Nat) ^ 256 by rw [← Nat.pow_add]]
     change old.val.val < 2 ^ 256
-    simp [UInt256.size]
+    exact old.val.isLt
   have hv : val.toNat < 2 ^ 160 := by
     simpa [EVM.addressModulus, EVM.twoPow] using hcanon
   have hinnerlt :
@@ -850,7 +850,9 @@ theorem storageLocStore_bool_word_offset0 (evm : EVM.State) (slot word : UInt256
       simpa [UInt256.toNat] using hval
     have hiszero : UInt256.isZero word = ⟨0⟩ := isZero_eq_zero_of_ne hzero
     simp only [wordToElem, hbeq, Bool.false_eq_true, ↓reduceIte]
-    simpa [setBoolOffset0Word, hiszero] using storageLocStore_bool_true_offset0 evm slot
+    simpa [setBoolOffset0Word, hiszero,
+      show (⟨0⟩ : UInt256).isZero = (⟨1⟩ : UInt256) from by decide] using
+      storageLocStore_bool_true_offset0 evm slot
 
 /-- Erasing a storage word preserves lookup at a different storage slot. -/
 theorem storage_getD_erase_ne (storage : Storage) (readSlot writeSlot default : UInt256)
@@ -993,6 +995,11 @@ theorem sstoreAccountMap_storage_getD_ne (σ : AccountMap) (a : AccountAddress)
       · simpa [hzero] using storage_getD_update_ne acc.storage readSlot writeSlot val default hne
       · simpa [hzero] using storage_getD_update_ne acc.storage readSlot writeSlot val default hne
 
+/-- The default account has an empty storage map, so a read returns the fallback.
+v4.33.1 no longer reduces this inside the state-equality simp, so name it. -/
+private theorem default_account_storage_getD (slot d : UInt256) :
+    ((default : Account).storage).getD slot d = d := rfl
+
 theorem accountStorageStateEq_storage_getD {σ τ : AccountMap}
     (hστ : accountStorageStateEq σ τ) (addr : AccountAddress) (slot defaultValue : UInt256) :
     ((σ.get? addr).option defaultValue (fun acc => acc.storage.getD slot defaultValue)) =
@@ -1003,6 +1010,7 @@ theorem accountStorageStateEq_storage_getD {σ τ : AccountMap}
       ← Std.ExtTreeMap.get?_eq_getElem?, hσ, hτ, Option.option] at hστ ⊢
   all_goals
     have hstorage := congrArg (fun storage => storage.getD slot defaultValue) hστ.1
+    try simp only [default_account_storage_getD] at hstorage
     simpa [Std.ExtTreeMap.getD_eq_getD_getElem?] using hstorage
 
 /-- A final insert overwrites any earlier zero-aware write to the same slot. -/
@@ -1114,12 +1122,15 @@ theorem solidityDataWordsForwardFrom_append
           baseSlot bytes (idx + fuel) tail
   | idx, 0, tail => by simp [solidityDataWordsForwardFrom]
   | idx, fuel + 1, tail => by
-      simp [solidityDataWordsForwardFrom]
       have ih := solidityDataWordsForwardFrom_append owner
         (sstoreAccountMap owner τ (solidityBytesDataSlot baseSlot idx)
           (uInt256OfByteArray (bytes.readWithPadding (idx * 32) 32)))
         baseSlot bytes (idx + 1) fuel tail
-      simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using ih
+      conv_lhs => rw [show fuel + 1 + tail = fuel + tail + 1 from by omega,
+        solidityDataWordsForwardFrom]
+      conv_rhs => rw [solidityDataWordsForwardFrom]
+      rw [show idx + (fuel + 1) = idx + 1 + fuel from by omega]
+      exact ih
 
 def clearDataWordsForwardFrom (owner : AccountAddress) (τ : AccountMap)
     (base idx : UInt256) : Nat → AccountMap
@@ -1720,7 +1731,7 @@ theorem initState {σ₁ σ₀₁ σ₂ σ₀₂ A I g}
     (hAccounts : σ₁ = σ₂) :
     EVMStateEquiv (initState σ₁ σ₀₁ g A I)
       (initState σ₂ σ₀₂ g A I) :=
-  ⟨rfl, by simpa [initState] using hAccounts⟩
+  ⟨rfl, by subst hAccounts; rfl⟩
 
 theorem storageLoad {evm₁ evm₂ : EVM.State} (h : EVMStateEquiv evm₁ evm₂)
     {addr₁ addr₂ : AccountAddress} (haddr : addr₁ = addr₂) (slot : UInt256) :
@@ -1929,7 +1940,7 @@ theorem storageLocStore_uint8 (evm : EVM.State) (slot value : UInt256)
           (UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
             (UInt256.lnot ⟨255⟩)) value)) := by
   unfold storageLocStore storageLocWriteWord
-  simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof value).1.take 1 ++
@@ -1961,7 +1972,6 @@ theorem canonicalAddress_eq_zero_iff (value : UInt256)
   constructor
   · intro h
     have hv := congrArg (fun a => valueToWord (.address a)) h
-    dsimp only at hv
     rw [valueToWord_address_ofNat_canonical value hc] at hv
     exact Option.some.inj hv
   · intro h
@@ -1974,7 +1984,6 @@ theorem sourceAddress_eq_iff (I : ExecutionEnv) (w : UInt256)
   constructor
   · intro h
     have hw := congrArg (fun a => valueToWord (.address a)) h
-    dsimp only at hw
     rw [valueToWord_address_ofNat_canonical w hc] at hw
     exact Option.some.inj hw
   · intro h
@@ -2125,7 +2134,7 @@ theorem sstoreAccountMap_storage_getD_self_zero_present
     Std.ExtTreeMap.getElem?_insert_self]
   by_cases hzero : (val == (default : UInt256)) = true
   · have hval : val = (⟨0⟩ : UInt256) := by
-      simpa using eq_of_beq hzero
+      exact eq_of_beq hzero
     subst val
     simp [hzero]
   · have hfalse : (val == (default : UInt256)) = false := by
