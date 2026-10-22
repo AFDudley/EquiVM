@@ -98,7 +98,7 @@ theorem WordArrayMemory.read (mem : ByteArray) (base : Nat) (words : List UInt25
   | nil => exact byteArray_readWithPadding_zero mem base
   | cons w ws ih =>
       have hh : mem.readWithPadding base 32 = w.toByteArray := by
-        simpa using h 0 (by simp)
+        exact h 0 (by simp)
       have ht := ih (base + 32) (h.tail mem base w ws)
         (by simp only [List.length_cons] at hin; omega)
       cases ws with

@@ -81,11 +81,11 @@ theorem readWithPadding_words (mem : ByteArray) (off : Nat) (words : List UInt25
       have hlen : 32 * (word :: words).length = 32 + 32 * words.length := by simp; omega
       rw [hlen, readWithPadding_split _ _ _ _ (by rw [hlen] at hin; omega)]
       have hhead := hwords ⟨0, by simp⟩
-      simp only [Nat.mul_zero, Nat.add_zero, List.getElem_cons_zero] at hhead
+      simp only [Nat.mul_zero, Nat.add_zero] at hhead
       rw [hhead, ih (off + 32) (by simp only [List.length_cons] at hin; omega)]
       · rfl
       · intro i
-        simpa only [List.getElem_cons_succ,
+        simpa only [Fin.getElem_fin, List.getElem_cons_succ,
           show off + 32 * (i.val + 1) = off + 32 + 32 * i.val by omega] using
             hwords ⟨i.val + 1, by simp only [List.length_cons]; omega⟩
 
