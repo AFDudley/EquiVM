@@ -90,7 +90,7 @@ theorem Layout.suffixWords_eq_writeCascade (layout : Layout)
   have hpatch := patchRuntime_wordWrites_eq_writeCascade
     (ByteArray.zeroes layout.size) writes hfit'
   unfold Layout.suffixWords
-  simpa [writes, List.map_map, hpatch] using congrArg
+  simpa [writes, Function.comp_def, hpatch] using congrArg
     (fun out : Option ByteArray => out.getD (ByteArray.zeroes layout.size)) hpatch
 
 /-- A compiler-reported scalar slot reads back as its word valuation. The

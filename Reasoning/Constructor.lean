@@ -15,6 +15,11 @@ open Stele ABI Ethereum Ethereum.EVM Reasoning.Reach
 
 namespace Reasoning.Theory
 
+/-- The `UInt256`→`Sat256`→`UInt256` round-trip. v4.33.1 no longer folds it under the
+    def unfoldings, so register it as a simp lemma. -/
+@[simp] theorem uInt256_ofUInt256_toUInt256 (g : UInt256) :
+    (Sat256.ofUInt256 g).toUInt256 = g := rfl
+
 /-- Successful Solidity deployment of an empty-parameter constructor implies the argument list has
     the constructor parameter length. -/
 theorem emptyCtorDeployment_args_length
