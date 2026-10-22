@@ -237,21 +237,11 @@ def contractSyntax : ContractDecl := solidity% contract Dog {
   }
 }
 
-/-- Definitional equality with the AST spec.  `simp only` first rewrites both sides to the same
-cons-normal form (no defeq search); the closing `rfl` then only crosses closed leaves. -/
+/-- Definitional equality with the AST spec. v4.33.1 closes this by a direct
+`rfl`; the earlier `simp only` preprocessing now spends heartbeats on a `whnf`
+that the `rfl` avoids. -/
 theorem contractSyntax_eq :
     contractSyntax = Benchmarks.Dss.Dog.contract := by
-  simp only [contractSyntax, Benchmarks.Dss.Dog.contract, Benchmarks.Dss.Dog.transitions,
-    Benchmarks.Dss.Dog.barkTransition, Benchmarks.Dss.Dog.barkBodyRest,
-    Benchmarks.Dss.Dog.vatTransition, Benchmarks.Dss.Dog.nonpayable,
-    Benchmarks.Dss.Dog.checkedExternalCallStmts, Benchmarks.Dss.Dog.checkedMulUintInto,
-    Benchmarks.Dss.Dog.checkedSubUintInto, Benchmarks.Dss.Dog.checkedAddUintInto,
-    Benchmarks.Dss.Dog.liveRef, Benchmarks.Dss.Dog.vowAddr, Benchmarks.Dss.Dog.vowRef,
-    Benchmarks.Dss.Dog.HoleRef, Benchmarks.Dss.Dog.DirtRef, Benchmarks.Dss.Dog.ilksF,
-    Benchmarks.Dss.Dog.varRef, Benchmarks.Dss.Dog.uint256, Benchmarks.Dss.Dog.addr,
-    Benchmarks.Dss.Dog.uint256Int, Benchmarks.Dss.Dog.u256, Benchmarks.Dss.Dog.mul256,
-    Benchmarks.Dss.Dog.sub256, Benchmarks.Dss.Dog.add256,
-    List.cons_append, List.nil_append]
   rfl
 
 end Benchmarks.Dss.Dog.Syntax

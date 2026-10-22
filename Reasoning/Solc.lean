@@ -1454,6 +1454,20 @@ mask to address canonicality (`< 2^160`). -/
 /-- The address-cleanup mask literal `2^160 - 1`, shared by every solc contract. -/
 def solcAddrMask : UInt256 := ⟨1461501637330902918203684832716283019655932542975⟩
 
+/-- v4.33.1 no longer reduces the `ofNat` mask literal to the `solcAddrMask`
+    structure form, so register the fold as a rewrite rule. The proof is a
+    kernel `decide`; it adds no axiom. -/
+theorem solcAddrMask_ofNat_eq :
+    UInt256.ofNat 1461501637330902918203684832716283019655932542975 = solcAddrMask := by
+  decide
+
+/-- v4.33.1 no longer reduces the `SHL`/`SUB` mask computation to the
+    `solcAddrMask` structure form, so register the fold as a rewrite rule. The
+    proof is a kernel `decide`; it adds no axiom. -/
+theorem solcAddrMask_shl_sub_eq :
+    UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩ = solcAddrMask := by
+  decide
+
 /-- The canonical EVM word for `CALLER`/`msg.sender`. -/
 abbrev solcSourceWord (I : ExecutionEnv) : UInt256 :=
   UInt256.ofNat I.source.val
@@ -1563,7 +1577,7 @@ theorem RD.solcInternalCallSetup3 {code : ByteArray} {g : Sat256} {s0 : State}
 theorem fromBytes'_take20_wordLE_solcAddrMask (w : UInt256) :
     fromBytes' ((EVM.Word.toBytesLEWithSizeProof w).1.take 20) =
       (UInt256.land w solcAddrMask).toNat := by
-  simpa [solcAddrMask] using
+  simpa [solcAddrMask_ofNat_eq] using
     fromBytes'_take_wordLE_land_mask w 20 (by decide)
 
 set_option maxHeartbeats 1000000 in
@@ -1929,7 +1943,7 @@ theorem RD.solcOneAddressExternalMaskAndJumpMasked {code : ByteArray} {g : Sat25
   have rd12 := rd11.and hd11 (by evm_ov)
   have rd15 := rd12.push2 routine hd12 (by evm_ov)
   exact ⟨_, _, by
-    simpa [calldataWord, show (⟨4⟩ : UInt256).toNat = 4 from by decide, solcAddrMask]
+    simpa [calldataWord, show (⟨4⟩ : UInt256).toNat = 4 from by decide, solcAddrMask_shl_sub_eq]
       using rd15.jump hd15 hroutine (by evm_ov)⟩
 
 set_option maxHeartbeats 1000000 in
@@ -3393,7 +3407,7 @@ theorem RD.solcSingleMappingStoreDebitMemSplit {code : ByteArray} {g : Sat256} {
   refine Or.inl ⟨hperm, ?_⟩
   obtain ⟨_, _, rdOut⟩ := rdBeforeStore.sstore hperm hd30
     (by simp only [List.length_cons]; omega)
-  exact ⟨_, _, by simpa [solcSingleMappingStoreDebitOutPc] using rdOut⟩
+  exact ⟨_, _, by simpa [solcSingleMappingStoreDebitOutPc, solcAddrMask_shl_sub_eq] using rdOut⟩
 
 theorem RD.solcSingleMappingStoreDebitMem {code : ByteArray} {g : Sat256} {s0 : State}
     {ee : ExecutionEnv} {k C : ℕ} {pc baseSlot newValue value aux key ret : UInt256}
@@ -3572,7 +3586,7 @@ theorem RD.solcSingleMappingStoreCreditMemSplit {code : ByteArray} {g : Sat256} 
   refine Or.inl ⟨hperm, ?_⟩
   obtain ⟨_, _, rdOut⟩ := rdBeforeStore.sstore hperm hd33
     (by simp only [List.length_cons]; omega)
-  exact ⟨_, _, by simpa [solcSingleMappingStoreCreditOutPc] using rdOut⟩
+  exact ⟨_, _, by simpa [solcSingleMappingStoreCreditOutPc, solcAddrMask_shl_sub_eq] using rdOut⟩
 
 theorem RD.solcSingleMappingStoreCreditMem {code : ByteArray} {g : Sat256} {s0 : State}
     {ee : ExecutionEnv} {k C : ℕ} {pc baseSlot newValue value key aux ret : UInt256}
@@ -3723,7 +3737,7 @@ theorem RD.solcNestedMappingStoreInnerHash {code : ByteArray} {g : Sat256} {s0 :
     raw dup1 hd26 (by evm_ov),
     raw dup4 hd27 (by evm_ov)]
   exact ⟨_, _, by
-    simpa [solcNestedMappingStoreInnerHashOutPc] using
+    simpa [solcNestedMappingStoreInnerHashOutPc, solcAddrMask_shl_sub_eq] using
       rdInnerHashPrefix.keccak256 0 (solcMappingSlot baseSlot owner)
         (UInt256.ofNat 3) hd28 mem_cost hslot (by native_decide) (by evm_ov)⟩
 

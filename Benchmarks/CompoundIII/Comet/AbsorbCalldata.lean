@@ -43,7 +43,9 @@ theorem solc0815_decodeCalldata_addressArray_prefix {cd : ByteArray} {x y : Iden
         some (.address (AccountAddress.ofNat (calldataWord cd 4).toNat), 32) else none := by
     simp only [decodeABIValue?, readWord?, readBytes?, List.drop_zero, htake, if_true,
       bind, Option.bind, hw4, decodeABIWord?, UInt256.toNat]
-    split_ifs <;> rfl
+    split_ifs with h
+    · simp_all
+    · exact (if_neg (by omega)).symm
   have hoffRead := readNat_drop4_at_eq_calldataWord (cd := cd) 32 hhead
   have hshort : ¬ cd.toList.length < 4 := by omega
   have hbig : cd.toList.length < 2^255 := by omega
