@@ -54,7 +54,6 @@ theorem callerSelectorBytes :
       Caller.runTransition, Caller.addr, Caller.uint256, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

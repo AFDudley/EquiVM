@@ -411,7 +411,6 @@ theorem uniswapSwapSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.swapTransition = "swap(uint256,uint256,address,bytes)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.swapTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -432,7 +431,6 @@ theorem uniswapApproveSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.approveTransition = "approve(address,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.approveTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -453,7 +451,6 @@ theorem uniswapTransferFromSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.transferFromTransition = "transferFrom(address,address,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.transferFromTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -479,7 +476,6 @@ theorem uniswapInitializeSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.initializeTransition = "initialize(address,address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.initializeTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -500,7 +496,6 @@ theorem uniswapMintSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.mintTransition = "mint(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.mintTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -511,7 +506,6 @@ theorem uniswapBalanceOfSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.balanceOfTransition = "balanceOf(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.balanceOfTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -527,7 +521,6 @@ theorem uniswapNoncesSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.noncesTransition = "nonces(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.noncesTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -538,7 +531,6 @@ theorem uniswapBurnSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.burnTransition = "burn(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.burnTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -554,7 +546,6 @@ theorem uniswapTransferSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.transferTransition = "transfer(address,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.transferTransition, legacyAddr, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -570,7 +561,6 @@ theorem uniswapSkimSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.skimTransition = "skim(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.skimTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -591,7 +581,6 @@ theorem uniswapPermitSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.permitTransition = "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.permitTransition, legacyAddr, addr, uint256, uint256Int, uint8, uint8Int, bytes32, bytes32Width, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 8 = "8" by decide +kernel, show Nat.repr 32 = "32" by decide +kernel, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -602,7 +591,6 @@ theorem uniswapAllowanceSelectorBytes :
   have hsig : transitionSigStr UniswapV2Pair.allowanceTransition = "allowance(address,address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       UniswapV2Pair.allowanceTransition, legacyAddr, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

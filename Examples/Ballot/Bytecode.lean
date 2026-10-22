@@ -117,7 +117,6 @@ theorem ballotVoteSelectorBytes :
       Ballot.voteTransition, Ballot.uint256, Ballot.uint256Int,
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -132,7 +131,6 @@ theorem ballotProposalsSelectorBytes :
       Ballot.proposalsGetter, Ballot.uint256, Ballot.uint256Int,
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -153,7 +151,6 @@ theorem ballotDelegateSelectorBytes :
   have hsig : Stele.transitionSigStr Ballot.delegateTransition = "delegate(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.delegateTransition, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -174,7 +171,6 @@ theorem ballotGiveRightToVoteSelectorBytes :
   have hsig : Stele.transitionSigStr Ballot.giveRightToVoteTransition = "giveRightToVote(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.giveRightToVoteTransition, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -187,7 +183,6 @@ theorem ballotVotersSelectorBytes :
   have hsig : Stele.transitionSigStr Ballot.votersGetter = "voters(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Ballot.votersGetter, Ballot.addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

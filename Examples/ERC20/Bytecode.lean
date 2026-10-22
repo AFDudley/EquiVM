@@ -195,7 +195,6 @@ private lemma erc20ApproveSigStr :
   simp [ERC20.approveTransition, Stele.transitionSigStr, ABI.printSignature,
     transitionSignature, ERC20.uint256, ERC20.addr, ABI.abiToSigStr, ABI.elemToSigStr,
     ERC20.uint256Int, ABI.intTypeToSigStr, natRepr256]
-  decide +kernel
 
 private lemma erc20TotalSupplySigStr :
     Stele.transitionSigStr ERC20.totalSupplyTransition = "totalSupply()" := by
@@ -207,26 +206,22 @@ private lemma erc20TransferFromSigStr :
   simp [ERC20.transferFromTransition, Stele.transitionSigStr, ABI.printSignature,
     transitionSignature, ERC20.uint256, ERC20.addr, ABI.abiToSigStr, ABI.elemToSigStr,
     ERC20.uint256Int, ABI.intTypeToSigStr, natRepr256]
-  decide +kernel
 
 private lemma erc20BalanceOfSigStr :
     Stele.transitionSigStr ERC20.balanceOfTransition = "balanceOf(address)" := by
   simp [ERC20.balanceOfTransition, Stele.transitionSigStr, ABI.printSignature,
     transitionSignature, ERC20.addr, ABI.abiToSigStr, ABI.elemToSigStr]
-  decide +kernel
 
 private lemma erc20TransferSigStr :
     Stele.transitionSigStr ERC20.transferTransition = "transfer(address,uint256)" := by
   simp [ERC20.transferTransition, Stele.transitionSigStr, ABI.printSignature,
     transitionSignature, ERC20.uint256, ERC20.addr, ABI.abiToSigStr, ABI.elemToSigStr,
     ERC20.uint256Int, ABI.intTypeToSigStr, natRepr256]
-  decide +kernel
 
 private lemma erc20AllowanceSigStr :
     Stele.transitionSigStr ERC20.allowanceTransition = "allowance(address,address)" := by
   simp [ERC20.allowanceTransition, Stele.transitionSigStr, ABI.printSignature,
     transitionSignature, ERC20.addr, ABI.abiToSigStr, ABI.elemToSigStr]
-  decide +kernel
 
 set_option maxHeartbeats 0 in
 set_option maxRecDepth 1000000 in

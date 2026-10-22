@@ -21,7 +21,6 @@ theorem blindAuctionBidSelectorBytes :
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       bidTransition, bytes32, ABI.abiToSigStr, ABI.elemToSigStr,
       show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -36,7 +35,6 @@ theorem blindAuctionRevealSelectorBytes :
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel,
       show Nat.repr 32 = "32" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -89,7 +87,6 @@ theorem blindAuctionBidsSelectorBytes :
       bidsGetter, addr, uint256, uint256Int,
       ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

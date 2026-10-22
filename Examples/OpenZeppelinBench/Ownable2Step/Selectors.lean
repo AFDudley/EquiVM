@@ -42,7 +42,6 @@ theorem transferOwnershipSelectorBytes :
       "transferOwnership(address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       transferOwnershipTransition, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

@@ -227,7 +227,7 @@ theorem internalCallTransitionReturn {cfg : Config} {caller : Frame} {evm callee
       (.returned calleeStele calleeEvm (some [value])) caller.immutables) :
     ExecStmt cfg caller evm (.internalCall name args retVar)
       (.ok { caller with locals := caller.locals.insert retVar value } calleeEvm) := by
-  simpa [TransitionDecl.toCallable, ExecTransitionBody, resumeAfterInternalCall] using
+  simpa [TransitionDecl.toCallable, ExecTransitionBody, resumeAfterInternalCall, collapseReturns] using
     ExecStmt.internalCallReturn (cfg := cfg) (stele := caller) (evm := evm) (name := name)
       (args := args) (retVar := retVar) (argVals := argVals) (callee := callee.toCallable)
       (locals := locals) (calleeStele := calleeStele) (calleeEvm := calleeEvm)
@@ -1427,7 +1427,8 @@ theorem normalizeRawBoolWord_true_of_u256 {word : Nat}
     normalizeRawBoolWord? (rawBoolWordValue word) = .ok (.bool true) := by
   have hword1 : word = 1 := by
     have h := congrArg UInt256.toNat hone
-    simpa [hword] using h
+    rw [hword] at h
+    exact h
   subst word
   rfl
 

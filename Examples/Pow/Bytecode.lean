@@ -37,7 +37,6 @@ theorem powSelectorBytes :
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       Pow.powTransition, Pow.uint256, ABI.abiToSigStr, ABI.elemToSigStr,
       ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

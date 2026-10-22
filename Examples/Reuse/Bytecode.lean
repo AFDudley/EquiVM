@@ -44,7 +44,6 @@ theorem cFSelectorBytes :
       Reuse.fTransition, Reuse.uint256, Reuse.uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -59,7 +58,6 @@ theorem cGSelectorBytes :
       Reuse.gTransition, Reuse.uint256, Reuse.uint256Int, ABI.abiToSigStr,
       ABI.elemToSigStr, ABI.intTypeToSigStr,
       show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

@@ -34,7 +34,7 @@ theorem immutablesFit_uint {C : ContractDecl} {imms : Store} {name : Ident}
   · simpa only [hword, hi] using hget
   · rw [hword]
     apply Int.ofNat_lt.mp
-    simpa only [Int.natCast_pow, Int.toNat_of_nonneg hvalue.1]
+    simpa only [Int.natCast_pow, Int.toNat_of_nonneg hvalue.1, Nat.cast_ofNat]
       using hvalue.2
 
 end Benchmarks.CompoundIII.Comet

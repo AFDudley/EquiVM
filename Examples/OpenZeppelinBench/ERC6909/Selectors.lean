@@ -20,7 +20,6 @@ theorem erc6909BalanceOfSelectorBytes :
       = ⟨#[0x00, 0xfd, 0xd5, 0x8e]⟩ := by
   have hsig : Stele.transitionSigStr balanceOfTransition = "balanceOf(address,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, balanceOfTransition, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -40,7 +39,6 @@ theorem erc6909TransferSelectorBytes :
       = ⟨#[0x09, 0x5b, 0xcd, 0xb6]⟩ := by
   have hsig : Stele.transitionSigStr transferTransition = "transfer(address,uint256,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, transferTransition, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -50,7 +48,6 @@ theorem erc6909ApproveSelectorBytes :
       = ⟨#[0x42, 0x6a, 0x84, 0x93]⟩ := by
   have hsig : Stele.transitionSigStr approveTransition = "approve(address,uint256,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, approveTransition, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -60,7 +57,6 @@ theorem erc6909SetOperatorSelectorBytes :
       = ⟨#[0x55, 0x8a, 0x72, 0x97]⟩ := by
   have hsig : Stele.transitionSigStr setOperatorTransition = "setOperator(address,bool)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, setOperatorTransition, addr, boolTy, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -70,7 +66,6 @@ theorem erc6909AllowanceSelectorBytes :
       = ⟨#[0x59, 0x8a, 0xf9, 0xe7]⟩ := by
   have hsig : Stele.transitionSigStr allowanceTransition = "allowance(address,address,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, allowanceTransition, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -80,7 +75,6 @@ theorem erc6909IsOperatorSelectorBytes :
       = ⟨#[0xb6, 0x36, 0x3c, 0xf2]⟩ := by
   have hsig : Stele.transitionSigStr isOperatorTransition = "isOperator(address,address)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, isOperatorTransition, addr, ABI.abiToSigStr, ABI.elemToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
@@ -90,7 +84,6 @@ theorem erc6909TransferFromSelectorBytes :
       = ⟨#[0xfe, 0x99, 0x04, 0x9a]⟩ := by
   have hsig : Stele.transitionSigStr transferFromTransition = "transferFrom(address,address,uint256,uint256)" := by
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature, transferFromTransition, addr, uint256, uint256Int, ABI.abiToSigStr, ABI.elemToSigStr, ABI.intTypeToSigStr, show Nat.repr 256 = "256" by decide +kernel]
-    decide +kernel
   rw [hsig]
   decide +kernel
 

@@ -159,7 +159,6 @@ theorem setSelectorBytes :
     simp [Stele.transitionSigStr, ABI.printSignature, transitionSignature,
       StringStoreLite.setTransition, StringStoreLite.stringTy,
       ABI.abiToSigStr]
-    decide +kernel
   rw [hsig]
   decide +kernel
 
