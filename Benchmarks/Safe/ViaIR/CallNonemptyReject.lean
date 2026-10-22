@@ -88,7 +88,7 @@ private theorem xiStopOutput (σ σ₀ : AccountMap) (g : UInt256) (A : Substate
 set_option maxRecDepth 65536 in
 private theorem precompileZeroGasFailure (pc : AccountAddress) (σ : AccountMap) (A : Substate)
     (I : ExecutionEnv) (hinput : I.calldata.size ≠ 213) :
-    (match pc with
+    (match pc.val with
       | 1 => Ξ_ECREC σ ⟨0⟩ A I
       | 2 => Ξ_SHA256 σ ⟨0⟩ A I
       | 3 => Ξ_RIP160 σ ⟨0⟩ A I
@@ -106,16 +106,16 @@ private theorem precompileZeroGasFailure (pc : AccountAddress) (σ : AccountMap)
     (Ξ_BN_MUL σ ⟨0⟩ A I) (Ξ_SNARKV σ ⟨0⟩ A I) (Ξ_BLAKE2_F σ ⟨0⟩ A I)
     (Ξ_PointEval σ ⟨0⟩ A I) (default : AccountMap × UInt256 × Substate × ByteArray)
   have hbound :
-      (if pc = 1 then Ξ_ECREC σ ⟨0⟩ A I
-       else if pc = 2 then Ξ_SHA256 σ ⟨0⟩ A I
-       else if pc = 3 then Ξ_RIP160 σ ⟨0⟩ A I
-       else if pc = 4 then Ξ_ID σ ⟨0⟩ A I
-       else if pc = 5 then Ξ_EXPMOD σ ⟨0⟩ A I
-       else if pc = 6 then Ξ_BN_ADD σ ⟨0⟩ A I
-       else if pc = 7 then Ξ_BN_MUL σ ⟨0⟩ A I
-       else if pc = 8 then Ξ_SNARKV σ ⟨0⟩ A I
-       else if pc = 9 then Ξ_BLAKE2_F σ ⟨0⟩ A I
-       else if pc = 10 then Ξ_PointEval σ ⟨0⟩ A I
+      (if pc.val = 1 then Ξ_ECREC σ ⟨0⟩ A I
+       else if pc.val = 2 then Ξ_SHA256 σ ⟨0⟩ A I
+       else if pc.val = 3 then Ξ_RIP160 σ ⟨0⟩ A I
+       else if pc.val = 4 then Ξ_ID σ ⟨0⟩ A I
+       else if pc.val = 5 then Ξ_EXPMOD σ ⟨0⟩ A I
+       else if pc.val = 6 then Ξ_BN_ADD σ ⟨0⟩ A I
+       else if pc.val = 7 then Ξ_BN_MUL σ ⟨0⟩ A I
+       else if pc.val = 8 then Ξ_SNARKV σ ⟨0⟩ A I
+       else if pc.val = 9 then Ξ_BLAKE2_F σ ⟨0⟩ A I
+       else if pc.val = 10 then Ξ_PointEval σ ⟨0⟩ A I
        else (default : AccountMap × UInt256 × Substate × ByteArray)).1 = ∅ := by
     split_ifs
     · rfl
@@ -128,7 +128,11 @@ private theorem precompileZeroGasFailure (pc : AccountAddress) (σ : AccountMap)
     · rfl
     · rfl
     · simp [Ξ_SNARKV]
-    · simp [Ξ_BLAKE2_F, ffi.BLAKE2, hinput, bind, Except.bind, dbgTrace]
+    · simp only [Ξ_BLAKE2_F, ffi.BLAKE2, dbgTrace, bind, Except.bind]
+      have hb : (I.calldata.size != 213) = true := by
+        simp only [bne_iff_ne, ne_eq]; exact hinput
+      simp only [hb, if_true]
+      split <;> rfl
     · rfl
     · rfl
   exact (congrArg (fun x : AccountMap × UInt256 × Substate × ByteArray ↦ x.1)

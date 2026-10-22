@@ -40,7 +40,7 @@ theorem fromBytes'_replicate_zero (k : ℕ) : fromBytes' (List.replicate k (0 : 
 theorem fromBytes'_append_zeros (l : List UInt8) (k : ℕ) :
     fromBytes' (l ++ List.replicate k 0) = fromBytes' l := by
   induction l with
-  | nil => simpa using fromBytes'_replicate_zero k
+  | nil => exact fromBytes'_replicate_zero k
   | cons b bs ih => simp only [List.cons_append, fromBytes']; rw [ih]
 
 /-- The little-endian round-trip `fromBytes' (toBytes' x) = x` (evmlean's version is `private`,
@@ -1222,7 +1222,7 @@ theorem twoWordHashMem_read0_64 {mem : ByteArray} (key slot : UInt256)
 theorem toByteArray_eq_toBytesBE (v : UInt256) :
     UInt256.toByteArray v = ⟨(EVM.Word.toBytesBE v).toArray⟩ := by
   have hb : (BE v.toNat).size ≤ 32 := by
-    apply BE_le; have := v.val.isLt; simp [UInt256.size, UInt256.toNat]
+    apply BE_le; simpa [UInt256.size, UInt256.toNat] using v.val.isLt
   apply ByteArray.ext; apply Array.toList_inj.mp
   rw [show (((EVM.Word.toBytesBE v).toArray).toList) = EVM.Word.toBytesBE v from by simp]
   unfold UInt256.toByteArray EVM.Word.toBytesBE
@@ -3087,7 +3087,7 @@ theorem not_mload_oob_after_M32 {aw off : UInt256}
   let aw' := UInt256.ofNat (MachineState.M aw.toNat off.toNat 32)
   have hmul : (aw' * (⟨32⟩ : UInt256)).toNat = aw'.toNat * 32 := by
     rw [u256_mul_op_toNat]
-    exact Nat.mod_eq_of_lt (by simpa [aw'] using hsmall)
+    exact Nat.mod_eq_of_lt (by simpa [aw', show (⟨32⟩ : UInt256).toNat = 32 from by decide] using hsmall)
   have hceil : off.toNat < ((off.toNat + 32 + 31) / 32) * 32 := by
     omega
   have htermDivLt : ((off.toNat + 32 + 31) / 32) < UInt256.size := by
@@ -3289,7 +3289,7 @@ theorem mload64_of_freePtr_read64 {mem : ByteArray} {freePtr : UInt256}
       freePtr := by
   exact mloadWordValue_of_readWithPadding
     (off := (⟨64⟩ : UInt256)) (v := freePtr)
-    (by simpa using hmem)
+    (by simpa [show (⟨64⟩ : UInt256).toNat = 64 from by decide] using hmem)
     (by simpa [show (⟨64⟩ : UInt256).toNat = 64 from by decide] using hread)
 
 theorem machineState_M_32_lt_u256_size {s f : ℕ}
@@ -3458,7 +3458,7 @@ theorem readWithPadding_tail32_toList (b : ByteArray) {addr : Nat}
 
 @[simp] theorem wordBytesBEArray_size (w : UInt256) :
     ({ data := (EVM.Word.toBytesBE w).toArray } : ByteArray).size = 32 := by
-  simpa using word_toBytesBE_toByteArray_size w
+  simpa [ByteArray.size, List.size_toArray] using word_toBytesBE_toByteArray_size w
 
 theorem uInt256OfByteArray_toByteArray (w : UInt256) :
     uInt256OfByteArray (UInt256.toByteArray w) = w := by
