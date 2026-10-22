@@ -79,7 +79,8 @@ theorem storageLocLoad_uint48_offset0 (evm : EVM.State) (slot : UInt256) :
       .int (Int.ofNat (UInt256.land
         (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
+  simpa [packedUInt48Loc, packedUInt48Int, uint48Mask,
+    show (UInt256.ofNat 281474976710655 : UInt256) = ⟨281474976710655⟩ from rfl] using
     storageLocLoad_uint_offset0 evm slot ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide)
 
@@ -89,7 +90,8 @@ theorem storageLocLoad_uint48_offset6 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 6)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
+  simpa [packedUInt48Loc, packedUInt48Int, uint48Mask,
+    show (UInt256.ofNat 281474976710655 : UInt256) = ⟨281474976710655⟩ from rfl] using
     storageLocLoad_uint_offset evm slot ⟨6, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
@@ -99,7 +101,8 @@ theorem storageLocLoad_uint48_offset20 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 20)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
+  simpa [packedUInt48Loc, packedUInt48Int, uint48Mask,
+    show (UInt256.ofNat 281474976710655 : UInt256) = ⟨281474976710655⟩ from rfl] using
     storageLocLoad_uint_offset evm slot ⟨20, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
@@ -109,7 +112,8 @@ theorem storageLocLoad_uint48_offset26 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 26)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
+  simpa [packedUInt48Loc, packedUInt48Int, uint48Mask,
+    show (UInt256.ofNat 281474976710655 : UInt256) = ⟨281474976710655⟩ from rfl] using
     storageLocLoad_uint_offset evm slot ⟨26, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
@@ -122,8 +126,7 @@ theorem wordOfInt_emod_uint48 (w : UInt256) :
       Int.ofNat w.toNat % packedUInt48Modulus := by
     norm_num [packedUInt48Modulus, Int.natCast_mod]
   have htoNat : (Int.ofNat w.toNat % packedUInt48Modulus).toNat = w.toNat % 2 ^ 48 := by
-    have h := congrArg Int.toNat hcast
-    simpa using h.symm
+    rw [← hcast, Int.toNat_natCast]
   rw [wordOfInt_nonneg _ hnonneg]
   apply u256_inj
   change (Int.ofNat w.toNat % packedUInt48Modulus).toNat % EVM.twoPow 256 =
@@ -179,7 +182,7 @@ theorem storageLocStore_uint48_offset0_word (evm : EVM.State) (slot data : UInt2
         (setUint48Offset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   show fromBytes'
@@ -204,7 +207,8 @@ theorem storageLocStore_uint48_offset0_word (evm : EVM.State) (slot data : UInt2
   rw [setUint48Offset0Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    rw [show (UInt256.ofNat (2 ^ 48 - 1) : UInt256) = uint48Mask from by decide]
+    exact uint48Mask_clean data
   rw [hclean]
   ring
 
@@ -340,7 +344,7 @@ theorem storageLocStore_uint48_offset6_word (evm : EVM.State) (slot data : UInt2
         (setUint48Offset6Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   show fromBytes'
@@ -372,7 +376,8 @@ theorem storageLocStore_uint48_offset6_word (evm : EVM.State) (slot data : UInt2
   rw [setUint48Offset6Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    rw [show (UInt256.ofNat (2 ^ 48 - 1) : UInt256) = uint48Mask from by decide]
+    exact uint48Mask_clean data
   rw [hclean]
   ring
 
@@ -395,7 +400,7 @@ theorem storageLocStore_addr_zero (evm : EVM.State) (slot : UInt256) :
         (setAddressOffset0Word (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) :=
           by
   unfold storageLocStore storageLocWriteWord addressOffset0Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (⟨0⟩ : UInt256)).2
   congr 2
   apply u256_inj
@@ -694,7 +699,7 @@ theorem storageLocStore_uint48_offset20_zero (evm : EVM.State) (slot : UInt256) 
         (clearUint48Offset20Word
           (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
@@ -743,7 +748,7 @@ theorem storageLocStore_uint48_offset26_zero (evm : EVM.State) (slot : UInt256) 
         (clearUint48Offset26Word
           (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot))) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
@@ -793,7 +798,7 @@ theorem storageLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UInt
         (setUint48Offset26Word
           (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
@@ -823,7 +828,8 @@ theorem storageLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UInt
   rw [setUint48Offset26Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    rw [show (UInt256.ofNat (2 ^ 48 - 1) : UInt256) = uint48Mask from by decide]
+    exact uint48Mask_clean data
   rw [hclean]
   have hdiv : old.toNat / 2 ^ 256 = 0 := by
     exact Nat.div_eq_of_lt (by
@@ -846,7 +852,7 @@ theorem storageLocStore_uint48_offset20_word (evm : EVM.State) (slot data : UInt
         (setUint48Offset20Word
           (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold storageLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot
@@ -876,7 +882,8 @@ theorem storageLocStore_uint48_offset20_word (evm : EVM.State) (slot data : UInt
   rw [setUint48Offset20Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    rw [show (UInt256.ofNat (2 ^ 48 - 1) : UInt256) = uint48Mask from by decide]
+    exact uint48Mask_clean data
   rw [hclean]
   dsimp [old]
   ring_nf

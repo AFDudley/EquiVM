@@ -46,7 +46,7 @@ theorem transientLocLoad_uint256 (evm : EVM.State) (slot : UInt256) :
     exact htakeNat
   unfold transientLocLoad uint256Loc wordToElem
   simp only [Fin.val_zero, Nat.zero_add]
-  rw [normalizeInt_uint_eq_self]
+  erw [normalizeInt_uint_eq_self]
   · congr
     rw [htakeFin, fromBytes'_toBytesLEWithSizeProof]
     rfl
@@ -369,7 +369,9 @@ theorem transientLocStore_bool_word_offset0 (evm : EVM.State) (slot word : UInt2
       simpa [UInt256.toNat] using hval
     have hiszero : UInt256.isZero word = ⟨0⟩ := isZero_eq_zero_of_ne hzero
     simp only [wordToElem, hbeq, Bool.false_eq_true, ↓reduceIte]
-    simpa [setBoolOffset0Word, hiszero] using transientLocStore_bool_true_offset0 evm slot
+    simpa [setBoolOffset0Word, hiszero,
+      show (⟨0⟩ : UInt256).isZero = (⟨1⟩ : UInt256) from by decide] using
+      transientLocStore_bool_true_offset0 evm slot
 
 
 theorem transientLocStore_uint256_int (evm : EVM.State) (slot : UInt256) (n : Int) :
@@ -401,7 +403,7 @@ theorem transientLocStore_uint8 (evm : EVM.State) (slot value : UInt256)
           (UInt256.land (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
             (UInt256.lnot ⟨255⟩)) value)) := by
   unfold transientLocStore storageLocWriteWord
-  simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_ofNat_toNat, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   change fromBytes' ((EVM.Word.toBytesLEWithSizeProof value).1.take 1 ++
@@ -625,7 +627,7 @@ theorem tstoreAccountMap_tstorage_getD_self_zero_present
     Std.ExtTreeMap.getElem?_insert_self]
   by_cases hzero : (val == (default : UInt256)) = true
   · have hval : val = (⟨0⟩ : UInt256) := by
-      simpa using eq_of_beq hzero
+      exact eq_of_beq hzero
     subst val
     simp [hzero]
   · have hfalse : (val == (default : UInt256)) = false := by

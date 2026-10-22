@@ -321,10 +321,10 @@ theorem RDret.reEquivExecutionGen {cfg : Config} {contract : ContractDecl}
   rcases h with hoog | ⟨s, hX, hsacc⟩
   · exact reEquiv_outOfGas (Xi_error_of_X (g := g.toUInt256) (by
       rw [← hcode] at hoog
-      simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hoog))
+      simpa [initState] using hoog))
   · have hxi := Xi_success_of_X (g := g.toUInt256) (by
       rw [← hcode] at hX
-      simpa [initState, Sat256.ofUInt256, Sat256.toUInt256] using hX)
+      simpa [initState] using hX)
     have hbody' :
         ExecTransitionBody cfg contract
           (initState σ σ₀ (Sat256.ofUInt256 g.toUInt256) A I)
