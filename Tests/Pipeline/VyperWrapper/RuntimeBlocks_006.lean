@@ -110,9 +110,9 @@ theorem wrapper_block_1527 {immWords : String → UInt256} {ee : ExecutionEnv} {
     : RD (Tests.Pipeline.VyperWrapper.wrapperBytecode ++ Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords) ee g s0 (UInt256.ofNat 1559) (wrapper_block_1527_stack (immWords := immWords) (g := g) (aw := aw) (C := C) (R := R)) (wrapper_block_1527_memory (immWords := immWords) (ee := ee) (mem := mem)) (M (M (M (M aw (⟨0⟩ : UInt256) (UInt256.ofNat 32)) (⟨0⟩ : UInt256) (⟨32⟩ : UInt256)) (UInt256.ofNat 96) (⟨32⟩ : UInt256)) (UInt256.ofNat 128) (⟨32⟩ : UInt256)) rdata σ (k + 19) (C + ((48) + (memExpansionCost aw (⟨0⟩ : UInt256) (UInt256.ofNat 32)) + (3 + 3 * (((UInt256.ofNat 32).toNat + 31) / 32)) + (memExpansionCost (M aw (⟨0⟩ : UInt256) (UInt256.ofNat 32)) (⟨0⟩ : UInt256) (⟨32⟩ : UInt256)) + (memExpansionCost (M (M aw (⟨0⟩ : UInt256) (UInt256.ofNat 32)) (⟨0⟩ : UInt256) (⟨32⟩ : UInt256)) (UInt256.ofNat 96) (⟨32⟩ : UInt256)) + (memExpansionCost (M (M (M aw (⟨0⟩ : UInt256) (UInt256.ofNat 32)) (⟨0⟩ : UInt256) (⟨32⟩ : UInt256)) (UInt256.ofNat 96) (⟨32⟩ : UInt256)) (UInt256.ofNat 128) (⟨32⟩ : UInt256)))) := by
   have hcode : Tests.Pipeline.VyperWrapper.wrapperBytecode.size = 1780 := by native_decide
   have hcopy0 : ((Tests.Pipeline.VyperWrapper.wrapperBytecode ++ Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords).write (UInt256.ofNat 1780).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 32).toNat) = ((immWords "TOKEN").toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32) := by
-    simpa [hcode] using Tests.Pipeline.VyperWrapper.immutableCopyWord_TOKEN immWords (mem) (⟨0⟩ : UInt256).toNat
+    simpa [hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Tests.Pipeline.VyperWrapper.immutableCopyWord_TOKEN immWords (mem) (⟨0⟩ : UInt256).toNat
   have hload0 : (memLoad (⟨0⟩ : UInt256) ((Tests.Pipeline.VyperWrapper.wrapperBytecode ++ Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords).write (UInt256.ofNat 1780).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 32).toNat)) = immWords "TOKEN" := by
-    simpa [hcode] using Tests.Pipeline.VyperWrapper.immutableLoad_TOKEN immWords (mem) (⟨0⟩ : UInt256)
+    simpa [hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Tests.Pipeline.VyperWrapper.immutableLoad_TOKEN immWords (mem) (⟨0⟩ : UInt256)
   try simp only [hcopy0] at hload0
   let r0 := h
   have r1 := r0.jumpdest (by append_decode(Tests.Pipeline.VyperWrapper.wrapperBytecode, Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords, (⟨1527⟩ : UInt256), .JUMPDEST, none)) (by evm_ov)
@@ -600,7 +600,7 @@ theorem wrapper_block_1656 {immWords : String → UInt256}
   have hsize : (Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords).size = Tests.Pipeline.VyperWrapper.immutableLayout.size :=
     Reasoning.VyperImmutables.Layout.suffixWords_size Tests.Pipeline.VyperWrapper.immutableLayout immWords
   have hread : (((Tests.Pipeline.VyperWrapper.wrapperBytecode ++ Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords).write (UInt256.ofNat 1780).toNat mem (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat).readWithPadding (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat) = (Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords) := by
-    simpa [Tests.Pipeline.VyperWrapper.immutableLayout, hcode] using
+    simpa [Tests.Pipeline.VyperWrapper.immutableLayout, hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using
       Reasoning.VyperImmutables.Layout.codecopy_read_suffix (layout := Tests.Pipeline.VyperWrapper.immutableLayout) (template := Tests.Pipeline.VyperWrapper.wrapperBytecode)
       (mem := mem) (suffix := Tests.Pipeline.VyperWrapper.immutableLayout.suffixWords immWords) hsize (by decide) (UInt256.ofNat 64).toNat
   let r0 := h

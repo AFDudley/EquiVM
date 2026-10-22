@@ -232,7 +232,7 @@ theorem vyperVault_block_1198 {immWords : String → UInt256}
   have hsize : (Tests.Pipeline.VyperVault.immutableLayout.suffixWords immWords).size = Tests.Pipeline.VyperVault.immutableLayout.size :=
     Reasoning.VyperImmutables.Layout.suffixWords_size Tests.Pipeline.VyperVault.immutableLayout immWords
   have hread : (((Tests.Pipeline.VyperVault.vyperVaultBytecode ++ Tests.Pipeline.VyperVault.immutableLayout.suffixWords immWords).write (UInt256.ofNat 1429).toNat mem (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat).readWithPadding (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat) = (Tests.Pipeline.VyperVault.immutableLayout.suffixWords immWords) := by
-    simpa [Tests.Pipeline.VyperVault.immutableLayout, hcode] using
+    simpa [Tests.Pipeline.VyperVault.immutableLayout, hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using
       Reasoning.VyperImmutables.Layout.codecopy_read_suffix (layout := Tests.Pipeline.VyperVault.immutableLayout) (template := Tests.Pipeline.VyperVault.vyperVaultBytecode)
       (mem := mem) (suffix := Tests.Pipeline.VyperVault.immutableLayout.suffixWords immWords) hsize (by decide) (UInt256.ofNat 64).toNat
   let r0 := h

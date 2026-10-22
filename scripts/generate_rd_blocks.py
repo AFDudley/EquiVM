@@ -263,6 +263,12 @@ WORD32 = "(⟨32⟩ : UInt256)"
 WORD1 = "(⟨1⟩ : UInt256)"
 WORD0 = "(⟨0⟩ : UInt256)"
 
+# v4.33.1: `simp` no longer reduces `(UInt256.ofNat N).toNat` to `N`. These
+# unfold lemmas reduce the literal word widths and offsets so a `simpa` goal
+# and its driving lemma share one normal form. The change is a tactic change
+# only. It does not change a theorem statement.
+U256_TONAT = "UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size"
+
 
 def is_static_word(term: str) -> bool:
     return re.fullmatch(r"\(UInt256\.ofNat [0-9]+\)", term) is not None
@@ -1147,7 +1153,7 @@ def render_vyper_suffix_return(prefix: str, code_term: str, block: list[Instruct
              f"    Reasoning.VyperImmutables.Layout.suffixWords_size {layout_term} immWords",
              f"  have hread : ({write.replace('__CODE__', code)}.readWithPadding "
              f"{dest}.toNat {length}.toNat) = ({suffix}) := by",
-             f"    simpa [{layout_term}, hcode] using",
+             f"    simpa [{layout_term}, hcode, {U256_TONAT}] using",
              f"      Reasoning.VyperImmutables.Layout.codecopy_read_suffix "
              f"(layout := {layout_term}) (template := {code_term})",
              f"      (mem := mem) (suffix := {suffix}) hsize (by decide) {dest}.toNat",
@@ -1196,10 +1202,10 @@ def render_vyper_scalar_return(prefix: str, code_term: str, block: list[Instruct
              f"    RDret {code} g s0 σ ({word}).toByteArray := by",
              f"  have hcode : {code_term}.size = {code_size} := by native_decide",
              f"  have hcopy : {write.replace('__CODE__', code)} = {named_write} := by",
-             f"    simpa [hcode] using {module}.immutableCopyWord_{ident} immWords mem {dest}.toNat",
+             f"    simpa [hcode, {U256_TONAT}] using {module}.immutableCopyWord_{ident} immWords mem {dest}.toNat",
              f"  have hread : ({named_write}.readWithPadding {dest}.toNat {length}.toNat) =",
              f"      ({word}).toByteArray := by",
-             f"    simpa using Reasoning.VyperImmutables.copy_word_read ({word}) mem {dest}.toNat",
+             f"    simpa [{U256_TONAT}] using Reasoning.VyperImmutables.copy_word_read ({word}) mem {dest}.toNat",
              "  let r0 := h"]
     for step in summary.proof:
         step = step.replace("__TEMPLATE__, suffix,",
@@ -1309,13 +1315,13 @@ def render_vyper_scalar_summary(prefix: str, code_term: str, block: list[Instruc
         lines += [f"  have hcopy{i} : {write.replace('__CODE__', code)} = "
                   f"((immWords {json.dumps(key)}).toByteArray.write 0 "
                   f"{base.replace('__CODE__', code)} {dest}.toNat 32) := by",
-                  f"    simpa [hcode] using {layout_term.rsplit('.', 1)[0]}.immutableCopyWord_{ident} "
+                  f"    simpa [hcode, {U256_TONAT}] using {layout_term.rsplit('.', 1)[0]}.immutableCopyWord_{ident} "
                   f"immWords ({base.replace('__CODE__', code)}) {dest}.toNat"]
     for i, (load, key, base, addr) in enumerate(loads):
         ident = re.sub(r"[^A-Za-z0-9_]", "_", key)
         lines += [f"  have hload{i} : {load.replace('__CODE__', code)} = "
                   f"immWords {json.dumps(key)} := by",
-                  f"    simpa [hcode] using {layout_term.rsplit('.', 1)[0]}.immutableLoad_{ident} "
+                  f"    simpa [hcode, {U256_TONAT}] using {layout_term.rsplit('.', 1)[0]}.immutableLoad_{ident} "
                   f"immWords ({base.replace('__CODE__', code)}) {addr}"]
         lines += [f"  try simp only [hcopy{j}] at hload{i}"
                   for j in range(len(copies))]
@@ -1358,7 +1364,7 @@ def render_vyper_scalar_summary(prefix: str, code_term: str, block: list[Instruc
         value, dest, base, write, off, length = returned_word
         lines += [f"  have hread : ({named(write)}.readWithPadding "
                   f"{off}.toNat {length}.toNat) = ({named(value)}).toByteArray := by",
-                  f"    simpa using Reasoning.VyperImmutables.copy_word_read "
+                  f"    simpa [{U256_TONAT}] using Reasoning.VyperImmutables.copy_word_read "
                   f"({named(value)}) ({named(base)}) {dest}.toNat",
                   "  rw [hread] at hraw"]
     def_names = ([f"{name}_{kind}" for kind in ("stack", "memory")

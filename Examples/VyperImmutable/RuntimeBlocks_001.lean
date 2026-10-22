@@ -163,7 +163,7 @@ theorem immutable_block_41 {immWords : String → UInt256}
   have hsize : (Examples.VyperImmutable.immutableLayout.suffixWords immWords).size = Examples.VyperImmutable.immutableLayout.size :=
     Reasoning.VyperImmutables.Layout.suffixWords_size Examples.VyperImmutable.immutableLayout immWords
   have hread : (((Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords).write (UInt256.ofNat 143).toNat mem (UInt256.ofNat 64).toNat (UInt256.ofNat 96).toNat).readWithPadding (UInt256.ofNat 64).toNat (UInt256.ofNat 96).toNat) = (Examples.VyperImmutable.immutableLayout.suffixWords immWords) := by
-    simpa [Examples.VyperImmutable.immutableLayout, hcode] using
+    simpa [Examples.VyperImmutable.immutableLayout, hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using
       Reasoning.VyperImmutables.Layout.codecopy_read_suffix (layout := Examples.VyperImmutable.immutableLayout) (template := Examples.VyperImmutable.immutableBytecode)
       (mem := mem) (suffix := Examples.VyperImmutable.immutableLayout.suffixWords immWords) hsize (by decide) (UInt256.ofNat 64).toNat
   let r0 := h
@@ -285,10 +285,10 @@ theorem immutable_block_71 {immWords : String → UInt256}
     RDret (Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords) g s0 σ (immWords "OWNER").toByteArray := by
   have hcode : Examples.VyperImmutable.immutableBytecode.size = 143 := by native_decide
   have hcopy : ((Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords).write (UInt256.ofNat 143).toNat mem (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat) = ((immWords "OWNER").toByteArray.write 0 mem (UInt256.ofNat 64).toNat 32) := by
-    simpa [hcode] using Examples.VyperImmutable.immutableCopyWord_OWNER immWords mem (UInt256.ofNat 64).toNat
+    simpa [hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Examples.VyperImmutable.immutableCopyWord_OWNER immWords mem (UInt256.ofNat 64).toNat
   have hread : (((immWords "OWNER").toByteArray.write 0 mem (UInt256.ofNat 64).toNat 32).readWithPadding (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat) =
       (immWords "OWNER").toByteArray := by
-    simpa using Reasoning.VyperImmutables.copy_word_read (immWords "OWNER") mem (UInt256.ofNat 64).toNat
+    simpa [UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Reasoning.VyperImmutables.copy_word_read (immWords "OWNER") mem (UInt256.ofNat 64).toNat
   let r0 := h
   have r1 := r0.push1 (UInt256.ofNat 32) (by append_decode(Examples.VyperImmutable.immutableBytecode, Examples.VyperImmutable.immutableLayout.suffixWords immWords, (⟨71⟩ : UInt256), .Push .PUSH1, some ((UInt256.ofNat 32), 1))) (by evm_ov)
   have r2 := r1.push2 (UInt256.ofNat 143) (by append_decode(Examples.VyperImmutable.immutableBytecode, Examples.VyperImmutable.immutableLayout.suffixWords immWords, (⟨73⟩ : UInt256), .Push .PUSH2, some ((UInt256.ofNat 143), 2))) (by evm_ov)
@@ -415,9 +415,9 @@ theorem immutable_block_106 {immWords : String → UInt256} {ee : ExecutionEnv} 
     : RDret (Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords) g s0 σ ((UInt256.eq (uInt256OfByteArray (ee.calldata.readBytes (UInt256.ofNat 4).toNat 32)) (immWords "LIMIT"))).toByteArray := by
   have hcode : Examples.VyperImmutable.immutableBytecode.size = 143 := by native_decide
   have hcopy0 : ((Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords).write (UInt256.ofNat 175).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 32).toNat) = ((immWords "LIMIT").toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32) := by
-    simpa [hcode] using Examples.VyperImmutable.immutableCopyWord_LIMIT immWords (mem) (⟨0⟩ : UInt256).toNat
+    simpa [hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Examples.VyperImmutable.immutableCopyWord_LIMIT immWords (mem) (⟨0⟩ : UInt256).toNat
   have hload0 : (memLoad (⟨0⟩ : UInt256) ((Examples.VyperImmutable.immutableBytecode ++ Examples.VyperImmutable.immutableLayout.suffixWords immWords).write (UInt256.ofNat 175).toNat mem (⟨0⟩ : UInt256).toNat (UInt256.ofNat 32).toNat)) = immWords "LIMIT" := by
-    simpa [hcode] using Examples.VyperImmutable.immutableLoad_LIMIT immWords (mem) (⟨0⟩ : UInt256)
+    simpa [hcode, UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Examples.VyperImmutable.immutableLoad_LIMIT immWords (mem) (⟨0⟩ : UInt256)
   try simp only [hcopy0] at hload0
   let r0 := h
   have r1 := r0.push1 (UInt256.ofNat 32) (by append_decode(Examples.VyperImmutable.immutableBytecode, Examples.VyperImmutable.immutableLayout.suffixWords immWords, (⟨106⟩ : UInt256), .Push .PUSH1, some ((UInt256.ofNat 32), 1))) (by evm_ov)
@@ -438,7 +438,7 @@ theorem immutable_block_106 {immWords : String → UInt256} {ee : ExecutionEnv} 
   try simp only [hcopy0] at hraw
   try simp only [hload0] at hraw
   have hread : (((UInt256.eq (uInt256OfByteArray (ee.calldata.readBytes (UInt256.ofNat 4).toNat 32)) (immWords "LIMIT")).toByteArray.write 0 ((immWords "LIMIT").toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32) (UInt256.ofNat 64).toNat 32).readWithPadding (UInt256.ofNat 64).toNat (UInt256.ofNat 32).toNat) = ((UInt256.eq (uInt256OfByteArray (ee.calldata.readBytes (UInt256.ofNat 4).toNat 32)) (immWords "LIMIT"))).toByteArray := by
-    simpa using Reasoning.VyperImmutables.copy_word_read ((UInt256.eq (uInt256OfByteArray (ee.calldata.readBytes (UInt256.ofNat 4).toNat 32)) (immWords "LIMIT"))) (((immWords "LIMIT").toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32)) (UInt256.ofNat 64).toNat
+    simpa [UInt256.toNat, UInt256.ofNat, Id.run, Fin.ofNat, UInt256.size] using Reasoning.VyperImmutables.copy_word_read ((UInt256.eq (uInt256OfByteArray (ee.calldata.readBytes (UInt256.ofNat 4).toNat 32)) (immWords "LIMIT"))) (((immWords "LIMIT").toByteArray.write 0 mem (⟨0⟩ : UInt256).toNat 32)) (UInt256.ofNat 64).toNat
   rw [hread] at hraw
   exact hraw
 
