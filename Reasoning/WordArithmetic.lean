@@ -1549,25 +1549,25 @@ theorem sgt_zero_ne_zero_to_pos (w : UInt256)
         Int.ofNat w.toNat - Int.ofNat EVM.wordModulus) := by
   by_cases hlow : w.toNat < EVM.twoPow 255
   · by_cases hzero : w.toNat = 0
-    · have hsgt0 : UInt256.sgt w (UInt256.ofNat 0) = ⟨0⟩ := by
+    · have hsgt0 : UInt256.sgt w ⟨0⟩ = ⟨0⟩ := by
         have hw : w = UInt256.ofNat 0 := by
           apply u256_inj
-          simpa using hzero
+          simpa [UInt256.ofNat, UInt256.toNat, Id.run] using hzero
         subst w
         decide
-      exact False.elim (h (by simpa using hsgt0))
+      exact False.elim (h hsgt0)
     · have hpos : 0 < w.toNat := Nat.pos_of_ne_zero hzero
       simp [hlow]
       exact_mod_cast hpos
-  · have hsgt0 : UInt256.sgt w (UInt256.ofNat 0) = ⟨0⟩ := by
+  · have hsgt0 : UInt256.sgt w ⟨0⟩ = ⟨0⟩ := by
       unfold UInt256.sgt UInt256.sgtBool UInt256.fromBool Bool.toUInt256
       have hhi : w.toNat ≥ 2 ^ 255 := by
         simpa [EVM.twoPow] using le_of_not_gt hlow
-      have hzeroLow : ¬ (UInt256.ofNat 0).toNat ≥ 2 ^ 255 := by
+      have hzeroLow : ¬ (⟨0⟩ : UInt256).toNat ≥ 2 ^ 255 := by
         decide
       rw [if_pos hhi, if_neg hzeroLow]
-      rfl
-    exact False.elim (h (by simpa using hsgt0))
+      decide
+    exact False.elim (h hsgt0)
 
 theorem int_pos_of_word_sgt_ne_zero
     {i : Int} {w : UInt256}
