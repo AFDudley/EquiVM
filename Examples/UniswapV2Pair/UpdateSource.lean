@@ -808,7 +808,7 @@ theorem evalExpr_sync_update_timeElapsed
           (.intLit twoPow32))
         (.intLit twoPow32))) = .ok (syncTimeElapsedValue evm) := by
   unfold Reasoning.Theory.u256_32_toNat syncTimeElapsedValue syncTimeElapsedInt
-  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind,
+  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,
     syncUpdateBlockTimestampStore_blockTimestamp,
     evalExpr_sync_blockTimestampLast evm (syncUpdateBlockTimestampStore evm balance0 balance1)
       (syncUpdateBlockTimestampStore_blockTimestampLast_none evm balance0 balance1)]
@@ -825,12 +825,11 @@ theorem evalExpr_sync_update_timeElapsed
           (4294967296 : Int) <
         4294967296 := by
     exact Int.emod_lt_of_pos _ (by norm_num)
-  rw [if_neg]
-  · rfl
-  · exact fun h => by
-      rcases h with hneg | hge
-      · exact not_lt_of_ge hnonneg hneg
-      · exact not_le_of_gt hlt hge
+  intro h
+  exfalso
+  rcases h with hneg | hge
+  · exact not_lt_of_ge hnonneg hneg
+  · exact not_le_of_gt hlt hge
 
 theorem evalExpr_sync_update_timeElapsed_with
     (evm : EVM.State) (balance0 balance1 reserve0 reserve1 : UInt256) :
@@ -844,7 +843,7 @@ theorem evalExpr_sync_update_timeElapsed_with
           (.intLit twoPow32))
         (.intLit twoPow32))) = .ok (syncTimeElapsedValue evm) := by
   unfold Reasoning.Theory.u256_32_toNat syncTimeElapsedValue syncTimeElapsedInt
-  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind,
+  simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind, pure,
     syncUpdateBlockTimestampStoreWith_blockTimestamp,
     evalExpr_sync_blockTimestampLast evm
       (syncUpdateBlockTimestampStoreWith evm balance0 balance1 reserve0 reserve1)
@@ -863,12 +862,11 @@ theorem evalExpr_sync_update_timeElapsed_with
           (4294967296 : Int) <
         4294967296 := by
     exact Int.emod_lt_of_pos _ (by norm_num)
-  rw [if_neg]
-  · rfl
-  · exact fun h => by
-      rcases h with hneg | hge
-      · exact not_lt_of_ge hnonneg hneg
-      · exact not_le_of_gt hlt hge
+  intro h
+  exfalso
+  rcases h with hneg | hge
+  · exact not_lt_of_ge hnonneg hneg
+  · exact not_le_of_gt hlt hge
 
 theorem evalExpr_sync_update_condition_false_elapsed_zero
     (evm : EVM.State) (balance0 balance1 : UInt256)

@@ -1419,8 +1419,8 @@ theorem uniswapSkimBodyDecoded
                                     safeValue0 out1 out2)
                                   (skimSecondBalanceDynamicStaticcallWords out1)
                                   out2 σ2 k5314 C5314 := by
-                                simpa [balance1, reserve1E, u256_land_comm, hawBalance] using
-                                  rd5314
+                                rw [hawBalance] at rd5314
+                                simpa [balance1, reserve1E, u256_land_comm] using rd5314
                               by_cases hlt1 : balance1.toNat < reserve1E.toNat
                               · obtain ⟨k6879, C6879, rd6879⟩ :=
                                   RD.uniswapSkimFirstExcessToSub rd5314'
