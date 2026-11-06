@@ -42,7 +42,7 @@ theorem uniswapSwapBodyReturns_afterUpdate (evm evmU evmR : EVM.State) (I : Exec
     swapCallbackCondition, swapCallbackBody, swapBalanceStmts, swapInputStmts, swapInputExpr,
     swapInputRequireStmt, swapInputRequireExpr, swapAdjustmentStmts, swapAdjustedExpr,
     swapInvariantStmt, swapInvariantExpr, updateReservesStmtsWith,
-    List.append_assoc, List.cons_append, List.nil_append] using
+    List.append_assoc, List.cons_append, List.nil_append] using!
     execBlock_append hprefix (ExecBlock.consNormal hupdate htail)
 
 end UniswapV2Pair

@@ -504,7 +504,7 @@ theorem uniswapMintFeeOnKLastNonzeroNoMintFromFactoryCase
           hruntimeReserve0 hruntimeReserve1 hfeeToNonzero hkLastNonzero hclean0 hclean1
           hprodZero
       refine ⟨0, rootKLast, k7899, C7899, by simpa using hprefixRuntime, by omega,
-        ?_, hrootKLastNonneg, hrootKLastSize, by simpa using rd7899Raw, by omega⟩
+        ?_, hrootKLastNonneg, hrootKLastSize, by simpa [Ethereum.UInt256_ofNat_0] using rd7899Raw, by omega⟩
       norm_num [UInt256.size]
   obtain ⟨k3701, C3701, rd3701Raw⟩ :=
     uniswapMintFeeRuntimeAfterRootsNoMintReturnOfInt rootK rootKLast rd7899 hrootNoMint

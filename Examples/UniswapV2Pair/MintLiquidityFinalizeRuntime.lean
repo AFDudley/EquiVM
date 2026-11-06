@@ -345,8 +345,7 @@ theorem uniswapMintRuntimeAfterInternalMintUpdateCumulativeFeeOffReturns
         simp [M, Cₘ]
         native_decide)
       (by native_decide) hperm
-  simpa [uniswapUpdateCumulativeReturnMapWith] using
-    uniswapMintRuntimeAfterUpdateFeeOffReturns rd3926 hfeeOff
+  exact uniswapMintRuntimeAfterUpdateFeeOffReturns rd3926 hfeeOff
       (uniswapMintSyncLogMem_size_192_of_size_le
         (uniswapUpdateCumulativePackedWordWith σMint I balance0 balance1 reserve0 reserve1)
         hmemLo hmemHi)
@@ -480,11 +479,11 @@ theorem uniswapMintRuntimeAfterInternalMintUpdateCumulativeFeeOnReturns
         simp [M, Cₘ]
         native_decide)
       (by native_decide) hperm
-  simpa [uniswapUpdateCumulativePackedMapWith, uniswapUpdateCumulativePackedWordWith] using
+  simpa [uniswapUpdateCumulativePackedMapWith, uniswapUpdateCumulativePackedWordWith] using!
     uniswapMintRuntimeAfterUpdateFeeOnReturns rd3926 hfeeOn
       (by
         simpa [uniswapUpdateCumulativePackedMapWith,
-          uniswapUpdateCumulativePackedWordWith] using
+          uniswapUpdateCumulativePackedWordWith] using!
           hfitKLast)
       (uniswapMintSyncLogMem_size_192_of_size_le
         (uniswapUpdateCumulativePackedWordWith σMint I balance0 balance1 reserve0 reserve1)

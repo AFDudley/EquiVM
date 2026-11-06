@@ -34,11 +34,11 @@ theorem uniswapMintRuntimeAfterMintFeeTotalSupplyZero
       [solcSlotWordAt ⟨0⟩ σFee I, feeOn, ⟨0⟩, amount1, amount0, balance1, balance0,
         reserve1, reserve0, ⟨0⟩, toWord, ⟨861⟩, sel]
       mem aw rdata σFee k3705 C3705 := by
-    simpa [solcSlotWordAt, solcSlotWord] using rd3705₀
+    exact rd3705₀
   have rd3712pre := evm_run rd3705 with [swap1, swap2, pop, dup1, push2 ⟨3762⟩]
   rw [htotalZero] at rd3712pre
   have rd3713 := evm_run rd3712pre with [jumpiNT (by native_decide)]
-  exact ⟨_, _, by simpa using rd3713⟩
+  exact ⟨_, _, by exact rd3713⟩
 
 set_option maxHeartbeats 1000000 in
 /- Runtime-only `mint(address)` slice after `_mintFee`, branching into the proportional-liquidity
@@ -68,7 +68,7 @@ theorem uniswapMintRuntimeAfterMintFeeTotalSupplyNonzero
       [solcSlotWordAt ⟨0⟩ σFee I, feeOn, ⟨0⟩, amount1, amount0, balance1, balance0,
         reserve1, reserve0, ⟨0⟩, toWord, ⟨861⟩, sel]
       mem aw rdata σFee k3705 C3705 := by
-    simpa [solcSlotWordAt, solcSlotWord] using rd3705₀
+    exact rd3705₀
   have rd3712pre := evm_run rd3705 with [swap1, swap2, pop, dup1, push2 ⟨3762⟩]
   rw [htotal] at rd3712pre
   have rd3762 := evm_run rd3712pre with [jumpiT htotalNonzero (by jump_dest)]
@@ -142,7 +142,7 @@ theorem uniswapMintRuntimeInitialLiquiditySmallRootReverts
     · simp [hzero]
       native_decide
   exact RD.uniswapSafeMathSubUnderflow_aw6_size164_shared
-    (by simpa [feeToStaticcallActiveWords, balanceOfThisStaticcallActiveWords] using rd6879)
+    (by exact rd6879)
     hrootLt hmem hmem64
     (by simp only [List.length_cons, List.length_nil]; omega)
 
@@ -704,7 +704,7 @@ theorem uniswapMintRuntimeAfterUpdateFeeOn
       [slot8, totalSupply, feeOn, amount1, amount0, balance1, balance0, reserve1,
         reserve0, liquidity, toWord, ⟨861⟩, sel]
       mem aw rdata σUpd k3936 C3936 := by
-    simpa [slot8, solcSlotWordAt, solcSlotWord] using rd3936₀
+    exact rd3936₀
   have rd6780pre := evm_run rd3936 with [
     push2 ⟨3970⟩, swap1, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨112⟩, shl, sub, dup1, dup3,
     and, swap2, push1 ⟨1⟩, push1 ⟨112⟩, shl, swap1, div, and, push4 ⟨0xffffffff⟩,
@@ -724,7 +724,7 @@ theorem uniswapMintRuntimeAfterUpdateFeeOn
   have rd3973 := evm_run rd3970 with [jumpdest, push1 ⟨11⟩]
   obtain ⟨_, _, rd3974⟩ := rd3973.sstore hperm (by native_decide)
     (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa [slot8, packedReserve0, packedReserve1] using rd3974⟩
+  exact ⟨_, _, by exact rd3974⟩
 
 abbrev uniswapMintTopic : UInt256 :=
   ⟨0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f⟩

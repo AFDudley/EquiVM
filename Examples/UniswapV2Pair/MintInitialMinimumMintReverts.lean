@@ -24,7 +24,7 @@ theorem mintInitialRootLiquidityRuntimeFacts
       have h : (1000 : Int) ≤ (rootLiquidity.toNat : Int) := by
         simpa [Int.toNat_of_nonneg hrootNonneg] using hge
       exact_mod_cast h
-    simpa using hrootNatGe
+    exact hrootNatGe
   have hliquidityRuntime :
       liquidity = UInt256.sub (UInt256.ofNat rootLiquidity.toNat) (⟨1000⟩ : UInt256) := by
     apply u256_inj

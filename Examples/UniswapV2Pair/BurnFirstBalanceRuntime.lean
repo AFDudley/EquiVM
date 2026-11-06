@@ -38,7 +38,7 @@ theorem uniswapBurnRuntimeFirstBalanceOfStaticcallMadeOfTail
     RD.solcStaticcall rd4282 (by native_decide) hdepth
       (by simp only [List.length_cons]; omega)
   exact ⟨σ', z, o, A_in, callGas, k', C', hΘ,
-    by simpa only [balanceOfThisStaticcallMem, balanceOfThisStaticcallActiveWords] using rd4283,
+    by exact rd4283,
     hoSize⟩
 
 set_option maxHeartbeats 1000000 in

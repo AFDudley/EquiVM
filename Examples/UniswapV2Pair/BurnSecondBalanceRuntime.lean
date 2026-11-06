@@ -97,7 +97,7 @@ theorem uniswapBurnRuntimeSecondBalanceOfResultBranchesOfTail
     RD.solcStaticcall rd4402 (by native_decide) hdepth
       (by simp only [List.length_cons]; omega)
   refine ⟨σ'', z1, o1, A_in1, callGas1, ?_, ?_, ?_, ?_, ho1Size⟩
-  · simpa [balanceOfThisRebuiltStaticcallMem] using hΘ1
+  · exact hΘ1
   · intro hz1
     have hstatus : (if z1 then (⟨1⟩ : UInt256) else ⟨0⟩) = ⟨0⟩ := by
       simp [hz1]

@@ -36,7 +36,7 @@ theorem burnFunctionFromBalanceWord_eq_runtime
     (mapSlot (UInt256.land holderWord solcAddrMask) ⟨1⟩)) hAccounts
   simpa [burnFunctionFromBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
     State.lookupAccount, Account.lookupStorage, henv,
-    burnFunctionFromSlot_eq_runtime holder holderWord hholder] using hword.symm
+    burnFunctionFromSlot_eq_runtime holder holderWord hholder] using! hword.symm
 
 theorem burnRuntimeBalanceMap_eq_afterBalanceState
     {σ : AccountMap} {I : ExecutionEnv} {evm : EVM.State}
@@ -69,7 +69,7 @@ theorem burnFunctionTotalSupplyWord_eq_runtime
   have hpost := burnRuntimeBalanceMap_eq_afterBalanceState hAccounts henv hholder hbalance
   have hword := congrArg (fun accounts => uniswapCodeOwnerStorageWord I accounts ⟨0⟩) hpost
   simpa [burnFunctionTotalSupplyWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage, henv] using hword.symm
+    State.lookupAccount, Account.lookupStorage, henv] using! hword.symm
 
 theorem burnRuntimePostMap_eq_postState
     {σ : AccountMap} {I : ExecutionEnv} {evm : EVM.State}

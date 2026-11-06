@@ -79,8 +79,7 @@ theorem uniswapMintProportionalLiquidityZeroReverts
     simp [minFunctionResultValue, liquidity0, liquidity1, hliquidity]
   have htail :
       ExecBlock config afterBranch evm mintAfterLiquidityTailStmts .reverted := by
-    simpa [afterBranch] using
-      uniswapMintAfterLiquidityZeroReverts (locals := afterBranch.locals) evm hliqAfter
+    exact uniswapMintAfterLiquidityZeroReverts (locals := afterBranch.locals) evm hliqAfter
   simpa [List.append_assoc] using execBlock_append hbranch htail
 
 theorem evalExpr_mint_initialLiquidity_sub_underflow

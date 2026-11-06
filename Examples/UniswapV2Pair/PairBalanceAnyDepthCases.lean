@@ -43,7 +43,7 @@ theorem uniswapPairBalanceCallRuntimeAnyDepthCases
     by_cases hcode : extCodeSizeWord σ target = ⟨0⟩
     · refine Or.inl ⟨?_, RD.uniswapPairBalanceNoCodeReverts rd hcode (by simp only [List.length_cons]; omega)⟩
       exact checkedExternalCallVarNoCode (retVar := retVar) (name := "balanceOf")
-        (sendVal := 0) (args := [this]) (perm := false) (by simpa only [hcode] using hguard)
+        (sendVal := 0) (args := [this]) (perm := false) (by simpa only [hcode] using! hguard)
     · have hpos : 0 < (extCodeSizeWord σ target).toNat :=
         Nat.pos_of_ne_zero (fun hz ↦ hcode (uint256_toNat_eq_zero hz))
       have hguard' : evalExpr? config { contract := contract, locals := locals } evm

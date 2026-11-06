@@ -68,7 +68,7 @@ theorem uniswapBurnRuntimeFirstBalanceOfExtcodesize
   rw [show (⟨128⟩ : UInt256) + ⟨36⟩ = ⟨164⟩ from by decide,
     show UInt256.sub (⟨128⟩ : UInt256) ⟨128⟩ = ⟨0⟩ from by decide,
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd4267
-  exact ⟨_, _, by simpa [solcSlotWordAt, solcSlotWord] using rd4267⟩
+  exact ⟨_, _, by exact rd4267⟩
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapBurnRuntimeFirstBalanceOfMissingCodeReverts

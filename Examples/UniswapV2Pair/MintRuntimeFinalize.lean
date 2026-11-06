@@ -239,7 +239,7 @@ theorem uniswapMintRuntimeAfterMintFeeProportionalUpdateFirstBoundReverts
   obtain ⟨_, _, rd6959⟩ := uniswapMintRuntimeUpdateEntry
     (by simpa [mintMem] using rd3914)
   exact RD.uniswapUpdateOverflowGuardFirstReverts
-    (by simpa [feeToStaticcallActiveWords] using rd6959)
+    (by exact rd6959)
     hfail0 hmintMemSize hmintMem64
     (by simp only [List.length_cons, List.length_nil]; omega)
 
@@ -308,7 +308,7 @@ theorem uniswapMintRuntimeAfterMintFeeProportionalUpdateSecondBoundReverts
   obtain ⟨_, _, rd6959⟩ := uniswapMintRuntimeUpdateEntry
     (by simpa [mintMem] using rd3914)
   exact RD.uniswapUpdateOverflowGuardSecondReverts
-    (by simpa [feeToStaticcallActiveWords] using rd6959)
+    (by exact rd6959)
     hfit0 hfail1 hmintMemSize hmintMem64
     (by simp only [List.length_cons, List.length_nil]; omega)
 

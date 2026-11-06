@@ -30,7 +30,7 @@ theorem uniswapBurnBodyReverts_beforeTransfers (evm : EVM.State) (I : ExecutionE
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeTransfersPrefix, burnBeforeAmountsPrefix,
       burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term hprefix (by intro f e h; cases h))
 
 end UniswapV2Pair

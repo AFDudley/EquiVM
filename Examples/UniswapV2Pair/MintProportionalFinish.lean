@@ -239,7 +239,7 @@ theorem uniswapMintFinishProportionalFeeOffCumulative
         hperm htotalFit hbalanceFit hbound0 hbound1 helapsedNe hfeeOff hmem hmem64
   exact rdRet.reEquivExecutionGen
     hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody hAccountsRet
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding liquidity))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 100000000 in
@@ -468,7 +468,7 @@ theorem uniswapMintFinishProportionalFeeOnCumulativeKLastUpdated
         (by decide : (⟨1⟩ : UInt256) ≠ ⟨0⟩) hfitKLast hmem hmem64
   exact rdRet.reEquivExecutionGen
     hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody hAccountsRet
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding liquidity))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapMintFinishProportionalFeeOnKLastUpdated
@@ -650,7 +650,7 @@ theorem uniswapMintFinishProportionalFeeOnKLastUpdated
         (by decide : (⟨1⟩ : UInt256) ≠ ⟨0⟩) hfitKLast hmem hmem64
   exact rdRet.reEquivExecutionGen
     hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody hAccountsRet
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding liquidity))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapMintFeeOnKLastNonzeroNoMintCase

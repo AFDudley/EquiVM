@@ -63,7 +63,7 @@ theorem uniswapBurnAmountsGuardAndBurnCasesWithMemory
       (ExecStmt.requireFalse (by simpa only [hnot, decide_false] using hreq)), hrev⟩
   · have hreqTrue : ExecStmt config { contract := contract, locals := locals } evm
         burnAmountsRequireStmt (.ok { contract := contract, locals := locals } evm) :=
-      ExecStmt.requireTrue (by simpa only [hpos, decide_true] using hreq)
+      ExecStmt.requireTrue (by simpa only [hpos, decide_true] using! hreq)
     have hargs : evalExprs? config { contract := contract, locals := locals } evm
         [this, .var "liquidity"] =
         .ok [burnFunctionFromValue I.codeOwner, burnFunctionValueValue liquidity] := by

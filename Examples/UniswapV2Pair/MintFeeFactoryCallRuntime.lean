@@ -34,7 +34,7 @@ theorem uniswapMintFeeRuntimeFactoryExtcodesizeOfTail
       s0 ⟨7706⟩
       (factoryRaw :: ⟨0⟩ :: ⟨0⟩ :: ⟨0⟩ :: reserve1 :: reserve0 :: ret :: R)
       baseMem feeToStaticcallActiveWords rdata σ'' k7706 C7706 := by
-    simpa [baseMem, factoryRaw, solcSlotWordAt, solcSlotWord] using rd7706₀
+    exact rd7706₀
   have rd7738pre := evm_run rd7706 with [
     swap1, push2 ⟨256⟩, exp, swap1, div,
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and,
@@ -73,7 +73,7 @@ theorem uniswapMintFeeRuntimeFactoryExtcodesizeOfTail
     (by simp only [List.length_cons]; omega)
   have rd7765 := evm_run rd7759 with [dup1, dup4, sub, dup2, dup7, dup1]
   rw [show UInt256.sub (⟨132⟩ : UInt256) ⟨128⟩ = ⟨4⟩ from by decide] at rd7765
-  exact ⟨_, _, by simpa [baseMem, factory, factoryRaw] using rd7765⟩
+  exact ⟨_, _, by exact rd7765⟩
 
 set_option maxHeartbeats 1500000 in
 theorem uniswapMintFeeRuntimeFactoryMissingCodeRevertsOfTail
@@ -149,7 +149,7 @@ theorem uniswapMintFeeRuntimeFactoryStaticcallMadeOfTail
       (by simp only [List.length_cons]; omega)
   exact ⟨σFee, zFee, outFee, A_inFee, callGasFee, k', C',
     by simpa [baseMem, factory] using hΘ,
-    by simpa [baseMem, factory, feeToStaticcallMem, feeToStaticcallActiveWords] using rd7781,
+    by exact rd7781,
     houtFeeSize⟩
 
 set_option maxHeartbeats 1500000 in
@@ -247,6 +247,6 @@ theorem uniswapMintFeeRuntimeFactoryResultBranchesFromCallOfTail
     have rd7824 := evm_run rd7822 with [push1 ⟨11⟩]
     obtain ⟨k7825, C7825, rd7825₀⟩ := rd7824.sload (by native_decide) (by evm_ov)
     exact ⟨k7825, C7825, by
-      simpa [baseMem, mintFeeKLastSlotWord, solcSlotWordAt, solcSlotWord] using rd7825₀⟩
+      exact rd7825₀⟩
 
 end UniswapV2Pair

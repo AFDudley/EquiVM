@@ -55,7 +55,7 @@ theorem uniswapBurnBodyReverts_updateCall (evm evmU : EVM.State) (I : ExecutionE
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeUpdatePrefix, burnBeforeUpdatedBalancesPrefix, burnBeforeTransfersPrefix,
       burnBeforeAmountsPrefix, burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix hblock) (by intro f e h; cases h))
 
 end UniswapV2Pair

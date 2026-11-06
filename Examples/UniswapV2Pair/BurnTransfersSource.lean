@@ -53,7 +53,7 @@ theorem uniswapBurnBodyReverts_firstTransfer (evm evmT : EVM.State) (I : Executi
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeTransfersPrefix, burnBeforeAmountsPrefix,
       burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix htail) (by intro f e h; cases h))
 
 theorem evalExprs_burn_secondSafeTransferArgs
@@ -88,7 +88,7 @@ theorem uniswapBurnBodyReverts_secondTransfer (evm evmT evmT1 : EVM.State) (I : 
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeTransfersPrefix, burnBeforeAmountsPrefix,
       burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix htail) (by intro f e h; cases h))
 
 end UniswapV2Pair

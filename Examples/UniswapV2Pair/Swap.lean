@@ -162,7 +162,7 @@ theorem uniswapSwapBody
                           AccountAddress.ofUInt256 (UInt256.land solcAddrMask (swapToMaskedWord I)) := by
                         rw [← hrecipient, accountAddress_roundtrip, address_of_val]
                       have hlenB : swapDataSize I ≤ 4294967296 := by
-                        simpa only [solcLegacyMaxU32] using Nat.le_of_not_gt hlenHuge
+                        exact Nat.le_of_not_gt hlenHuge
                       have hcallbackData : (swapRuntimePayloadPtr I).toNat + (swapDataSizeWord I).toNat ≤ I.calldata.size := by
                         rw [(swapRuntimeWords_eq hoff).2]
                         exact hpayloadLe

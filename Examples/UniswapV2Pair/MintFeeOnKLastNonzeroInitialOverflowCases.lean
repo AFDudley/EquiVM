@@ -324,7 +324,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialMinimumBalanceOverflowFromFactoryCase
       mintAfterMintFeeCallStore_amount1 evmL I balance0 balance1 true
   exact uniswapMintInitialMinimumMintBalanceOverflowFromAfterFeeCase nextFrame.locals
     hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1 hdec1
-    hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase hamount0Get
+    hle0Source hle1Source (by exact hfee) hbase hamount0Get
     hamount1Get hPostAccountsFee henvFeeI htotalSource htotalZero hfit rd3701
     hbalanceOverflow hperm hmem hmem64
 
@@ -540,7 +540,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialSecondMintTotalSupplyOverflowFromFact
         using hperm)
       nextFrame.locals root (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
-      hdec1 hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase hto
+      hdec1 hle0Source hle1Source (by exact hfee) hbase hto
       htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
         using hsqrt)
@@ -761,7 +761,7 @@ theorem uniswapMintFeeOnKLastNonzeroInitialSecondMintBalanceOverflowFromFactoryC
         using hperm)
       nextFrame.locals root (AccountAddress.ofNat (mintToWord I).toNat)
       hcode hdispatch hsz36 hwv hunlockedStele hguard0 hguard1 hcall0 hdec0 hcall1
-      hdec1 hle0Source hle1Source (by simpa [evmL, evmS] using hfee) hbase hto
+      hdec1 hle0Source hle1Source (by exact hfee) hbase hto
       htotalSource
       (by simpa [caller, afterTotalSupplyLocals, nextFrame, evmL, evmS, htotalSource]
         using hsqrt)

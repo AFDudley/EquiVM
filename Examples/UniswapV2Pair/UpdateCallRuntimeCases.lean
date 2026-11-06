@@ -76,6 +76,6 @@ theorem uniswapUpdateCallRuntimeCases
       hmem64 hret hov with hrev | ⟨evm', σ', packed, k', C', hcall, ha, he, rd, hs, hm⟩
   · exact Or.inl hrev
   · refine Or.inr ⟨evm', σ', packed, k', C', hcall, ha, he, rd, ?_, hm⟩
-    simpa only [hmem] using hs
+    simpa only [hmem] using! hs
 
 end UniswapV2Pair

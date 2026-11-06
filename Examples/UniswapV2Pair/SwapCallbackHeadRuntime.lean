@@ -72,7 +72,7 @@ theorem uniswapSwapCallbackHeadStored
     u256_add_comm ⟨32⟩ (ptr + ⟨100⟩), u256_add_assoc ptr ⟨100⟩ ⟨32⟩, show (⟨100⟩ : UInt256) + ⟨32⟩ = ⟨132⟩ from by decide] at rd1994
   have hsub : UInt256.sub (ptr + ⟨132⟩) (ptr + ⟨4⟩) = ⟨128⟩ := by
     rw [show (⟨132⟩ : UInt256) = ⟨4⟩ + ⟨128⟩ from by decide, ← u256_add_assoc]
-    simpa only [u256_ofNat_toNat] using
+    simpa only [u256_ofNat_toNat] using!
       usub_uadd_lit_cancel_mod (base := (ptr + ⟨4⟩).toNat) (n := 128) (ptr + (⟨4⟩ : UInt256)).val.isLt (by decide)
   rw [hsub] at rd1994
   have rd1995 := RD.mstoreWord rd1994 (by native_decide) (by evm_ov)

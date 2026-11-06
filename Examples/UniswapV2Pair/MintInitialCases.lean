@@ -1165,7 +1165,7 @@ theorem uniswapMintFinishInitialFeeOff
         hmem hmem64
   exact rdRet.reEquivExecutionGen
     hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody hAccountsRet
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding liquidity))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapMintFinishInitialFeeOn
@@ -1449,6 +1449,6 @@ theorem uniswapMintFinishInitialFeeOn
         hfeeOn hfitKLast hmem hmem64
   exact rdRet.reEquivExecutionGen
     hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody hAccountsRet
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding liquidity))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 end UniswapV2Pair

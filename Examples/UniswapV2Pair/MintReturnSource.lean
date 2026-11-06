@@ -90,9 +90,7 @@ theorem mintAssignKLastProduct
   · simp [evalStorageRef, evalStorageRefSteps, kLastRef, EvalResult.bind, pure, bind]
   · simp [storageTypeAt?, contract, storageDecls, uint256St]
   · rfl
-  · simpa [mintKLastUpdatedState, mintKLastProductValue, mintFeeReserveProductValue,
-      uniswapUint256Value, uint256Value] using
-      storageLocStore_uint256 evm ⟨11⟩
+  · exact storageLocStore_uint256 evm ⟨11⟩
         (mintFeeReserveProductWord (uniswapReserve0Word evm) (uniswapReserve1Word evm))
 
 theorem uniswapMintAfterUpdateFeeOffReturn
@@ -294,8 +292,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn
             (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
               balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
+    exact uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
           balance0 balance1)
         liquidity hfeeAfter hliqAfter hunlockedAfter
@@ -403,8 +400,7 @@ theorem uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn
               (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
+    exact uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
           balance0 balance1)
         liquidity hfeeAfter hliqAfter hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter
@@ -491,8 +487,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn
               (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
               reserve1))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
+    exact uniswapMintAfterUpdateFeeOffReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdateCumulativePackedReserveStateWith
           (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0 reserve1)
         liquidity hfeeAfter hliqAfter hunlockedAfter
@@ -607,8 +602,7 @@ theorem uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn
                 (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
                 reserve1)))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterUpdate] using
-      uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
+    exact uniswapMintAfterUpdateFeeOnReturn (hperm := by simpa [syncUpdatePackedReserveState, syncUpdateCumulativePackedReserveStateWith, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm) (locals := afterUpdate.locals)
         (syncUpdateCumulativePackedReserveStateWith
           (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0 reserve1)
         liquidity hfeeAfter hliqAfter hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter
@@ -792,8 +786,7 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOffReturn
             (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
               balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by assumption)
+    exact uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -983,8 +976,7 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOffReturn
               (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
               reserve1))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn (hperm := by assumption)
+    exact uniswapMintLiquidityMintUpdateCumulativeFeeOffReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -1188,8 +1180,7 @@ theorem uniswapMintProportionalLiquidityUpdateElapsedZeroFeeOnReturn
               (syncUpdatePackedReserveState (mintFunctionPostState evm recipient liquidity)
                 balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by assumption)
+    exact uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
@@ -1402,8 +1393,7 @@ theorem uniswapMintProportionalLiquidityUpdateCumulativeFeeOnReturn
                 (mintFunctionPostState evm recipient liquidity) balance0 balance1 reserve0
                 reserve1)))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [afterBranch, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn (hperm := by assumption)
+    exact uniswapMintLiquidityMintUpdateCumulativeFeeOnReturn (hperm := by assumption)
         (locals := afterBranch.locals) evm recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter
