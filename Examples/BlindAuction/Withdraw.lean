@@ -723,7 +723,7 @@ theorem blindAuctionX_withdraw_loadAmount {σ σ₀ A I} {g : Sat256}
     raw keccak256 0 (withdrawAmountSlot I) (UInt256.ofNat 3) (by decide)
       mem_cost (withdrawLoadMappingKeccak I) (by decide) (by evm_ov)]
   obtain ⟨_, _, rd850₀⟩ := rd849₀.sload (by decide) (by evm_ov)
-  exact ⟨_, _, by simpa [withdrawAmountWord, initState] using rd850₀⟩
+  exact ⟨_, _, by exact rd850₀⟩
 
 theorem blindAuctionX_withdraw_zero {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -797,7 +797,7 @@ theorem blindAuctionX_withdraw_toCall {σ σ₀ A I} {g : Sat256}
       mem_cost (withdrawRehashMem_mload64 I) (by decide) (by evm_ov),
     dup1, dup4, sub, dup2, dup6, dup8]
   obtain ⟨gasArg, rd766⟩ := rd765₀.gas (by decide) (by evm_ov)
-  exact ⟨gasArg, _, _, by simpa [withdrawZeroMap] using rd766⟩
+  exact ⟨gasArg, _, _, by exact rd766⟩
 
 set_option maxHeartbeats 1000000 in
 theorem blindAuctionX_withdraw_callMade {σ σ₀ A I} {g : Sat256}
@@ -859,7 +859,7 @@ theorem blindAuctionX_withdraw_callMade {σ σ₀ A I} {g : Sat256}
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd767₀
   exact ⟨σ', z, o, A_in, callGas, k', C', hΘ', hosz,
-    by simpa [initState] using rd767₀⟩
+    by exact rd767₀⟩
 
 set_option maxHeartbeats 1000000 in
 theorem blindAuctionX_withdraw_callDepth {σ σ₀ A I} {g : Sat256}
@@ -886,7 +886,7 @@ theorem blindAuctionX_withdraw_callDepth {σ σ₀ A I} {g : Sat256}
       (UInt256.ofNat 3) := by
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd767₀
-  exact ⟨k', C', by simpa [withdrawZeroMap, initState] using rd767₀⟩
+  exact ⟨k', C', by exact rd767₀⟩
 
 set_option maxHeartbeats 1000000 in
 theorem blindAuctionX_withdraw_callInsufficient {σ σ₀ A I} {g : Sat256}
@@ -917,7 +917,7 @@ theorem blindAuctionX_withdraw_callInsufficient {σ σ₀ A I} {g : Sat256}
       (UInt256.ofNat 3) := by
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd767₀
-  exact ⟨k', C', by simpa [withdrawZeroMap, initState] using rd767₀⟩
+  exact ⟨k', C', by exact rd767₀⟩
 
 theorem blindAuctionX_withdraw_postCallEmpty_toBranch {σ σ₀ A I} {g : Sat256}
     {acc : AccountMap}

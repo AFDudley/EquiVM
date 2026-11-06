@@ -925,7 +925,7 @@ theorem scratch_revealLoopBody_prefix_exec (evm : EVM.State) (callargs : Store)
       (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret))
       hsecretsL3 hiL3 hboundSecrets hsecretLookup (by simp [normalizeRawBoolWord?])
   refine ExecBlock.consNormal (ExecStmt.letDecl hsecretEval) ?_
-  simpa [L4, scratch_revealLoopBodyStmts] using htail
+  exact htail
 
 /-
 theorem scratch_revealLoopBody_prefix (evm : EVM.State) (callargs : Store)
@@ -2345,8 +2345,7 @@ theorem scratch_revealLoopBody_ok_placeBid_false (evm : EVM.State) (callargs : S
     let calleeFrame : Frame :=
       { contract := blindAuctionContract,
         locals := scratch_placeBidStore evm.executionEnv.source value }
-    simpa [L6] using
-      ExecStmt.internalCallReturn
+    exact ExecStmt.internalCallReturn
         (cfg := blindAuctionConfig)
         (stele := { contract := blindAuctionContract, locals := L5 })
         (evm := evm)
@@ -2561,8 +2560,7 @@ theorem scratch_revealLoopBody_ok_placeBid_true_core (evm evmPB : EVM.State) (ca
     let calleeFrame : Frame :=
       { contract := blindAuctionContract,
         locals := scratch_placeBidStore evm.executionEnv.source value }
-    simpa [L6] using
-      ExecStmt.internalCallReturn
+    exact ExecStmt.internalCallReturn
         (cfg := blindAuctionConfig)
         (stele := { contract := blindAuctionContract, locals := L5 })
         (evm := evm)
@@ -3086,7 +3084,7 @@ theorem scratch_revealLoopBody_prefix_exec_of_get (evm : EVM.State) (locals : St
       (.fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE secret))
       hsecretsL3 hiL3 hboundSecrets hsecretLookup (by simp [normalizeRawBoolWord?])
   refine ExecBlock.consNormal (ExecStmt.letDecl hsecretEval) ?_
-  simpa [L4, scratch_revealLoopBodyStmts] using htail
+  exact htail
 
 theorem scratch_revealLoopBody_revert_fake_invalid_of_get (evm : EVM.State)
     (locals : Store) (values fakes secrets : List Value) (len i value : UInt256)
@@ -3490,8 +3488,7 @@ theorem scratch_revealLoopBody_ok_placeBid_false_of_get (evm : EVM.State) (local
     let calleeFrame : Frame :=
       { contract := blindAuctionContract,
         locals := scratch_placeBidStore evm.executionEnv.source value }
-    simpa [L6] using
-      ExecStmt.internalCallReturn
+    exact ExecStmt.internalCallReturn
         (cfg := blindAuctionConfig)
         (stele := { contract := blindAuctionContract, locals := L5 })
         (evm := evm)
@@ -3708,8 +3705,7 @@ theorem scratch_revealLoopBody_ok_placeBid_true_core_of_get (evm evmPB : EVM.Sta
     let calleeFrame : Frame :=
       { contract := blindAuctionContract,
         locals := scratch_placeBidStore evm.executionEnv.source value }
-    simpa [L6] using
-      ExecStmt.internalCallReturn
+    exact ExecStmt.internalCallReturn
         (cfg := blindAuctionConfig)
         (stele := { contract := blindAuctionContract, locals := L5 })
         (evm := evm)
@@ -4245,8 +4241,7 @@ theorem scratch_revealLoopBody_static_placeBid_false_of_get (evm : EVM.State) (l
     let calleeFrame : Frame :=
       { contract := blindAuctionContract,
         locals := scratch_placeBidStore evm.executionEnv.source value }
-    simpa [L6] using
-      ExecStmt.internalCallReturn
+    exact ExecStmt.internalCallReturn
         (cfg := blindAuctionConfig)
         (stele := { contract := blindAuctionContract, locals := L5 })
         (evm := evm)

@@ -198,9 +198,7 @@ theorem ownable2StepX_noMatch {σ σ₀ A I} {g : Sat256}
   have h4 : RD ownable2StepBenchBytecode I g (initState σ σ₀ g A I)
       ownable2StepFirstArmPc [ownable2StepSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ k3 C3 := by
-    simpa [ownable2StepFirstArmPc, ownable2StepSelWord, solcFirstArmPcFromPrefix,
-      solcSelectorWord, solcSelectorLoadPc, solcCalldataJumpiPc, solcCalldataRevertPushPc,
-      solcDispatchBodyPc] using h3
+    exact h3
   have h5 := h4
     |>.selectorArmNotTakenAuto (ownable2StepArmsWellFormed 0 (by omega)) (heq0 0 (by omega))
         (by simp)
@@ -216,8 +214,7 @@ theorem ownable2StepX_noMatch {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨85⟩ [ownable2StepSelWord I] solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨k3 + 5 + 5 + 5 + 5 + 5, C3 + 22 + 22 + 22 + 22 + 22, ?_⟩
-    simpa [ownable2StepFirstArmPc, nthArmPc, selArmNextPc, armTgtWidth, armTgt,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h5
+    exact h5
   obtain ⟨_, _, h85rd⟩ := h85
   exact evm_run h85rd with [
     jumpdest, raw revertStub (by decide) (by decide) (by decide) (by evm_ov) ]
@@ -426,7 +423,7 @@ theorem RD.ownable2StepOnlyOwnerPass {g : Sat256} {s0 : State} {ee : ExecutionEn
   obtain ⟨_, _, rd390⟩ : ∃ k' C',
       RD _root_.OpenZeppelinBench.Ownable2Step.ownable2StepBenchBytecode ee g s0 ⟨390⟩
         (ownable2StepOnlyOwnerWord σ ee :: ret :: R) mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [ownable2StepOnlyOwnerWord] using rd390₀⟩
+    exact ⟨_, _, by exact rd390₀⟩
   have rd401₀ := evm_run rd390 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, caller, eq]
   have hmask :
@@ -463,7 +460,7 @@ theorem RD.ownable2StepOnlyOwnerRevert {g : Sat256} {s0 : State} {ee : Execution
       RD _root_.OpenZeppelinBench.Ownable2Step.ownable2StepBenchBytecode ee g s0 ⟨390⟩
         (ownable2StepOnlyOwnerWord σ ee :: ret :: R) solcFreePtrMem (UInt256.ofNat 3) rdata
         σ k' C' := by
-    exact ⟨_, _, by simpa [ownable2StepOnlyOwnerWord] using rd390₀⟩
+    exact ⟨_, _, by exact rd390₀⟩
   have rd401₀ := evm_run rd390 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, caller, eq]
   have hmask :

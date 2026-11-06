@@ -92,7 +92,7 @@ theorem uniswapMintFeeRuntimeAfterRootsPositiveSupplyMulEntryOfTail
       (solcSlotWordAt ⟨0⟩ σFee I :: UInt256.sub rootK rootKLast :: ⟨7945⟩ :: ⟨0⟩ :: rootKLast ::
         rootK :: kLast :: feeTo :: ⟨1⟩ :: reserve1 :: reserve0 :: ret :: R)
       mem aw rdata σFee k7934 C7934 := by
-    simpa [solcSlotWordAt, solcSlotWord] using rd7934₀
+    exact rd7934₀
   have rd6780pre := evm_run rd7934 with [
     swap1, push4 ⟨0xffffffff⟩, push2 ⟨6780⟩, and]
   have hpc6780 : UInt256.land (⟨6780⟩ : UInt256) ⟨0xffffffff⟩ = ⟨6780⟩ := by
@@ -166,7 +166,7 @@ theorem uniswapMintFeeRuntimePositiveDenominatorProductEntryOfTail
       (UInt256.mul rootK ⟨5⟩ :: rootKLast :: ⟨7982⟩ :: ⟨0⟩ :: numerator :: rootKLast :: rootK ::
         kLast :: feeTo :: ⟨1⟩ :: reserve1 :: reserve0 :: ret :: R)
       mem aw rdata σFee k' C' := by
-  exact RD.uniswapSafeMathMulSuccess rd6780 (by simpa using hrootK5Fit) (by jump_dest)
+  exact RD.uniswapSafeMathMulSuccess rd6780 (by exact hrootK5Fit) (by jump_dest)
     (by simp only [List.length_cons]; omega)
 
 set_option maxHeartbeats 1000000 in

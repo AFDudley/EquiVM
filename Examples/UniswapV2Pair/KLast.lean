@@ -62,9 +62,7 @@ theorem uniswapKLastBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (kLastWord σ I).toNat))])) := by
-    simpa [kLastWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapKLastBodyReturns
+    exact uniswapKLastBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact uniswapUint256GetterBodyCore (entry := ⟨1117⟩) (routine := ⟨4069⟩) (slot := ⟨11⟩)

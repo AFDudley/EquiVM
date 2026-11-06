@@ -139,8 +139,7 @@ theorem transferOwnershipAssignPending (evm : EVM.State) (I : ExecutionEnv)
   have hstore :
       storageLocStore evm (addrLoc ⟨1⟩) (transferOwnershipNewOwnerValue I) =
         some (transferOwnershipAfterPendingState evm I) := by
-    simpa [transferOwnershipAfterPendingState, transferOwnershipNewOwnerValue] using
-      storageLocStore_address_offset0 evm ⟨1⟩
+    exact storageLocStore_address_offset0 evm ⟨1⟩
         (transferOwnershipNewOwnerWord I) hcanon
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
     (stele := { contract := contract, locals := transferOwnershipStore I })
@@ -285,7 +284,7 @@ theorem ownable2StepDecodeAddressOk530 {g : Sat256} {s0 : State} {ee : Execution
         (UInt256.land
           (uInt256OfByteArray (ee.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨1⟩ := by
-    simpa [calldataWord, solcAddrMask] using hclean
+    exact hclean
   exact ⟨_, _, evm_run h with [
     jumpdest, push0, push1 ⟨32⟩, dup3, dup5, sub, slt, iszero, push2 ⟨546⟩,
     jumpiT (by rw [hsltval]; decide) (by jump_dest),
@@ -329,7 +328,7 @@ theorem ownable2StepDecodeAddressNoncanonRevert530 {g : Sat256} {s0 : State}
         (UInt256.land
           (uInt256OfByteArray (ee.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨0⟩ := by
-    simpa [calldataWord, solcAddrMask] using hnc
+    exact hnc
   evm_run h with [
     jumpdest, push0, push1 ⟨32⟩, dup3, dup5, sub, slt, iszero, push2 ⟨546⟩,
     jumpiT (by rw [hsltval]; decide) (by jump_dest),
@@ -454,7 +453,7 @@ theorem ownable2StepX_transferOwnership_success {σ σ₀ A I} {g : Sat256}
       [transferOwnershipPendingOwnerWord σ I, ⟨1⟩, transferOwnershipNewOwnerWord I, ⟨97⟩,
         ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [transferOwnershipPendingOwnerWord] using rd288₀⟩
+    exact ⟨_, _, by exact rd288₀⟩
   have rd311₀ := evm_run rd288 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, dup4, and, push1 ⟨1⟩,
     push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, not, swap1, swap2, and, dup2]
@@ -485,7 +484,7 @@ theorem ownable2StepX_transferOwnership_success {σ σ₀ A I} {g : Sat256}
         transferOwnershipNewOwnerWord I, ⟨97⟩, ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty
       (transferOwnershipAfterPendingMap σ I) k C := by
-    exact ⟨_, _, by simpa [transferOwnershipAfterPendingMap] using rd315₀⟩
+    exact ⟨_, _, by exact rd315₀⟩
   let σp := transferOwnershipAfterPendingMap σ I
   have rd319 := evm_run rd315 with [push2 ⟨331⟩, push0]
   obtain ⟨_, _, rd320₀⟩ := rd319.sload (by decide) (by evm_ov)
@@ -495,7 +494,7 @@ theorem ownable2StepX_transferOwnership_success {σ σ₀ A I} {g : Sat256}
         UInt256.land (transferOwnershipNewOwnerWord I) solcAddrMask,
         transferOwnershipNewOwnerWord I, ⟨97⟩, ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (σp) k C := by
-    exact ⟨_, _, by simpa [σp, transferOwnershipOwnerWordAfterPending] using rd320₀⟩
+    exact ⟨_, _, by exact rd320₀⟩
   have rd331 := evm_run rd320 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, swap1,
     jump (by jump_dest)]
@@ -566,8 +565,7 @@ theorem ownable2StepTransferOwnershipBody {σ σ₀ A I}
               UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
                   solcAddrMask =
                 ownable2StepSourceWord evmS.executionEnv := by
-            simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
-              transferOwnershipOwnerWord, ownable2StepSourceWord] using howner
+            exact howner
           have hdec := ownable2StepDecode_transferOwnership_ok (I := I) hsz36 hbig hcanon
           by_cases hperm : I.perm = true
           · have hbody := ownable2StepTransferOwnershipBodyReturns (hperm := hperm) evmS I
@@ -594,8 +592,7 @@ theorem ownable2StepTransferOwnershipBody {σ σ₀ A I}
                 ownable2StepSourceWord evmS.executionEnv := by
             intro h
             apply howner
-            simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
-              transferOwnershipOwnerWord, ownable2StepSourceWord] using h
+            exact h
           have hdec := ownable2StepDecode_transferOwnership_ok (I := I) hsz36 hbig hcanon
           have hbody := ownable2StepTransferOwnershipBodyReverts_owner evmS I
             (by simp only [evmS, initState]; exact hwv) hownerStele

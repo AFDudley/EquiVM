@@ -274,8 +274,7 @@ theorem uniswapMintFeeCheckedCallSuccess
       (checkedExternalCallStmts (.storage factoryRef) "feeTo" (.intLit 0) [] "feeTo"
         (perm := false))
       (.ok (mintFeeAfterFeeToFrame reserve0 reserve1 feeTo) evmFee) := by
-  simpa [checkedExternalCallStmts, mintFeeAfterFeeToFrame, mintFeeAfterFeeToStore] using
-    checkedExternalCallSuccess (hperm := Or.inl rfl)
+  exact checkedExternalCallSuccess (hperm := Or.inl rfl)
       (cfg := config) (C := contract) (evm := evm) (evm' := evmFee)
       (locals := mintFeeCallStore reserve0 reserve1)
       (receiver := .storage factoryRef) (name := "feeTo") (sendVal := 0)

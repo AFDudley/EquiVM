@@ -638,7 +638,7 @@ theorem uniswapUint256GetterBodyCore
         transition.returnType := by
     rw [hreturn]
     exact returnEquiv_of_encode
-      (by simpa [uint256] using uint256ReturnEncoding (solcSlotWordAt slot σ I))
+      (by exact uint256ReturnEncoding (solcSlotWordAt slot σ I))
   exact (RD.uniswapWordGetterExternal (g := Sat256.ofUInt256 g)
       (entry := entry) (routine := routine) (slot := slot) hreach hentry hgetter hroutine
       (by jump_dest)).reEquivExecution
@@ -674,7 +674,7 @@ theorem uniswapBytes32GetterBodyCore
         transition.returnType := by
     rw [hreturn]
     exact returnEquiv_of_encode
-      (by simpa [bytes32] using bytes32ReturnEncoding (solcSlotWordAt slot σ I))
+      (by exact bytes32ReturnEncoding (solcSlotWordAt slot σ I))
   exact (RD.uniswapWordGetterExternal (g := Sat256.ofUInt256 g)
       (entry := entry) (routine := routine) (slot := slot) hreach hentry hgetter hroutine
       (by jump_dest)).reEquivExecution

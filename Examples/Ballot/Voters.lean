@@ -113,7 +113,7 @@ theorem ballotVotersBodyReturns (evm : EVM.State) (I : ExecutionEnv)
           evalExpr? ballotConfig { contract := ballotContract, locals := votersStore I } evm
             (.storage (voterF (.var "a") "voted")) =
               .ok (wordToElem .bool (votersVotedWord evm.accountMap I)) := by
-        rw [evalExpr_storage_scalar (hbackend := rfl) (t := .bool)
+        erw [evalExpr_storage_scalar (hbackend := rfl) (t := .bool)
           (hbase := by simp [votersStore, voterF])
           (her := evalStorageRef_votersField evm I "voted")
           (hty := by simp [storageTypeAt?, votersEvaledRef, ballotContract, ballotStorageDecls,
@@ -595,7 +595,7 @@ theorem RD.ballotDecodeAddressOk1770 {g : Sat256} {s0 : State} {ee : ExecutionEn
         (UInt256.land
           (uInt256OfByteArray (ee.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨1⟩ := by
-    simpa [calldataWord, solcAddrMask] using hclean
+    exact hclean
   exact ⟨_, _, evm_run h with [
     jumpdest, push0, push1 ⟨32⟩, dup3, dup5, sub, slt, iszero, push2 ⟨1786⟩,
     jumpiT (by rw [hsltval]; decide) (by jump_dest),
@@ -635,7 +635,7 @@ theorem RD.ballotDecodeAddressNoncanonRevert1770 {g : Sat256} {s0 : State} {ee :
         (UInt256.land
           (uInt256OfByteArray (ee.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨0⟩ := by
-    simpa [calldataWord, solcAddrMask] using hnc
+    exact hnc
   evm_run h with [
     jumpdest, push0, push1 ⟨32⟩, dup3, dup5, sub, slt, iszero, push2 ⟨1786⟩,
     jumpiT (by rw [hsltval]; decide) (by jump_dest),
@@ -854,8 +854,7 @@ theorem ballotDecode_voters_ok {I : ExecutionEnv}
     decodeCalldata (votersGetter.params.map Param.name)
       (transitionSignature votersGetter).paramTypes I.calldata = some (votersStore I) := by
   show decodeCalldata ["a"] [addr] I.calldata = some (votersStore I)
-  simpa [votersStore, votersArgValue, votersArgWord, calldataWord]
-    using decodeCalldata_address_ok (cd := I.calldata) (x := "a") hsz36 hbig hcanon
+  exact decodeCalldata_address_ok (cd := I.calldata) (x := "a") hsz36 hbig hcanon
 
 theorem ballotDecode_voters_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :

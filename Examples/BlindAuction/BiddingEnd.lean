@@ -50,7 +50,7 @@ theorem blindAuctionX_biddingEnd {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I) ⟨371⟩
         [biddingEndWord σ I, ⟨373⟩, blindAuctionSelWord I] solcFreePtrMem
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [biddingEndWord, initState] using rd371₀⟩
+    exact ⟨_, _, by exact rd371₀⟩
   have rd373 := evm_run rd371 with [
     dup2, jump (by jump_dest)]
   obtain ⟨_, _, rd206⟩ := blindAuctionRoutineEncodeWord373
@@ -129,8 +129,7 @@ theorem blindAuctionBiddingEndBodyCore {σ σ₀ A I}
           (.returned { contract := blindAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (biddingEndWord σ I).toNat))])) := by
-      simpa [biddingEndWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-        blindAuctionBiddingEndBodyReturns
+      exact blindAuctionBiddingEndBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (blindAuctionX_biddingEnd (g := Sat256.ofUInt256 g) hwv hreach)

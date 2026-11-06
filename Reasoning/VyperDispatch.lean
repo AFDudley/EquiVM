@@ -337,7 +337,7 @@ theorem evalExpr_gt_zero {cfg : Config} {stele : Frame} {evm : EVM.State} {e : E
     (ha : evalExpr? cfg stele evm e = .ok (uint256Value a)) :
     evalExpr? cfg stele evm (.binary .gt e (.intLit 0)) = .ok (.bool (decide (0 < a.toNat))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, evalExpr?]
-  simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value]
+  simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value, pure]
 
 theorem evalExpr_uint256_add {cfg : Config} {stele : Frame} {evm : EVM.State}
     {lhs rhs : Expr} {a b : UInt256}

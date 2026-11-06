@@ -57,14 +57,12 @@ abbrev wStore (I : ExecutionEnv) : Store := (∅ : Store).insert "amount" (uint2
 theorem wDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (wrapTransition.params.map Param.name)
       (transitionSignature wrapTransition).paramTypes I.calldata = some (wStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, wrapTransition, wStore, argWord_eq] using
-    decodeMode_uint256_ok "amount" I.calldata hsz36
+  exact decodeMode_uint256_ok "amount" I.calldata hsz36
 
 theorem wDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (wrapTransition.params.map Param.name)
       (transitionSignature wrapTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, wrapTransition] using
-    decodeMode_uint256_none_short "amount" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "amount" I.calldata hsz hshort
 
 abbrev selO : UInt256 := UInt256.ofNat 2721273594
 

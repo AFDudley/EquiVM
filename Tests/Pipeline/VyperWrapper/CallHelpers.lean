@@ -101,7 +101,7 @@ theorem evalExpr_eq_zero_word {cfg : Config} {stele : Frame} {evm : EVM.State} {
     (ha : evalExpr? cfg stele evm e = .ok (uint256Value a)) :
     evalExpr? cfg stele evm (.binary .eq e (.intLit 0)) = .ok (.bool (decide (a.toNat = 0))) := by
   rw [evalExpr_binary_nonshort (by decide) (by decide), ha, evalExpr?]
-  simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value, value_int_beq]
+  simp [EvalResult.bind, bind, evalBinaryOp?, uint256Value, value_int_beq, pure]
 
 theorem evalExpr_div_zero {cfg : Config} {stele : Frame} {evm : EVM.State} {lhs rhs : Expr} {a : UInt256}
     (ha : evalExpr? cfg stele evm lhs = .ok (uint256Value a))

@@ -20,8 +20,7 @@ theorem uniswapPermitTypehashBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals permitTypehashTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.fixedBytes bytes32Width permitTypehashBytes)])) := by
-  simpa [permitTypehashTransition, permitTypehashBytes] using
-    uniswapFixedBytesLiteralBodyReturns evm locals bytes32Width permitTypehashBytes h
+  exact uniswapFixedBytesLiteralBodyReturns evm locals bytes32Width permitTypehashBytes h
 
 /-- From `PERMIT_TYPEHASH()`'s external body entry (pc 933), bytecode returns the EIP-712 hash. -/
 theorem uniswapX_permitTypehash {σ σ₀ A I} {g : Sat256} {sel : UInt256}

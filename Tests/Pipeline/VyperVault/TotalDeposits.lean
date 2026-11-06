@@ -32,10 +32,9 @@ theorem vyperVaultTotalDepositsBody {σ σ₀ A I} {g : UInt256} (imms : Store) 
     vyperVaultDispatch_totalDeposits (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (totalDepositsTransition.params.map Param.name)
       (transitionSignature totalDepositsTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, totalDepositsTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1355_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1355_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1360 (by simp) rd1
     have hmemsize : (vyperVaultDispatchMem 6).size = 32 := by native_decide
     rw [ulit_toNat' 64 (by decide), ulit_toNat' 32 (by decide),
@@ -59,7 +58,7 @@ theorem vyperVaultTotalDepositsBody {σ σ₀ A I} {g : UInt256} (imms : Store) 
         storageLoad_initState_ofUInt256_solcSlotWordAt]
     exact rd2.reEquivExecution hcode' hd hdec hbody
       (returnEquiv_of_encode (uint256ReturnEncoding _))
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1355_taken (by simp) (by simpa using hwv)
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1355_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1403 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

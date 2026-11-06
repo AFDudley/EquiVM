@@ -70,7 +70,7 @@ theorem scratch_revealLoopAdvance_secretStore_continue {I} {g : Sat256}
       ExecBlock blindAuctionConfig { contract := blindAuctionContract, locals := L1 } evm
         scratch_revealLoopPostStmts
         (.ok { contract := blindAuctionContract, locals := L2 } evm) := by
-    simpa [L2, nextIdx] using scratch_revealLoopPostStep evm L1 a.idx hiL1 hidxFit
+    exact scratch_revealLoopPostStep evm L1 a.idx hiL1 hidxFit
   let nextCursor : RevealLoopCursor :=
     { idx := nextIdx,
       refund := a.refund,
@@ -1009,7 +1009,7 @@ theorem scratch_RD_placeBid_true_nonzero_overflow_anyMem {g : Sat256} {s0 : Stat
   obtain ⟨_, _, rd1539⟩ : ∃ k' C', RD blindAuctionBytecode I g s0 ⟨1539⟩
       (scratch_placeBidHighestBidWord σ I :: ⟨0⟩ :: value :: bidder :: ret :: R)
       mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [scratch_placeBidHighestBidWord] using rd1539₀⟩
+    exact ⟨_, _, by exact rd1539₀⟩
   have hgt : UInt256.gt value (scratch_placeBidHighestBidWord σ I) = ⟨1⟩ := ugt_one hlt
   have rd1540₀ := evm_run rd1539 with [dup3, gt]
   have rd1540 := rd1540₀
@@ -1020,7 +1020,7 @@ theorem scratch_RD_placeBid_true_nonzero_overflow_anyMem {g : Sat256} {s0 : Stat
   obtain ⟨_, _, rd1555⟩ : ∃ k' C', RD blindAuctionBytecode I g s0 ⟨1555⟩
       (scratch_placeBidHighestBidderWord σ I :: ⟨0⟩ :: value :: bidder :: ret :: R)
       mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [scratch_placeBidHighestBidderWord] using rd1555₀⟩
+    exact ⟨_, _, by exact rd1555₀⟩
   have rd1564₀ := evm_run rd1555 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and]
   have hmaskNonzero :
@@ -1038,14 +1038,14 @@ theorem scratch_RD_placeBid_true_nonzero_overflow_anyMem {g : Sat256} {s0 : Stat
   obtain ⟨_, _, rd1572⟩ : ∃ k' C', RD blindAuctionBytecode I g s0 ⟨1572⟩
       (scratch_placeBidHighestBidWord σ I :: ⟨0⟩ :: value :: bidder :: ret :: R)
       mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [scratch_placeBidHighestBidWord] using rd1572₀⟩
+    exact ⟨_, _, by exact rd1572₀⟩
   have rd1574 := evm_run rd1572 with [push1 ⟨5⟩]
   obtain ⟨_, _, rd1575₀⟩ := rd1574.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd1575⟩ : ∃ k' C', RD blindAuctionBytecode I g s0 ⟨1575⟩
       (scratch_placeBidHighestBidderWord σ I :: scratch_placeBidHighestBidWord σ I ::
         ⟨0⟩ :: value :: bidder :: ret :: R)
       mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [scratch_placeBidHighestBidderWord] using rd1575₀⟩
+    exact ⟨_, _, by exact rd1575₀⟩
   have rd1587₀ := evm_run rd1575 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, push0, swap1, dup2]
   have hmask :
@@ -1088,8 +1088,7 @@ theorem scratch_RD_placeBid_true_nonzero_overflow_anyMem {g : Sat256} {s0 : Stat
       (scratch_placeBidPendingWord σ I :: scratch_placeBidPendingSlot σ I ::
         ⟨0⟩ :: scratch_placeBidHighestBidWord σ I :: ⟨0⟩ :: value :: bidder :: ret :: R)
       memHash aw3 rdata σ k' C' := by
-    exact ⟨_, _, by simpa [scratch_placeBidPendingWord, scratch_placeBidPendingSlot,
-      memHash] using rd1598₀⟩
+    exact ⟨_, _, by exact rd1598₀⟩
   have rd1611 := evm_run rd1599 with [
     swap1, swap2, swap1, push2 ⟨1612⟩, swap1, dup5, swap1, push2 ⟨2045⟩,
     jump (by jump_dest)]

@@ -388,7 +388,7 @@ theorem registryReachCountBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 3 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket3 hcode hm
-  have rd1 := registryBlocks.registry_block_1367_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨107354813⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_1367_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨107354813⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `active_weight()` (bucket 4, arm entry pc 268). -/
@@ -402,8 +402,8 @@ theorem registryReachActive_weightBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 4 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket4 hcode hm
-  have rd1 := registryBlocks.registry_block_24_taken (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4030008324⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
-  have rd2 := registryBlocks.registry_block_256_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨665025254⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := registryBlocks.registry_block_24_taken (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4030008324⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
+  have rd2 := registryBlocks.registry_block_256_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨665025254⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `register(address)` (bucket 2, arm entry pc 716). -/
@@ -417,7 +417,7 @@ theorem registryReachRegister_addressBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 2 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket2 hcode hm
-  have rd1 := registryBlocks.registry_block_704_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1143006342⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_704_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1143006342⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `register(address,uint256)` (bucket 7, arm entry pc 776). -/
@@ -431,7 +431,7 @@ theorem registryReachRegister_address_uint256Body {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 7 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket7 hcode hm
-  have rd1 := registryBlocks.registry_block_764_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1836080827⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_764_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1836080827⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `nextId()` (bucket 2, arm entry pc 748). -/
@@ -445,8 +445,8 @@ theorem registryReachNextIdBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 2 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket2 hcode hm
-  have rd1 := registryBlocks.registry_block_704_taken (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1143006342⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
-  have rd2 := registryBlocks.registry_block_736_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1639501452⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := registryBlocks.registry_block_704_taken (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1143006342⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
+  have rd2 := registryBlocks.registry_block_736_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1639501452⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `owner()` (bucket 5, arm entry pc 403). -/
@@ -460,7 +460,7 @@ theorem registryReachOwnerBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 5 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket5 hcode hm
-  have rd1 := registryBlocks.registry_block_391_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_391_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `deactivate(uint256)` (bucket 1, arm entry pc 1135). -/
@@ -474,7 +474,7 @@ theorem registryReachDeactivateBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 1 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket1 hcode hm
-  have rd1 := registryBlocks.registry_block_1123_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2439748591⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_1123_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2439748591⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `totalWeight()` (bucket 3, arm entry pc 1407). -/
@@ -488,8 +488,8 @@ theorem registryReachTotalWeightBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 3 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket3 hcode hm
-  have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨107354813⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
-  have rd2 := registryBlocks.registry_block_1395_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2529701463⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨107354813⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
+  have rd2 := registryBlocks.registry_block_1395_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2529701463⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `entries(uint256)` (bucket 6, arm entry pc 1435). -/
@@ -503,7 +503,7 @@ theorem registryReachEntriesBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 6 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket6 hcode hm
-  have rd1 := registryBlocks.registry_block_1423_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3003713236⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_1423_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3003713236⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `pop_last()` (bucket 5, arm entry pc 430). -/
@@ -517,8 +517,8 @@ theorem registryReachPop_lastBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 5 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket5 hcode hm
-  have rd1 := registryBlocks.registry_block_391_taken (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
-  have rd2 := registryBlocks.registry_block_418_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4026400085⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := registryBlocks.registry_block_391_taken (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by jump_dest) rd0
+  have rd2 := registryBlocks.registry_block_418_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4026400085⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `transfer_ownership(address)` (bucket 4, arm entry pc 36). -/
@@ -532,7 +532,7 @@ theorem registryReachTransfer_ownershipBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 4 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket4 hcode hm
-  have rd1 := registryBlocks.registry_block_24_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4030008324⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_24_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4030008324⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `ids(uint256)` (bucket 8, arm entry pc 1498). -/
@@ -546,7 +546,7 @@ theorem registryReachIdsBody {σ σ₀ A I} {g : Sat256}
       (by simpa [registrySelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 10 = 8 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := registryBucket8 hcode hm
-  have rd1 := registryBlocks.registry_block_1486_fallthrough (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4207096748⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := registryBlocks.registry_block_1486_fallthrough (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4207096748⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Calldata shorter than a selector: the padded word matches no bucket entry. -/
@@ -561,39 +561,39 @@ theorem registryX_short {σ σ₀ A I} {g : Sat256}
     have rd1 := registryBlocks.registry_block_1533 (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := registryBucket1 hcode hm
-    have rd1 := registryBlocks.registry_block_1123_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2439748591⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1123_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2439748591⟩) hshort (by native_decide))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket2 hcode hm
-    have rd1 := registryBlocks.registry_block_704_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1143006342⟩) hshort (by native_decide))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_736_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1639501452⟩) hshort (by native_decide))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_704_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1143006342⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_736_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1639501452⟩) hshort (by native_decide))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket3 hcode hm
-    have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨107354813⟩) hshort (by native_decide))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_1395_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2529701463⟩) hshort (by native_decide))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨107354813⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_1395_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2529701463⟩) hshort (by native_decide))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket4 hcode hm
-    have rd1 := registryBlocks.registry_block_24_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4030008324⟩) hshort (by native_decide))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_256_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨665025254⟩) hshort (by native_decide))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_24_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4030008324⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_256_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨665025254⟩) hshort (by native_decide))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket5 hcode hm
-    have rd1 := registryBlocks.registry_block_391_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2376452955⟩) hshort (by native_decide))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_418_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4026400085⟩) hshort (by native_decide))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_391_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2376452955⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_418_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4026400085⟩) hshort (by native_decide))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket6 hcode hm
-    have rd1 := registryBlocks.registry_block_1423_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3003713236⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1423_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3003713236⟩) hshort (by native_decide))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket7 hcode hm
-    have rd1 := registryBlocks.registry_block_764_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1836080827⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_764_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1836080827⟩) hshort (by native_decide))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket8 hcode hm
-    have rd1 := registryBlocks.registry_block_1486_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4207096748⟩) hshort (by native_decide))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1486_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4207096748⟩) hshort (by native_decide))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket9 hcode hm
@@ -613,39 +613,39 @@ theorem registryX_noMatch {σ σ₀ A I} {g : Sat256}
     have rd1 := registryBlocks.registry_block_1533 (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := registryBucket1 hcode hm
-    have rd1 := registryBlocks.registry_block_1123_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2439748591⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1123_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2439748591⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket2 hcode hm
-    have rd1 := registryBlocks.registry_block_704_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1143006342⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_736_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1639501452⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_704_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1143006342⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_736_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1639501452⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket3 hcode hm
-    have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨107354813⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_1395_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2529701463⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_1367_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨107354813⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_1395_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2529701463⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket4 hcode hm
-    have rd1 := registryBlocks.registry_block_24_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4030008324⟩) hsz (by native_decide) (hnm 10 (by omega)))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_256_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨665025254⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_24_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4030008324⟩) hsz (by native_decide) (hnm 10 (by omega)))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_256_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨665025254⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket5 hcode hm
-    have rd1 := registryBlocks.registry_block_391_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2376452955⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by jump_dest) rd0
-    have rd2 := registryBlocks.registry_block_418_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4026400085⟩) hsz (by native_decide) (hnm 9 (by omega)))) (by jump_dest) rd1
+    have rd1 := registryBlocks.registry_block_391_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2376452955⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by jump_dest) rd0
+    have rd2 := registryBlocks.registry_block_418_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4026400085⟩) hsz (by native_decide) (hnm 9 (by omega)))) (by jump_dest) rd1
     have rd3 := registryBlocks.registry_block_1533 (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := registryBucket6 hcode hm
-    have rd1 := registryBlocks.registry_block_1423_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3003713236⟩) hsz (by native_decide) (hnm 8 (by omega)))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1423_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3003713236⟩) hsz (by native_decide) (hnm 8 (by omega)))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket7 hcode hm
-    have rd1 := registryBlocks.registry_block_764_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1836080827⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_764_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1836080827⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket8 hcode hm
-    have rd1 := registryBlocks.registry_block_1486_taken (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4207096748⟩) hsz (by native_decide) (hnm 11 (by omega)))) (by jump_dest) rd0
+    have rd1 := registryBlocks.registry_block_1486_taken (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4207096748⟩) hsz (by native_decide) (hnm 11 (by omega)))) (by jump_dest) rd0
     have rd2 := registryBlocks.registry_block_1533 (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := registryBucket9 hcode hm

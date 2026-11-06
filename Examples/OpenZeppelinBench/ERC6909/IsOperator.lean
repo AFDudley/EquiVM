@@ -50,9 +50,7 @@ theorem erc6909Decode_isOperator_ok {I : ExecutionEnv}
       (transitionSignature isOperatorTransition).paramTypes I.calldata =
         some (isOperatorStore I) := by
   show decodeCalldata ["owner", "spender"] [addr, addr] I.calldata = _
-  simpa [isOperatorStore, isOperatorOwnerValue, isOperatorSpenderValue, isOperatorOwnerWord,
-    isOperatorSpenderWord, calldataWord]
-    using decodeCalldata_address_address_ok (cd := I.calldata) (x := "owner") (y := "spender")
+  exact decodeCalldata_address_address_ok (cd := I.calldata) (x := "owner") (y := "spender")
       hsz68 hbig hcanonOwner hcanonSpender
 
 theorem erc6909Decode_isOperator_none_short {I : ExecutionEnv}
@@ -759,8 +757,7 @@ theorem erc6909IsOperatorBodyCore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(wordToElem .bool
                     (UInt256.land (isOperatorStorageWord σ I) ⟨255⟩))])) := by
-            simpa [isOperatorStorageWord, isOperatorSlot, initState, Stele.EVM.storageLoad,
-              State.lookupAccount] using erc6909IsOperatorBodyReturns
+            exact erc6909IsOperatorBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)
           exact (erc6909X_isOperator (g := Sat256.ofUInt256 g)

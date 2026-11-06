@@ -263,7 +263,7 @@ theorem stringStoreLiteX_setLongValueLongValidNoClearResidual
                 ⟨0⟩ header)
               evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
-            simpa using uint256_add_zero_right clearCurrentBaseWord
+            simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
           rw [hsteleMap]
@@ -382,7 +382,7 @@ theorem stringStoreLiteX_setLongValueLongValidNoClearResidual
                 ⟨0⟩ header)
               evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
-            simpa using uint256_add_zero_right clearCurrentBaseWord
+            simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
           rw [hsteleMap]
@@ -729,7 +729,7 @@ theorem stringStoreLiteX_setLongValueLongValidClearResidual
                 ⟨0⟩ header)
               evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
-            simpa using uint256_add_zero_right clearCurrentBaseWord
+            simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
           rw [hsteleMap]
@@ -884,7 +884,7 @@ theorem stringStoreLiteX_setLongValueLongValidClearResidual
                 ⟨0⟩ header)
               evmStele1.accountMap := by
           have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
-            simpa using uint256_add_zero_right clearCurrentBaseWord
+            simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right clearCurrentBaseWord
           have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by
             native_decide
           rw [hsteleMap]

@@ -783,7 +783,7 @@ theorem blindAuctionBidX_timeRevert {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨1430⟩
       [biddingEndWord σ I, bidBlindedWord I, ⟨276⟩, blindAuctionSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [biddingEndWord, initState] using rd1430₀⟩
+    exact ⟨_, _, by exact rd1430₀⟩
   have hlt : UInt256.lt (bidTimestampWord I) (biddingEndWord σ I) = ⟨0⟩ :=
     ult_zero htime
   have rd1432 := RD.timestamp (evm_run rd1430 with [dup1]) (by decide) (by evm_ov)
@@ -833,7 +833,7 @@ theorem blindAuctionBidX_ok {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨1430⟩
       [biddingEndWord σ I, bidBlindedWord I, ⟨276⟩, blindAuctionSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [biddingEndWord, initState] using rd1430₀⟩
+    exact ⟨_, _, by exact rd1430₀⟩
   have hlt : UInt256.lt (bidTimestampWord I) (biddingEndWord σ I) = ⟨1⟩ :=
     ult_one htime
   have rd1432 := RD.timestamp (evm_run rd1430 with [dup1]) (by decide) (by evm_ov)
@@ -875,7 +875,7 @@ theorem blindAuctionBidX_ok {σ σ₀ A I} {g : Sat256}
       [bidLengthWord σ I, ⟨160⟩, ⟨128⟩, ⟨32⟩, ⟨0⟩, bidLengthSlot I,
         ⟨276⟩, blindAuctionSelWord I]
       (bidStructMem I) (UInt256.ofNat 6) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [bidLengthWord, initState] using rd1503₀⟩
+    exact ⟨_, _, by exact rd1503₀⟩
   have rd1508 := evm_run rd1503 with [push1 ⟨1⟩, dup2, dup2, add, dup8]
   by_cases hperm : I.perm = true
   swap
@@ -891,7 +891,7 @@ theorem blindAuctionBidX_ok {σ σ₀ A I} {g : Sat256}
       (bidAfterLengthState evm0 I (bidLengthWord σ I)).accountMap k C := by
     exact ⟨_, _, by
       simpa [evm0, bidAfterLengthState, initState, storageStore_accountMap,
-        u256_add_comm] using rd1510₀⟩
+        u256_add_comm] using! rd1510₀⟩
   have rd1516 := evm_run rd1510 with [
     swap6, dup6,
     raw mstore 0 (bidElemBaseMemExec I (bidLengthSlot I)) (UInt256.ofNat 6) (by decide)
@@ -960,8 +960,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
             (blindAuctionBidBodyStatic evmS
               (by simpa [evmS, initState] using hsz36)
               (by
-                simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
-                  State.lookupAccount] using htimeS')
+                exact htimeS')
               (by simpa [evmS, initState] using hpf))
         have hbody :
             ExecTransitionBody blindAuctionConfig blindAuctionContract evmS (bidStore I)
@@ -971,8 +970,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
           blindAuctionBidBodyReturns (hperm := by assumption) evmS
             (by simpa [evmS, initState] using hsz36)
             (by
-              simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
-                State.lookupAccount] using htimeS')
+              exact htimeS')
         exact (permSplit_true hperm (blindAuctionBidX_ok (g := Sat256.ofUInt256 g) hsz36 hsize
             hbig htime hreach))
           |>.reEquivExecutionGen hcode hd hdec hbody
@@ -986,8 +984,7 @@ theorem blindAuctionBidBodyCore {σ σ₀ A I} {g : UInt256}
             ExecTransitionBody blindAuctionConfig blindAuctionContract evmS (bidStore I)
               bidTransition.body .reverted :=
           blindAuctionBidBodyReverts_time evmS (by
-            simpa [evmS, initState, biddingEndWord, bidTimestampWord, Stele.EVM.storageLoad,
-              State.lookupAccount] using htimeS')
+            exact htimeS')
         exact (blindAuctionBidX_timeRevert (g := Sat256.ofUInt256 g) hsz36 hsize hbig
             htimeLe hreach)
           |>.reEquivExecutionRevert hcode hd hdec hbody

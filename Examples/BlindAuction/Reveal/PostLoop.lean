@@ -97,7 +97,7 @@ theorem scratch_blindAuctionReveal_postLoop_fromDone
       (valuesLen := valuesLenWord)
       (valuesEnd := ⟨4⟩ + revealValuesOffsetWord I + ⟨32⟩)
       (sel := blindAuctionSelWord I) (freePtr := aDone.fp)
-      (by simpa using rd1331)
+      (by exact rd1331)
       aDone.hfpLoad
       (activeWords_mload64_of_ge3 aDone.haw)
   have hawCall : UInt256.ofNat

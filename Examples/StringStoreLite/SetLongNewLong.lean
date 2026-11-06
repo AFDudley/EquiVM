@@ -65,7 +65,7 @@ theorem stringStoreLiteSetNewLongRuntime
         (UInt256.toByteArray (UInt256.ofNat (setDecodedValueBytes I).size))
         (some [(.int (setDecodedValueBytes I).size)])
         [(.elem (.int (.uint ⟨256, by decide⟩)))] := by
-    simpa only [htoNat] using
+    simpa only [htoNat] using!
       returnEquiv_of_encode (uint256ReturnEncoding
         (UInt256.ofNat (setDecodedValueBytes I).size))
   let evmStele0 := initState σ σ₀ (Sat256.ofUInt256 g) A I
@@ -176,7 +176,7 @@ theorem stringStoreLiteSetNewLongRuntime
             hvalueSizeLong hload hpacked hflag rfl (by simpa [oldLen] using hvalid)
         have hwrite :
             stringStoreLiteConfig.storageBackend.write { base := "current", steps := [] } .string (.bytes (setDecodedValueBytes I)) evmStele0 = .ok evmStele1 := by
-          simpa [evmStele1, evmStele0, initState] using hwrite₀
+          exact hwrite₀
         by_cases hperm : I.perm = true
         swap
         · have hpf : I.perm = false := by simpa using hperm

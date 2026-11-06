@@ -63,9 +63,7 @@ theorem erc20Decode_allowance_ok {I : ExecutionEnv}
       (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata =
         some (allowanceStore I) := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner", "spender"] [addr, addr] I.calldata = _
-  simpa [allowanceStore, allowanceOwnerValue, allowanceSpenderValue,
-    allowanceOwnerWord, allowanceSpenderWord, calldataWord]
-    using decodeCalldataWithMode_vyper_address_address_ok
+  exact decodeCalldataWithMode_vyper_address_address_ok
       (cd := I.calldata) (x := "owner") (y := "spender")
       hsz68 hcanonOwner hcanonSpender
 
@@ -74,8 +72,7 @@ theorem erc20Decode_allowance_none_short {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.allowanceTransition.params.map Param.name)
       (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner", "spender"] [addr, addr] I.calldata = none
-  simpa [addr]
-    using decodeCalldataWithMode_vyper_address_address_none_short
+  exact decodeCalldataWithMode_vyper_address_address_none_short
       (cd := I.calldata) (x := "owner") (y := "spender") hsz4 hshort
 
 theorem erc20Decode_allowance_none_noncanon_owner {I : ExecutionEnv}
@@ -84,8 +81,7 @@ theorem erc20Decode_allowance_none_noncanon_owner {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.allowanceTransition.params.map Param.name)
       (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner", "spender"] [addr, addr] I.calldata = none
-  simpa [addr, allowanceOwnerWord, calldataWord]
-    using decodeCalldataWithMode_vyper_address_address_none_noncanon0
+  exact decodeCalldataWithMode_vyper_address_address_none_noncanon0
       (cd := I.calldata) (x := "owner") (y := "spender") hsz68 hnc
 
 theorem erc20Decode_allowance_none_noncanon_spender {I : ExecutionEnv}
@@ -95,8 +91,7 @@ theorem erc20Decode_allowance_none_noncanon_spender {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.allowanceTransition.params.map Param.name)
       (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner", "spender"] [addr, addr] I.calldata = none
-  simpa [addr, allowanceOwnerWord, allowanceSpenderWord, calldataWord]
-    using decodeCalldataWithMode_vyper_address_address_none_noncanon1
+  exact decodeCalldataWithMode_vyper_address_address_none_noncanon1
       (cd := I.calldata) (x := "owner") (y := "spender") hsz68 hcanonOwner hnc
 
 theorem erc20AllowanceBodyReturns (evm : EVM.State) (I : ExecutionEnv)
@@ -461,7 +456,7 @@ theorem erc20X_allowanceFromEntry {σ σ₀ A I} {g : Sat256}
     push1 ⟨160⟩,
     shr,
     push2 ⟨801⟩,
-    jumpiNT (by simpa [allowanceSpenderWord, calldataWord] using hcanonSpenderGuard),
+    jumpiNT (by exact hcanonSpenderGuard),
     push1 ⟨96⟩,
     raw mstore 3 (allowanceSpenderArgMem (allowanceOwnerWord I) (allowanceSpenderWord I))
       (UInt256.ofNat 4)
@@ -565,7 +560,7 @@ theorem erc20AllowanceX_shortarg {σ σ₀ A I} {g : Sat256}
   have hsizeGuard := calldataSizeGuardShort (n := I.calldata.size) (m := 68)
     hsize (by norm_num [UInt256.size]) hshort
   have hsizeGuard68 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨68⟩ = ⟨1⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have rd801 := evm_run rd681 with [
     jumpdest,
     raw push4 allowanceSelectorWord (by vyper_erc20_allowance_decode) (by evm_ov),
@@ -790,8 +785,7 @@ theorem erc20AllowanceBodyCore
         (.returned { contract := erc20Contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using erc20AllowanceBodyReturns
+    exact erc20AllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
   have hsz4 := erc20AllowanceSelector_size hsel
@@ -804,7 +798,7 @@ theorem erc20AllowanceBodyCore
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata =
                 some (allowanceStore I) := by
-          simpa [vyperERC20Config] using hdec0
+          exact hdec0
         exact (erc20X_allowanceFromEntry (g := Sat256.ofUInt256 g) hwv hsz68 hsize hcanonOwner
             hcanonSpender hreach)
           |>.reEquivExecutionGen hcode hd hdec hbody (by rfl)
@@ -815,7 +809,7 @@ theorem erc20AllowanceBodyCore
             vyperERC20Config.externalABI.decodeCalldata?
               (ERC20.allowanceTransition.params.map Param.name)
               (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
-          simpa [vyperERC20Config] using hdec0
+          exact hdec0
         exact (erc20AllowanceX_noncanon_spender (g := Sat256.ofUInt256 g)
             hwv hsz68 hsize hcanonOwner hcanonSpender hreach)
           |>.reEquivDecodingFailed hcode hd hdec
@@ -824,7 +818,7 @@ theorem erc20AllowanceBodyCore
           vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.allowanceTransition.params.map Param.name)
             (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       exact (erc20AllowanceX_noncanon_owner (g := Sat256.ofUInt256 g)
           hwv hsz68 hsize hcanonOwner hreach)
         |>.reEquivDecodingFailed hcode hd hdec
@@ -834,7 +828,7 @@ theorem erc20AllowanceBodyCore
         vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.allowanceTransition.params.map Param.name)
           (transitionSignature ERC20.allowanceTransition).paramTypes I.calldata = none := by
-      simpa [vyperERC20Config] using hdec0
+      exact hdec0
     exact (erc20AllowanceX_shortarg (g := Sat256.ofUInt256 g) hwv hsize hshort hreach)
       |>.reEquivDecodingFailed hcode hd hdec
 

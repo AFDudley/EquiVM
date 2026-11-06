@@ -431,8 +431,7 @@ theorem renounceRoleAssignTarget (evm : EVM.State) (I : ExecutionEnv)
             (renounceRoleCallerKey I))
       (hleaf := Or.inl ⟨_, rfl⟩)
       (hstore := by
-        simpa [boolLoc, boolOffset0Loc, renounceRoleClearLowByteWord] using
-          storageLocStore_bool_false_offset0 evm (renounceRoleTargetSlot I))
+        exact storageLocStore_bool_false_offset0 evm (renounceRoleTargetSlot I))
 
 theorem accessControlRenounceRoleBodyReturns_write (evm : EVM.State) (I : ExecutionEnv)
     (hsz68 : 68 ≤ I.calldata.size)
@@ -562,7 +561,7 @@ theorem accessControlRenounceRoleX_decoded {σ σ₀ A I} {g : Sat256}
           (UInt256.land
             (uInt256OfByteArray (I.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨32⟩).toNat 32))
             solcAddrMask) = ⟨1⟩ := by
-        simpa [renounceRoleCallerWord, calldataWord] using hclean
+        exact hclean
       rw [hc]
       decide) (by jump_dest),
     jumpdest, dup1, swap2, pop, pop, swap3, pop, swap3, swap1, pop, jump (by jump_dest),
@@ -626,7 +625,7 @@ theorem accessControlRenounceRoleX_noncanon_caller {σ σ₀ A I} {g : Sat256}
     calldataload, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, dup2, and,
     dup2, eq, push2 ⟨968⟩, jumpiNT (by
       rw [hmask]
-      simpa [renounceRoleCallerWord, calldataWord] using hnc),
+      exact hnc),
     raw revertStub (by decide) (by decide) (by decide) (by evm_ov) ]
 
 theorem accessControlRenounceRoleX_caller_ok {σ σ₀ A I} {g : Sat256}
@@ -880,7 +879,7 @@ theorem accessControlRenounceRoleX_revoke_write {σ σ₀ A I} {g : Sat256}
         (revokeRoleHasRoleSlotHashMemFrom (renounceRoleRoleWord I) (renounceRoleCallerWord I)
           memTarget)
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [renounceRoleStorageWord, revokeRoleStorageWordAt] using rd733₀⟩
+    exact ⟨_, _, by exact rd733₀⟩
   obtain ⟨_, _, rd733⟩ := rd733
   have hclearComm :
       UInt256.land (UInt256.lnot ⟨255⟩) (renounceRoleStorageWord σ I) =
@@ -904,7 +903,7 @@ theorem accessControlRenounceRoleX_revoke_write {σ σ₀ A I} {g : Sat256}
         (revokeRoleHasRoleSlotHashMemFrom (renounceRoleRoleWord I) (renounceRoleCallerWord I)
           memTarget)
         (UInt256.ofNat 3) ByteArray.empty (renounceRolePostMap σ I) k C := by
-    exact ⟨_, _, by simpa [renounceRolePostMap] using rd740₀⟩
+    exact ⟨_, _, by exact rd740₀⟩
   obtain ⟨_, _, rd740⟩ := rd740
   have hmemEvent :
       (revokeRoleHasRoleSlotHashMemFrom (renounceRoleRoleWord I) (renounceRoleCallerWord I)
@@ -968,8 +967,7 @@ theorem accessControlRenounceRoleBody {σ σ₀ A I}
                 UInt256.land
                   (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner
                     (renounceRoleTargetSlot I)) ⟨255⟩ = ⟨0⟩ := by
-              simpa [renounceRoleMaskedWord, renounceRoleStorageWord, evmS, initState,
-                Stele.EVM.storageLoad, State.lookupAccount] using htarget
+              exact htarget
             have hbody := accessControlRenounceRoleBodyReturns_noop evmS I hsz68
               (by simp only [evmS, initState]; exact hwv) hcallerStele htargetStele
             exact (accessControlRenounceRoleX_revoke_noop (g := Sat256.ofUInt256 g)
@@ -980,8 +978,7 @@ theorem accessControlRenounceRoleBody {σ σ₀ A I}
                 UInt256.land
                   (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner
                     (renounceRoleTargetSlot I)) ⟨255⟩ ≠ ⟨0⟩ := by
-              simpa [renounceRoleMaskedWord, renounceRoleStorageWord, evmS, initState,
-                Stele.EVM.storageLoad, State.lookupAccount] using htargetNonzero
+              exact htargetNonzero
             by_cases hperm : I.perm = true
             · have hbody := accessControlRenounceRoleBodyReturns_write (hperm := hperm) evmS I hsz68
                 (by simp only [evmS, initState]; exact hwv) hcallerStele htargetStele

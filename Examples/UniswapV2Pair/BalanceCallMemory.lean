@@ -24,8 +24,7 @@ theorem balanceOfThisStaticcallMem_read96_zero_of_size_ge
       UInt256.toByteArray (⟨0⟩ : UInt256) := by
   unfold balanceOfThisStaticcallMem
   have hlen : (min (⟨32⟩ : UInt256) (UInt256.ofNat o.size)).toNat = 32 := by
-    simpa using
-      umin_ofNat_right_toNat_of_ge (c := 32) (n := o.size) (by decide) ho32 hoSize
+    exact umin_ofNat_right_toNat_of_ge (c := 32) (n := o.size) (by decide) ho32 hoSize
   rw [hlen]
   rw [write_read_below_gen o (balanceOfThisCalldataMem self) 128 32 96
       (by decide) ho32 (by rw [balanceOfThisCalldataMem_size]; omega) (by omega)]

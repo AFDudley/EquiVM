@@ -234,21 +234,14 @@ theorem erc6909ReachHighBody {σ σ₀ A I} {g : Sat256}
       hcode hwv hsz hsize hprefix (by jump_dest) erc6909SplitWellFormed
       (by simpa [erc6909SelWord, solcSelectorWord] using hpivot)
       (fun j hj => by
-        simpa [erc6909HighFirstArmPc, erc6909SplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          erc6909HighArmsWellFormed j (le_trans hj hi))
+        exact erc6909HighArmsWellFormed j (le_trans hj hi))
       (fun j hj => by
-        simpa [erc6909SelWord, solcSelectorWord, erc6909HighFirstArmPc, erc6909SplitPc,
-          selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc,
-          selArmPush4Pc] using heq0 j hj)
+        exact heq0 j hj)
       (by
-        simpa [erc6909SelWord, solcSelectorWord, erc6909HighFirstArmPc, erc6909SplitPc,
-          selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc,
-          selArmPush4Pc] using htake)
+        exact htake)
       hjd
       (by
-        simpa [erc6909HighFirstArmPc, erc6909SplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using hbody))
+        exact hbody))
 
 /-- Reach the special `balanceOf` body through the low split and `PUSH3` selector arm. -/
 theorem erc6909ReachBalanceBody {σ σ₀ A I} {g : Sat256}
@@ -267,9 +260,7 @@ theorem erc6909ReachBalanceBody {σ σ₀ A I} {g : Sat256}
   have h136 := RD.selectorArmWidthTakenAuto 3 h89 erc6909BalanceArmWellFormed htake
     (by jump_dest) (by simp)
   refine ⟨k0 + 5 + 1 + 5, C0 + 22 + 1 + 22, ?_⟩
-  simpa [erc6909LowFirstArmPc, erc6909LowJumpdestPc, erc6909SplitPc, selArmPushSelPcW,
-    selArmEqPcW, selArmPushTgtPcW, selArmJumpiPcW, selArmNextPcW, armTgtW, armTgtWidthW]
-    using h136
+  exact h136
 
 /-- Reach a body in the low selector half after the special `balanceOf` arm. -/
 theorem erc6909ReachLowRestBody {σ σ₀ A I} {g : Sat256}

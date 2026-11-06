@@ -37,7 +37,7 @@ theorem erc6909TransferFromX_dec1629_sender {σ σ₀ A I} {g : Sat256}
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
   have hslt :
       UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨128⟩ = ⟨0⟩ := by
-    simpa using solcCalldataStaticLenCheckOk (words := 4) hsz132 hszhi hsize
+    exact solcCalldataStaticLenCheckOk (words := 4) hsz132 hszhi hsize
   obtain ⟨_, _, rd⟩ := erc6909TransferFromX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) hreach
   exact ⟨_, _, evm_run rd with [
@@ -60,8 +60,7 @@ theorem erc6909TransferFromX_dec1982 {σ σ₀ A I} {g : Sat256}
   obtain ⟨_, _, rd⟩ := erc6909TransferFromX_dec1629_sender
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel)
     hsz132 hsize hszhi hreach
-  simpa [transferFromSenderWord, calldataWord] using
-    erc6909DecodeAddrOk rd hcanonSender (by jump_dest) (by evm_ov)
+  exact erc6909DecodeAddrOk rd hcanonSender (by jump_dest) (by evm_ov)
 
 theorem erc6909TransferFromX_dec1629_receiver {σ σ₀ A I}
     {g : Sat256} {sel : UInt256}
@@ -126,7 +125,7 @@ theorem erc6909TransferFromX_decoded {σ σ₀ A I} {g : Sat256}
     push1 ⟨96⟩, add, calldataload, swap1, jump (by jump_dest) ]
   have rd556 := evm_run rd402 with [jumpdest, push2 ⟨556⟩, jump (by jump_dest)]
   exact ⟨_, _, by
-    simpa [transferFromIdWord, transferFromAmountWord, calldataWord] using rd556⟩
+    exact rd556⟩
 
 theorem erc6909TransferFromX_skipCaller_toUpdate {σ σ₀ A I} {g : Sat256}
     {sel : UInt256}
@@ -374,7 +373,7 @@ theorem erc6909TransferFromX_skipCaller_afterLoad {σ σ₀ A I}
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
       hslot, hcallerWord, initState,
       Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
-      using rd1373₀⟩
+      using! rd1373₀⟩
 
 theorem erc6909TransferFromX_skipCaller_afterRequire {σ σ₀ A I}
     {g : Sat256} {sel : UInt256}
@@ -764,7 +763,7 @@ theorem erc6909TransferFromX_skipCaller_toCheckedAdd {σ σ₀ A I}
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
       transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
-      using rd1526₀
+      using! rd1526₀
   exact ⟨_, _, evm_run rd1526 with [
     dup5, swap3, swap1, push2 ⟨1539⟩, swap1, dup5, swap1, push2 ⟨2017⟩,
     jump (by jump_dest) ]⟩

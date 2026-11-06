@@ -41,9 +41,7 @@ theorem erc20Decode_allowance_ok {I : ExecutionEnv}
     decodeCalldata (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I) := by
   show decodeCalldata ["owner", "spender"] [addr, addr] I.calldata = _
-  simpa [allowanceStore, allowanceOwnerValue, allowanceSpenderValue, allowanceOwnerWord,
-    allowanceSpenderWord, calldataWord]
-    using decodeCalldata_address_address_ok (cd := I.calldata) (x := "owner") (y := "spender")
+  exact decodeCalldata_address_address_ok (cd := I.calldata) (x := "owner") (y := "spender")
       hsz68 hbig hcanonOwner hcanonSpender
 
 theorem erc20Decode_allowance_none_short {I : ExecutionEnv}
@@ -769,8 +767,7 @@ theorem erc20AllowanceBodyCore
                 (.returned { contract := erc20Contract, locals := allowanceStore I }
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-            simpa [allowanceWord, allowanceSlot, initState, Stele.EVM.storageLoad,
-              State.lookupAccount] using erc20AllowanceBodyReturns
+            exact erc20AllowanceBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)
           exact (erc20X_allowance (g := Sat256.ofUInt256 g)

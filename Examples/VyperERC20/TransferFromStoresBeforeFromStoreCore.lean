@@ -36,8 +36,7 @@ theorem erc20X_transferFromBeforeFromStoreCore {σ σ₀ A I} {g : Sat256}
       transferFromFromBalanceRawAfterAllowance σ I
           (transferFromAllowanceDebitI σ σ₀ A I g) =
         transferFromFromBalanceWord evm1 I := by
-    simpa [evm0, evm1] using
-      (transferFromFromBalanceRawAfterAllowance_initState
+    exact (transferFromFromBalanceRawAfterAllowance_initState
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
   have hfromEnoughRaw :
       (transferFromValueWord I).toNat ≤
@@ -74,7 +73,7 @@ theorem erc20X_transferFromBeforeFromStoreCore {σ σ₀ A I} {g : Sat256}
   have rdBeforeStore := evm_run rdAfterLoad with [
     push1 ⟨68⟩, calldataload,
     dup1, dup3, sub, dup3, dup2, gt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferFromValueWord] using hdebitGuardRaw),
+    jumpiNT (by exact hdebitGuardRaw),
     swap1, pop, swap1, pop, dup2]
   have hdebitWordRaw' :
       UInt256.sub
@@ -82,7 +81,7 @@ theorem erc20X_transferFromBeforeFromStoreCore {σ σ₀ A I} {g : Sat256}
             (transferFromAllowanceDebitI σ σ₀ A I g))
           (uInt256OfByteArray (I.calldata.readBytes (⟨68⟩ : UInt256).toNat 32)) =
         transferFromBalanceDebitWord evm1 I := by
-    simpa [transferFromValueWord] using hdebitWordRaw
+    exact hdebitWordRaw
   have hpc526 :
       (⟨508⟩ : UInt256) + UInt256.ofNat 2 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
           ⟨1⟩ + ⟨1⟩ + UInt256.ofNat 3 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +

@@ -105,8 +105,7 @@ theorem uniswapDecode_transferFrom_none_short {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["from", "to", "value"] [legacyAddr, legacyAddr, uint256]
     I.calldata = none
-  simpa [uint256, abiUInt256]
-    using decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
+  exact decodeCalldata_legacyAddress_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "from") (y := "to") (z := "value") hsz4 hshort
 
 theorem uniswapDecode_transferFrom_ok_noncanon_from {I : ExecutionEnv}

@@ -35,10 +35,9 @@ theorem wrapperTokenBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : imm
       (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (tokenTransition.params.map Param.name)
       (transitionSignature tokenTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, tokenTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := wrapperBlocks.wrapper_block_1651_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := wrapperBlocks.wrapper_block_1651_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := wrapperBlocks.wrapper_block_1656 (immWords := wordsOf imms) (by simp) rd1
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ tokenTransition.body
         (.returned (frame imms ∅) (initState σ σ₀ (Sat256.ofUInt256 g) A I) (some [.address a]))
@@ -49,7 +48,7 @@ theorem wrapperTokenBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : imm
           (evalImmutable_TOKEN hget ∅ _))
     exact rd2.reEquivExecution hcode' hd hdec hbody
       (returnEquiv_of_encode (by rw [suffixWords_TOKEN, wordsOf_TOKEN hget]; exact addressReturnEncoding a))
-  · have rd1 := wrapperBlocks.wrapper_block_1651_taken (by simp) (by simpa using hwv)
+  · have rd1 := wrapperBlocks.wrapper_block_1651_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := wrapperBlocks.wrapper_block_1760 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

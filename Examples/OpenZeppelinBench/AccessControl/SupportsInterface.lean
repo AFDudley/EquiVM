@@ -188,7 +188,7 @@ theorem supportsInterfaceModZero_of_land_eq (w : UInt256)
   rw [hclear] at ht
   have hsmall : w.toNat / 2 ^ 224 * 2 ^ 224 < UInt256.size :=
     lt_of_le_of_lt (by
-      simpa [Nat.mul_comm] using Nat.mul_div_le w.toNat (2 ^ 224)) w.val.isLt
+      simpa [Nat.mul_comm] using! Nat.mul_div_le w.toNat (2 ^ 224)) w.val.isLt
   rw [Nat.mod_eq_of_lt hsmall] at ht
   have hdiv := Nat.div_add_mod w.toNat (2 ^ 224)
   omega

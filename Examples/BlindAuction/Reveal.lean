@@ -32,7 +32,7 @@ theorem blindAuctionRevealBodyCore {σ σ₀ A I} {g : UInt256}
         have h :=
           solcCalldataStaticLenCheckShort (sz := I.calldata.size) (words := 3)
             hsz hshortHead hsize (by omega)
-        simpa using h
+        exact h
       have hrev := blindAuctionRevealX_decode_head_revert
         (g := Sat256.ofUInt256 g) hslt _hdecodeEntry
       exact hrev.reEquivDecodingFailed hcode hd hdecNone
@@ -44,7 +44,7 @@ theorem blindAuctionRevealBodyCore {σ σ₀ A I} {g : UInt256}
           have h :=
             solcCalldataStaticLenCheckHuge (sz := I.calldata.size) (words := 3)
               hhuge hsize (by omega)
-          simpa using h
+          exact h
         have hrev := blindAuctionRevealX_decode_head_revert
           (g := Sat256.ofUInt256 g) hslt _hdecodeEntry
         exact hrev.reEquivDecodingFailed hcode hd hdecNone
@@ -54,7 +54,7 @@ theorem blindAuctionRevealBodyCore {σ σ₀ A I} {g : UInt256}
           have h :=
             solcCalldataStaticLenCheckOk (sz := I.calldata.size) (words := 3)
               (by omega) (by omega) hsize
-          simpa using h
+          exact h
         obtain ⟨k1806, C1806, rd1806⟩ :=
           blindAuctionRevealX_decode_head_ok (g := Sat256.ofUInt256 g) hslt _hdecodeEntry
         by_cases hcalldataSign : I.calldata.size < 2 ^ 255

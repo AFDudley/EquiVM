@@ -96,9 +96,7 @@ theorem erc20Decode_transfer_ok {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
   show decodeCalldataWithMode DecodeMode.vyper ["to", "value"] [addr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
-    transferToWord, transferValueWord, calldataWord]
-    using decodeCalldataWithMode_vyper_addr_uint256_ok
+  exact decodeCalldataWithMode_vyper_addr_uint256_ok
       (cd := I.calldata) (x := "to") (y := "value") hsz68 hcanon
 
 theorem erc20Decode_transfer_none_short {I : ExecutionEnv}
@@ -106,8 +104,7 @@ theorem erc20Decode_transfer_none_short {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldataWithMode_vyper_addr_uint256_none_short
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_short
       (cd := I.calldata) (x := "to") (y := "value") hsz4 hshort
 
 theorem erc20Decode_transfer_none_noncanon {I : ExecutionEnv}
@@ -116,8 +113,7 @@ theorem erc20Decode_transfer_none_noncanon {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferToWord]
-    using decodeCalldataWithMode_vyper_addr_uint256_none_noncanon
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_noncanon
       (cd := I.calldata) (x := "to") (y := "value") hsz68 hnc
 
 theorem erc20Decode_transfer_none_huge {I : ExecutionEnv}
@@ -125,8 +121,7 @@ theorem erc20Decode_transfer_none_huge {I : ExecutionEnv}
     decodeCalldata (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_addr_uint256_none_huge
+  exact decodeCalldata_addr_uint256_none_huge
       (cd := I.calldata) (x := "to") (y := "value") hbig
 
 theorem transferStore_to (I : ExecutionEnv) :
@@ -914,7 +909,7 @@ theorem transferToBalanceRawAfterDebit_initState {σ σ₀ A I} {g : Sat256} :
   simpa [transferToBalanceRawAfterDebit, transferToBalanceWord_afterSenderStore_initState,
     Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage,
     storageStore_accountMap]
-    using (transferToBalanceWord_afterSenderStore_initState
+    using! (transferToBalanceWord_afterSenderStore_initState
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
 
 macro "vyper_erc20_transfer_decode" : tactic =>
@@ -996,8 +991,8 @@ theorem erc20X_transferAfterBalanceGuard {σ σ₀ A I} {g : Sat256}
     (by vyper_erc20_transfer_decode) (by evm_ov)
   have rdAfterBalanceGuard := evm_run rdAfterSenderLoad with [
     lt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferValueWord] using hbalanceGuardRaw)]
-  exact ⟨_, _, by simpa [evm0] using rdAfterBalanceGuard⟩
+    jumpiNT (by exact hbalanceGuardRaw)]
+  exact ⟨_, _, by exact rdAfterBalanceGuard⟩
 
 theorem erc20X_transferBeforeSecondSenderLoad {σ σ₀ A I} {g : Sat256}
     (hreach : ∃ k C, RD vyperERC20Bytecode I g (initState σ σ₀ g A I) ⟨80⟩
@@ -1042,7 +1037,7 @@ theorem erc20X_transferAfterSecondSenderLoad {σ σ₀ A I} {g : Sat256}
   obtain ⟨k, C, rd92⟩ := hreach
   obtain ⟨k1, C1, rdAfterSenderLoad⟩ := rd92.sload
     (by vyper_erc20_transfer_decode) (by evm_ov)
-  exact ⟨_, _, by simpa [transferSenderBalanceRaw] using rdAfterSenderLoad⟩
+  exact ⟨_, _, by exact rdAfterSenderLoad⟩
 
 theorem erc20X_transferBeforeSenderStore {σ σ₀ A I} {g : Sat256}
     (henough : (transferValueWord I).toNat ≤
@@ -1088,13 +1083,13 @@ theorem erc20X_transferBeforeSenderStore {σ σ₀ A I} {g : Sat256}
   have rdBeforeSenderStore := evm_run rd93 with [
     push1 ⟨36⟩, calldataload,
     dup1, dup3, sub, dup3, dup2, gt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferValueWord] using hdebitGuardRaw),
+    jumpiNT (by exact hdebitGuardRaw),
     swap1, pop, swap1, pop, dup2]
   have hdebitWordRaw' :
       UInt256.sub (transferSenderBalanceRaw σ I)
           (uInt256OfByteArray (I.calldata.readBytes (⟨36⟩ : UInt256).toNat 32)) =
         transferDebitWord evm0 I := by
-    simpa [transferValueWord] using hdebitWordRaw
+    exact hdebitWordRaw
   have hpc111 :
       (⟨93⟩ : UInt256) + UInt256.ofNat 2 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
                   ⟨1⟩ + ⟨1⟩ + UInt256.ofNat 3 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
@@ -1188,7 +1183,7 @@ theorem erc20X_transferAfterToLoad {σ σ₀ A I} {g : Sat256}
   obtain ⟨k, C, rd127⟩ := hreach
   obtain ⟨k1, C1, rdAfterToLoad⟩ := rd127.sload
     (by vyper_erc20_transfer_decode) (by evm_ov)
-  exact ⟨_, _, by simpa [transferToBalanceRawAfterDebit] using rdAfterToLoad⟩
+  exact ⟨_, _, by exact rdAfterToLoad⟩
 
 theorem erc20X_transferBeforeToStore {σ σ₀ A I} {g : Sat256}
     (hfit : transferNewToNat (initState σ σ₀ g A I) I < UInt256.size)
@@ -1237,13 +1232,13 @@ theorem erc20X_transferBeforeToStore {σ σ₀ A I} {g : Sat256}
   have rdBeforeToStore := evm_run rd128 with [
     push1 ⟨36⟩, calldataload,
     dup1, dup3, add, dup3, dup2, lt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferValueWord] using hcreditGuardRaw),
+    jumpiNT (by exact hcreditGuardRaw),
     swap1, pop, swap1, pop, dup2]
   have hnewRaw' :
       transferToBalanceRawAfterDebit σ I debit +
           uInt256OfByteArray (I.calldata.readBytes (⟨36⟩ : UInt256).toNat 32) =
         transferNewToWord evm0 I := by
-    simpa [transferValueWord] using hnewRaw
+    exact hnewRaw
   have hpc146 :
       (⟨128⟩ : UInt256) + UInt256.ofNat 2 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
                   ⟨1⟩ + ⟨1⟩ + UInt256.ofNat 3 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
@@ -1556,7 +1551,7 @@ theorem erc20TransferX_insufficient {σ σ₀ A I} {g : Sat256}
             (fun ac => ac.storage.getD (transferSenderSlotI I) ⟨0⟩)
             (σ.get? I.codeOwner))
           (uInt256OfByteArray (I.calldata.readBytes (⟨36⟩ : UInt256).toNat 32)) =
-          ⟨1⟩ by simpa [transferValueWord] using hbalanceGuardRaw]; decide)
+          ⟨1⟩ by exact hbalanceGuardRaw]; decide)
       (by vyper_erc20_transfer_decode)]
   exact transferRevertStub (σ := σ) (σ₀ := σ₀)
     (A := A) (g := g) rd801 rfl (by simp only [List.length_cons, List.length_nil]; omega)
@@ -1619,7 +1614,7 @@ theorem erc20TransferX_overflow {σ σ₀ A I} {g : Sat256}
           (transferToBalanceRawAfterDebit σ I debit +
             uInt256OfByteArray (I.calldata.readBytes (⟨36⟩ : UInt256).toNat 32))
           (transferToBalanceRawAfterDebit σ I debit) = ⟨1⟩ by
-          simpa [transferValueWord] using hcreditGuardRaw]; decide)
+          exact hcreditGuardRaw]; decide)
       (by vyper_erc20_transfer_decode)]
   exact transferRevertStub (σ := σ) (σ₀ := σ₀)
     (A := A) (g := g) rd801 rfl (by
@@ -1722,7 +1717,7 @@ theorem erc20TransferBodyCore
             (transferTransition.params.map Param.name)
             (transitionSignature transferTransition).paramTypes I.calldata =
               some (transferStore I) := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       by_cases henough : (transferValueWord I).toNat ≤
           (transferFromBalanceWord evmE).toNat
       · by_cases hperm : I.perm = true
@@ -1776,7 +1771,7 @@ theorem erc20TransferBodyCore
           vyperERC20Config.externalABI.decodeCalldata?
             (transferTransition.params.map Param.name)
             (transitionSignature transferTransition).paramTypes I.calldata = none := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       exact (erc20TransferX_noncanon_to (g := Sat256.ofUInt256 g)
           hwv hsz68 hsize hcanonTo hreach)
         |>.reEquivDecodingFailed hcode hd hdec
@@ -1786,7 +1781,7 @@ theorem erc20TransferBodyCore
         vyperERC20Config.externalABI.decodeCalldata?
           (transferTransition.params.map Param.name)
           (transitionSignature transferTransition).paramTypes I.calldata = none := by
-      simpa [vyperERC20Config] using hdec0
+      exact hdec0
     exact (erc20TransferX_shortarg (g := Sat256.ofUInt256 g) hwv hsize hshort hreach)
       |>.reEquivDecodingFailed hcode hd hdec
 

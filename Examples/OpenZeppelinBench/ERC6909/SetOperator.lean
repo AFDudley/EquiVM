@@ -43,10 +43,10 @@ theorem erc6909Decode_setOperator_ok {I : ExecutionEnv}
     some (setOperatorStore I)
   simpa [addr, boolTy, setOperatorStore, setOperatorSpenderValue, setOperatorApprovedValue,
     setOperatorSpenderWord, setOperatorApprovedWord, calldataWord]
-    using decodeCalldata_addr_bool_ok
+    using! decodeCalldata_addr_bool_ok
       (cd := I.calldata) (x := "spender") (y := "approved")
-      hsz68 hbig (by simpa [setOperatorSpenderWord, calldataWord] using hcanon)
-      (by simpa [setOperatorApprovedWord, calldataWord] using hbool)
+      hsz68 hbig (by exact hcanon)
+      (by simpa [setOperatorApprovedWord, calldataWord] using! hbool)
 
 theorem erc6909Decode_setOperator_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
@@ -66,7 +66,7 @@ theorem erc6909Decode_setOperator_none_noncanon_spender {I : ExecutionEnv}
   simpa [addr, boolTy, setOperatorSpenderWord, calldataWord] using
     decodeCalldata_addr_bool_none_noncanon_addr
       (cd := I.calldata) (x := "spender") (y := "approved")
-      hsz68 hbig (by simpa [setOperatorSpenderWord, calldataWord] using hnc)
+      hsz68 hbig (by exact hnc)
 
 theorem erc6909Decode_setOperator_none_noncanon_approved {I : ExecutionEnv}
     (hsz68 : 68 ≤ I.calldata.size) (hbig : I.calldata.size < 2 ^ 255 + 4)
@@ -78,9 +78,9 @@ theorem erc6909Decode_setOperator_none_noncanon_approved {I : ExecutionEnv}
   simpa [addr, boolTy, setOperatorSpenderWord, setOperatorApprovedWord, calldataWord] using
     decodeCalldata_addr_bool_none_noncanon_bool
       (cd := I.calldata) (x := "spender") (y := "approved") hsz68 hbig
-      (by simpa [setOperatorSpenderWord, calldataWord] using hcanon)
-      (by simpa [setOperatorApprovedWord, calldataWord] using hnz)
-      (by simpa [setOperatorApprovedWord, calldataWord] using hno)
+      (by exact hcanon)
+      (by exact hnz)
+      (by exact hno)
 
 theorem erc6909Decode_setOperator_none_huge {I : ExecutionEnv}
     (hbig : 2 ^ 255 + 4 ≤ I.calldata.size) :
@@ -913,7 +913,7 @@ theorem erc6909SetOperatorX_toStoredSlot {σ σ₀ A I} {g : Sat256}
     raw keccak256 0 (setOperatorSlotI I) (UInt256.ofNat 3)
       (by decide) mem_cost hslot (by decide) (by evm_ov),
     dup1 ]
-  exact ⟨_, _, by simpa [setOperatorStoredSlotStack] using rd1081⟩
+  exact ⟨_, _, by exact rd1081⟩
 
 theorem erc6909SetOperatorX_loaded {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (hslotReach : ∃ k C, RD erc6909BenchBytecode I g
@@ -927,9 +927,7 @@ theorem erc6909SetOperatorX_loaded {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   obtain ⟨_, _, rd1081⟩ := hslotReach
   obtain ⟨_, _, rd1082raw⟩ := rd1081.sload (by decide) (by evm_ov)
   exact ⟨_, _, by
-    simpa [setOperatorStoredSlotStack, setOperatorStoredLoadedStack, setOperatorStorageWord,
-      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, initState]
-      using rd1082raw⟩
+    exact rd1082raw⟩
 
 theorem erc6909SetOperatorX_toPreStore {σ σ₀ A I} {g : Sat256}
     {sel : UInt256}
@@ -979,7 +977,7 @@ theorem erc6909SetOperatorX_toPreStore {σ σ₀ A I} {g : Sat256}
   have rd1094' := rd1094
   rw [hmask, hownerClean, hspenderClean, hstoredWord] at rd1094'
   exact ⟨_, _, by
-    simpa [setOperatorStoredPreStoreStack] using rd1094'⟩
+    exact rd1094'⟩
 
 /-- The operator-flag `SSTORE` (the first forbidden opcode on the success path): with write
     permission the store happens; in static mode the run halts there. -/
@@ -997,7 +995,7 @@ theorem erc6909SetOperatorX_sstore {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   by_cases hp : I.perm = true
   · obtain ⟨k, C, rd1095⟩ := rd1094.sstore hp (by decide) (by evm_ov)
     refine Or.inl ⟨hp, k, C, ?_⟩
-    simpa [setOperatorStoredPreStoreStack, setOperatorStoredPostMap] using rd1095
+    exact rd1095
   · have hpf : I.perm = false := by simpa using hp
     exact Or.inr ⟨hpf, rd1094.sstoreStatic hpf (by decide) (by evm_ov)⟩
 

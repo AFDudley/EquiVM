@@ -33,8 +33,7 @@ theorem simpleAuctionBeneficiaryBodyReturns (evm : EVM.State) (locals : Store)
         decide
       rw [evalExpr_storage_scalar (hbackend := rfl) (t := .address) (hbase := hlocals) (her := her)
         (hty := hty) (hloc := simpleAuctionConfig_storage_beneficiary)]
-      simpa [simpleAuctionAddrLoc] using
-        congrArg EvalResult.ok (storageLocLoad_address_offset0 evm ⟨0⟩))
+      exact congrArg EvalResult.ok (storageLocLoad_address_offset0 evm ⟨0⟩))
 
 theorem simpleAuctionX_beneficiary {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -126,8 +125,7 @@ theorem simpleAuctionBeneficiaryBody {σ σ₀ A I}
           (.returned { contract := simpleAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.address (AccountAddress.ofNat (beneficiaryReturnWord σ I).toNat))])) := by
-      simpa [beneficiaryWord, beneficiaryReturnWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using simpleAuctionBeneficiaryBodyReturns
+      exact simpleAuctionBeneficiaryBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (simpleAuctionX_beneficiary (g := Sat256.ofUInt256 g) hwv hreach)

@@ -641,8 +641,7 @@ theorem uniswapPermitBodyReverts_expired (evm : EVM.State) (I : ExecutionEnv)
       (UInt256.ofNat evm.executionEnv.header.timestamp).toNat) :
     ExecTransitionBody config contract evm (permitStore I) permitTransition.body .reverted := by
   refine ExecFuncBody.execBlockRevert ?_
-  simpa [permitTransition] using
-    (nonpayableSecondRequireReverts
+  exact (nonpayableSecondRequireReverts
       (cfg := config) (stele := { contract := contract, locals := permitStore I })
       (evm := evm)
       hwv

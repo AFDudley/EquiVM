@@ -24,14 +24,12 @@ abbrev idsStore (I : ExecutionEnv) : Store := (∅ : Store).insert "arg0" (uint2
 theorem idsDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (idsTransition.params.map Param.name)
       (transitionSignature idsTransition).paramTypes I.calldata = some (idsStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, idsTransition, idsStore, argWord_eq] using
-    decodeMode_uint256_ok "arg0" I.calldata hsz36
+  exact decodeMode_uint256_ok "arg0" I.calldata hsz36
 
 theorem idsDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (idsTransition.params.map Param.name)
       (transitionSignature idsTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, idsTransition] using
-    decodeMode_uint256_none_short "arg0" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "arg0" I.calldata hsz hshort
 
 /-- `ids(uint256)`: the theorem `Correct.lean` routes selector 11 to. -/
 theorem registryIdsBody {σ σ₀ A I} {g : UInt256} (_hwf : storageWF σ I)

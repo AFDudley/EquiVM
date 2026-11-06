@@ -46,6 +46,6 @@ theorem RD.uniswapUpdateEmitSyncAndJump_dynamic {g : Sat256} {s0 : State}
   · simp only [M, hlen]
     change Cₘ (UInt256.ofNat (MachineState.M (pairDynamicWords aw ptr).toNat ptr.toNat 64)) - Cₘ (pairDynamicWords aw ptr) = 0
     rw [hwLog64, Nat.sub_self]
-  · simpa only [hlen] using hwLog64
+  · simpa only [hlen] using! hwLog64
 
 end UniswapV2Pair

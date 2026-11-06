@@ -257,7 +257,7 @@ theorem blindAuctionReachSplit {σ σ₀ A I} {g : Sat256}
   obtain ⟨k3, C3, h3⟩ := solcSelectorLoad h2 (by decide) (by decide) (by decide) (by decide)
     (by simp)
   refine ⟨k3, C3, ?_⟩
-  simpa [blindAuctionSelWord] using h3
+  exact h3
 
 theorem blindAuctionReachHighBody {σ σ₀ A I} {g : Sat256}
     (i : ℕ) (hi : i ≤ 5) (bodyPC : UInt256)
@@ -285,9 +285,7 @@ theorem blindAuctionReachHighBody {σ σ₀ A I} {g : Sat256}
       blindAuctionHighFirstArmPc [blindAuctionSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨kS + 5, CS + 22, ?_⟩
-    simpa [blindAuctionHighFirstArmPc, blindAuctionSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto hsplit blindAuctionSplitWellFormed hpivot (by simp)
+    exact RD.selectorSplitNotTakenAuto hsplit blindAuctionSplitWellFormed hpivot (by simp)
   obtain ⟨_, _, hfirst⟩ := hfirstEx
   exact RD.dispatchTo bodyPC i hfirst
     (fun j hj => blindAuctionHighArmsWellFormed j (le_trans hj hi))
@@ -319,16 +317,13 @@ theorem blindAuctionReachLowBody {σ σ₀ A I} {g : Sat256}
       blindAuctionLowJumpdestPc [blindAuctionSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨kS + 5, CS + 22, ?_⟩
-    simpa [blindAuctionLowJumpdestPc, blindAuctionSplitPc, armTgt, pushAt,
-      selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitTakenAuto hsplit blindAuctionSplitWellFormed hpivot (by jump_dest) (by simp)
+    exact RD.selectorSplitTakenAuto hsplit blindAuctionSplitWellFormed hpivot (by jump_dest) (by simp)
   obtain ⟨kJd, CJd, hlowJd⟩ := hlowJdEx
   have hfirstEx : ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I)
       blindAuctionLowFirstArmPc [blindAuctionSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨kJd + 1, CJd + 1, ?_⟩
-    simpa [blindAuctionLowFirstArmPc, blindAuctionLowJumpdestPc] using
-      hlowJd.jumpdest (by decide) (by simp)
+    exact hlowJd.jumpdest (by decide) (by simp)
   obtain ⟨_, _, hfirst⟩ := hfirstEx
   exact RD.dispatchTo bodyPC i hfirst
     (fun j hj => blindAuctionLowArmsWellFormed j (le_trans hj hi))
@@ -484,8 +479,7 @@ theorem blindAuctionX_noMatch {σ σ₀ A I} {g : Sat256}
     have h95' : ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I) ⟨95⟩
         [blindAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 5 + 5 + 5 + 5 + 5 + 5, CS + 22 + 22 + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [blindAuctionHighFirstArmPc, blindAuctionSplitPc, nthArmPc, selArmNextPc,
-        armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h95
+      exact h95
     obtain ⟨_, _, h95rd⟩ := h95'
     exact h95rd.revertStub (by decide) (by decide) (by decide) (by simp)
   · have h98 := RD.selectorSplitTakenAuto hsplit blindAuctionSplitWellFormed hpivot
@@ -506,9 +500,7 @@ theorem blindAuctionX_noMatch {σ σ₀ A I} {g : Sat256}
         [blindAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 1 + 5 + 5 + 5 + 5 + 5,
         CS + 22 + 1 + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [blindAuctionLowFirstArmPc, blindAuctionLowJumpdestPc, blindAuctionSplitPc,
-        nthArmPc, selArmNextPc, armTgtWidth, armTgt, pushAt, selArmJumpiPc, selArmPushTgtPc,
-        selArmEqPc, selArmPush4Pc] using h154
+      exact h154
     obtain ⟨_, _, h154rd⟩ := h154'
     have h155 := h154rd.jumpdest (by decide) (by simp)
     exact h155.revertStub (by decide) (by decide) (by decide) (by simp)

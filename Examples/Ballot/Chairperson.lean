@@ -109,8 +109,7 @@ theorem ballotChairpersonBodyCore
         (.returned { contract := ballotContract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (chairpersonReturnWord σ I).toNat))])) := by
-    simpa [chairpersonWord, chairpersonReturnWord, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using ballotChairpersonBodyReturns
+    exact ballotChairpersonBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact (ballotX_chairperson (g := Sat256.ofUInt256 g) hreach).reEquivExecutionGen

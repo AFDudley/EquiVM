@@ -31,8 +31,7 @@ theorem erc20Decode_balanceOf_ok {I : ExecutionEnv}
     decodeCalldata (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
   show decodeCalldata ["owner"] [addr] I.calldata = _
-  simpa [balanceOfStore, balanceOfOwnerValue, balanceOfOwnerWord, calldataWord]
-    using decodeCalldata_address_ok (cd := I.calldata) (x := "owner") hsz36 hbig hcanon
+  exact decodeCalldata_address_ok (cd := I.calldata) (x := "owner") hsz36 hbig hcanon
 
 theorem erc20Decode_balanceOf_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
@@ -492,8 +491,7 @@ theorem erc20BalanceOfBodyCore
               (.returned { contract := erc20Contract, locals := balanceOfStore I }
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-          simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
-            State.lookupAccount] using erc20BalanceOfBodyReturns
+          exact erc20BalanceOfBodyReturns
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
               (by simp only [initState]; exact hwv)
         exact (erc20X_balanceOf (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon hreach)

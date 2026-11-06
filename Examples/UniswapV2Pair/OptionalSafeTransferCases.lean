@@ -35,7 +35,7 @@ theorem uniswapOptionalSafeTransferCases
       RD uniswapV2PairBytecode I g s0 ret R mem' aw' data' σ' k' C') := by
   rcases hentry with ⟨hz, k, C, rdRet⟩ | ⟨hnz, k, C, rd6370⟩
   · have hc : evalExpr? config caller evm condition = .ok (.bool false) := by
-      simpa only [hz] using hcond
+      simpa only [hz] using! hcond
     have hstmt : ExecStmt config caller evm
         (.ite condition [.internalCall "_safeTransfer" [tokenExpr, toExpr, valueExpr] retVar] [])
         (.ok (optionalSafeTransferFrame caller retVar value) evm) := optionalSafeTransferSkip hz hc

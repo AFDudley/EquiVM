@@ -57,7 +57,7 @@ theorem uniswapSwapX_offsetHuge {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     apply ugt_one
     rw [show (⟨4294967296⟩ : UInt256).toNat = 4294967296 from by decide]
     have hoff' : 4294967296 < swapDataOffset I := by
-      simpa [solcLegacyMaxU32] using hoff
+      exact hoff
     simpa [swapDataOffset, swapDataOffsetWord, calldataWord,
       show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide] using hoff'
   have rd496 := rd490.pushConst ⟨4294967296⟩ (width := 5) (op := .PUSH5)
@@ -108,7 +108,7 @@ theorem uniswapSwapX_lengthShort {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     rw [show (⟨4294967296⟩ : UInt256).toNat = 4294967296 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     simpa [swapDataOffset, swapDataOffsetWord, calldataWord,
       show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide] using hoffLe
@@ -142,7 +142,7 @@ theorem uniswapSwapX_lengthShort {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     have hleft1 :
         (((⟨4⟩ : UInt256) +
@@ -222,7 +222,7 @@ theorem uniswapSwapX_lengthHuge {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     have hlenOffset :
         (((⟨4⟩ : UInt256) +
@@ -243,7 +243,7 @@ theorem uniswapSwapX_lengthHuge {σ σ₀ A I} {g : Sat256} {sel : UInt256}
             32)).toNat = swapDataSize I := by
       simp [swapDataSize, swapDataSizeWord, calldataWord, hlenOffset]
     rw [hread]
-    simpa [solcLegacyMaxU32] using hlenHuge
+    exact hlenHuge
   have rd548 := rd548₀
   rw [show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 by rfl] at hgtHuge
   rw [hgtHuge] at rd548
@@ -298,11 +298,11 @@ theorem uniswapSwapX_payloadShort {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     have hlenLe : swapDataSize I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataSize I := by
-        simpa [solcLegacyMaxU32] using hlenMax
+        exact hlenMax
       omega
     have hlenOffset :
         (((⟨4⟩ : UInt256) +

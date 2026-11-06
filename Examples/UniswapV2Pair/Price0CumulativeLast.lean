@@ -65,9 +65,7 @@ theorem uniswapPrice0CumulativeLastBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (price0CumulativeLastWord σ I).toNat))])) := by
-    simpa [price0CumulativeLastWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapPrice0CumulativeLastBodyReturns
+    exact uniswapPrice0CumulativeLastBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact uniswapUint256GetterBodyCore (entry := ⟨1025⟩) (routine := ⟨3271⟩) (slot := ⟨9⟩)

@@ -271,9 +271,7 @@ theorem RD.uniswapTransferInternalStoreCreditMem {g : Sat256} {s0 : State}
       (⟨64⟩ :: toWord :: solcAddrMask :: ⟨32⟩ :: value :: toWord :: src :: ret :: R)
       (uniswapTransferCreditHashMemOf src toWord mem) (UInt256.ofNat 3) rdata
       (sstoreAccountMap ee.codeOwner σ (mapSlot toWord ⟨1⟩) newTo) k' C' := by
-  simpa [solcSingleMappingStoreCreditOutPc, uniswapTransferCreditHashMemOf,
-    uniswapTransferToHashMemOf, mapSlot, solcMappingSlot] using
-    RD.solcSingleMappingStoreCreditMem
+  exact RD.solcSingleMappingStoreCreditMem
       (code := UniswapV2Pair.uniswapV2PairBytecode) (pc := ⟨7604⟩)
       (baseSlot := ⟨1⟩) (newValue := newTo) (value := value) (key := toWord)
       (aux := src) (ret := ret) (R := R) (mem := uniswapTransferToHashMemOf src toWord mem)
@@ -547,9 +545,7 @@ theorem RD.uniswapTransferFromFiniteAllowanceStoreMem {g : Sat256} {s0 : State}
       (UInt256.ofNat 3) rdata
       (sstoreAccountMap ee.codeOwner σ
         (mapSlot (uniswapSourceWord ee) (mapSlot src ⟨2⟩)) newAllowance) k' C' := by
-  simpa [solcNestedMappingCallerStoreMemOutPc, solcNestedMappingCallerHashMem,
-    uniswapTransferFromAllowanceStoreMemOf, uniswapSourceWord, mapSlot, solcMappingSlot] using
-    RD.solcNestedMappingCallerStoreMem
+  exact RD.solcNestedMappingCallerStoreMem
       (code := UniswapV2Pair.uniswapV2PairBytecode) (pc := ⟨3034⟩)
       (baseSlot := ⟨2⟩) (newValue := newAllowance) (discard := discard)
       (value := value) (aux := toWord) (owner := src) (ret := ret)
@@ -644,10 +640,7 @@ theorem RD.uniswapTransferFromAllowanceBranchToSubRoutine {g : Sat256} {s0 : Sta
     (uniswapApproveHashMem_size src (uniswapSourceWord ee))
     hcanonSrc (by jump_dest) (by decide) hov
   exact ⟨_, _, by
-    simpa [solcNestedMappingCallerLoadOutPc, solcUintMaxEqBranchFallthroughPc,
-      solcNestedMappingCallerHashMem, uniswapCodeOwnerStorageWord,
-      uniswapTransferFromAllowanceStoreMem, uniswapApproveHashMem, uniswapSourceWord,
-      mapSlot, solcMappingSlot] using rd6879⟩
+    exact rd6879⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapTransferFromAllowanceFiniteBranch {g : Sat256} {s0 : State}

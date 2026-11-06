@@ -805,12 +805,12 @@ theorem erc20Dispatch_none_nomatch {cd : ByteArray}
   intro t ht
   simp [erc20Contract] at ht
   rcases ht with rfl | rfl | rfl | rfl | rfl | rfl
-  · simpa [selectorOf, vyperERC20ApproveSelectorBytes] using hnm 0 (by decide)
-  · simpa [selectorOf, vyperERC20TotalSupplySelectorBytes] using hnm 1 (by decide)
-  · simpa [selectorOf, vyperERC20TransferFromSelectorBytes] using hnm 2 (by decide)
-  · simpa [selectorOf, vyperERC20BalanceOfSelectorBytes] using hnm 3 (by decide)
-  · simpa [selectorOf, vyperERC20TransferSelectorBytes] using hnm 4 (by decide)
-  · simpa [selectorOf, vyperERC20AllowanceSelectorBytes] using hnm 5 (by decide)
+  · simpa [selectorOf, vyperERC20ApproveSelectorBytes] using! hnm 0 (by decide)
+  · simpa [selectorOf, vyperERC20TotalSupplySelectorBytes] using! hnm 1 (by decide)
+  · simpa [selectorOf, vyperERC20TransferFromSelectorBytes] using! hnm 2 (by decide)
+  · simpa [selectorOf, vyperERC20BalanceOfSelectorBytes] using! hnm 3 (by decide)
+  · simpa [selectorOf, vyperERC20TransferSelectorBytes] using! hnm 4 (by decide)
+  · simpa [selectorOf, vyperERC20AllowanceSelectorBytes] using! hnm 5 (by decide)
 
 
 theorem vyperDispatchSourceOfMod {sel : UInt256} {m : Nat}
@@ -1492,12 +1492,12 @@ theorem erc20NonPayableRuntime
             · exact erc20AllowanceNonPayableRuntime hcode hwv h5
             · exact erc20NoDispatchRuntimeCore hcode (fun i hi => by
                 interval_cases i
-                · simpa using h0
-                · simpa using h1
-                · simpa using h2
-                · simpa using h3
-                · simpa using h4
-                · simpa using h5)
+                · simpa using! h0
+                · simpa using! h1
+                · simpa using! h2
+                · simpa using! h3
+                · simpa using! h4
+                · simpa using! h5)
 
 /-- Runtime equivalence for the Vyper 0.4.3 ERC20 runtime bytecode.
 
@@ -1523,12 +1523,12 @@ theorem runtimeCorrect :
               · refine erc20NoDispatchRuntime hcode hwv hsize ?_
                 intro i hi
                 interval_cases i
-                · simpa using h0
-                · simpa using h1
-                · simpa using h2
-                · simpa using h3
-                · simpa using h4
-                · simpa using h5
+                · simpa using! h0
+                · simpa using! h1
+                · simpa using! h2
+                · simpa using! h3
+                · simpa using! h4
+                · simpa using! h5
   · exact erc20NonPayableRuntime hcode hwv hsize
 
 /-- Constructor equivalence for the Vyper 0.4.3 ERC20 deployment bytecode. -/
@@ -1550,10 +1550,10 @@ theorem constructorCorrect :
     · exact typedConstructorRefinementFor.outOfGas
         (Xi_error_of_X (g := g) (by
           rw [← hcodeCtor] at hOOG
-          simpa [Sat256.ofUInt256] using hOOG))
+          exact hOOG))
     · have hsuccess := Xi_success_of_X (g := g) (by
         rw [← hcodeCtor] at hX
-        simpa [Sat256.ofUInt256] using hX)
+        exact hX)
       have hσ' : s.accountMap =
           sstoreAccountMap I.codeOwner
             (sstoreAccountMap I.codeOwner σ (erc20BalanceOfSlot (.address I.source))
@@ -1575,8 +1575,8 @@ theorem constructorCorrect :
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) tail hcodeTail hwv
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
-    · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-    · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+    · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+    · refine typedConstructorRefinementFor.execution (by exact hrev)
         (erc20SteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply hwv) ?_

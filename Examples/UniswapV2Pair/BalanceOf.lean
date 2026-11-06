@@ -49,15 +49,14 @@ theorem uniswapDecode_balanceOf_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
   show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = _
-  simpa [balanceOfStore, balanceOfOwnerValue, balanceOfOwnerWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
 
 theorem uniswapDecode_balanceOf_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
+  exact decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
 /-- The Stele `balanceOf(address)` body returns `balanceOf[owner]`. -/
@@ -179,15 +178,13 @@ theorem uniswapBalanceOfBodyCoreOk
         (.returned { contract := contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfStorageSlot, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapBalanceOfBodyReturns
+    exact uniswapBalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
   exact (uniswapX_balanceOf_ok (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
     |>.reEquivExecution hcode hdispatch hdecode hbody
       (returnEquiv_of_encode
-        (by simpa [uint256] using uint256ReturnEncoding (balanceOfWord σ I)))
+        (by exact uint256ReturnEncoding (balanceOfWord σ I)))
 
 /-- Short-calldata decode-failure refinement slice for `balanceOf(address)`.
 

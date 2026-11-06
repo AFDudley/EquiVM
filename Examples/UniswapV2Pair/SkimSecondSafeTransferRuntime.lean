@@ -1364,7 +1364,7 @@ theorem RD.uniswapSkimSecondSafeTransferEntryToCallMade {g : Sat256} {s0 : State
   obtain ⟨σ', z, out, A_in, callGas, k', C', hΘ, rd6595, houtSize'⟩ :=
     rd6594.call (by native_decide) hdepth (by evm_ov)
   refine ⟨σ', z, out, A_in, callGas, gasArg, k', C', ?_, ?_, houtSize'⟩
-  · simpa using hΘ
+  · exact hΘ
   · have hlen :
         (min (⟨0⟩ : UInt256) (UInt256.ofNat out.size)).toNat = 0 := by
       have hle : (⟨0⟩ : UInt256) ≤ UInt256.ofNat out.size := by

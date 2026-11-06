@@ -42,8 +42,7 @@ theorem erc20Decode_balanceOf_ok {I : ExecutionEnv}
       (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata =
         some (balanceOfStore I) := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner"] [addr] I.calldata = _
-  simpa [balanceOfStore, balanceOfOwnerValue, balanceOfOwnerWord, addr]
-    using decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "owner")
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "owner")
       hsz36 hcanon
 
 theorem erc20Decode_balanceOf_none_short {I : ExecutionEnv}
@@ -51,8 +50,7 @@ theorem erc20Decode_balanceOf_none_short {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.balanceOfTransition.params.map Param.name)
       (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner"] [addr] I.calldata = none
-  simpa [addr]
-    using decodeCalldataWithMode_vyper_address_none_short
+  exact decodeCalldataWithMode_vyper_address_none_short
       (cd := I.calldata) (x := "owner") hsz4 hshort
 
 theorem erc20Decode_balanceOf_none_noncanon {I : ExecutionEnv}
@@ -61,8 +59,7 @@ theorem erc20Decode_balanceOf_none_noncanon {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.balanceOfTransition.params.map Param.name)
       (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["owner"] [addr] I.calldata = none
-  simpa [addr, balanceOfOwnerWord, calldataWord]
-    using decodeCalldataWithMode_vyper_address_none_noncanon
+  exact decodeCalldataWithMode_vyper_address_none_noncanon
       (cd := I.calldata) (x := "owner") hsz36 hnc
 
 theorem erc20BalanceOfBodyReturns (evm : EVM.State) (I : ExecutionEnv)
@@ -348,7 +345,7 @@ theorem erc20BalanceOfX_shortarg {σ σ₀ A I} {g : Sat256}
   have hsizeGuard := calldataSizeGuardShort (n := I.calldata.size) (m := 36)
     hsize (by norm_num [UInt256.size]) hshort
   have hsizeGuard36 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨36⟩ = ⟨1⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have rd801 := evm_run rd623 with [
     jumpdest,
     raw push4 balanceOfSelectorWord (by vyper_erc20_balance_decode) (by evm_ov),
@@ -378,7 +375,7 @@ theorem erc20BalanceOfX_noncanon_owner {σ σ₀ A I} {g : Sat256}
   obtain ⟨_, _, rd623⟩ := hreach
   have hsizeGuard := calldataSizeGuardOk (n := I.calldata.size) (m := 36) hsz36 hsize
   have hsizeGuard36 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨36⟩ = ⟨0⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have hcanonGuard : UInt256.shiftRight (balanceOfOwnerWord I) ⟨160⟩ ≠ ⟨0⟩ := by
     intro hzero
     exact hnc (u256_lt_addressModulus_of_shiftRight160_zero (balanceOfOwnerWord I) hzero)
@@ -445,8 +442,7 @@ theorem erc20BalanceOfBodyCore
         (.returned { contract := erc20Contract, locals := balanceOfStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-    simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using erc20BalanceOfBodyReturns
+    exact erc20BalanceOfBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
   have hsz4 := erc20BalanceOfSelector_size hsel
@@ -458,7 +454,7 @@ theorem erc20BalanceOfBodyCore
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata =
               some (balanceOfStore I) := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       exact (erc20X_balanceOfFromEntry (g := Sat256.ofUInt256 g) hwv hsz36 hsize hcanon hreach)
         |>.reEquivExecutionGen hcode hd hdec hbody (by rfl)
           (returnEquiv_of_encode (Reasoning.Theory.uint256ReturnEncoding (balanceOfWord σ I)))
@@ -467,7 +463,7 @@ theorem erc20BalanceOfBodyCore
           vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.balanceOfTransition.params.map Param.name)
             (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       exact (erc20BalanceOfX_noncanon_owner (g := Sat256.ofUInt256 g)
           hwv hsz36 hsize hcanon hreach)
         |>.reEquivDecodingFailed hcode hd hdec
@@ -477,7 +473,7 @@ theorem erc20BalanceOfBodyCore
         vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.balanceOfTransition.params.map Param.name)
           (transitionSignature ERC20.balanceOfTransition).paramTypes I.calldata = none := by
-      simpa [vyperERC20Config] using hdec0
+      exact hdec0
     exact (erc20BalanceOfX_shortarg (g := Sat256.ofUInt256 g) hwv hsize hshort hreach)
       |>.reEquivDecodingFailed hcode hd hdec
 

@@ -352,11 +352,10 @@ theorem permitRecoveredAddress_ne_owner_of_mask_ne {I : ExecutionEnv} {o : ByteA
   apply u256_inj
   have hcanonRecovered :
       (UInt256.land (UInt256.ofNat recovered) solcAddrMask).toNat < AccountAddress.size := by
-    simpa [AccountAddress.size, EVM.addressModulus] using
-      solcAddrMask_result_canonical (UInt256.ofNat recovered)
+    exact solcAddrMask_result_canonical (UInt256.ofNat recovered)
   have hcanonOwner :
       (permitOwnerMaskedWord I).toNat < AccountAddress.size := by
-    simpa [permitOwnerMaskedWord, u256_land_comm, AccountAddress.size, EVM.addressModulus] using
+    simpa [permitOwnerMaskedWord, u256_land_comm, AccountAddress.size, EVM.addressModulus] using!
       solcAddrMask_result_canonical (permitOwnerWord I)
   have hval := congrArg Fin.val haddr
   unfold AccountAddress.ofNat at hval
@@ -411,11 +410,10 @@ theorem permitRecoveredPaddedAddress_ne_owner_of_mask_ne {I : ExecutionEnv} {o :
   apply u256_inj
   have hcanonRecovered :
       (UInt256.land (UInt256.ofNat recovered) solcAddrMask).toNat < AccountAddress.size := by
-    simpa [AccountAddress.size, EVM.addressModulus] using
-      solcAddrMask_result_canonical (UInt256.ofNat recovered)
+    exact solcAddrMask_result_canonical (UInt256.ofNat recovered)
   have hcanonOwner :
       (permitOwnerMaskedWord I).toNat < AccountAddress.size := by
-    simpa [permitOwnerMaskedWord, u256_land_comm, AccountAddress.size, EVM.addressModulus] using
+    simpa [permitOwnerMaskedWord, u256_land_comm, AccountAddress.size, EVM.addressModulus] using!
       solcAddrMask_result_canonical (permitOwnerWord I)
   have hval := congrArg Fin.val haddr
   unfold AccountAddress.ofNat at hval
@@ -739,7 +737,7 @@ theorem uniswapPermitX_decoded_masked {σ σ₀ A I} {g : Sat256} {sel : UInt256
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
   have hlt :
       UInt256.lt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨224⟩ = ⟨0⟩ := by
-    exact solcDecodeLenCheckOkUnsigned (by simpa using hsz228) hsize
+    exact solcDecodeLenCheckOkUnsigned (by exact hsz228) hsize
   obtain ⟨_, _, rd1362⟩ := RD.solcExternalStaticArgsLenOk
     (code := uniswapV2PairBytecode) (entry := ⟨1340⟩) (ret := ⟨570⟩)
     (decoded := ⟨1362⟩) (need := ⟨224⟩)
@@ -756,8 +754,6 @@ theorem uniswapPermitX_decoded_masked {σ σ₀ A I} {g : Sat256} {sel : UInt256
     calldataload, and, swap1, push1 ⟨160⟩, dup2, add, calldataload, swap1,
     push1 ⟨192⟩, add, calldataload, push2 ⟨5473⟩, jump (by jump_dest)]
   exact ⟨_, _, by
-    simpa [permitOwnerWord, permitOwnerMaskedWord, permitSpenderWord, permitSpenderMaskedWord,
-      permitValueWord, permitDeadlineWord, permitVRawWord, permitVWord, permitRWord,
-      permitSWord] using rd5473⟩
+    exact rd5473⟩
 
 end UniswapV2Pair

@@ -535,7 +535,7 @@ theorem erc6909SupportsInterfaceBodyCore
             |>.reEquivExecutionTransport hcode hd hdec hbody rfl
               (returnEquiv_of_encode (by
                 by_cases hr : supportsInterfaceResult I
-                · simpa [supportsInterfaceResultWord, hr] using
+                · simpa [supportsInterfaceResultWord, hr] using!
                     OpenZeppelinBench.AccessControl.boolTrueReturnEncodingAC
                 · simpa [boolTy, supportsInterfaceResultWord, hr] using
                     Reasoning.Theory.boolFalseReturnEncoding))

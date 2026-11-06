@@ -528,7 +528,7 @@ theorem erc6909TransferFromX_shortarg {σ σ₀ A I} {g : Sat256}
     RDrev erc6909BenchBytecode g (initState σ σ₀ g A I) := by
   have hslt :
       UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨128⟩ = ⟨1⟩ := by
-    simpa using solcCalldataStaticLenCheckShort (words := 4) hsz4 hshort hsize
+    exact solcCalldataStaticLenCheckShort (words := 4) hsz4 hshort hsize
       (by norm_num)
   obtain ⟨_, _, rd⟩ := erc6909TransferFromX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) hreach
@@ -547,7 +547,7 @@ theorem erc6909TransferFromX_hugearg {σ σ₀ A I} {g : Sat256}
     RDrev erc6909BenchBytecode g (initState σ σ₀ g A I) := by
   have hslt :
       UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨128⟩ = ⟨1⟩ := by
-    simpa using solcCalldataStaticLenCheckHuge (words := 4) hbig hsize (by norm_num)
+    exact solcCalldataStaticLenCheckHuge (words := 4) hbig hsize (by norm_num)
   obtain ⟨_, _, rd⟩ := erc6909TransferFromX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) hreach
   exact evm_run rd with [

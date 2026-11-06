@@ -39,7 +39,7 @@ theorem uniswapSyncX_lockEntered {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (pc := ⟨6016⟩) (okPc := ⟨6091⟩) (R := [⟨570⟩, sel])
     rd6016 uniswap_lock_enter_ok_wf hperm hunlocked (by jump_dest)
     (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa using rd6097⟩
+  exact ⟨_, _, by exact rd6097⟩
 
 /-- In a static call, `sync()` halts at the lock-entry `SSTORE`. -/
 theorem uniswapSyncX_lockEnteredStatic {σ σ₀ A I} {g : Sat256} {sel : UInt256}
@@ -112,7 +112,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfExtcodesize
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨6100⟩
       [token0Word, ⟨570⟩, uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σLock k6100 C6100 := by
-    simpa [σLock, token0Word, solcSlotWordAt, solcSlotWord] using rd6100₀
+    exact rd6100₀
   have rd6113 := evm_run rd6100 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨128⟩ (UInt256.ofNat 3) (by decide)
@@ -143,7 +143,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfExtcodesize
   rw [show (⟨128⟩ : UInt256) + ⟨36⟩ = ⟨164⟩ from by decide,
     show UInt256.sub (⟨128⟩ : UInt256) ⟨128⟩ = ⟨0⟩ from by decide,
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd6160₀
-  exact ⟨_, _, by simpa [σLock, token0Clean, token0Word] using rd6160₀⟩
+  exact ⟨_, _, by exact rd6160₀⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through the first `balanceOf` code-existence guard when
@@ -184,7 +184,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfStaticcallReady
       (by native_decide) (by native_decide) (by jump_dest)
       (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa [σLock, token0Word, token0Clean] using rd6174⟩
+  exact ⟨_, _, by exact rd6174⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through `GAS`, stopping at the first
@@ -226,7 +226,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfStaticcallEntry
       (by native_decide) (by native_decide) (by jump_dest)
       (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨gasWord, _, _, by simpa [σLock, token0Word, token0Clean] using rd6175⟩
+  exact ⟨gasWord, _, _, by exact rd6175⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through the first opaque
@@ -280,10 +280,9 @@ theorem uniswapSyncRuntimeFirstBalanceOfStaticcallMade
     RD.solcStaticcall rd6175 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨σ', z, o, A_in, callGas, k', C',
-    by simpa [σLock, token0Word, token0Clean, initState] using hΘ,
+    by exact hΘ,
     by
-      simpa [σLock, token0Word, token0Clean, balanceOfThisStaticcallMem,
-        balanceOfThisStaticcallActiveWords] using rd6176,
+      exact rd6176,
     hoSize⟩
 
 set_option maxHeartbeats 1000000 in
@@ -459,7 +458,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfStaticcallSuccessGuard
       (by native_decide) (by native_decide) (by native_decide) (by native_decide)
       (by native_decide) (by jump_dest) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨k', C', by simpa [σLock, token0Word, token0Clean] using rd6194⟩
+  exact ⟨k', C', by exact rd6194⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice decoding the first successful `balanceOf` return word. -/
@@ -527,7 +526,7 @@ theorem uniswapSyncRuntimeFirstBalanceOfReturnWordDecoded
       (by native_decide) (by native_decide) (by native_decide) (by native_decide)
       (by jump_dest) (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨k', C', by simpa [σLock, token0Word, token0Clean] using rd6217⟩
+  exact ⟨k', C', by exact rd6217⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice reading `token1` from storage before the second
@@ -591,7 +590,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfToken1Sloaded
   have rd6219 := evm_run rd6217 with [push1 ⟨7⟩]
   obtain ⟨k', C', rd6220⟩ := rd6219.sload (by native_decide) (by evm_ov)
   exact ⟨k', C', by
-    simpa [σLock, token0Word, token0Clean, solcSlotWordAt, solcSlotWord] using rd6220⟩
+    exact rd6220⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice preparing the second `balanceOf(address(this))` selector
@@ -732,7 +731,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfCalldataRebuilt
     balanceOfThisStaticcallActiveWords
     (by native_decide) mem_cost (by rfl) (by native_decide)
     (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa [balanceOfThisRebuiltCalldataMem] using rd6240⟩
+  exact ⟨_, _, by exact rd6240⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice cleaning the second `balanceOf` target address before the
@@ -875,7 +874,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfExtcodesize
   rw [show (⟨128⟩ : UInt256) + ⟨36⟩ = ⟨164⟩ from by decide,
     show UInt256.sub (⟨128⟩ : UInt256) ⟨128⟩ = ⟨0⟩ from by decide,
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd6279₀
-  exact ⟨_, _, by simpa using rd6279₀⟩
+  exact ⟨_, _, by exact rd6279₀⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through the second `balanceOf` code-existence guard when
@@ -943,7 +942,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfStaticcallEntry
       (by native_decide) (by native_decide) (by jump_dest)
       (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨gasWord, _, _, by simpa using rd6294⟩
+  exact ⟨gasWord, _, _, by exact rd6294⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through the second opaque
@@ -1025,8 +1024,8 @@ theorem uniswapSyncRuntimeSecondBalanceOfStaticcallMade
     RD.solcStaticcall rd6294 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨σ'', z1, o1, A_in1, callGas1, k', C',
-    by simpa [balanceOfThisRebuiltStaticcallMem, initState] using hΘ1,
-    by simpa [balanceOfThisRebuiltStaticcallMem, balanceOfThisStaticcallActiveWords] using rd6295,
+    by exact hΘ1,
+    by exact rd6295,
     ho1Size⟩
 
 set_option maxHeartbeats 1000000 in
@@ -1198,7 +1197,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfStaticcallSuccessGuard
       (by native_decide) (by native_decide) (by native_decide) (by native_decide)
       (by native_decide) (by jump_dest) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨k'', C'', by simpa using rd6313⟩
+  exact ⟨k'', C'', by exact rd6313⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `sync()` slice through decoding the second successful
@@ -1296,7 +1295,7 @@ theorem uniswapSyncRuntimeSecondBalanceOfReturnWordDecoded
       (by native_decide) (by native_decide) (by native_decide) (by native_decide)
       (by jump_dest) (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨k'', C'', by simpa using rd6336⟩
+  exact ⟨k'', C'', by exact rd6336⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only straight-line slice that loads slot 8 and unpacks the two uint112 reserves

@@ -113,7 +113,7 @@ theorem erc20TransferFromX_balanceDebitUnderflow {σ σ₀ A I} {g : Sat256}
             (uInt256OfByteArray (I.calldata.readBytes (⟨68⟩ : UInt256).toNat 32)))
           (transferFromFromBalanceRawAfterAllowance σ I
             (transferFromAllowanceDebitI σ σ₀ A I g)) = ⟨1⟩ by
-          simpa [transferFromValueWord] using hdebitGuardRaw]; decide)
+          exact hdebitGuardRaw]; decide)
       (by vyper_erc20_transferFrom_decode)]
   exact vyperRuntimeRevert801 (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) rd801 rfl (by

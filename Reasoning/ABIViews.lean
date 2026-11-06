@@ -822,7 +822,7 @@ theorem calldataStartPlus31_toNat
         (calldataWord cd 4).toNat :=
     ulit_toNat' _ hoffSize
   rw [← u256_ofNat_toNat (calldataWord cd 4)]
-  simpa [hoffOfNat] using (uadd3_ofNat_toNat (a := 4)
+  simpa [hoffOfNat] using! (uadd3_ofNat_toNat (a := 4)
     (b := (calldataWord cd 4).toNat)
     (c := 31)
     (by norm_num [UInt256.size])
@@ -875,7 +875,7 @@ theorem calldataPayloadStart_toNat
         (calldataWord cd 4).toNat :=
     ulit_toNat' _ hoffSize
   rw [← u256_ofNat_toNat (calldataWord cd 4)]
-  simpa [hoffOfNat] using (uadd3_ofNat_toNat (a := 4)
+  simpa [hoffOfNat] using! (uadd3_ofNat_toNat (a := 4)
     (b := (calldataWord cd 4).toNat)
     (c := 32)
     (by norm_num [UInt256.size])
@@ -1191,8 +1191,7 @@ theorem recoveredAddress_ne_zero_of_mask_ne_zero {o : ByteArray}
   apply u256_inj
   have hcanon :
       (UInt256.land (UInt256.ofNat recovered) solcAddrMask).toNat < AccountAddress.size := by
-    simpa [AccountAddress.size, EVM.addressModulus] using
-      solcAddrMask_result_canonical (UInt256.ofNat recovered)
+    exact solcAddrMask_result_canonical (UInt256.ofNat recovered)
   have hval := congrArg Fin.val haddr
   unfold AccountAddress.ofNat at hval
   simp only [Fin.val_ofNat] at hval
@@ -1270,8 +1269,7 @@ theorem recoveredPaddedAddress_ne_zero_of_mask_ne_zero {o : ByteArray}
   apply u256_inj
   have hcanon :
       (UInt256.land (UInt256.ofNat recovered) solcAddrMask).toNat < AccountAddress.size := by
-    simpa [AccountAddress.size, EVM.addressModulus] using
-      solcAddrMask_result_canonical (UInt256.ofNat recovered)
+    exact solcAddrMask_result_canonical (UInt256.ofNat recovered)
   have hval := congrArg Fin.val haddr
   unfold AccountAddress.ofNat at hval
   simp only [Fin.val_ofNat] at hval

@@ -41,8 +41,7 @@ theorem registryCountBody {σ σ₀ A I} {g : UInt256} (_hwf : storageWF σ I)
   have hd : dispatchMsg contract I.calldata = some countTransition := registryDispatch_count hsel
   have hdec : config.externalABI.decodeCalldata? (countTransition.params.map Param.name)
       (transitionSignature countTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, countTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
   · have rd1 := registryBlocks.registry_block_1379_fallthrough (by simp) (by rw [hwv]; rfl) rd
     have rd2 := registryBlocks.registry_block_1384 (by simp) rd1

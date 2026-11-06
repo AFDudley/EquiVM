@@ -98,8 +98,7 @@ theorem ballotDecode_giveRightToVote_ok {I : ExecutionEnv}
       (transitionSignature giveRightToVoteTransition).paramTypes I.calldata =
         some (giveRightStore I) := by
   show decodeCalldata ["voter"] [addr] I.calldata = _
-  simpa [giveRightStore, giveRightVoterValue, giveRightVoterWord, calldataWord, addr]
-    using decodeCalldata_address_ok (cd := I.calldata) (x := "voter") hsz36 hbig hcanon
+  exact decodeCalldata_address_ok (cd := I.calldata) (x := "voter") hsz36 hbig hcanon
 
 theorem ballotDecode_giveRightToVote_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
@@ -248,7 +247,7 @@ theorem evalExpr_giveRight_notVoted_true (evm : EVM.State) (I : ExecutionEnv)
     change EvalResult.ok (storageLocLoad evm
         { slot := giveRightVotedSlot I, offset := 0, size := 1, hbound := _, type := .bool }) =
       EvalResult.ok (Value.bool false)
-    rw [storageLocLoad_bool_offset0_false' evm (giveRightVotedSlot I) hvoted]
+    erw [storageLocLoad_bool_offset0_false' evm (giveRightVotedSlot I) hvoted]
   simp [evalExpr?, EvalResult.bind, EvalResult.ofOption, bind, hstorage, evalUnaryOp?]
 
 theorem evalExpr_giveRight_notVoted_false (evm : EVM.State) (I : ExecutionEnv)
@@ -268,7 +267,7 @@ theorem evalExpr_giveRight_notVoted_false (evm : EVM.State) (I : ExecutionEnv)
     change EvalResult.ok (storageLocLoad evm
         { slot := giveRightVotedSlot I, offset := 0, size := 1, hbound := _, type := .bool }) =
       EvalResult.ok (Value.bool true)
-    rw [storageLocLoad_bool_offset0_true' evm (giveRightVotedSlot I) hvoted]
+    erw [storageLocLoad_bool_offset0_true' evm (giveRightVotedSlot I) hvoted]
   simp [evalExpr?, EvalResult.bind, EvalResult.ofOption, bind, hstorage, evalUnaryOp?]
 
 theorem evalExpr_giveRight_weight_zero_true (evm : EVM.State) (I : ExecutionEnv)
@@ -1057,7 +1056,7 @@ theorem ballotGiveRightToVoteX_afterChair {σ σ₀ A I} {g : Sat256} {sel : UIn
       (initState σ σ₀ g A I) ⟨1428⟩
       [giveRightChairWord σ I, giveRightVoterWord I, ⟨156⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [giveRightChairWord, initState] using rd1428₀⟩
+    exact ⟨_, _, by exact rd1428₀⟩
   have heq : UInt256.eq (UInt256.ofNat I.source.val)
       (UInt256.land (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)
         (giveRightChairWord σ I)) = ⟨1⟩ := by
@@ -1089,7 +1088,7 @@ theorem ballotGiveRightToVoteX_chairRevert {σ σ₀ A I} {g : Sat256} {sel : UI
       (initState σ σ₀ g A I) ⟨1428⟩
       [giveRightChairWord σ I, giveRightVoterWord I, ⟨156⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [giveRightChairWord, initState] using rd1428₀⟩
+    exact ⟨_, _, by exact rd1428₀⟩
   have heq : UInt256.eq (UInt256.ofNat I.source.val)
       (UInt256.land (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)
         (giveRightChairWord σ I)) = ⟨0⟩ := by
@@ -1186,8 +1185,7 @@ theorem ballotGiveRightToVoteX_afterNotVoted {σ σ₀ A I} {g : Sat256} {sel : 
       (giveRightHashMem (giveRightVoterWord I)) (UInt256.ofNat 3)
       ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [giveRightVotedPackedWord, giveRightVotedSlot, giveRightVoterSlot, initState]
-        using rd1560₀⟩
+      exact rd1560₀⟩
   have rd1564 := evm_run rd1560 with [push1 ⟨255⟩, and, iszero]
   have hzero : UInt256.isZero (UInt256.land ⟨255⟩ (giveRightVotedPackedWord σ I)) = ⟨1⟩ := by
     change UInt256.isZero (giveRightVotedByte σ I) = ⟨1⟩
@@ -1241,8 +1239,7 @@ theorem ballotGiveRightToVoteX_votedRevert {σ σ₀ A I} {g : Sat256} {sel : UI
       (giveRightHashMem (giveRightVoterWord I)) (UInt256.ofNat 3)
       ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [giveRightVotedPackedWord, giveRightVotedSlot, giveRightVoterSlot, initState]
-        using rd1560₀⟩
+      exact rd1560₀⟩
   have rd1564 := evm_run rd1560 with [push1 ⟨255⟩, and, iszero]
   have hzero : UInt256.isZero (UInt256.land ⟨255⟩ (giveRightVotedPackedWord σ I)) = ⟨0⟩ := by
     change UInt256.isZero (giveRightVotedByte σ I) = ⟨0⟩
@@ -1322,7 +1319,7 @@ theorem ballotGiveRightToVoteX_success {σ σ₀ A I} {g : Sat256} {sel : UInt25
       [giveRightWeightWord σ I, giveRightVoterWord I, ⟨156⟩, sel]
       (giveRightHashMem (giveRightVoterWord I)) (UInt256.ofNat 3)
       ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [giveRightWeightWord, giveRightVoterSlot, initState] using rd1664₀⟩
+    exact ⟨_, _, by exact rd1664₀⟩
   have rd1665 := evm_run rd1664 with [iszero]
   have rd1665' := rd1665
   rw [hweight, show UInt256.isZero (⟨0⟩ : UInt256) = ⟨1⟩ from by decide] at rd1665'
@@ -1389,7 +1386,7 @@ theorem ballotGiveRightToVoteX_weightRevert {σ σ₀ A I} {g : Sat256} {sel : U
       [giveRightWeightWord σ I, giveRightVoterWord I, ⟨156⟩, sel]
       (giveRightHashMem (giveRightVoterWord I)) (UInt256.ofNat 3)
       ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [giveRightWeightWord, giveRightVoterSlot, initState] using rd1664₀⟩
+    exact ⟨_, _, by exact rd1664₀⟩
   have rd1665 := evm_run rd1664 with [iszero]
   have hzero : UInt256.isZero (giveRightWeightWord σ I) = ⟨0⟩ := isZero_eq_zero_of_ne hweight
   have rd1665' := rd1665
@@ -1452,12 +1449,12 @@ theorem ballotGiveRightToVoteBodyCore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                   (by simp only [initState]; exact hwv)
                   (by
-                    simpa [giveRightChairWord, giveRightSourceWord, initState] using hchair)
+                    exact hchair)
                   (by
                     simpa [giveRightVotedByte, giveRightVotedPackedWord, giveRightVotedSlot,
-                      giveRightVoterSlot, u256_land_comm, initState] using hvoted)
+                      giveRightVoterSlot, u256_land_comm, initState] using! hvoted)
                   (by
-                    simpa [giveRightWeightWord, giveRightVoterSlot, initState] using hweight)
+                    exact hweight)
                 exact (permSplit_true hperm (ballotGiveRightToVoteX_success
                     (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon hchair hvoted hweight
                     hreach))
@@ -1471,12 +1468,12 @@ theorem ballotGiveRightToVoteBodyCore
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                   (by simp only [initState]; exact hwv)
                   (by
-                    simpa [giveRightChairWord, giveRightSourceWord, initState] using hchair)
+                    exact hchair)
                   (by
                     simpa [giveRightVotedByte, giveRightVotedPackedWord, giveRightVotedSlot,
-                      giveRightVoterSlot, u256_land_comm, initState] using hvoted)
+                      giveRightVoterSlot, u256_land_comm, initState] using! hvoted)
                   (by
-                    simpa [giveRightWeightWord, giveRightVoterSlot, initState] using hweight)
+                    exact hweight)
                   (by simp only [initState]; exact hpf)
                 exact (permSplit_false hpf (ballotGiveRightToVoteX_success
                     (g := Sat256.ofUInt256 g) hsz36 hsize hbig hcanon hchair hvoted hweight
@@ -1486,12 +1483,12 @@ theorem ballotGiveRightToVoteBodyCore
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)
                 (by
-                  simpa [giveRightChairWord, giveRightSourceWord, initState] using hchair)
+                  exact hchair)
                 (by
                   simpa [giveRightVotedByte, giveRightVotedPackedWord, giveRightVotedSlot,
-                    giveRightVoterSlot, u256_land_comm, initState] using hvoted)
+                    giveRightVoterSlot, u256_land_comm, initState] using! hvoted)
                 (by
-                  simpa [giveRightWeightWord, giveRightVoterSlot, initState] using hweight)
+                  exact hweight)
               exact (ballotGiveRightToVoteX_weightRevert (g := Sat256.ofUInt256 g)
                   hsz36 hsize hbig hcanon hchair hvoted hweight hreach)
                 |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -1499,10 +1496,10 @@ theorem ballotGiveRightToVoteBodyCore
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
               (by simp only [initState]; exact hwv)
               (by
-                simpa [giveRightChairWord, giveRightSourceWord, initState] using hchair)
+                exact hchair)
               (by
                 simpa [giveRightVotedByte, giveRightVotedPackedWord, giveRightVotedSlot,
-                  giveRightVoterSlot, u256_land_comm, initState] using hvoted)
+                  giveRightVoterSlot, u256_land_comm, initState] using! hvoted)
             exact (ballotGiveRightToVoteX_votedRevert (g := Sat256.ofUInt256 g)
                 hsz36 hsize hbig hcanon hchair hvoted hreach)
               |>.reEquivExecutionRevert hcode hd hdec hbody
@@ -1510,7 +1507,7 @@ theorem ballotGiveRightToVoteBodyCore
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
             (by simp only [initState]; exact hwv)
             (by
-              simpa [giveRightChairWord, giveRightSourceWord, initState] using hchair)
+              exact hchair)
           exact (ballotGiveRightToVoteX_chairRevert (g := Sat256.ofUInt256 g)
               hsz36 hsize hbig hcanon hchair hreach)
             |>.reEquivExecutionRevert hcode hd hdec hbody

@@ -49,7 +49,7 @@ theorem simpleAuctionX_auctionEndTime {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD simpleAuctionBytecode I g (initState σ σ₀ g A I) ⟨258⟩
         [auctionEndTimeWord σ I, ⟨260⟩, simpleAuctionSelWord I]
         solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [auctionEndTimeWord, initState] using rd258₀⟩
+    exact ⟨_, _, by exact rd258₀⟩
   have rd260 := evm_run rd258 with [
     dup2, jump (by jump_dest) ]
   have rd194 := evm_run rd260 with [
@@ -144,8 +144,7 @@ theorem simpleAuctionAuctionEndTimeBody {σ σ₀ A I}
           (.returned { contract := simpleAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (auctionEndTimeWord σ I).toNat))])) := by
-      simpa [auctionEndTimeWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-        simpleAuctionAuctionEndTimeBodyReturns
+      exact simpleAuctionAuctionEndTimeBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (simpleAuctionX_auctionEndTime (g := Sat256.ofUInt256 g) hwv hreach)

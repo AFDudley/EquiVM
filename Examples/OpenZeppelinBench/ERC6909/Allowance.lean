@@ -251,7 +251,7 @@ theorem erc6909AllowanceX_dec1629_owner {σ σ₀ A I} {g : Sat256}
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
   have hslt : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩)
       ⟨96⟩ = ⟨0⟩ := by
-    simpa using solcCalldataStaticLenCheckOk (sz := I.calldata.size) (words := 3)
+    exact solcCalldataStaticLenCheckOk (sz := I.calldata.size) (words := 3)
       hsz100 hszhi hsize
   obtain ⟨k, C, rd⟩ := erc6909AllowanceX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) (by omega) hsize hreach
@@ -275,8 +275,7 @@ theorem erc6909AllowanceX_dec1874_owner {σ σ₀ A I} {g : Sat256}
   obtain ⟨k, C, rd⟩ := erc6909AllowanceX_dec1629_owner
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel)
     hsz100 hsize hszhi hreach
-  simpa [allowanceOwnerWord] using
-    erc6909AllowanceDecodeAddrOk (σ := σ) (I := I) (g := g)
+  exact erc6909AllowanceDecodeAddrOk (σ := σ) (I := I) (g := g)
       (s0 := initState σ σ₀ g A I) rd hcanonOwner (by jump_dest) (by evm_ov)
 
 theorem erc6909AllowanceX_dec1629_spender {σ σ₀ A I} {g : Sat256}
@@ -348,7 +347,7 @@ theorem erc6909AllowanceX_shortarg {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     RDrev erc6909BenchBytecode g (initState σ σ₀ g A I) := by
   have hslt : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩)
       ⟨96⟩ = ⟨1⟩ := by
-    simpa using solcCalldataStaticLenCheckShort (sz := I.calldata.size) (words := 3)
+    exact solcCalldataStaticLenCheckShort (sz := I.calldata.size) (words := 3)
       hsz4 hshort hsize (by norm_num)
   obtain ⟨k, C, rd⟩ := erc6909AllowanceX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) hsz4 hsize hreach
@@ -366,7 +365,7 @@ theorem erc6909AllowanceX_hugearg {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     RDrev erc6909BenchBytecode g (initState σ σ₀ g A I) := by
   have hslt : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩)
       ⟨96⟩ = ⟨1⟩ := by
-    simpa using solcCalldataStaticLenCheckHuge (sz := I.calldata.size) (words := 3)
+    exact solcCalldataStaticLenCheckHuge (sz := I.calldata.size) (words := 3)
       hbig hsize (by norm_num)
   obtain ⟨k, C, rd⟩ := erc6909AllowanceX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) (sel := sel) hsz4 hsize hreach
@@ -947,15 +946,14 @@ theorem erc6909AllowanceBodyCore
                 (.returned { contract := contract, locals := allowanceStore I }
                   (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                   (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-            simpa [allowanceWord, initState, Stele.EVM.storageLoad,
-              State.lookupAccount] using erc6909AllowanceBodyReturns
+            exact erc6909AllowanceBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv)
           exact (erc6909X_allowance (g := Sat256.ofUInt256 g)
               hsz100 hsize hbig hcanonOwner hcanonSpender hreach)
             |>.reEquivExecutionTransport hcode hd hdec hbody rfl
               (returnEquiv_of_encode (by
-                simpa [uint256] using uint256ReturnEncoding (allowanceWord σ I)))
+                exact uint256ReturnEncoding (allowanceWord σ I)))
         · have hdec := erc6909Decode_allowance_none_noncanon_spender
             (I := I) hsz100 hbig hcanonOwner hcanonSpender
           have hnc : UInt256.eq (allowanceSpenderWord I)

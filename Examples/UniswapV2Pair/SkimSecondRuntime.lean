@@ -14,14 +14,12 @@ namespace UniswapV2Pair
 theorem skimSecondBalanceStaticcallWriteLen_of_size_ge (out : ByteArray)
     (hlo : 32 ≤ out.size) (hhi : out.size < UInt256.size) :
     (min (⟨32⟩ : UInt256) (UInt256.ofNat out.size)).toNat = 32 := by
-  simpa using
-    umin_ofNat_right_toNat_of_ge (c := 32) (n := out.size) (by decide) hlo hhi
+  exact umin_ofNat_right_toNat_of_ge (c := 32) (n := out.size) (by decide) hlo hhi
 
 theorem skimSecondBalanceStaticcallWriteLen_of_size_lt (out : ByteArray)
     (hshort : out.size < 32) (hhi : out.size < UInt256.size) :
     (min (⟨32⟩ : UInt256) (UInt256.ofNat out.size)).toNat = out.size := by
-  simpa using
-    umin_ofNat_right_toNat_of_lt (c := 32) (n := out.size) (by decide) hshort hhi
+  exact umin_ofNat_right_toNat_of_lt (c := 32) (n := out.size) (by decide) hshort hhi
 
 end UniswapV2Pair
 
@@ -384,7 +382,7 @@ theorem RD.uniswapSkimSecondBalanceReturnWordDecodeOk {g : Sat256} {s0 : State}
       ho32 hoSize hout32 houtSize)
     (by native_decide)
     (by omega)
-  exact ⟨_, _, by simpa using rdMload292⟩
+  exact ⟨_, _, by exact rdMload292⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSecondBalanceReturnWordDecodeShortReverts {g : Sat256} {s0 : State}
@@ -632,7 +630,7 @@ theorem RD.uniswapSkimSecondBalanceOfStaticcallMade {g : Sat256} {s0 : State}
       (packedWord :: token1 :: token0 :: toWord :: ⟨570⟩ :: sel :: [])
       (skimSafeTransferCallMem2 (UInt256.ofNat ee.codeOwner.val) o toWord value)
       (UInt256.ofNat 13) out0 σ k5334 C5334 := by
-    simpa [packedWord, solcSlotWordAt, solcSlotWord] using rd5334₀
+    exact rd5334₀
   have rd5347 := evm_run rd5334 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨292⟩ (UInt256.ofNat 13) (by native_decide)
@@ -691,14 +689,13 @@ theorem RD.uniswapSkimSecondBalanceOfStaticcallMade {g : Sat256} {s0 : State}
     RD.solcStaticcall rd5272 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   refine ⟨σ', z, out, A_in, callGas, k', C', ?_, ?_, houtSize⟩
-  · simpa [token1Clean, skimSecondBalanceStaticcallMem] using hΘ
+  · exact hΘ
   · have haw :
         UInt256.ofNat
           (MachineState.M (MachineState.M (UInt256.ofNat 13).toNat 292 36) 292 32) =
           UInt256.ofNat 13 := by
       native_decide
-    simpa [packedWord, token1Clean, reserve1Word, reserve112Shift, reserve112Mask,
-      skimSecondBalanceStaticcallMem, haw] using rd5273
+    exact rd5273
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSecondBalanceOfNoCodeReverts {g : Sat256} {s0 : State}
@@ -719,7 +716,7 @@ theorem RD.uniswapSkimSecondBalanceOfNoCodeReverts {g : Sat256} {s0 : State}
       (packedWord :: token1 :: token0 :: toWord :: ⟨570⟩ :: sel :: [])
       (skimSafeTransferCallMem2 (UInt256.ofNat ee.codeOwner.val) o toWord value)
       (UInt256.ofNat 13) out0 σ k5334 C5334 := by
-    simpa [packedWord, solcSlotWordAt, solcSlotWord] using rd5334₀
+    exact rd5334₀
   have rd5347 := evm_run rd5334 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨292⟩ (UInt256.ofNat 13) (by native_decide)

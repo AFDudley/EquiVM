@@ -15,14 +15,12 @@ namespace UniswapV2Pair
 theorem balanceOfThisStaticcallWriteLen_of_size_ge (o : ByteArray)
     (hlo : 32 ≤ o.size) (hhi : o.size < UInt256.size) :
     (min (⟨32⟩ : UInt256) (UInt256.ofNat o.size)).toNat = 32 := by
-  simpa using
-    umin_ofNat_right_toNat_of_ge (c := 32) (n := o.size) (by decide) hlo hhi
+  exact umin_ofNat_right_toNat_of_ge (c := 32) (n := o.size) (by decide) hlo hhi
 
 theorem balanceOfThisStaticcallWriteLen_of_size_lt (o : ByteArray)
     (hshort : o.size < 32) (hhi : o.size < UInt256.size) :
     (min (⟨32⟩ : UInt256) (UInt256.ofNat o.size)).toNat = o.size := by
-  simpa using
-    umin_ofNat_right_toNat_of_lt (c := 32) (n := o.size) (by decide) hshort hhi
+  exact umin_ofNat_right_toNat_of_lt (c := 32) (n := o.size) (by decide) hshort hhi
 
 end UniswapV2Pair
 

@@ -31,8 +31,7 @@ theorem registryOwnerBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)
       (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (ownerTransition.params.map Param.name)
       (transitionSignature ownerTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, ownerTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
   · have rd1 := registryBlocks.registry_block_403_fallthrough (by simp) (by rw [hwv]; rfl) rd
     have rd2 := registryBlocks.registry_block_408 (by simp) rd1

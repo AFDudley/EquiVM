@@ -195,7 +195,7 @@ theorem scratch_blindAuctionReveal_decoded_empty_bids
     have hcallS :
         callViaEVM evmStele (EVM.address evmStele.executionEnv.source)
           0 ByteArray.empty (z, evmSCall, out) := by
-      simpa [evmStele, evmSCall] using hcallE
+      exact hcallE
     cases z
     · have hbody :
           ExecTransitionBody blindAuctionConfig blindAuctionContract

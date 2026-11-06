@@ -1560,7 +1560,7 @@ theorem simpleAuctionX_withdraw_loadAmount {σ σ₀ A I} {g : Sat256}
     raw keccak256 0 (withdrawPendingSlot I) (UInt256.ofNat 3) (by decide)
       mem_cost (withdrawPendingKeccak I) (by decide) (by evm_ov)]
   obtain ⟨_, _, rd825₀⟩ := rd814₀.sload (by decide) (by evm_ov)
-  exact ⟨_, _, by simpa [withdrawAmountWord, initState] using rd825₀⟩
+  exact ⟨_, _, by exact rd825₀⟩
 
 set_option maxHeartbeats 1000000 in
 theorem simpleAuctionX_withdraw_toCall {σ σ₀ A I} {g : Sat256}
@@ -1608,7 +1608,7 @@ theorem simpleAuctionX_withdraw_toCall {σ σ₀ A I} {g : Sat256}
       mem_cost (withdrawRehashMem_mload64 I) (by decide) (by evm_ov),
     swap1, swap2, swap1, dup4, swap1, dup4, dup2, dup2, dup2, dup6, dup8]
   obtain ⟨gasArg, rd862⟩ := rd862₀.gas (by decide) (by evm_ov)
-  exact ⟨gasArg, _, _, by simpa [withdrawZeroMap] using rd862⟩
+  exact ⟨gasArg, _, _, by exact rd862⟩
 
 set_option maxHeartbeats 1000000 in
 theorem simpleAuctionX_withdraw_callMade {σ σ₀ A I} {g : Sat256}
@@ -1670,7 +1670,7 @@ theorem simpleAuctionX_withdraw_callMade {σ σ₀ A I} {g : Sat256}
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd863₀
   exact ⟨σ', z, o, A_in, callGas, k', C', hΘ', hosz,
-    by simpa [initState] using rd863₀⟩
+    by exact rd863₀⟩
 
 set_option maxHeartbeats 1000000 in
 theorem simpleAuctionX_withdraw_callDepth {σ σ₀ A I} {g : Sat256}
@@ -1697,7 +1697,7 @@ theorem simpleAuctionX_withdraw_callDepth {σ σ₀ A I} {g : Sat256}
       (UInt256.ofNat 3) := by
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd863₀
-  exact ⟨k', C', by simpa [withdrawZeroMap, initState] using rd863₀⟩
+  exact ⟨k', C', by exact rd863₀⟩
 
 set_option maxHeartbeats 1000000 in
 theorem simpleAuctionX_withdraw_callInsufficient {σ σ₀ A I} {g : Sat256}
@@ -1727,7 +1727,7 @@ theorem simpleAuctionX_withdraw_callInsufficient {σ σ₀ A I} {g : Sat256}
       (UInt256.ofNat 3) := by
     decide
   rw [hmin, byteArray_write_len_zero, haw] at rd863₀
-  exact ⟨k', C', by simpa [withdrawZeroMap, initState] using rd863₀⟩
+  exact ⟨k', C', by exact rd863₀⟩
 
 theorem simpleAuctionX_withdraw_postCallEmpty_toBranch {σ σ₀ A I} {g : Sat256}
     {acc : AccountMap}
@@ -2067,8 +2067,7 @@ theorem simpleAuctionX_withdraw_failureNonempty_return {σ σ₀ A I} {g : Sat25
     (withdrawReturnDataActiveWords o) rdBeforeStoreHash (by decide)
     (by
       simp [M]
-      rw [show (⟨32⟩ : UInt256).toNat = 32 from by decide,
-        withdrawReturnDataActiveWords_mstore32_same o hosz]
+      simp only [withdrawReturnDataActiveWords_mstore32_same o hosz]
       simp)
     (by rfl)
     (withdrawReturnDataActiveWords_mstore32_same o hosz)
@@ -2080,8 +2079,7 @@ theorem simpleAuctionX_withdraw_failureNonempty_return {σ σ₀ A I} {g : Sat25
     (withdrawReturnDataActiveWords o) rdBeforeKeccak (by decide)
     (by
       simp [M]
-      rw [show (⟨64⟩ : UInt256).toNat = 64 from by decide,
-        withdrawReturnDataActiveWords_keccak0_64_same o hosz]
+      simp only [withdrawReturnDataActiveWords_keccak0_64_same o hosz]
       simp)
     (withdrawReturnDataRestoreHashKeccak I o ho0)
     (withdrawReturnDataActiveWords_keccak0_64_same o hosz)
@@ -2409,8 +2407,7 @@ theorem simpleAuctionWithdrawBody {σ σ₀ A I} {g : UInt256}
             evalExpr? simpleAuctionConfig { contract := simpleAuctionContract, locals := ∅ } evmS
               (.storage (pendingReturnsRef sender)) =
                 .ok (.int (Int.ofNat (withdrawAmountWord σ I).toNat)) := by
-          simpa [evmS, initState, withdrawAmountWord, Stele.EVM.storageLoad, State.lookupAccount]
-            using evalExpr_withdraw_pendingReturns evmS
+          exact evalExpr_withdraw_pendingReturns evmS
         refine ExecBlock.consNormal (ExecStmt.letDecl hamount) ?_
         refine ExecBlock.consNormal
           (ExecStmt.iteFalse
@@ -2655,7 +2652,7 @@ theorem simpleAuctionWithdrawBody {σ σ₀ A I} {g : UInt256}
                 (contract := simpleAuctionContract) (σ := σ)
                 (Xi_error_of_X (g := g) (by
                   rw [hcode]
-                  simpa [Sat256.ofUInt256] using hoog))
+                  exact hoog))
         · let evmSFail : EVM.State :=
             { evmSZero with
               substate := (evmSZero.addAccessedAccount

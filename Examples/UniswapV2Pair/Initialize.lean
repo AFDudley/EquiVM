@@ -226,8 +226,7 @@ theorem initializeAssignToken0 (evm : EVM.State) (I : ExecutionEnv) :
       storageLocStore evm (addrLoc ⟨6⟩) (initializeToken0Value I) =
         some (initializeToken0State evm I) := by
     rw [initializeToken0Value_masked I]
-    simpa [initializeToken0State] using
-      storageLocStore_address_offset0 evm ⟨6⟩ (initializeToken0MaskedWord I)
+    exact storageLocStore_address_offset0 evm ⟨6⟩ (initializeToken0MaskedWord I)
         (initializeToken0MaskedWord_canonical I)
   exact assignStorageRef_storage_scalar_value (cfg := config) (hbackend := rfl)
     (hleaf := Or.inl ⟨_, rfl⟩)
@@ -253,8 +252,7 @@ theorem initializeAssignToken1 (evm : EVM.State) (I : ExecutionEnv) :
           (initializeToken1Value I) =
         some (initializePostState evm I) := by
     rw [initializeToken1Value_masked I]
-    simpa [initializePostState] using
-      storageLocStore_address_offset0 (initializeToken0State evm I) ⟨7⟩
+    exact storageLocStore_address_offset0 (initializeToken0State evm I) ⟨7⟩
         (initializeToken1MaskedWord I) (initializeToken1MaskedWord_canonical I)
   exact assignStorageRef_storage_scalar_value (cfg := config) (hbackend := rfl)
     (hleaf := Or.inl ⟨_, rfl⟩)
@@ -269,9 +267,7 @@ theorem uniswapDecode_initialize_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes I.calldata =
         some (initializeStore I) := by
-  simpa [initializeTransition, initializeStore, initializeToken0Value, initializeToken1Value,
-    initializeToken0Word, initializeToken1Word, calldataWord] using
-    (decodeCalldata_legacyAddress_legacyAddress_ok (cd := I.calldata) (x := "_token0")
+  exact (decodeCalldata_legacyAddress_legacyAddress_ok (cd := I.calldata) (x := "_token0")
       (y := "_token1") hsz68)
 
 theorem uniswapDecode_initialize_none_short {I : ExecutionEnv}
@@ -279,7 +275,7 @@ theorem uniswapDecode_initialize_none_short {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (initializeTransition.params.map Param.name)
       (transitionSignature initializeTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["_token0", "_token1"] [legacyAddr, legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
+  exact decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "_token0") (y := "_token1") hsz4 hshort
 
 theorem uniswapInitializeBodyReturns (evm : EVM.State) (I : ExecutionEnv)
@@ -445,8 +441,7 @@ theorem uniswapX_initialize_split {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         ⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [initializeFactoryWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using rd3143₀⟩
+      exact rd3143₀⟩
   have rd3154₀ := evm_run rd3143 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, caller, eq, push2 ⟨3225⟩]
   have rd3154 := rd3154₀
@@ -472,8 +467,7 @@ theorem uniswapX_initialize_split {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         initializeToken0MaskedWord I, ⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [initializeToken0OldWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using rd3230₀⟩
+      exact rd3230₀⟩
   have rd3256₀ := evm_run rd3230 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, swap4, dup5, and,
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, not, swap2, dup3, and, or,
@@ -499,7 +493,7 @@ theorem uniswapX_initialize_split {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       (initState σ σ₀ g A I) ⟨3257⟩
       [UInt256.lnot solcAddrMask, initializeToken1MaskedWord I, solcAddrMask, ⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (initializeToken0Map σ I) k C := by
-    exact ⟨_, _, by simpa [initializeToken0Map] using rd3257₀⟩
+    exact ⟨_, _, by exact rd3257₀⟩
   have rd3260 := evm_run rd3257 with [push1 ⟨7⟩, dup1]
   obtain ⟨_, _, rd3261₀⟩ := rd3260.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd3261⟩ : ∃ k C, RD uniswapV2PairBytecode I g
@@ -508,8 +502,7 @@ theorem uniswapX_initialize_split {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         initializeToken1MaskedWord I, solcAddrMask, ⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (initializeToken0Map σ I) k C := by
     exact ⟨_, _, by
-      simpa [initializeToken1OldWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using rd3261₀⟩
+      exact rd3261₀⟩
   have rd3268₀ := evm_run rd3261 with [swap3, swap1, swap4, and, swap2, and, or, swap1]
   have hset1 :
       UInt256.lor
@@ -524,7 +517,7 @@ theorem uniswapX_initialize_split {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   obtain ⟨_, _, rd3270⟩ : ∃ k C, RD uniswapV2PairBytecode I g
       (initState σ σ₀ g A I) ⟨3270⟩ [⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (initializePostMap σ I) k C := by
-    exact ⟨_, _, by simpa [initializePostMap] using rd3270₀⟩
+    exact ⟨_, _, by exact rd3270₀⟩
   have rd570 := evm_run rd3270 with [jump (by jump_dest), jumpdest]
   exact rd570.stop (by decide) (by evm_ov)
 
@@ -576,8 +569,7 @@ theorem uniswapX_initialize_forbidden {σ σ₀ A I} {g : Sat256} {sel : UInt256
         ⟨570⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [initializeFactoryWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using rd3143₀⟩
+      exact rd3143₀⟩
   have rd3154₀ := evm_run rd3143 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, and, caller, eq, push2 ⟨3225⟩]
   have rd3154 := rd3154₀
@@ -626,7 +618,7 @@ theorem uniswapInitializeBodyCoreOk
       UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨5⟩)
           solcAddrMask =
         uniswapSourceWord evmS.executionEnv := by
-    simpa [evmS, initState, initializeFactoryWord, solcSlotWordAt, solcSlotWord] using hfactory
+    exact hfactory
   have hbody :
       ExecTransitionBody config contract evmS (initializeStore I) initializeTransition.body
         (.returned { contract := contract, locals := initializeStore I }
@@ -666,7 +658,7 @@ theorem uniswapInitializeBodyCoreRevert_forbidden
       UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨5⟩)
           solcAddrMask ≠
         uniswapSourceWord evmS.executionEnv := by
-    simpa [evmS, initState, initializeFactoryWord, solcSlotWordAt, solcSlotWord] using hfactory
+    exact hfactory
   have hbody :
       ExecTransitionBody config contract evmS (initializeStore I) initializeTransition.body
         .reverted := by
@@ -770,7 +762,7 @@ theorem uniswapInitializeBodyAnyPerm
           UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨5⟩)
               solcAddrMask =
             uniswapSourceWord evmS.executionEnv := by
-        simpa [evmS, initState, initializeFactoryWord, solcSlotWordAt] using hfactory
+        exact hfactory
       exact (uniswapX_initialize_static hperm hsz68 hsize hfactory hreach)
         |>.reEquivStaticHalt hcode hdispatch (uniswapDecode_initialize_ok hsz68)
           (uniswapInitializeBodyStatic evmS I (by simp only [evmS, initState]; exact hwv)

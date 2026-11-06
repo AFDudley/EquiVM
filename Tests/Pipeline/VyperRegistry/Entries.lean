@@ -28,14 +28,12 @@ abbrev entriesStore (I : ExecutionEnv) : Store := (∅ : Store).insert "arg0" (u
 theorem entriesDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (entriesTransition.params.map Param.name)
       (transitionSignature entriesTransition).paramTypes I.calldata = some (entriesStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, entriesTransition, entriesStore, argWord_eq] using
-    decodeMode_uint256_ok "arg0" I.calldata hsz36
+  exact decodeMode_uint256_ok "arg0" I.calldata hsz36
 
 theorem entriesDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (entriesTransition.params.map Param.name)
       (transitionSignature entriesTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, entriesTransition] using
-    decodeMode_uint256_none_short "arg0" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "arg0" I.calldata hsz hshort
 
 /-- The evaluated reference of `entries[id].f` for a `uint256` local `id`. -/
 theorem evalEntryRef (L : Store) (evm : EVM.State) (w : UInt256) (f : Ident)

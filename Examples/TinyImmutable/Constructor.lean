@@ -931,7 +931,7 @@ theorem tinyCtorInitcodeSuccessTrue
       (by
         unfold tinyCtorDecodedMem Reasoning.Theory.writeWord
         simp
-        rw [show (⟨160⟩ : UInt256).toNat = 160 from by decide])
+        )
       (by decide) (by evm_ov),
     jumpdest, pop, pop, pop, push2 ⟨158⟩, jump (by tiny_ctor_jd)]
   exact tiny_ctor_run rd158 with [
@@ -1114,8 +1114,8 @@ theorem tinyImmutableConstructorCorrect :
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) owner (EVM.word scaleInt.toNat) hcodeCtor hwv
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', A', hsuccess⟩
-      · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-      · refine .execution (by simpa [Sat256.ofUInt256] using hsuccess)
+      · exact .outOfGas (by exact hOOG)
+      · refine .execution (by exact hsuccess)
           (tinySteleCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             owner scaleInt false h0 hlt hwv)
           (ctorResultEquiv.success rfl rfl rfl ?_)
@@ -1128,8 +1128,8 @@ theorem tinyImmutableConstructorCorrect :
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
         (g := Sat256.ofUInt256 g) owner (EVM.word scaleInt.toNat) hcodeCtor hwv
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', A', hsuccess⟩
-      · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-      · refine .execution (by simpa [Sat256.ofUInt256] using hsuccess)
+      · exact .outOfGas (by exact hOOG)
+      · refine .execution (by exact hsuccess)
           (tinySteleCtorExecSuccess (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             owner scaleInt true h0 hlt hwv)
           (ctorResultEquiv.success rfl rfl rfl ?_)
@@ -1140,8 +1140,8 @@ theorem tinyImmutableConstructorCorrect :
       (g := Sat256.ofUInt256 g)
       (tail := tinyCtorTail owner (EVM.word scaleInt.toNat) useScale) hcode hwv
     rcases hrd.xiResult hcode with hOOG | ⟨g', o, hrev⟩
-    · exact .outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-    · exact .execution (by simpa [Sat256.ofUInt256] using hrev)
+    · exact .outOfGas (by exact hOOG)
+    · exact .execution (by exact hrev)
         (tinySteleCtorExecReverts_nonpayable (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           owner scaleInt useScale hwv)
         (ctorResultEquiv.revert rfl rfl) trivial

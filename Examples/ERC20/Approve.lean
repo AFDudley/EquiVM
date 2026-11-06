@@ -44,9 +44,7 @@ theorem erc20Decode_approve_ok {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
   show decodeCalldata ["spender", "value"] [addr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
-    approveSpenderWord, approveValueWord, calldataWord]
-    using decodeCalldata_addr_uint256_ok
+  exact decodeCalldata_addr_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68 hbig hcanon
 
 theorem erc20Decode_approve_none_short {I : ExecutionEnv}
@@ -54,8 +52,7 @@ theorem erc20Decode_approve_none_short {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_addr_uint256_none_short
+  exact decodeCalldata_addr_uint256_none_short
       (cd := I.calldata) (x := "spender") (y := "value") hsz4 hshort
 
 theorem erc20Decode_approve_none_noncanon {I : ExecutionEnv}
@@ -64,8 +61,7 @@ theorem erc20Decode_approve_none_noncanon {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, approveSpenderWord]
-    using decodeCalldata_addr_uint256_none_noncanon
+  exact decodeCalldata_addr_uint256_none_noncanon
       (cd := I.calldata) (x := "spender") (y := "value") hsz68 hbig hnc
 
 theorem erc20Decode_approve_none_huge {I : ExecutionEnv}
@@ -73,8 +69,7 @@ theorem erc20Decode_approve_none_huge {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_addr_uint256_none_huge
+  exact decodeCalldata_addr_uint256_none_huge
       (cd := I.calldata) (x := "spender") (y := "value") hbig
 
 theorem approveStore_spender (I : ExecutionEnv) :

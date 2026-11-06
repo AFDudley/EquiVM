@@ -128,7 +128,7 @@ theorem evalExpr_sync_update_balance0_le_max_true (evm : EVM.State) (balance0 ba
       (.binary .le (.var "balance0") (.intLit maxUint112)) = .ok (.bool true) := by
   simp only [syncUpdateCallFrame, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncUpdateCallStore_balance0]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_update_balance0_le_max_false (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound : maxUint112 < Int.ofNat balance0.toNat) :
@@ -136,7 +136,7 @@ theorem evalExpr_sync_update_balance0_le_max_false (evm : EVM.State) (balance0 b
       (.binary .le (.var "balance0") (.intLit maxUint112)) = .ok (.bool false) := by
   simp only [syncUpdateCallFrame, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncUpdateCallStore_balance0]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_update_balance1_le_max_false (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound : maxUint112 < Int.ofNat balance1.toNat) :
@@ -144,7 +144,7 @@ theorem evalExpr_sync_update_balance1_le_max_false (evm : EVM.State) (balance0 b
       (.binary .le (.var "balance1") (.intLit maxUint112)) = .ok (.bool false) := by
   simp only [syncUpdateCallFrame, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncUpdateCallStore_balance1]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_update_bounds_true (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound0 : Int.ofNat balance0.toNat ≤ maxUint112)
@@ -681,7 +681,7 @@ theorem evalExpr_sync_balance0_le_max_true (evm : EVM.State) (balance0 balance1 
       (.binary .le (.var "balance0") (.intLit maxUint112)) = .ok (.bool true) := by
   simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncBalanceStore_balance0]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_balance1_le_max_true (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound : Int.ofNat balance1.toNat ≤ maxUint112) :
@@ -689,7 +689,7 @@ theorem evalExpr_sync_balance1_le_max_true (evm : EVM.State) (balance0 balance1 
       (.binary .le (.var "balance1") (.intLit maxUint112)) = .ok (.bool true) := by
   simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncBalanceStore_balance1]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_balance0_le_max_false (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound : maxUint112 < Int.ofNat balance0.toNat) :
@@ -697,7 +697,7 @@ theorem evalExpr_sync_balance0_le_max_false (evm : EVM.State) (balance0 balance1
       (.binary .le (.var "balance0") (.intLit maxUint112)) = .ok (.bool false) := by
   simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncBalanceStore_balance0]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_balance1_le_max_false (evm : EVM.State) (balance0 balance1 : UInt256)
     (hbound : maxUint112 < Int.ofNat balance1.toNat) :
@@ -705,7 +705,7 @@ theorem evalExpr_sync_balance1_le_max_false (evm : EVM.State) (balance0 balance1
       (.binary .le (.var "balance1") (.intLit maxUint112)) = .ok (.bool false) := by
   simp only [evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [syncBalanceStore_balance1]
-  simpa [uniswapUint256Value, evalBinaryOp?] using hbound
+  simpa [uniswapUint256Value, evalBinaryOp?, pure] using hbound
 
 theorem evalExpr_sync_blockTimestamp (evm : EVM.State) (balance0 balance1 : UInt256) :
     evalExpr? config { contract := contract, locals := syncBalanceStore balance0 balance1 } evm
@@ -1033,7 +1033,7 @@ theorem evalExpr_sync_update_price0Cumulative
     syncUpdateTimeElapsedStore_reserve1, syncUpdateTimeElapsedStore_reserve0,
     syncUpdateTimeElapsedStore_timeElapsed]
   unfold syncTimeElapsedValue
-  simp [evalBinaryOp?, hreserve0Nat, twoPow256]
+  simp [evalBinaryOp?, hreserve0Nat, twoPow256, pure]
 
 theorem evalExpr_sync_update_price1Cumulative
     (storageEvm updateEvm : EVM.State) (balance0 balance1 : UInt256)
@@ -1056,7 +1056,7 @@ theorem evalExpr_sync_update_price1Cumulative
     syncUpdateTimeElapsedStore_reserve0, syncUpdateTimeElapsedStore_reserve1,
     syncUpdateTimeElapsedStore_timeElapsed]
   unfold syncTimeElapsedValue
-  simp [evalBinaryOp?, hreserve1Nat, twoPow256]
+  simp [evalBinaryOp?, hreserve1Nat, twoPow256, pure]
 
 theorem evalExpr_sync_update_u112_balance0
     (evm evalEvm : EVM.State) (balance0 balance1 : UInt256)
@@ -1488,7 +1488,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue
           (syncPrice0CumulativeValueAt evm evm)
           (syncUpdateTimeElapsedStore_price0CumulativeLast_none evm balance0 balance1)
           (by simp)
-          (by simpa [syncPrice0CumulativeValueAt] using hstoreP0))) ?_
+          (by exact hstoreP0))) ?_
     exact ExecBlock.consNormal
       (ExecStmt.assign
         (hperm := Or.inr (by simpa only [henvP0] using hperm))
@@ -1498,7 +1498,7 @@ theorem uniswapUpdateFunctionReturns_conditionTrue
           (syncPrice1CumulativeValueAt evmP0 evm)
           (syncUpdateTimeElapsedStore_price1CumulativeLast_none evm balance0 balance1)
           (by simp)
-          (by simpa [syncPrice1CumulativeValueAt] using hstoreP1)))
+          (by exact hstoreP1)))
       ExecBlock.nil
   refine ExecBlock.consNormal
     (ExecStmt.iteTrue

@@ -16,8 +16,7 @@ theorem transientLocLoad_uint48_offset0 (evm : EVM.State) (slot : UInt256) :
       .int (Int.ofNat (UInt256.land
         (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
-    transientLocLoad_uint_offset0 evm slot ⟨6, by decide⟩ ⟨48, by decide⟩
+  exact transientLocLoad_uint_offset0 evm slot ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide)
 
 theorem transientLocLoad_uint48_offset6 (evm : EVM.State) (slot : UInt256) :
@@ -26,8 +25,7 @@ theorem transientLocLoad_uint48_offset6 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 6)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
-    transientLocLoad_uint_offset evm slot ⟨6, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
+  exact transientLocLoad_uint_offset evm slot ⟨6, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
 theorem transientLocLoad_uint48_offset20 (evm : EVM.State) (slot : UInt256) :
@@ -36,8 +34,7 @@ theorem transientLocLoad_uint48_offset20 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 20)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
-    transientLocLoad_uint_offset evm slot ⟨20, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
+  exact transientLocLoad_uint_offset evm slot ⟨20, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
 theorem transientLocLoad_uint48_offset26 (evm : EVM.State) (slot : UInt256) :
@@ -46,8 +43,7 @@ theorem transientLocLoad_uint48_offset26 (evm : EVM.State) (slot : UInt256) :
         (UInt256.div (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           (UInt256.ofNat (256 ^ 26)))
         uint48Mask).toNat) := by
-  simpa [packedUInt48Loc, uint48Mask] using
-    transientLocLoad_uint_offset evm slot ⟨26, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
+  exact transientLocLoad_uint_offset evm slot ⟨26, by decide⟩ ⟨6, by decide⟩ ⟨48, by decide⟩
       (hbound := by decide) (by decide) (by decide) (by decide)
 
 
@@ -58,7 +54,7 @@ theorem transientLocStore_uint48_offset0_word (evm : EVM.State) (slot data : UIn
         (setUint48Offset0Word (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   show fromBytes'
@@ -83,7 +79,7 @@ theorem transientLocStore_uint48_offset0_word (evm : EVM.State) (slot data : UIn
   rw [setUint48Offset0Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    exact uint48Mask_clean data
   rw [hclean]
   ring
 
@@ -95,7 +91,7 @@ theorem transientLocStore_uint48_offset6_word (evm : EVM.State) (slot data : UIn
         (setUint48Offset6Word (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot)
           data)) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   show fromBytes'
@@ -127,7 +123,7 @@ theorem transientLocStore_uint48_offset6_word (evm : EVM.State) (slot data : UIn
   rw [setUint48Offset6Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    exact uint48Mask_clean data
   rw [hclean]
   ring
 
@@ -151,7 +147,7 @@ theorem transientLocStore_addr_zero (evm : EVM.State) (slot : UInt256) :
         (setAddressOffset0Word (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) ⟨0⟩)) :=
           by
   unfold transientLocStore storageLocWriteWord addressOffset0Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   have hvlen := (EVM.Word.toBytesLEWithSizeProof (⟨0⟩ : UInt256)).2
   congr 2
   apply u256_inj
@@ -201,7 +197,7 @@ theorem transientLocStore_uint48_offset20_zero (evm : EVM.State) (slot : UInt256
         (clearUint48Offset20Word
           (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot))) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
@@ -250,7 +246,7 @@ theorem transientLocStore_uint48_offset26_zero (evm : EVM.State) (slot : UInt256
         (clearUint48Offset26Word
           (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot))) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind]
+  simp only [valueToWord, Reasoning.Theory.wordOfInt_zero, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
@@ -301,7 +297,7 @@ theorem transientLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UI
         (setUint48Offset26Word
           (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
@@ -331,7 +327,7 @@ theorem transientLocStore_uint48_offset26_word (evm : EVM.State) (slot data : UI
   rw [setUint48Offset26Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    exact uint48Mask_clean data
   rw [hclean]
   have hdiv : old.toNat / 2 ^ 256 = 0 := by
     exact Nat.div_eq_of_lt (by
@@ -354,7 +350,7 @@ theorem transientLocStore_uint48_offset20_word (evm : EVM.State) (slot data : UI
         (setUint48Offset20Word
           (Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot) data)) := by
   unfold transientLocStore storageLocWriteWord packedUInt48Loc
-  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind]
+  simp only [valueToWord, wordOfInt_emod_uint48, bind, Option.bind, pure]
   congr 2
   apply u256_inj
   let old := Stele.EVM.transientLoad evm evm.executionEnv.codeOwner slot
@@ -384,7 +380,7 @@ theorem transientLocStore_uint48_offset20_word (evm : EVM.State) (slot data : UI
   rw [setUint48Offset20Word_toNat]
   have hclean : UInt256.land (UInt256.land data uint48Mask)
       (UInt256.ofNat (2 ^ 48 - 1)) = UInt256.land data uint48Mask := by
-    simpa [uint48Mask] using uint48Mask_clean data
+    exact uint48Mask_clean data
   rw [hclean]
   dsimp [old]
   ring_nf

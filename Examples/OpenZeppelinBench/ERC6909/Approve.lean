@@ -63,9 +63,7 @@ theorem erc6909Decode_approve_ok {I : ExecutionEnv}
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
   show decodeCalldata ["spender", "id", "amount"] [addr, uint256, uint256] I.calldata =
     some (approveStore I)
-  simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveIdValue,
-    approveAmountValue, approveSpenderWord, approveIdWord, approveAmountWord]
-    using decodeCalldata_addr_uint256_uint256_ok
+  exact decodeCalldata_addr_uint256_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "id") (z := "amount")
       hsz100 hbig hcanon
 
@@ -74,8 +72,7 @@ theorem erc6909Decode_approve_none_short {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "id", "amount"] [addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_uint256_none_short
+  exact decodeCalldata_addr_uint256_uint256_none_short
       (cd := I.calldata) (x := "spender") (y := "id") (z := "amount") hsz4 hshort
 
 theorem erc6909Decode_approve_none_noncanon {I : ExecutionEnv}
@@ -84,8 +81,7 @@ theorem erc6909Decode_approve_none_noncanon {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "id", "amount"] [addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, approveSpenderWord] using
-    decodeCalldata_addr_uint256_uint256_none_noncanon
+  exact decodeCalldata_addr_uint256_uint256_none_noncanon
       (cd := I.calldata) (x := "spender") (y := "id") (z := "amount") hsz100 hbig hnc
 
 theorem erc6909Decode_approve_none_huge {I : ExecutionEnv}
@@ -93,8 +89,7 @@ theorem erc6909Decode_approve_none_huge {I : ExecutionEnv}
     decodeCalldata (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["spender", "id", "amount"] [addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_uint256_none_huge
+  exact decodeCalldata_addr_uint256_uint256_none_huge
       (cd := I.calldata) (x := "spender") (y := "id") (z := "amount") hbig
 
 theorem approveOwnerWord_toNat (I : ExecutionEnv) :
@@ -603,7 +598,7 @@ theorem erc6909ApproveX_decoded {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     add, calldataload, swap4, swap3, pop, pop, pop, jump (by jump_dest) ]
   have rd522 := evm_run rd242 with [jumpdest, push2 ⟨522⟩, jump (by jump_dest)]
   exact ⟨_, _, by
-    simpa [approveSpenderWord, approveIdWord, approveAmountWord, calldataWord] using rd522⟩
+    exact rd522⟩
 
 theorem erc6909ApproveX_shortarg {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (hsz4 : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
@@ -814,7 +809,7 @@ theorem erc6909ApproveX_stored {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     solcAddrMask_clean_left (approveOwnerWord_canonical I),
     solcAddrMask_clean hcanonSpender] at rd899'
   by_cases hp : I.perm = true
-  · exact Or.inl ⟨hp, by simpa using rd899'.sstore hp (by decide) (by evm_ov)⟩
+  · exact Or.inl ⟨hp, by exact rd899'.sstore hp (by decide) (by evm_ov)⟩
   · have hpf : I.perm = false := by simpa using hp
     exact Or.inr ⟨hpf, rd899'.sstoreStatic hpf (by decide) (by evm_ov)⟩
 

@@ -38,7 +38,7 @@ theorem uniswapOptionalSafeTransferAnyDepthCases
       hσ0 hcaller hcond hargs htoken hrecipient hdepth hperm hready hptrCap hret hov
   · have hd : I.depth = 1024 := Fin.ext (by have := I.depth.isLt; omega)
     rcases hentry with ⟨hz, k, C, rdRet⟩ | ⟨hnz, k, C, rd6370⟩
-    · have hc : evalExpr? config caller evm condition = .ok (.bool false) := by simpa only [hz] using hcond
+    · have hc : evalExpr? config caller evm condition = .ok (.bool false) := by simpa only [hz] using! hcond
       exact Or.inr ⟨evm, σ, mem, aw, ptr, rdata, k, C, optionalSafeTransferSkip hz hc,
         hAccounts, hσ0, henv, hready, by omega, rdRet⟩
     · have hpos : 0 < value.toNat := Nat.pos_of_ne_zero (fun h ↦ hnz (uint256_toNat_eq_zero h))

@@ -142,14 +142,13 @@ theorem ballotDecode_vote_ok {I : ExecutionEnv}
     decodeCalldata (voteTransition.params.map Param.name)
       (transitionSignature voteTransition).paramTypes I.calldata = some (voteStore I) := by
   show decodeCalldata ["proposal"] [uint256] I.calldata = some (voteStore I)
-  simpa [voteStore, voteProposalValue, voteProposalWord, uint256, calldataWord]
-    using decodeCalldata_uint256_ok (cd := I.calldata) (x := "proposal") hsz36 hbig
+  exact decodeCalldata_uint256_ok (cd := I.calldata) (x := "proposal") hsz36 hbig
 
 theorem ballotDecode_vote_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
     decodeCalldata (voteTransition.params.map Param.name)
       (transitionSignature voteTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["proposal"] [uint256] I.calldata = none
-  simpa [uint256] using decodeCalldata_uint256_none_short (cd := I.calldata)
+  exact decodeCalldata_uint256_none_short (cd := I.calldata)
     (x := "proposal") hshort
 
 theorem ballotDecode_vote_none_huge {I : ExecutionEnv}
@@ -157,7 +156,7 @@ theorem ballotDecode_vote_none_huge {I : ExecutionEnv}
     decodeCalldata (voteTransition.params.map Param.name)
       (transitionSignature voteTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["proposal"] [uint256] I.calldata = none
-  simpa [uint256] using decodeCalldata_uint256_none_huge (cd := I.calldata)
+  exact decodeCalldata_uint256_none_huge (cd := I.calldata)
     (x := "proposal") hbig
 
 /-! ### Local storage/source helpers -/
@@ -260,7 +259,7 @@ theorem evalExpr_vote_sender_voted_false (evm : EVM.State) (I : ExecutionEnv)
     change EvalResult.ok (storageLocLoad evm
         { slot := voteSenderPackedSlot I, offset := 0, size := 1, hbound := _, type := .bool }) =
       EvalResult.ok (Value.bool false)
-    rw [storageLocLoad_bool_offset0_false' evm (voteSenderPackedSlot I)]
+    erw [storageLocLoad_bool_offset0_false' evm (voteSenderPackedSlot I)]
     simpa [voteSenderVotedByteCurrent, voteSenderPackedCurrent] using hvoted
   rw [evalExpr?]
   simp only [hresolve, hread, bind, EvalResult.bind]
@@ -278,7 +277,7 @@ theorem evalExpr_vote_sender_voted_true (evm : EVM.State) (I : ExecutionEnv)
     change EvalResult.ok (storageLocLoad evm
         { slot := voteSenderPackedSlot I, offset := 0, size := 1, hbound := _, type := .bool }) =
       EvalResult.ok (Value.bool true)
-    rw [storageLocLoad_bool_offset0_true' evm (voteSenderPackedSlot I)]
+    erw [storageLocLoad_bool_offset0_true' evm (voteSenderPackedSlot I)]
     simpa [voteSenderVotedByteCurrent, voteSenderPackedCurrent] using hvoted
   rw [evalExpr?]
   simp only [hresolve, hread, bind, EvalResult.bind]
@@ -398,8 +397,7 @@ theorem evalExpr_vote_proposal_count (evm : EVM.State) (I : ExecutionEnv)
   have hload :
       storageLocLoad evm (wordLoc (voteProposalCountSlot I)) =
         .int (Int.ofNat (voteProposalCountCurrent evm I).toNat) := by
-    simpa [voteProposalCountCurrent] using
-      (storageLocLoad_uint256 evm (voteProposalCountSlot I))
+    exact (storageLocLoad_uint256 evm (voteProposalCountSlot I))
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase)
     (her := evalStorageRef_vote_proposalCount evm I hbound) (hty := hty) (hloc := hloc)]
   simpa using congrArg EvalResult.ok hload
@@ -1126,7 +1124,7 @@ theorem ballotVoteX_afterWeight {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       (initState σ σ₀ g A I) ⟨442⟩
       [voteSenderWeightWord σ I, voteSenderSlot I, ⟨0⟩, voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [voteSenderWeightWord, initState] using rd442₀⟩
+    exact ⟨_, _, by exact rd442₀⟩
   have rd444 := evm_run rd442 with [swap1, swap2, sub]
   exact ⟨_, _, evm_run rd444 with [
     push2 ⟨516⟩, jumpiT (u256_zero_sub_ne_zero hweight) (by jump_dest)]⟩
@@ -1151,7 +1149,7 @@ theorem ballotVoteX_afterNotVoted {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       [voteSenderPackedWord σ I, voteSenderSlot I, voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [voteSenderPackedWord, voteSenderPackedSlot, initState] using rd522₀⟩
+      exact rd522₀⟩
   have rd525 := evm_run rd522 with [push1 ⟨255⟩, and, iszero]
   have hzero : UInt256.isZero (UInt256.land ⟨255⟩ (voteSenderPackedWord σ I)) = ⟨1⟩ := by
     rw [u256_land_comm]
@@ -1192,7 +1190,7 @@ theorem ballotVoteX_afterSenderStores {σ σ₀ A I} {g : Sat256} {sel : UInt256
   exact ⟨_, _, by
     simpa [voteAfterVoteMap, voteAfterVotedMap, voteSenderVotedStoreWord,
       voteSenderPackedWord, voteSenderPackedSlot, voteSenderVoteSlot, u256_add_comm,
-      u256_land_comm, u256_lor_comm, initState] using rd611⟩
+      u256_land_comm, u256_lor_comm, initState] using! rd611⟩
 
 theorem ballotVoteX_afterBounds {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
@@ -1217,7 +1215,7 @@ theorem ballotVoteX_afterBounds {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       [voteSenderWeightWord (voteAfterVoteMap σ I) I, ⟨2⟩, voteSenderSlot I,
         voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty (voteAfterVoteMap σ I) k C := by
-    exact ⟨_, _, by simpa [voteSenderWeightWord, initState] using rd613₀⟩
+    exact ⟨_, _, by exact rd613₀⟩
   have rd614 := evm_run rd613 with [dup2]
   obtain ⟨_, _, rd615₀⟩ := rd614.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd615⟩ : ∃ k C, RD ballotBytecode I g
@@ -1226,7 +1224,7 @@ theorem ballotVoteX_afterBounds {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         voteSenderWeightWord (voteAfterVoteMap σ I) I, ⟨2⟩, voteSenderSlot I,
         voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty (voteAfterVoteMap σ I) k C := by
-    exact ⟨_, _, by simpa [voteProposalsLengthWord, initState] using rd615₀⟩
+    exact ⟨_, _, by exact rd615₀⟩
   have hlt : UInt256.lt (voteProposalWord I) (voteProposalsLengthWord (voteAfterVoteMap σ I) I)
       = ⟨1⟩ :=
     ult_one hbound
@@ -1330,7 +1328,7 @@ theorem ballotVoteX_success {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   obtain ⟨_, _, rd666⟩ := rd665.sstore hperm (by decide) (by evm_ov)
   have rd156 := evm_run rd666 with [pop, pop, pop, pop, jump (by jump_dest), jumpdest]
   exact by
-    simpa [voteSuccessMap, voteUpdatedProposalCount, u256_add_comm] using
+    simpa [voteSuccessMap, voteUpdatedProposalCount, u256_add_comm] using!
       rd156.stop (by decide) (by evm_ov)
 
 theorem ballotVoteX_weightRevert {σ σ₀ A I} {g : Sat256} {sel : UInt256}
@@ -1361,7 +1359,7 @@ theorem ballotVoteX_weightRevert {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       (initState σ σ₀ g A I) ⟨442⟩
       [voteSenderWeightWord σ I, voteSenderSlot I, ⟨0⟩, voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [voteSenderWeightWord, initState] using rd442₀⟩
+    exact ⟨_, _, by exact rd442₀⟩
   have rd444 := evm_run rd442 with [swap1, swap2, sub]
   have hsubzero : UInt256.sub ⟨0⟩ (voteSenderWeightWord σ I) = ⟨0⟩ := by
     rw [hweight]
@@ -1416,7 +1414,7 @@ theorem ballotVoteX_votedRevert {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       [voteSenderPackedWord σ I, voteSenderSlot I, voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
-      simpa [voteSenderPackedWord, voteSenderPackedSlot, initState] using rd522₀⟩
+      exact rd522₀⟩
   have rd525 := evm_run rd522 with [push1 ⟨255⟩, and, iszero]
   have hzero : UInt256.isZero (UInt256.land ⟨255⟩ (voteSenderPackedWord σ I)) = ⟨0⟩ := by
     rw [u256_land_comm]
@@ -1474,7 +1472,7 @@ theorem ballotVoteX_oob {σ σ₀ A I} {g : Sat256} {sel : UInt256}
       [voteSenderWeightWord (voteAfterVoteMap σ I) I, ⟨2⟩, voteSenderSlot I,
         voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty (voteAfterVoteMap σ I) k C := by
-    exact ⟨_, _, by simpa [voteSenderWeightWord, initState] using rd613₀⟩
+    exact ⟨_, _, by exact rd613₀⟩
   have rd614 := evm_run rd613 with [dup2]
   obtain ⟨_, _, rd615₀⟩ := rd614.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd615⟩ : ∃ k C, RD ballotBytecode I g
@@ -1483,7 +1481,7 @@ theorem ballotVoteX_oob {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         voteSenderWeightWord (voteAfterVoteMap σ I) I, ⟨2⟩, voteSenderSlot I,
         voteProposalWord I, ⟨156⟩, sel]
       (voteHashMem I) (UInt256.ofNat 3) ByteArray.empty (voteAfterVoteMap σ I) k C := by
-    exact ⟨_, _, by simpa [voteProposalsLengthWord, initState] using rd615₀⟩
+    exact ⟨_, _, by exact rd615₀⟩
   have hlt : UInt256.lt (voteProposalWord I) (voteProposalsLengthWord (voteAfterVoteMap σ I) I)
       = ⟨0⟩ :=
     ult_zero (Nat.le_of_not_gt hbound)

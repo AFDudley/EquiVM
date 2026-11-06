@@ -576,17 +576,14 @@ theorem accessControlHasRoleBody {σ σ₀ A I}
               (.returned { contract := contract, locals := hasRoleStore I }
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(wordToElem .bool (hasRoleMaskedWord σ I))])) := by
-          simpa [hasRoleStorageWord, hasRoleMaskedWord, hasRoleSlot, initState,
-            Stele.EVM.storageLoad, State.lookupAccount] using
-              accessControlHasRoleBodyReturns
+          exact accessControlHasRoleBodyReturns
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
                 (by simp only [initState]; exact hwv) hsz68
         exact (accessControlX_hasRole (g := Sat256.ofUInt256 g)
             hsz68 hsize hbig hcanonAccount hreach)
           |>.reEquivExecution hcode hd hdec hbody
             (returnEquiv_of_encode (by
-              simpa [hasRoleMaskedWord, hasRoleReturnWord] using
-                boolWordReturnEncoding (hasRoleStorageWord σ I)))
+              exact boolWordReturnEncoding (hasRoleStorageWord σ I)))
       · have hdec := accessControlDecode_hasRole_none_noncanon_account
           (I := I) hsz68 hbig hcanonAccount
         have hnc : UInt256.eq (hasRoleAccountWord I)

@@ -266,7 +266,7 @@ theorem erc6909TransferFromX_from1323_afterLoad {σ σ₀ σcur A I}
   exact ⟨k1, C1, by
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
       hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
-      using rd1373₀⟩
+      using! rd1373₀⟩
 
 theorem erc6909TransferFromX_from1323_afterRequire {σ σ₀ σcur A I}
     {g : Sat256} {sel : UInt256} {k C : ℕ}
@@ -486,7 +486,7 @@ theorem erc6909TransferFromX_from1323_afterLoad_base {σ σ₀ σcur A I}
   exact ⟨k1, C1, by
     simpa [transferFromSenderBalanceWord, transferFromSenderBalanceSlot,
       hslot, initState, Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
-      using rd1373₀⟩
+      using! rd1373₀⟩
 
 theorem erc6909TransferFromX_from1323_afterRequire_base {σ σ₀ σcur A I}
     {g : Sat256} {sel : UInt256} {k C : ℕ} {base : ByteArray}
@@ -893,7 +893,7 @@ theorem erc6909TransferFromX_from1323_toCheckedAdd {σ σ₀ σcur A I}
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
       transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
-      using rd1526₀
+      using! rd1526₀
   exact ⟨_, _, evm_run rd1526 with [
     dup5, swap3, swap1, push2 ⟨1539⟩, swap1, dup5, swap1, push2 ⟨2017⟩,
     jump (by jump_dest) ]⟩
@@ -1300,7 +1300,7 @@ theorem erc6909TransferFromX_from1323_afterDebit_base
   rw [hdebit, hslot] at rd1475
   by_cases hp : I.perm = true
   · obtain ⟨_, _, rd1476⟩ := rd1475.sstore hp (by decide) (by evm_ov)
-    exact Or.inl ⟨hp, _, _, by simpa [senderMem] using rd1476⟩
+    exact Or.inl ⟨hp, _, _, by exact rd1476⟩
   · have hpf : I.perm = false := by simpa using hp
     exact Or.inr ⟨hpf, rd1475.sstoreStatic hpf (by decide) (by evm_ov)⟩
 
@@ -1455,7 +1455,7 @@ theorem erc6909TransferFromX_from1323_toCheckedAdd_base
     simpa [transferFromTailReceiverBalanceWord, transferFromTailAfterSenderBalanceState,
       transferFromSenderBalanceSlot, hslot, initState, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, storageStore_accountMap, debitMem]
-      using rd1526₀
+      using! rd1526₀
   exact ⟨_, _, by
     simpa [senderMem, debitMem] using
       evm_run rd1526 with [

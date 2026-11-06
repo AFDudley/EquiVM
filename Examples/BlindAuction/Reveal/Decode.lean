@@ -406,7 +406,7 @@ theorem blindAuctionRevealDecodeFakesOffset1840_reverts
                 (uInt256OfByteArray
                   (I.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨32⟩).toNat 32))
                 revealMaxU64 = ⟨1⟩ := by
-          simpa [revealFakesOffsetWord, calldataWord] using hfakesGt
+          exact hfakesGt
         rw [hgt']
         decide),
     raw revertStub (by decide) (by decide) (by decide) (by evm_ov)]
@@ -442,7 +442,7 @@ theorem blindAuctionRevealDecodeFakesCall1840_to_1713
                 (uInt256OfByteArray
                   (ee.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨32⟩).toNat 32))
                 revealMaxU64 = ⟨0⟩ := by
-          simpa [revealFakesOffsetWord, calldataWord] using hfakesGt
+          exact hfakesGt
         rw [hgt']
         decide)
       (by jump_dest)]
@@ -451,7 +451,7 @@ theorem blindAuctionRevealDecodeFakesCall1840_to_1713
   have rd1877 := evm_run rd1876 with [dup3]
   have rd1878 := RD.dup11 rd1877 (by decide) (by simp)
   have rd1882 := evm_run rd1878 with [add, push2 ⟨1713⟩, jump (by jump_dest)]
-  exact ⟨_, _, by simpa [revealFakesOffsetWord, calldataWord] using rd1882⟩
+  exact ⟨_, _, by exact rd1882⟩
 
 theorem blindAuctionRevealDecodeSecretsOffset1883_reverts
     {σ : AccountMap} {I} {g : Sat256}
@@ -478,7 +478,7 @@ theorem blindAuctionRevealDecodeSecretsOffset1883_reverts
                 (uInt256OfByteArray
                   (I.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨64⟩).toNat 32))
                 revealMaxU64 = ⟨1⟩ := by
-          simpa [revealSecretsOffsetWord, calldataWord] using hsecretsGt
+          exact hsecretsGt
         rw [hgt']
         decide),
     raw revertStub (by decide) (by decide) (by decide) (by evm_ov)]
@@ -513,7 +513,7 @@ theorem blindAuctionRevealDecodeSecretsCall1883_to_1713
                 (uInt256OfByteArray
                   (ee.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨64⟩).toNat 32))
                 revealMaxU64 = ⟨0⟩ := by
-          simpa [revealSecretsOffsetWord, calldataWord] using hsecretsGt
+          exact hsecretsGt
         rw [hgt']
         decide)
       (by jump_dest)]
@@ -522,7 +522,7 @@ theorem blindAuctionRevealDecodeSecretsCall1883_to_1713
   have rd1920 := evm_run rd1919 with [dup3]
   have rd1921 := RD.dup11 rd1920 (by decide) (by simp)
   have rd1925 := evm_run rd1921 with [add, push2 ⟨1713⟩, jump (by jump_dest)]
-  exact ⟨_, _, by simpa [revealSecretsOffsetWord, calldataWord] using rd1925⟩
+  exact ⟨_, _, by exact rd1925⟩
 
 theorem blindAuctionRevealDecode1806_hugeDynamic_reverts
     {σ σ₀ A I} {g : Sat256} {k C : Nat}
@@ -641,7 +641,7 @@ theorem blindAuctionRevealDecodeEmptyArrays1806_to_413
                 (uInt256OfByteArray
                   (ee.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨32⟩).toNat 32))
                 revealMaxU64 = ⟨0⟩ := by
-          simpa [revealFakesOffsetWord, calldataWord] using hfakesGt
+          exact hfakesGt
         rw [hgt']
         decide)
       (by jump_dest)]
@@ -667,7 +667,7 @@ theorem blindAuctionRevealDecodeEmptyArrays1806_to_413
                 (uInt256OfByteArray
                   (ee.calldata.readBytes ((⟨4⟩ : UInt256) + ⟨64⟩).toNat 32))
                 revealMaxU64 = ⟨0⟩ := by
-          simpa [revealSecretsOffsetWord, calldataWord] using hsecretsGt
+          exact hsecretsGt
         rw [hgt']
         decide)
       (by jump_dest)]
@@ -692,7 +692,7 @@ theorem blindAuctionRevealDecodeEmptyArrays1806_to_413
   have rd1939 := evm_run rd1937 with [swap4]
   have rd1940 := RD.swap5 rd1939 (by decide) (by simp)
   have rd1943 := evm_run rd1940 with [swap3, pop, pop, pop, jump (by jump_dest)]
-  exact ⟨_, _, by simpa using rd1943⟩
+  exact ⟨_, _, by exact rd1943⟩
 
 theorem blindAuctionRevealDecodeEmptyArrays1806_to_887
     {g : Sat256} {s0 : State} {ee : ExecutionEnv} {k C : Nat}
@@ -850,7 +850,7 @@ theorem revealArrayGuards_of_decode_elem32 {I : ExecutionEnv} {headOff off : Nat
   have hstartToNat :
       (((⟨4⟩ : UInt256) + calldataWord I.calldata (4 + headOff)).toNat) = 4 + off := by
     rw [hword]
-    simpa using (uadd_ofNat_toNat (a := 4) (b := off) (by norm_num [UInt256.size])
+    exact (uadd_ofNat_toNat (a := 4) (b := off) (by norm_num [UInt256.size])
       (lt_size_of_lt_sign (by omega : off < 2 ^ 255))
       (lt_size_of_lt_sign (by omega : 4 + off < 2 ^ 255)))
   have hlenWordEq :
@@ -874,7 +874,7 @@ theorem revealArrayGuards_of_decode_elem32 {I : ExecutionEnv} {headOff off : Nat
         ((((⟨4⟩ : UInt256) + calldataWord I.calldata (4 + headOff)) + ⟨31⟩).toNat) =
           4 + off + 31 := by
       rw [hword]
-      simpa using (uadd3_ofNat_toNat (a := 4) (b := off) (c := 31)
+      exact (uadd3_ofNat_toNat (a := 4) (b := off) (c := 31)
         (by norm_num [UInt256.size])
         (lt_size_of_lt_sign (by omega : off < 2 ^ 255))
         (by norm_num [UInt256.size])
@@ -910,7 +910,7 @@ theorem revealArrayGuards_of_decode_elem32 {I : ExecutionEnv} {headOff off : Nat
         rw [hleft, ulit_toNat' 32 (by norm_num [UInt256.size])]
         exact Nat.mod_eq_of_lt
           (lt_size_of_lt_sign (by omega : 4 + off + 32 * len + 32 < 2 ^ 255))
-      simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using h4off
+      exact h4off
     apply ugt_zero
     rw [hendToNat]
     rw [ulit_toNat' I.calldata.size (lt_size_of_lt_sign hcalldataSign)]

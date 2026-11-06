@@ -34,22 +34,19 @@ theorem toDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (transfer_ownershipTransition.params.map Param.name)
       (transitionSignature transfer_ownershipTransition).paramTypes I.calldata = some (toStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, transfer_ownershipTransition, toStore, argWord_eq] using
-    decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "new_owner") hsz36 hcanon
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "new_owner") hsz36 hcanon
 
 theorem toDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (transfer_ownershipTransition.params.map Param.name)
       (transitionSignature transfer_ownershipTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, transfer_ownershipTransition] using
-    decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "new_owner") hsz hshort
+  exact decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "new_owner") hsz hshort
 
 theorem toDecode_noncanon {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (transfer_ownershipTransition.params.map Param.name)
       (transitionSignature transfer_ownershipTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, transfer_ownershipTransition] using
-    decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "new_owner") hsz36 hnc
+  exact decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "new_owner") hsz36 hnc
 
 /-- The argument word at memory offset 256 (written by the call sequence at pc 57). -/
 abbrev mem57 (I : ExecutionEnv) : ByteArray := (argWord I).toByteArray.write 0 (registryDispatchMem 4) 256 32

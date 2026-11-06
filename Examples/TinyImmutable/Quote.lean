@@ -21,24 +21,21 @@ theorem tinyQuoteDecode_ok {v : TinyImmutables} {I : ExecutionEnv}
       (transitionSignature quoteTransition).paramTypes I.calldata =
         some (quoteAmountStore I) := by
   show decodeCalldata ["amount"] [uint256] I.calldata = some (quoteAmountStore I)
-  simpa [quoteAmountStore, uint256, calldataWord]
-    using decodeCalldata_uint256_ok (cd := I.calldata) (x := "amount") hsz36 hbig
+  exact decodeCalldata_uint256_ok (cd := I.calldata) (x := "amount") hsz36 hbig
 
 theorem tinyQuoteDecode_none_short {v : TinyImmutables} {I : ExecutionEnv}
     (hshort : I.calldata.size < 36) :
     decodeCalldata (quoteTransition.params.map Param.name)
       (transitionSignature quoteTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["amount"] [uint256] I.calldata = none
-  simpa [uint256] using
-    decodeCalldata_uint256_none_short (cd := I.calldata) (x := "amount") hshort
+  exact decodeCalldata_uint256_none_short (cd := I.calldata) (x := "amount") hshort
 
 theorem tinyQuoteDecode_none_huge {v : TinyImmutables} {I : ExecutionEnv}
     (hbig : 2 ^ 255 + 4 ≤ I.calldata.size) :
     decodeCalldata (quoteTransition.params.map Param.name)
       (transitionSignature quoteTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["amount"] [uint256] I.calldata = none
-  simpa [uint256] using
-    decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "amount") hbig
+  exact decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "amount") hbig
 
 theorem tinyQuoteBodyReturns (v : TinyImmutables) (evm : EVM.State) (locals : Store)
     (amount : Int)
@@ -103,7 +100,7 @@ theorem tinyQuoteReturnEncoding (v : TinyImmutables) (amount : UInt256) :
     rw [hnat]
     norm_num [EVM.wordModulus, EVM.twoPow, UInt256.size]
   rw [← hmod]
-  simpa [uint256] using uint256ReturnEncoding (UInt256.mul amount v.scale)
+  exact uint256ReturnEncoding (UInt256.mul amount v.scale)
 
 theorem tinyQuoteX_toDecoder {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hreach : ∃ k C, RD (deployedRuntime v) I g
@@ -120,8 +117,7 @@ theorem tinyQuoteX_toDecoder {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
   have h := tinyImmutableBlocks.tinyImmutable_block_148 (immWords := wordsOf (immStore v))
     (by simp) hvalid rd148
   exact ⟨k + 7, C + 23, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_148_stack,
-      deployedRuntime] using h⟩
+    exact h⟩
 
 theorem tinyQuoteX_decoded {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hsz36 : 36 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
@@ -160,9 +156,7 @@ theorem tinyQuoteX_decoded {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (immWords := wordsOf (immStore v))
     (by simp [tinyImmutableBlocks.tinyImmutable_block_412_stack]) hvalid220 rd162
   exact ⟨_, _, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_396_taken_stack,
-      tinyImmutableBlocks.tinyImmutable_block_412_stack, calldataWord,
-      deployedRuntime] using rd220⟩
+    exact rd220⟩
 
 theorem tinyQuoteX_decodeRevert {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hslt : UInt256.slt (UInt256.sub (UInt256.ofNat I.calldata.size) ⟨4⟩) ⟨32⟩ =
@@ -181,7 +175,7 @@ theorem tinyQuoteX_decodeRevert {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
       decide) rd396
   have hrev := tinyImmutableBlocks.tinyImmutable_block_409 (immWords := wordsOf (immStore v))
     (by simp [tinyImmutableBlocks.tinyImmutable_block_396_fallthrough_stack]) rd409
-  simpa using hrev
+  exact hrev
 
 theorem tinyQuoteX_shortarg {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hsz4 : 4 ≤ I.calldata.size) (hsize : I.calldata.size < UInt256.size)
@@ -243,7 +237,7 @@ theorem tinyQuoteX_success {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ (k + 9 + 6) (C + 30 + 22) := by
     simpa [tinyImmutableBlocks.tinyImmutable_block_358_stack,
       tinyImmutableBlocks.tinyImmutable_block_220_taken_stack, wordsOf_immStore_owner, wordsOf_immStore_scale,
-      deployedRuntime] using rd167'
+      deployedRuntime] using! rd167'
   have hret := RD.tinyBlocksReturnWord167 (v := v) (R := [solcSelectorWord I]) rd167
     (by simp)
   rw [wordOfInt_ofNat_toNat] at hret
@@ -273,7 +267,7 @@ theorem tinyQuoteX_unauthorized {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
       exact heq) rd220
   have hrev := tinyImmutableBlocks.tinyImmutable_block_283 (immWords := wordsOf (immStore v))
     (by simp [tinyImmutableBlocks.tinyImmutable_block_220_fallthrough_stack]) rd283
-  simpa using hrev
+  exact hrev
 
 theorem tinyQuoteBodyCore
     {σ σ₀ A I} {g : UInt256} (v : TinyImmutables)

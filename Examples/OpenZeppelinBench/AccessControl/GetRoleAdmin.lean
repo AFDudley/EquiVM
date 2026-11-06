@@ -166,8 +166,7 @@ theorem accessControlGetRoleAdminBodyReturns (evm : EVM.State) (I : ExecutionEnv
           .fixedBytes bytes32Width
             (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner
               (getRoleAdminSlot I))) by
-        simpa [getRoleAdminLoc] using
-          accessControlStorageLocLoad_bytes32 evm (getRoleAdminSlot I)]
+        exact accessControlStorageLocLoad_bytes32 evm (getRoleAdminSlot I)]
       simp [getRoleAdminCurrent])
 
 /-! ## EVM scratch memory and trace -/
@@ -372,7 +371,7 @@ theorem accessControlGetRoleAdminX {σ σ₀ A I} {g : Sat256}
           ⟨1⟩ : UInt256) = ⟨198⟩ := by
         decide
       simpa [hpc198, getRoleAdminWord, getRoleAdminSlot_evm I hsz36,
-        u256_add_comm] using rd198₀⟩
+        u256_add_comm] using! rd198₀⟩
   obtain ⟨_, _, rd198⟩ := rd198
   have rd200 := evm_run rd198 with [swap1, jump (by jump_dest)]
   have rd157 := evm_run rd200 with [
@@ -425,9 +424,7 @@ theorem accessControlGetRoleAdminBody {σ σ₀ A I}
               (initState σ σ₀ (Sat256.ofUInt256 g) A I)
               (some [(.fixedBytes bytes32Width
                 (EVM.Word.toBytesBE (getRoleAdminWord σ I)))])) := by
-        simpa [getRoleAdminCurrent, getRoleAdminWord, initState, Stele.EVM.storageLoad,
-          State.lookupAccount] using
-          accessControlGetRoleAdminBodyReturns
+        exact accessControlGetRoleAdminBodyReturns
             (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
             (by simp only [initState]; exact hwv) hsz36
       exact (accessControlGetRoleAdminX (g := Sat256.ofUInt256 g) hsz36 hsize hbig hreach)

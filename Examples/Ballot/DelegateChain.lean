@@ -395,7 +395,7 @@ theorem ballotDelegateStele_chainExit {σ σ₀ A I} {g : Sat256}
     subst i
     have hdone :
         delegateCurrentVoterDelegateWordCurrent evm (delegateChainWord σ I target) = ⟨0⟩ := by
-      simpa [evm, delegateChainExitsAt] using hexit
+      exact hexit
     simpa [cond] using
       evalExpr_delegate_loopLocals_done evm I (delegateChainWord σ I target) L hL hdone
   have htrue : ∀ v L, P (v + 1) L →
@@ -413,7 +413,7 @@ theorem ballotDelegateStele_chainExit {σ σ₀ A I} {g : Sat256}
         exact (hcontinue i hiLower hiLt).1
     have hnextCurrent :
         delegateCurrentVoterDelegateWordCurrent evm (delegateChainWord σ I i) ≠ ⟨0⟩ := by
-      simpa [evm] using hnext
+      exact hnext
     simpa [cond] using
       evalExpr_delegate_loopLocals_continues evm I (delegateChainWord σ I i) L hL
         hnextCurrent
@@ -499,7 +499,7 @@ theorem ballotDelegateStele_chainSenderRevert {σ σ₀ A I} {g : Sat256}
         exact (hcontinue i hiLower hiLt).1
     have hnextCurrent :
         delegateCurrentVoterDelegateWordCurrent evm (delegateChainWord σ I i) ≠ ⟨0⟩ := by
-      simpa [evm] using hnexti
+      exact hnexti
     simpa [cond] using
       evalExpr_delegate_loopLocals_continues evm I (delegateChainWord σ I i) L hL
         hnextCurrent
@@ -785,7 +785,7 @@ theorem ballotDelegateBodyReverts_chainSender {σ σ₀ A I} {g : Sat256}
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_delegate_sender_weight_zero_false
       (initState σ σ₀ g A I) I
-      (by simpa [delegateSenderWeightWord, delegateSenderSlot, initState] using hweight))) ?_
+      (by exact hweight))) ?_
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (evalExpr_delegate_sender_not_voted_true
       (initState σ σ₀ g A I) I

@@ -36,15 +36,13 @@ theorem mintFeeSqrtPrefix
         (.internalCall "sqrt" [u256 (.binary .mul (.var "_reserve0") (.var "_reserve1"))]
           "rootK")
         (.ok (mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK) evm) := by
-    simpa [mintFeeAfterRootKFrame, mintFeeAfterRootKStore, resumeAfterInternalCall] using
-      hrootK
+    exact hrootK
   have hrootKLast' :
       ExecStmt config (mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK) evm
         (.internalCall "sqrt" [.var "_kLast"] "rootKLast")
         (.ok (mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true kLast rootK rootKLast)
           evm) := by
-    simpa [mintFeeAfterRootKLastFrame, mintFeeAfterRootKLastStore, resumeAfterInternalCall]
-      using hrootKLast
+    exact hrootKLast
   exact ⟨rootK, rootKLast,
     ExecBlock.consNormal hrootK' (ExecBlock.consNormal hrootKLast' ExecBlock.nil)⟩
 
@@ -78,15 +76,13 @@ theorem mintFeeSqrtPrefixBounded
         (.internalCall "sqrt" [u256 (.binary .mul (.var "_reserve0") (.var "_reserve1"))]
           "rootK")
         (.ok (mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK) evm) := by
-    simpa [mintFeeAfterRootKFrame, mintFeeAfterRootKStore, resumeAfterInternalCall] using
-      hrootK
+    exact hrootK
   have hrootKLast' :
       ExecStmt config (mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK) evm
         (.internalCall "sqrt" [.var "_kLast"] "rootKLast")
         (.ok (mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true kLast rootK rootKLast)
           evm) := by
-    simpa [mintFeeAfterRootKLastFrame, mintFeeAfterRootKLastStore, resumeAfterInternalCall]
-      using hrootKLast
+    exact hrootKLast
   exact ⟨rootK, rootKLast,
     ExecBlock.consNormal hrootK' (ExecBlock.consNormal hrootKLast' ExecBlock.nil),
     hrootKNonneg, hrootKSize, hrootKLastNonneg, hrootKLastSize⟩
@@ -770,8 +766,7 @@ theorem mintFeeAssignKLastZero
   · simp [evalStorageRef, evalStorageRefSteps, kLastRef, EvalResult.bind, pure, bind]
   · simp [storageTypeAt?, contract, storageDecls, uint256St]
   · rfl
-  · simpa [mintFeeKLastClearedState, uniswapUint256Value, uint256Value] using
-      storageLocStore_uint256 evm ⟨11⟩ ⟨0⟩
+  · exact storageLocStore_uint256 evm ⟨11⟩ ⟨0⟩
 
 theorem uniswapMintFeeFunctionBody_feeOff_kLastZero
     (evm evmFee : EVM.State) (reserve0 reserve1 : UInt256) {out : ByteArray}

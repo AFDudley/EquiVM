@@ -138,8 +138,7 @@ theorem uniswapSkimCachedFirstCallFailure (evm evm0 : EVM.State) (I : ExecutionE
   have hfail :
       ExecBlock config { contract := contract, locals := skimTokenStore evm I } evmL
         (balanceOfThisStmts (.var "_token0") "balance0") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarFailure (hperm := Or.inl rfl)
+    exact checkedExternalCallVarFailure (hperm := Or.inl rfl)
       (evm := evmL) (evm' := evm0) (locals := skimTokenStore evm I)
       (receiver := "_token0") (retVar := "balance0")
       (name := "balanceOf") (sendVal := 0) (args := [this]) (perm := false)
@@ -172,8 +171,7 @@ theorem uniswapSkimCachedFirstCallDecodeRevert (evm evm0 : EVM.State) (I : Execu
   have hfail :
       ExecBlock config { contract := contract, locals := skimTokenStore evm I } evmL
         (balanceOfThisStmts (.var "_token0") "balance0") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarDecodeRevert (hperm := Or.inl rfl)
+    exact checkedExternalCallVarDecodeRevert (hperm := Or.inl rfl)
       (evm := evmL) (evm' := evm0) (locals := skimTokenStore evm I)
       (receiver := "_token0") (retVar := "balance0")
       (name := "balanceOf") (sendVal := 0) (args := [this]) (perm := false)
@@ -207,8 +205,7 @@ theorem uniswapSkimCachedFirstCallSuccess (evm evm0 : EVM.State) (I : ExecutionE
       ExecBlock config { contract := contract, locals := skimTokenStore evm I } evmL
         (balanceOfThisStmts (.var "_token0") "balance0")
         (.ok { contract := contract, locals := skimFirstBalanceStore evm I balance0 } evm0) := by
-    simpa [balanceOfThisStmts, skimFirstBalanceStore] using
-      checkedExternalCallVarSuccess (hperm := Or.inl rfl)
+    exact checkedExternalCallVarSuccess (hperm := Or.inl rfl)
       (evm := evmL) (evm' := evm0) (locals := skimTokenStore evm I)
       (receiver := "_token0") (retVar := "balance0")
       (name := "balanceOf") (sendVal := 0) (args := [this]) (perm := false)
@@ -758,8 +755,7 @@ theorem uniswapSkimBodyReverts_firstNoCode (evm : EVM.State) (I : ExecutionEnv)
       ExecBlock config { contract := contract, locals := skimTokenStore evm I }
         (uniswapLockEnteredState evm)
         (balanceOfThisStmts (.var "_token0") "balance0") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarNoCode
+    exact checkedExternalCallVarNoCode
       (evm := uniswapLockEnteredState evm) (locals := skimTokenStore evm I)
       (receiver := "_token0") (retVar := "balance0")
       (name := "balanceOf") (sendVal := 0) (args := [this]) (perm := false)
@@ -856,8 +852,7 @@ theorem uniswapSkimBodyReverts_secondCallFailure (evm evm0 evm1 evm2 : EVM.State
       ExecBlock config
         { contract := contract, locals := skimFirstSafeTransferStore evm evm0 I balance0 } evm1
         (balanceOfThisStmts (.var "_token1") "balance1") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarFailure (hperm := Or.inl rfl)
+    exact checkedExternalCallVarFailure (hperm := Or.inl rfl)
       (evm := evm1) (evm' := evm2)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -906,8 +901,7 @@ theorem uniswapSkimBodyReverts_secondCallDecode (evm evm0 evm1 evm2 : EVM.State)
       ExecBlock config
         { contract := contract, locals := skimFirstSafeTransferStore evm evm0 I balance0 } evm1
         (balanceOfThisStmts (.var "_token1") "balance1") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarDecodeRevert (hperm := Or.inl rfl)
+    exact checkedExternalCallVarDecodeRevert (hperm := Or.inl rfl)
       (evm := evm1) (evm' := evm2)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -952,8 +946,7 @@ theorem uniswapSkimBodyReverts_secondNoCode (evm evm0 evm1 : EVM.State)
       ExecBlock config
         { contract := contract, locals := skimFirstSafeTransferStore evm evm0 I balance0 } evm1
         (balanceOfThisStmts (.var "_token1") "balance1") .reverted := by
-    simpa [balanceOfThisStmts] using
-      checkedExternalCallVarNoCode
+    exact checkedExternalCallVarNoCode
       (evm := evm1)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -1072,8 +1065,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferFailure
           { contract := contract,
             locals := skimSecondBalanceStore evm evm0 I balance0 balance1 }
           evm2) := by
-    simpa [balanceOfThisStmts, skimSecondBalanceStore] using
-      checkedExternalCallVarSuccess (hperm := Or.inl rfl)
+    exact checkedExternalCallVarSuccess (hperm := Or.inl rfl)
       (evm := evm1) (evm' := evm2)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -1181,8 +1173,7 @@ theorem uniswapSkimBodyReverts_secondSafeTransferStmt
           { contract := contract,
             locals := skimSecondBalanceStore evm evm0 I balance0 balance1 }
           evm2) := by
-    simpa [balanceOfThisStmts, skimSecondBalanceStore] using
-      checkedExternalCallVarSuccess (hperm := Or.inl rfl)
+    exact checkedExternalCallVarSuccess (hperm := Or.inl rfl)
       (evm := evm1) (evm' := evm2)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -1513,8 +1504,7 @@ theorem uniswapSkimBodyReverts_secondExcessUnderflow
           { contract := contract,
             locals := skimSecondBalanceStore evm evm0 I balance0 balance1 }
           evm2) := by
-    simpa [balanceOfThisStmts, skimSecondBalanceStore] using
-      checkedExternalCallVarSuccess (hperm := Or.inl rfl)
+    exact checkedExternalCallVarSuccess (hperm := Or.inl rfl)
       (evm := evm1) (evm' := evm2)
       (locals := skimFirstSafeTransferStore evm evm0 I balance0)
       (receiver := "_token1") (retVar := "balance1")
@@ -1594,8 +1584,7 @@ theorem uniswapSkimBodyReturns (evm evm0 evm1 evm2 evm3 : EVM.State)
             { contract := contract,
               locals := skimSecondBalanceStore evm evm0 I balance0 balance1 }
             evm2) := by
-      simpa [balanceOfThisStmts, skimSecondBalanceStore] using
-        checkedExternalCallVarSuccess (hperm := Or.inl rfl)
+      exact checkedExternalCallVarSuccess (hperm := Or.inl rfl)
         (evm := evm1) (evm' := evm2)
         (locals := skimFirstSafeTransferStore evm evm0 I balance0)
         (receiver := "_token1") (retVar := "balance1")

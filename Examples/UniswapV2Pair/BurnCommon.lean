@@ -35,15 +35,14 @@ theorem uniswapDecode_burn_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
     config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = some (burnStore I) := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
-  simpa [burnStore, burnToValue, burnToWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 theorem uniswapDecode_burn_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (burnTransition.params.map Param.name)
       (transitionSignature burnTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
+  exact decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
     hsz4 hshort
 
 theorem burnStore_to (I : ExecutionEnv) :
@@ -129,7 +128,7 @@ theorem uniswapBurnX_lockEntered {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (R := [⟨0⟩, ⟨0⟩, burnToMaskedWord I, ⟨1201⟩, sel])
     rd4097 uniswap_lock_enter_body_ok_wf hperm hunlocked (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa using rd4179⟩
+  exact ⟨_, _, by exact rd4179⟩
 
 /-- In a static call, `burn(address)` halts at the lock-entry `SSTORE`. -/
 theorem uniswapBurnX_lockEnteredStatic {σ σ₀ A I} {g : Sat256} {sel : UInt256}

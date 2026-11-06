@@ -64,9 +64,7 @@ theorem erc6909Decode_balanceOf_ok {I : ExecutionEnv}
     decodeCalldata (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = some (balanceOfStore I) := by
   show decodeCalldata ["owner", "id"] [addr, uint256] I.calldata = some (balanceOfStore I)
-  simpa [addr, uint256, abiUInt256, balanceOfStore, balanceOfOwnerValue, balanceOfIdValue,
-    balanceOfOwnerWord, balanceOfIdWord]
-    using decodeCalldata_addr_uint256_ok (cd := I.calldata) (x := "owner") (y := "id")
+  exact decodeCalldata_addr_uint256_ok (cd := I.calldata) (x := "owner") (y := "id")
       hsz68 hbig hcanon
 
 theorem erc6909Decode_balanceOf_none_short {I : ExecutionEnv}
@@ -74,8 +72,7 @@ theorem erc6909Decode_balanceOf_none_short {I : ExecutionEnv}
     decodeCalldata (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["owner", "id"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_none_short (cd := I.calldata) (x := "owner") (y := "id")
+  exact decodeCalldata_addr_uint256_none_short (cd := I.calldata) (x := "owner") (y := "id")
       hsz4 hshort
 
 theorem erc6909Decode_balanceOf_none_noncanon {I : ExecutionEnv}
@@ -84,8 +81,7 @@ theorem erc6909Decode_balanceOf_none_noncanon {I : ExecutionEnv}
     decodeCalldata (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["owner", "id"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, balanceOfOwnerWord] using
-    decodeCalldata_addr_uint256_none_noncanon (cd := I.calldata) (x := "owner") (y := "id")
+  exact decodeCalldata_addr_uint256_none_noncanon (cd := I.calldata) (x := "owner") (y := "id")
       hsz68 hbig hnc
 
 theorem erc6909Decode_balanceOf_none_huge {I : ExecutionEnv}
@@ -93,8 +89,7 @@ theorem erc6909Decode_balanceOf_none_huge {I : ExecutionEnv}
     decodeCalldata (balanceOfTransition.params.map Param.name)
       (transitionSignature balanceOfTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["owner", "id"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_none_huge (cd := I.calldata) (x := "owner") (y := "id") hbig
+  exact decodeCalldata_addr_uint256_none_huge (cd := I.calldata) (x := "owner") (y := "id") hbig
 
 theorem balanceOfStore_owner (I : ExecutionEnv) :
     (balanceOfStore I).get? "owner" = some (balanceOfOwnerValue I) := by
@@ -512,7 +507,7 @@ theorem erc6909BalanceOfX_decoded {σ σ₀ A I} {g : Sat256} {sel : UInt256}
   have rd1683 := evm_run rd with [jumpdest]
   have rd1684 := RD.swap5 rd1683 (by decide) (by evm_ov)
   exact ⟨_, _, by
-    simpa [balanceOfIdWord, calldataWord] using evm_run rd1684 with [
+    exact evm_run rd1684 with [
       push1 ⟨32⟩, swap4, swap1, swap4, add, calldataload,
       swap4, pop, pop, pop, jump (by jump_dest),
       jumpdest, push2 ⟨407⟩, jump (by jump_dest) ]⟩
@@ -670,15 +665,14 @@ theorem erc6909BalanceOfBodyCore
               (.returned { contract := contract, locals := balanceOfStore I }
                 (initState σ σ₀ (Sat256.ofUInt256 g) A I)
                 (some [(.int (Int.ofNat (balanceOfWord σ I).toNat))])) := by
-          simpa [balanceOfWord, balanceOfSlot, initState, Stele.EVM.storageLoad,
-            State.lookupAccount] using erc6909BalanceOfBodyReturns
+          exact erc6909BalanceOfBodyReturns
               (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
               (by simp only [initState]; exact hwv)
         exact (erc6909X_balanceOf (g := Sat256.ofUInt256 g)
             hsz68 hsize hbig hcanon hreach)
           |>.reEquivExecutionTransport hcode hd hdec hbody rfl
             (returnEquiv_of_encode (by
-              simpa [uint256] using uint256ReturnEncoding (balanceOfWord σ I)))
+              exact uint256ReturnEncoding (balanceOfWord σ I)))
       · have hdec := erc6909Decode_balanceOf_none_noncanon (I := I) hsz68 hbig hcanon
         have hnc : UInt256.eq (balanceOfOwnerWord I)
             (UInt256.land (balanceOfOwnerWord I) solcAddrMask) = ⟨0⟩ :=

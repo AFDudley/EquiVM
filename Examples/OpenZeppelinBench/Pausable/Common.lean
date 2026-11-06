@@ -82,7 +82,7 @@ theorem pausableEvalPausedFalse (evm : EVM.State) (locals : Store)
   have hstorageZero :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ =
         ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
+    exact hzero
   have her : evalStorageRef config { contract := contract, locals := locals } evm pausedRef =
       .ok { base := "_paused", steps := [] } := by
     simp [evalStorageRef, evalStorageRefSteps, pausedRef, EvalResult.bind, pure, bind]
@@ -100,7 +100,7 @@ theorem pausableEvalPausedTrue (evm : EVM.State) (locals : Store)
   have hstorageNz :
       UInt256.land (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠
         ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
+    exact hnz
   have her : evalStorageRef config { contract := contract, locals := locals } evm pausedRef =
       .ok { base := "_paused", steps := [] } := by
     simp [evalStorageRef, evalStorageRefSteps, pausedRef, EvalResult.bind, pure, bind]
@@ -288,9 +288,7 @@ theorem pausableX_noMatch {σ σ₀ A I} {g : Sat256}
   have h4 : RD pausableBenchBytecode I g (initState σ σ₀ g A I)
       pausableFirstArmPc [pausableSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ k3 C3 := by
-    simpa [pausableFirstArmPc, pausableSelWord, solcFirstArmPcFromPrefix,
-      solcSelectorWord, solcSelectorLoadPc, solcCalldataJumpiPc, solcCalldataRevertPushPc,
-      solcDispatchBodyPc] using h3
+    exact h3
   have h5 := h4
     |>.selectorArmNotTakenAuto (pausableArmsWellFormed 0 (by omega)) (heq0 0 (by omega))
         (by simp)
@@ -306,8 +304,7 @@ theorem pausableX_noMatch {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨85⟩ [pausableSelWord I] solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨k3 + 5 + 5 + 5 + 5 + 5, C3 + 22 + 22 + 22 + 22 + 22, ?_⟩
-    simpa [pausableFirstArmPc, nthArmPc, selArmNextPc, armTgtWidth, armTgt,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h5
+    exact h5
   obtain ⟨_, _, h85rd⟩ := h85
   exact evm_run h85rd with [
     jumpdest, raw revertStub (by decide) (by decide) (by decide) (by evm_ov) ]
@@ -403,7 +400,7 @@ theorem RD.pausableWhenNotPausedPass {g : Sat256} {s0 : State} {ee : ExecutionEn
   obtain ⟨_, _, rd335⟩ : ∃ k' C',
       RD pausableBenchBytecode ee g s0 ⟨335⟩
         (pausedRawWord σ ee :: ret :: R) mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd335₀⟩
+    exact ⟨_, _, by exact rd335₀⟩
   have rd339₀ := evm_run rd335 with [push1 ⟨255⟩, and, iszero]
   have hmask : UInt256.land ⟨255⟩ (pausedRawWord σ ee) = pausedWord σ ee := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -428,7 +425,7 @@ theorem RD.pausableWhenNotPausedRevert {g : Sat256} {s0 : State} {ee : Execution
       RD pausableBenchBytecode ee g s0 ⟨335⟩
         (pausedRawWord σ ee :: ret :: R) solcFreePtrMem (UInt256.ofNat 3) rdata
         σ k' C' := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd335₀⟩
+    exact ⟨_, _, by exact rd335₀⟩
   have rd339₀ := evm_run rd335 with [push1 ⟨255⟩, and, iszero]
   have hmask : UInt256.land ⟨255⟩ (pausedRawWord σ ee) = pausedWord σ ee := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -467,7 +464,7 @@ theorem RD.pausableWhenPausedPass {g : Sat256} {s0 : State} {ee : ExecutionEnv}
   obtain ⟨_, _, rd370⟩ : ∃ k' C',
       RD pausableBenchBytecode ee g s0 ⟨370⟩
         (pausedRawWord σ ee :: ret :: R) mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd370₀⟩
+    exact ⟨_, _, by exact rd370₀⟩
   have rd373₀ := evm_run rd370 with [push1 ⟨255⟩, and]
   have hmask : UInt256.land ⟨255⟩ (pausedRawWord σ ee) = pausedWord σ ee := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -492,7 +489,7 @@ theorem RD.pausableWhenPausedRevert {g : Sat256} {s0 : State} {ee : ExecutionEnv
       RD pausableBenchBytecode ee g s0 ⟨370⟩
         (pausedRawWord σ ee :: ret :: R) solcFreePtrMem (UInt256.ofNat 3) rdata
         σ k' C' := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd370₀⟩
+    exact ⟨_, _, by exact rd370₀⟩
   have rd373₀ := evm_run rd370 with [push1 ⟨255⟩, and]
   have hmask : UInt256.land ⟨255⟩ (pausedRawWord σ ee) = pausedWord σ ee := by
     rw [Reasoning.Theory.u256_land_comm]

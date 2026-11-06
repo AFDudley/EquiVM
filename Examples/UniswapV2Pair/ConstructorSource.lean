@@ -28,8 +28,7 @@ theorem constructorAssignDomain (evm : EVM.State) :
   · simp only [evalStorageRef, evalStorageRefSteps, domainSeparatorRef, EvalResult.bind, bind, pure]
   · native_decide
   · rfl
-  · simpa [bytes32Loc, Reasoning.Theory.bytes32Loc] using
-      (storageLocStore_bytes32 evm _ _ _ (valueToWord_bytes32_word _))
+  · exact (storageLocStore_bytes32 evm _ _ _ (valueToWord_bytes32_word _))
 
 theorem constructorAssignFactory (evm : EVM.State) :
     assignStorageRef? config { contract := contract, locals := ∅ } evm .storage

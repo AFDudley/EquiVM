@@ -145,8 +145,7 @@ theorem swapDecodeABIValues_ok {I : ExecutionEnv} (hsz132 : 132 ≤ I.calldata.s
   have hdec0 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 0
       DecodeMode.legacySolc05 = some (.int (Int.ofNat
         (ABI.bytesToWord ((I.calldata.toList.drop 4).take 32)).toNat), 0 + 32) := by
-    simpa [List.drop_zero] using
-      decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
+    exact decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
         (start := 0) htake0
   have hdec32 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 32
       DecodeMode.legacySolc05 = some (.int (Int.ofNat
@@ -293,8 +292,7 @@ theorem swapDecodeABIValues_none_offset_huge {I : ExecutionEnv}
   have hdec0 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 0
       DecodeMode.legacySolc05 = some (.int (Int.ofNat
         (ABI.bytesToWord ((I.calldata.toList.drop 4).take 32)).toNat), 0 + 32) := by
-    simpa [List.drop_zero] using
-      decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
+    exact decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
         (start := 0) htake0
   have hdec32 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 32
       DecodeMode.legacySolc05 = some (.int (Int.ofNat
@@ -402,8 +400,7 @@ theorem swapDecodeABIValues_none_data {I : ExecutionEnv} (hsz132 : 132 ≤ I.cal
   have hdec0 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 0
       DecodeMode.legacySolc05 = some (.int (Int.ofNat
         (ABI.bytesToWord ((I.calldata.toList.drop 4).take 32)).toNat), 0 + 32) := by
-    simpa [List.drop_zero] using
-      decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
+    exact decodeABIValue_legacyUint256_ok (bytes := I.calldata.toList.drop 4)
         (start := 0) htake0
   have hdec32 : decodeABIValue? uint256 (I.calldata.toList.drop 4) 32
       DecodeMode.legacySolc05 = some (.int (Int.ofNat

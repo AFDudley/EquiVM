@@ -133,8 +133,7 @@ theorem simpleAuctionHighestBidderBody {σ σ₀ A I}
           (.returned { contract := simpleAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.address (AccountAddress.ofNat (highestBidderReturnWord σ I).toNat))])) := by
-      simpa [highestBidderWord, highestBidderReturnWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using simpleAuctionHighestBidderBodyReturns
+      exact simpleAuctionHighestBidderBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (simpleAuctionX_highestBidder (g := Sat256.ofUInt256 g) hwv hreach)

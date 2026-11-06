@@ -31,6 +31,7 @@ theorem evalExpr_constructor_thisWord {caller : Frame} (evm : EVM.State) :
     castValue?, uint256St, uint256Int, Fin.toNat, if_pos hlt, EvalResult.ofOption,
     uniswapUint256Value, uint256Value]
   rw [UInt256.toNat_ofNat_of_lt hlt]
+  simp_all
 
 theorem evalPackedArgs_constructor_domain {caller : Frame} (evm : EVM.State) :
     evalPackedArgs? config caller evm

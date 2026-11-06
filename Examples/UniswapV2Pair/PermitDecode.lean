@@ -8,6 +8,7 @@ namespace UniswapV2Pair
 /-! ## `permit` ABI decoding helpers -/
 
 
+set_option maxHeartbeats 400000 in
 theorem permitDecodeABIValues_ok_core {I : ExecutionEnv} (hsz228 : 228 ≤ I.calldata.size) :
     decodeABIValues? [legacyAddr, legacyAddr, uint256, uint256, uint8, bytes32, bytes32]
       (I.calldata.toList.drop 4) 0 0 224 224 DecodeMode.legacySolc05 =
@@ -87,14 +88,12 @@ theorem permitDecodeABIValues_ok_core {I : ExecutionEnv} (hsz228 : 228 ≤ I.cal
   have hdec160 : decodeABIValue? (.elem (.bytes 31)) (I.calldata.toList.drop 4) 160
       DecodeMode.legacySolc05 = some (.fixedBytes bytes32Width
         (((I.calldata.toList.drop 4).drop 160).take 32), 160 + 32) := by
-    simpa [bytes32, bytes32Width] using
-      decodeABIValue_legacyBytes32_ok (bytes := I.calldata.toList.drop 4)
+    exact decodeABIValue_legacyBytes32_ok (bytes := I.calldata.toList.drop 4)
         (start := 160) htake160
   have hdec192 : decodeABIValue? (.elem (.bytes 31)) (I.calldata.toList.drop 4) 192
       DecodeMode.legacySolc05 = some (.fixedBytes bytes32Width
         (((I.calldata.toList.drop 4).drop 192).take 32), 192 + 32) := by
-    simpa [bytes32, bytes32Width] using
-      decodeABIValue_legacyBytes32_ok (bytes := I.calldata.toList.drop 4)
+    exact decodeABIValue_legacyBytes32_ok (bytes := I.calldata.toList.drop 4)
         (start := 192) htake192
   simp [decodeABIValues?, legacyAddr, addr, uint256, uint8, bytes32, bytes32Width,
     uint256Int, uint8Int, staticABIEncodedSize?, isDynamicABIType, bind, Option.bind,

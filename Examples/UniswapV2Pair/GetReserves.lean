@@ -360,9 +360,7 @@ theorem RD.uniswapGetReservesRoutine {g : Sat256} {s0 : State} {ee : ExecutionEn
   have rdRet := rd2893.jump (by native_decide) hret (by simp only [List.length_cons]; omega)
   rw [u256_land_comm UniswapV2Pair.reserve32Mask] at rdRet
   rw [u256_land_comm UniswapV2Pair.reserve112Mask] at rdRet
-  exact ⟨_, _, by simpa [UniswapV2Pair.blockTimestampLastWord,
-    UniswapV2Pair.reserve1Word, UniswapV2Pair.reserve0Word,
-    UniswapV2Pair.getReservesSlotWord, Reasoning.Reach.solcSlotWordAt] using rdRet⟩
+  exact ⟨_, _, by exact rdRet⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapReturnGetReserves705 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
@@ -479,9 +477,7 @@ theorem uniswapGetReservesBodyCore
             .int (Int.ofNat (reserve0Word σ I).toNat),
             .int (Int.ofNat (reserve1Word σ I).toNat),
             .int (Int.ofNat (blockTimestampLastWord σ I).toNat)])) := by
-    simpa [reserve0Word, reserve1Word, blockTimestampLastWord, getReservesSlotWord,
-      initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      uniswapGetReservesBodyReturns
+    exact uniswapGetReservesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (by simp only [initState]; exact hwv)
   have henc :

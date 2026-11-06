@@ -53,7 +53,7 @@ theorem RD.uniswapSafeTransferDynamicEntryToCallMade
     simp only [min, hle, ↓reduceIte]
     rfl
   refine ⟨σ', z, out, A_in, callGas, k', C', ?_, ?_, houtSize⟩
-  · simpa only [hp164] using hΘ
+  · simpa only [hp164] using! hΘ
   · rw [hlen, byteArray_write_len_zero, hawCall] at rd6595
     exact rd6595
 

@@ -42,7 +42,7 @@ theorem erc20X_transferFromAfterAllowanceSLoad {σ σ₀ A I} {g : Sat256}
     raw mstore 6 (transferFromFromArgMem (transferFromFromWord I)) (UInt256.ofNat 3)
       (by vyper_erc20_transferFrom_decode) mem_cost rfl (by decide) (by evm_ov),
     push1 ⟨36⟩, calldataload, dup1, push1 ⟨160⟩, shr, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferFromToWord, calldataWord] using hcanonToGuard),
+    jumpiNT (by exact hcanonToGuard),
     push1 ⟨96⟩,
     raw mstore 3
       (transferFromArgsMem (transferFromFromWord I) (transferFromToWord I))
@@ -93,7 +93,7 @@ theorem erc20X_transferFromAfterAllowanceSLoad {σ σ₀ A I} {g : Sat256}
     swap1, pop]
   obtain ⟨k1, C1, rdAfterLoad⟩ := rd412.sload
     (by vyper_erc20_transferFrom_decode) (by evm_ov)
-  exact ⟨_, _, by simpa [transferFromCurrentAllowanceRaw] using rdAfterLoad⟩
+  exact ⟨_, _, by exact rdAfterLoad⟩
 
 theorem erc20X_transferFromAfterAllowanceLoad {σ σ₀ A I} {g : Sat256}
     (hwv : I.weiValue = ⟨0⟩)
@@ -122,7 +122,7 @@ theorem erc20X_transferFromAfterAllowanceLoad {σ σ₀ A I} {g : Sat256}
         (transferFromCurrentAllowanceRaw σ I))
       (UInt256.ofNat 5)
       (by vyper_erc20_transferFrom_decode) mem_cost rfl (by decide) (by evm_ov)]
-  exact ⟨_, _, by simpa [transferFromCurrentAllowanceRaw] using rdAfterStore⟩
+  exact ⟨_, _, by exact rdAfterStore⟩
 
 theorem erc20X_transferFromAfterAllowanceGuard {σ σ₀ A I} {g : Sat256}
     (hallowance : (transferFromValueWord I).toNat ≤
@@ -167,7 +167,7 @@ theorem erc20X_transferFromAfterAllowanceGuard {σ σ₀ A I} {g : Sat256}
             (transferFromCurrentAllowanceRaw σ I)))
       (by decide) (by evm_ov),
     lt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferFromValueWord] using hallowanceGuardRaw)]
+    jumpiNT (by exact hallowanceGuardRaw)]
   exact ⟨_, _, rd423⟩
 
 theorem erc20TransferFromX_insufficientAllowance {σ σ₀ A I} {g : Sat256}
@@ -211,7 +211,7 @@ theorem erc20TransferFromX_insufficientAllowance {σ σ₀ A I} {g : Sat256}
         UInt256.lt
           (transferFromCurrentAllowanceRaw σ I)
           (uInt256OfByteArray (I.calldata.readBytes (⟨68⟩ : UInt256).toNat 32)) = ⟨1⟩ by
-          simpa [transferFromValueWord] using hallowanceGuardRaw]; decide)
+          exact hallowanceGuardRaw]; decide)
       (by vyper_erc20_transferFrom_decode)]
   exact vyperRuntimeRevert801 (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) rd801 rfl (by

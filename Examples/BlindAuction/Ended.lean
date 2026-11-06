@@ -59,7 +59,7 @@ theorem blindAuctionX_ended {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I) ⟨231⟩
         [endedWord σ I, blindAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [endedWord, initState] using rd231₀⟩
+    exact ⟨_, _, by exact rd231₀⟩
   have rd240 := evm_run rd231 with [
     push2 ⟨240⟩, swap1, push1 ⟨255⟩, and, dup2, jump (by jump_dest)]
   have rd206 := evm_run rd240 with [
@@ -150,8 +150,7 @@ theorem blindAuctionEndedBodyCore {σ σ₀ A I} {g : UInt256}
           (.returned { contract := blindAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(wordToElem .bool (endedMaskedWord σ I))])) := by
-      simpa [endedWord, endedMaskedWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-        blindAuctionEndedBodyReturns
+      exact blindAuctionEndedBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (blindAuctionX_ended (g := Sat256.ofUInt256 g) hwv hreach)

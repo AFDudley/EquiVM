@@ -41,14 +41,12 @@ abbrev uStore (I : ExecutionEnv) : Store := (∅ : Store).insert "sharesOut" (ui
 theorem uDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (unwrapTransition.params.map Param.name)
       (transitionSignature unwrapTransition).paramTypes I.calldata = some (uStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, unwrapTransition, uStore, argWord_eq] using
-    decodeMode_uint256_ok "sharesOut" I.calldata hsz36
+  exact decodeMode_uint256_ok "sharesOut" I.calldata hsz36
 
 theorem uDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (unwrapTransition.params.map Param.name)
       (transitionSignature unwrapTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, unwrapTransition] using
-    decodeMode_uint256_none_short "sharesOut" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "sharesOut" I.calldata hsz hshort
 
 /-- `shares[msg.sender] := v` through the backend. -/
 theorem assignSharesCaller (imms L : Store) (evm : EVM.State) (v : UInt256) (hL : L.get? "shares" = none) :

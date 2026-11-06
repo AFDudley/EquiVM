@@ -25,8 +25,7 @@ theorem permitRuntimeEcrecoverStaticcallWriteLen_of_size_ge (o : ByteArray)
 theorem permitRuntimeEcrecoverStaticcallWriteLen_of_size_lt (o : ByteArray)
     (hshort : o.size < 32) (hoSize : o.size < UInt256.size) :
     (min (⟨32⟩ : UInt256) (UInt256.ofNat o.size)).toNat = o.size := by
-  simpa using
-    umin_ofNat_right_toNat_of_lt (c := 32) (n := o.size) (by decide) hshort hoSize
+  exact umin_ofNat_right_toNat_of_lt (c := 32) (n := o.size) (by decide) hshort hoSize
 
 end UniswapV2Pair
 

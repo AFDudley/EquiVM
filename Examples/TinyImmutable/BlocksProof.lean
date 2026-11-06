@@ -23,10 +23,7 @@ theorem tinyBlocksReachSelector {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (immWords := wordsOf (immStore v)) (by decide)
     (lt_four_eq_zero_of_ge hsz hsize) rd15
   exact ⟨_, _, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_0_taken_stack,
-      tinyImmutableBlocks.tinyImmutable_block_0_taken_memory,
-      tinyImmutableBlocks.tinyImmutable_block_15_fallthrough_stack,
-      solcFreePtrMem, deployedRuntime] using rd25⟩
+    exact rd25⟩
 
 theorem tinyBlocksReachOwnerBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue = ⟨0⟩)
@@ -42,10 +39,9 @@ theorem tinyBlocksReachOwnerBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
     rw [solcSelectorWord, tinyOwnerEvmSelector hsz, howner]
     decide
   have h := tinyImmutableBlocks.tinyImmutable_block_25_taken (immWords := wordsOf (immStore v))
-    (by decide) (by simpa [solcSelectorWord] using hcond) hvalid rd25
+    (by decide) (by exact hcond) hvalid rd25
   exact ⟨_, _, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_25_taken_stack,
-      solcSelectorWord, deployedRuntime] using h⟩
+    exact h⟩
 
 theorem tinyBlocksReachQuoteBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue = ⟨0⟩)
@@ -60,7 +56,7 @@ theorem tinyBlocksReachQuoteBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
     decide
   have rd41 := tinyImmutableBlocks.tinyImmutable_block_25_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [solcSelectorWord] using hownerCond) rd25
+    (by exact hownerCond) rd25
   have hquoteCond : UInt256.eq ⟨3978024812⟩ (solcSelectorWord I) ≠ ⟨0⟩ := by
     rw [solcSelectorWord, tinyQuoteEvmSelector hsz, hquote]
     decide
@@ -68,10 +64,9 @@ theorem tinyBlocksReachQuoteBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
       (UInt256.ofNat 148) = true := by
     exact tinyContains148 v
   have h := tinyImmutableBlocks.tinyImmutable_block_41_taken (immWords := wordsOf (immStore v))
-    (by decide) (by simpa [solcSelectorWord] using hquoteCond) hvalid rd41
+    (by decide) (by exact hquoteCond) hvalid rd41
   exact ⟨_, _, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord, deployedRuntime] using h⟩
+    exact h⟩
 
 theorem tinyBlocksReachScaleBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue = ⟨0⟩)
@@ -87,14 +82,13 @@ theorem tinyBlocksReachScaleBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
     decide
   have rd41 := tinyImmutableBlocks.tinyImmutable_block_25_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [solcSelectorWord] using hownerCond) rd25
+    (by exact hownerCond) rd25
   have hquoteCond : UInt256.eq ⟨3978024812⟩ (solcSelectorWord I) = ⟨0⟩ := by
     rw [solcSelectorWord, tinyQuoteEvmSelector hsz, hquote]
     decide
   have rd52 := tinyImmutableBlocks.tinyImmutable_block_41_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord] using hquoteCond) rd41
+    (by exact hquoteCond) rd41
   have hscaleCond : UInt256.eq ⟨4112390170⟩ (solcSelectorWord I) ≠ ⟨0⟩ := by
     rw [solcSelectorWord, tinyScaleEvmSelector hsz, hscale]
     decide
@@ -102,11 +96,9 @@ theorem tinyBlocksReachScaleBody {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
       (UInt256.ofNat 181) = true := by
     exact tinyContains181 v
   have h := tinyImmutableBlocks.tinyImmutable_block_52_taken (immWords := wordsOf (immStore v))
-    (by decide) (by simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord] using hscaleCond) hvalid rd52
+    (by decide) (by exact hscaleCond) hvalid rd52
   exact ⟨_, _, by
-    simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord, deployedRuntime] using h⟩
+    exact h⟩
 
 theorem tinyBlocksX_callvalue_ne {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue ≠ ⟨0⟩) :
@@ -116,7 +108,7 @@ theorem tinyBlocksX_callvalue_ne {σ σ₀ A I} {g : Sat256} (v : TinyImmutables
     (immWords := wordsOf (immStore v)) (by decide) (isZero_eq_zero_of_ne hwv) rd0
   have hrev := tinyImmutableBlocks.tinyImmutable_block_12 (immWords := wordsOf (immStore v))
     (by simp [tinyImmutableBlocks.tinyImmutable_block_0_fallthrough_stack]) rd12
-  simpa using hrev
+  exact hrev
 
 theorem tinyBlocksX_short {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue = ⟨0⟩)
@@ -135,7 +127,7 @@ theorem tinyBlocksX_short {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (immWords := wordsOf (immStore v)) (by decide) (lt_four_ne_zero_of_lt hsz) hvalid63 rd15
   have hrev := tinyImmutableBlocks.tinyImmutable_block_63 (immWords := wordsOf (immStore v))
     (by simp [tinyImmutableBlocks.tinyImmutable_block_15_taken_stack]) rd63
-  simpa using hrev
+  exact hrev
 
 theorem tinyBlocksX_noMatch {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     (hcode : I.code = deployedRuntime v) (hwv : I.weiValue = ⟨0⟩)
@@ -150,24 +142,22 @@ theorem tinyBlocksX_noMatch {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     decide
   have rd41 := tinyImmutableBlocks.tinyImmutable_block_25_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [solcSelectorWord] using hownerCond) rd25
+    (by exact hownerCond) rd25
   have hquoteCond : UInt256.eq ⟨3978024812⟩ (solcSelectorWord I) = ⟨0⟩ := by
     rw [solcSelectorWord, tinyQuoteEvmSelector hsz, hquote]
     decide
   have rd52 := tinyImmutableBlocks.tinyImmutable_block_41_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord] using hquoteCond) rd41
+    (by exact hquoteCond) rd41
   have hscaleCond : UInt256.eq ⟨4112390170⟩ (solcSelectorWord I) = ⟨0⟩ := by
     rw [solcSelectorWord, tinyScaleEvmSelector hsz, hscale]
     decide
   have rd63 := tinyImmutableBlocks.tinyImmutable_block_52_fallthrough
     (immWords := wordsOf (immStore v)) (by decide)
-    (by simpa [tinyImmutableBlocks.tinyImmutable_block_25_fallthrough_stack,
-      solcSelectorWord] using hscaleCond) rd52
+    (by exact hscaleCond) rd52
   have hrev := tinyImmutableBlocks.tinyImmutable_block_63 (immWords := wordsOf (immStore v))
     (by simp) rd63
-  simpa using hrev
+  exact hrev
 
 theorem RD.tinyBlocksReturnWord167 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     {k C : Nat} {v : TinyImmutables} {val : UInt256} {R : List UInt256}
@@ -182,7 +172,7 @@ theorem RD.tinyBlocksReturnWord167 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
   have rd139 := tinyImmutableBlocks.tinyImmutable_block_167 (immWords := wordsOf (immStore v))
     (by omega) hvalid h
   have hload : memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ := by
-    simpa [memLoad] using solcFreePtrMem_mload64
+    exact solcFreePtrMem_mload64
   have hmem : tinyImmutableBlocks.tinyImmutable_block_167_memory
       (mem := solcFreePtrMem) (x0 := val) = solcReturnMem val := by
     simp [tinyImmutableBlocks.tinyImmutable_block_167_memory, hload, solcReturnMem,
@@ -191,12 +181,12 @@ theorem RD.tinyBlocksReturnWord167 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
   have hret := tinyImmutableBlocks.tinyImmutable_block_139 (immWords := wordsOf (immStore v))
     (by omega) rd139
   have hloadRet : memLoad (UInt256.ofNat 64) (solcReturnMem val) = ⟨128⟩ := by
-    simpa [memLoad] using solcReturnMem_mload64 val
+    exact solcReturnMem_mload64 val
   rw [hloadRet] at hret
   simpa [tinyImmutableBlocks.tinyImmutable_block_167_stack, hload,
     show (⟨128⟩ : UInt256).toNat = 128 from by decide,
     show (UInt256.sub (UInt256.ofNat 32 + ⟨128⟩) ⟨128⟩).toNat = 32 from by decide,
-    solcReturnMem_read128, deployedRuntime] using hret
+    solcReturnMem_read128, deployedRuntime] using! hret
 
 theorem RD.tinyBlocksReturnAddress106 {g : Sat256} {s0 : State} {ee : ExecutionEnv}
     {k C : Nat} {v : TinyImmutables} {val ret : UInt256} {R : List UInt256}
@@ -209,7 +199,7 @@ theorem RD.tinyBlocksReturnAddress106 {g : Sat256} {s0 : State} {ee : ExecutionE
   have rd139 := tinyImmutableBlocks.tinyImmutable_block_106 (immWords := wordsOf (immStore v))
     (by simp only [List.length_cons] at hov ⊢; omega) h
   have hload : memLoad (UInt256.ofNat 64) solcFreePtrMem = ⟨128⟩ := by
-    simpa [memLoad] using solcFreePtrMem_mload64
+    exact solcFreePtrMem_mload64
   have hmem : tinyImmutableBlocks.tinyImmutable_block_106_memory
       (mem := solcFreePtrMem) (x0 := val) =
       solcReturnMem (UInt256.land val solcAddrMask) := by
@@ -223,11 +213,11 @@ theorem RD.tinyBlocksReturnAddress106 {g : Sat256} {s0 : State} {ee : ExecutionE
     (by simp only [List.length_cons] at hov ⊢; omega) rd139
   have hloadRet : memLoad (UInt256.ofNat 64)
       (solcReturnMem (UInt256.land val solcAddrMask)) = ⟨128⟩ := by
-    simpa [memLoad] using solcReturnMem_mload64 (UInt256.land val solcAddrMask)
+    exact solcReturnMem_mload64 (UInt256.land val solcAddrMask)
   rw [hloadRet] at hret
   simpa [tinyImmutableBlocks.tinyImmutable_block_106_stack, hload,
     show (⟨128⟩ : UInt256).toNat = 128 from by decide,
     show (UInt256.sub (UInt256.ofNat 32 + ⟨128⟩) ⟨128⟩).toNat = 32 from by decide,
-    solcReturnMem_read128, deployedRuntime] using hret
+    solcReturnMem_read128, deployedRuntime] using! hret
 
 end TinyImmutable

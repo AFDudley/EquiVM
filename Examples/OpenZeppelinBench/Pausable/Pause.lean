@@ -57,7 +57,7 @@ theorem pauseAssign (evm : EVM.State) :
     decide
   have hstore :
       storageLocStore evm (boolLoc ⟨0⟩) (.bool true) = some (pausePostState evm) := by
-    simpa [pausePostState] using storageLocStore_bool_true_offset0 evm ⟨0⟩
+    exact storageLocStore_bool_true_offset0 evm ⟨0⟩
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
     (stele := { contract := contract, locals := ∅ }) (evm := evm) (evm' := pausePostState evm)
     (slot := pausedRef) (er := { base := "_paused", steps := [] }) (ty := boolSt)
@@ -76,7 +76,7 @@ theorem pausablePauseBodyReturns (evm : EVM.State)
   refine ExecFuncBody.execBlockOK ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hzeroPaused : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
+    exact hzero
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalWhenNotPausedTrue evm ∅ hzeroPaused (by simp))) ?_
   exact ExecBlock.consNormal (ExecStmt.assign
@@ -95,7 +95,7 @@ theorem pausablePauseBodyStatic (evm : EVM.State)
   refine ExecFuncBody.execBlockStatic ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hzeroPaused : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
+    exact hzero
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalWhenNotPausedTrue evm ∅ hzeroPaused (by simp))) ?_
   exact ExecBlock.consStatic
@@ -110,7 +110,7 @@ theorem pausablePauseBodyReverts_paused (evm : EVM.State)
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hnzPaused : pausedWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
+    exact hnz
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (pausableEvalWhenNotPausedFalse evm ∅ hnzPaused (by simp)))
 
@@ -139,7 +139,7 @@ theorem pausableX_pause_success {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨284⟩
       [pausedRawWord σ I, ⟨0⟩, ⟨157⟩, ⟨97⟩, pausableSelWord I] solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd284₀⟩
+    exact ⟨_, _, by exact rd284₀⟩
   have rd288₀ := evm_run rd284 with [push1 ⟨255⟩, not, and, push1 ⟨1⟩]
   have rd288 := rd288₀
   have hland : UInt256.land (UInt256.lnot ⟨255⟩) (pausedRawWord σ I) =
@@ -164,7 +164,7 @@ theorem pausableX_pause_success {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨293⟩
       [⟨157⟩, ⟨97⟩, pausableSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (pausePostMap σ I) k C := by
-    exact ⟨_, _, by simpa [pausePostMap] using rd293₀⟩
+    exact ⟨_, _, by exact rd293₀⟩
   have rd326 := rd293.pushConst pausedTopic (width := 32) (op := .PUSH32)
     (by decide) (by decide) (by evm_ov)
   have rd243 := evm_run rd326 with [push2 ⟨243⟩, caller, swap1, jump (by jump_dest), jumpdest]
@@ -233,8 +233,7 @@ theorem pausablePauseBody {σ σ₀ A I}
   by_cases hzero : pausedWord σ I = ⟨0⟩
   · have hzeroS : UInt256.land (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩) ⟨255⟩ = ⟨0⟩ := by
-      simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
-        using hzero
+      exact hzero
     by_cases hperm : I.perm = true
     · have hbody := pausablePauseBodyReturns (hperm := hperm)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)
@@ -256,8 +255,7 @@ theorem pausablePauseBody {σ σ₀ A I}
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv)
       (by
-        simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
-          using hzero)
+        exact hzero)
     exact (pausableX_pause_revert (g := Sat256.ofUInt256 g) hreach hzero)
       |>.reEquivExecutionRevert hcode hd hdec hbody
 

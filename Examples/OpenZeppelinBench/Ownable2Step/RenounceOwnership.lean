@@ -158,8 +158,7 @@ theorem renounceOwnershipAssignPending (evm : EVM.State) :
   have hstore :
       storageLocStore evm (addrLoc ⟨1⟩) (.address (AccountAddress.ofNat 0)) =
         some (renounceOwnershipAfterPendingState evm) := by
-    simpa [renounceOwnershipAfterPendingState, renounceOwnershipClearAddressWord] using
-      storageLocStore_address_offset0 evm ⟨1⟩ ⟨0⟩ (by decide)
+    exact storageLocStore_address_offset0 evm ⟨1⟩ ⟨0⟩ (by decide)
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
     (stele := { contract := contract, locals := ∅ }) (evm := evm)
     (evm' := renounceOwnershipAfterPendingState evm) (slot := pendingOwnerRef)
@@ -184,8 +183,7 @@ theorem renounceOwnershipAssignOwner (evm : EVM.State) :
       storageLocStore (renounceOwnershipAfterPendingState evm) (addrLoc ⟨0⟩)
           (.address (AccountAddress.ofNat 0)) =
         some (renounceOwnershipAfterOwnerState evm) := by
-    simpa [renounceOwnershipAfterOwnerState, renounceOwnershipClearAddressWord] using
-      storageLocStore_address_offset0 (renounceOwnershipAfterPendingState evm) ⟨0⟩
+    exact storageLocStore_address_offset0 (renounceOwnershipAfterPendingState evm) ⟨0⟩
         ⟨0⟩ (by decide)
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
     (stele := { contract := contract, locals := ∅ })
@@ -311,7 +309,7 @@ theorem ownable2StepX_renounceOwnership_success {σ σ₀ A I} {g : Sat256}
       [renounceOwnershipPendingOwnerWord σ I, ⟨1⟩, ⟨0⟩, ⟨200⟩, ⟨97⟩,
         ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [renounceOwnershipPendingOwnerWord] using rd436₀⟩
+    exact ⟨_, _, by exact rd436₀⟩
   have rd446₀ := evm_run rd436 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, not, and]
   have hclear :
@@ -336,7 +334,7 @@ theorem ownable2StepX_renounceOwnership_success {σ σ₀ A I} {g : Sat256}
       [⟨0⟩, ⟨200⟩, ⟨97⟩, ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty
       (renounceOwnershipAfterPendingMap σ I) k C := by
-    exact ⟨_, _, by simpa [renounceOwnershipAfterPendingMap] using rd448₀⟩
+    exact ⟨_, _, by exact rd448₀⟩
   let σp := renounceOwnershipAfterPendingMap σ I
   have rd454 := evm_run rd448 with [push2 ⟨272⟩, dup2, push0, dup1]
   obtain ⟨_, _, rd455₀⟩ := rd454.sload (by decide) (by evm_ov)
@@ -345,7 +343,7 @@ theorem ownable2StepX_renounceOwnership_success {σ σ₀ A I} {g : Sat256}
       [renounceOwnershipOwnerWordAfterPending σ I, ⟨0⟩, ⟨0⟩, ⟨272⟩, ⟨0⟩,
         ⟨200⟩, ⟨97⟩, ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (σp) k C := by
-    exact ⟨_, _, by simpa [σp, renounceOwnershipOwnerWordAfterPending] using rd455₀⟩
+    exact ⟨_, _, by exact rd455₀⟩
   have rd478 := evm_run rd455 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, dup4, dup2, and,
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, not, dup4, and, dup2]
@@ -373,7 +371,7 @@ theorem ownable2StepX_renounceOwnership_success {σ σ₀ A I} {g : Sat256}
         ⟨200⟩, ⟨97⟩, ownable2StepSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty
       (renounceOwnershipAfterOwnerMap σ I) k C := by
-    exact ⟨_, _, by simpa [renounceOwnershipAfterOwnerMap, σp] using rd481₀⟩
+    exact ⟨_, _, by exact rd481₀⟩
   have rd491pre := evm_run rd481 with [
     push1 ⟨64⟩,
     raw mload 0 ⟨128⟩ (UInt256.ofNat 3) (by decide)
@@ -433,8 +431,7 @@ theorem ownable2StepRenounceOwnershipBody {σ σ₀ A I}
         UInt256.land (Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨0⟩)
             solcAddrMask =
           ownable2StepSourceWord evmS.executionEnv := by
-      simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
-        renounceOwnershipOwnerWord, ownable2StepSourceWord] using howner
+      exact howner
     by_cases hperm : I.perm = true
     · have hbody := ownable2StepRenounceOwnershipBodyReturns (hperm := hperm) evmS
         (by simp only [evmS, initState]; exact hwv) hownerStele
@@ -464,8 +461,7 @@ theorem ownable2StepRenounceOwnershipBody {σ σ₀ A I}
           ownable2StepSourceWord evmS.executionEnv := by
       intro h
       apply howner
-      simpa [evmS, initState, Stele.EVM.storageLoad, State.lookupAccount,
-        renounceOwnershipOwnerWord, ownable2StepSourceWord] using h
+      exact h
     have hbody := ownable2StepRenounceOwnershipBodyReverts_owner evmS
       (by simp only [evmS, initState]; exact hwv) hownerStele
     exact (ownable2StepX_renounceOwnership_revert_owner (g := Sat256.ofUInt256 g)

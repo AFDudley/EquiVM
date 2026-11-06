@@ -52,8 +52,7 @@ theorem erc20X_transferFromAfterToLoad {σ σ₀ A I} {g : Sat256}
           (transferFromAllowanceDebitI σ σ₀ A I g)
           (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm0 I) I) =
         transferFromToBalanceWord evm0 I := by
-    simpa [evm0] using
-      (transferFromToBalanceRawAfterBalance_initState
+    exact (transferFromToBalanceRawAfterBalance_initState
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
   have hafterSize :
       (transferFromAfterFromLoadMemI σ I).size = 160 := by
@@ -101,8 +100,7 @@ theorem erc20X_transferFromAfterToLoad {σ σ₀ A I} {g : Sat256}
         (⟨543⟩ : UInt256) := by
     native_decide
   exact ⟨_, _, by
-    simpa [evm0, htoLoadRaw, hpc543, transferFromAfterToLoadMemI,
-      transferFromToBalanceRawAfterBalance] using rdAfterLoad⟩
+    exact rdAfterLoad⟩
 
 theorem erc20X_transferFromBeforeToStore {σ σ₀ A I} {g : Sat256}
     (hfit : transferFromNewToNat (initState σ σ₀ g A I) I < UInt256.size)
@@ -135,8 +133,7 @@ theorem erc20X_transferFromBeforeToStore {σ σ₀ A I} {g : Sat256}
           (transferFromAllowanceDebitI σ σ₀ A I g)
           (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm0 I) I) =
         transferFromToBalanceWord evm0 I := by
-    simpa [evm0] using
-      (transferFromToBalanceRawAfterBalance_initState
+    exact (transferFromToBalanceRawAfterBalance_initState
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
   have hnewRaw :
       transferFromToBalanceRawAfterBalance σ I
@@ -167,7 +164,7 @@ theorem erc20X_transferFromBeforeToStore {σ σ₀ A I} {g : Sat256}
   have rdBeforeStore := evm_run rdAfterLoad with [
     push1 ⟨68⟩, calldataload,
     dup1, dup3, add, dup3, dup2, lt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferFromValueWord] using hcreditGuardRaw),
+    jumpiNT (by exact hcreditGuardRaw),
     swap1, pop, swap1, pop, dup2]
   have hnewRaw' :
       transferFromToBalanceRawAfterBalance σ I
@@ -175,7 +172,7 @@ theorem erc20X_transferFromBeforeToStore {σ σ₀ A I} {g : Sat256}
           (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm0 I) I) +
           uInt256OfByteArray (I.calldata.readBytes (⟨68⟩ : UInt256).toNat 32) =
         transferFromNewToWord evm0 I := by
-    simpa [transferFromValueWord] using hnewRaw
+    exact hnewRaw
   have hpc561 :
       (⟨543⟩ : UInt256) + UInt256.ofNat 2 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +
           ⟨1⟩ + ⟨1⟩ + UInt256.ofNat 3 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ +

@@ -244,21 +244,14 @@ theorem accessControlReachHighBody {σ σ₀ A I} {g : Sat256}
       (i := i) hcode hwv hsz hsize hprefix (by jump_dest) accessControlSplitWellFormed
       (by simpa [accessControlSelWord, solcSelectorWord] using hpivot)
       (fun j hj => by
-        simpa [accessControlHighFirstArmPc, accessControlSplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          accessControlHighArmsWellFormed j (le_trans hj hi))
+        exact accessControlHighArmsWellFormed j (le_trans hj hi))
       (fun j hj => by
-        simpa [accessControlSelWord, solcSelectorWord, accessControlHighFirstArmPc,
-          accessControlSplitPc, selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc,
-          selArmEqPc, selArmPush4Pc] using heq0 j hj)
+        exact heq0 j hj)
       (by
-        simpa [accessControlSelWord, solcSelectorWord, accessControlHighFirstArmPc,
-          accessControlSplitPc, selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc,
-          selArmEqPc, selArmPush4Pc] using htake)
+        exact htake)
       hjd
       (by
-        simpa [accessControlHighFirstArmPc, accessControlSplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using hbody))
+        exact hbody))
 
 theorem accessControlReachLowBody {σ σ₀ A I} {g : Sat256}
     (i : ℕ) (hi : i ≤ 2) (bodyPC : UInt256)
@@ -290,21 +283,14 @@ theorem accessControlReachLowBody {σ σ₀ A I} {g : Sat256}
       (i := i) hcode hwv hsz hsize hprefix (by jump_dest) accessControlSplitWellFormed
       (by simpa [accessControlSelWord, solcSelectorWord] using hpivot) (by jump_dest) (by decide)
       (fun j hj => by
-        simpa [accessControlLowFirstArmPc, accessControlLowJumpdestPc, accessControlSplitPc,
-          armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          accessControlLowArmsWellFormed j (le_trans hj hi))
+        exact accessControlLowArmsWellFormed j (le_trans hj hi))
       (fun j hj => by
-        simpa [accessControlSelWord, solcSelectorWord, accessControlLowFirstArmPc,
-          accessControlLowJumpdestPc, accessControlSplitPc, armTgt, pushAt, selArmPushTgtPc,
-          selArmEqPc, selArmPush4Pc] using heq0 j hj)
+        exact heq0 j hj)
       (by
-        simpa [accessControlSelWord, solcSelectorWord, accessControlLowFirstArmPc,
-          accessControlLowJumpdestPc, accessControlSplitPc, armTgt, pushAt, selArmPushTgtPc,
-          selArmEqPc, selArmPush4Pc] using htake)
+        exact htake)
       hjd
       (by
-        simpa [accessControlLowFirstArmPc, accessControlLowJumpdestPc, accessControlSplitPc,
-          armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using hbody))
+        exact hbody))
 
 /-! ## Dispatch failures and global non-payable guard -/
 
@@ -465,8 +451,7 @@ theorem accessControlX_noMatch {σ σ₀ A I} {g : Sat256}
         (initState σ σ₀ g A I) ⟨85⟩ [accessControlSelWord I] solcFreePtrMem
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 5 + 5 + 5 + 5, CS + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [accessControlHighFirstArmPc, accessControlSplitPc, nthArmPc, selArmNextPc,
-        armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h85
+      exact h85
     obtain ⟨_, _, h85rd⟩ := h85'
     exact h85rd.revertStub (by decide) (by decide) (by decide) (by simp)
   · have h88 := RD.selectorSplitTakenAuto hsplit accessControlSplitWellFormed hpivot
@@ -483,9 +468,7 @@ theorem accessControlX_noMatch {σ σ₀ A I} {g : Sat256}
         (initState σ σ₀ g A I) ⟨122⟩ [accessControlSelWord I] solcFreePtrMem
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 1 + 5 + 5 + 5, CS + 22 + 1 + 22 + 22 + 22, ?_⟩
-      simpa [accessControlLowFirstArmPc, accessControlLowJumpdestPc, accessControlSplitPc,
-        nthArmPc, selArmNextPc, armTgtWidth, armTgt, pushAt, selArmJumpiPc, selArmPushTgtPc,
-        selArmEqPc, selArmPush4Pc] using h122
+      exact h122
     obtain ⟨_, _, h122rd⟩ := h122'
     have h123 := h122rd.jumpdest (by decide) (by simp)
     exact h123.revertStub (by decide) (by decide) (by decide) (by simp)

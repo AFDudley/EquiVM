@@ -66,16 +66,14 @@ theorem setPausedDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (setPausedTransition.params.map Param.name)
       (transitionSignature setPausedTransition).paramTypes I.calldata = some (setPausedStore I) := by
   rw [argWord_eq] at hlt
-  simpa [config, contract, Syntax.contractSyntax, setPausedTransition, setPausedStore, argWord_eq] using
-    decodeMode_bool_ok I.calldata hsz36 hlt
+  exact decodeMode_bool_ok I.calldata hsz36 hlt
 
 theorem setPausedDecode_none {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnlt : ¬ (argWord I).toNat < 2) :
     config.externalABI.decodeCalldata? (setPausedTransition.params.map Param.name)
       (transitionSignature setPausedTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnlt
-  simpa [config, contract, Syntax.contractSyntax, setPausedTransition] using
-    decodeMode_bool_none I.calldata hsz36 hnlt
+  exact decodeMode_bool_none I.calldata hsz36 hnlt
 
 theorem setPausedDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size)
     (hshort : I.calldata.size < 36) :
