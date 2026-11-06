@@ -411,8 +411,7 @@ theorem callerDecode_n {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
           (.address (Ethereum.AccountAddress.ofNat (callerArg0 I).toNat))).insert "n"
           (.int (Int.ofNat (callerArg1 I).toNat))) := by
   show decodeCalldata ["t", "n"] [addr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, calldataWord, callerArg0, callerArg1]
-    using decodeCalldata_addr_uint256_ok
+  exact decodeCalldata_addr_uint256_ok
       (cd := I.calldata) (x := "t") (y := "n") hsz68 hbig hcanon
 
 theorem callerDecode_none_short {I : ExecutionEnv} (hsz4 : 4 ≤ I.calldata.size)

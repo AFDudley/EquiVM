@@ -874,7 +874,7 @@ theorem RD.uniswapSkimSafeTransferCopySetupToSelectorPatch {g : Sat256} {s0 : St
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem7 skimSafeTransferPatchedSelectorWord; rfl)
       (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa [skimSafeTransferSelectorPatchMask] using rd6491⟩
+  exact ⟨_, _, by exact rd6491⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferSelectorPatchToCopyLoop {g : Sat256} {s0 : State}
@@ -901,7 +901,7 @@ theorem RD.uniswapSkimSafeTransferSelectorPatchToCopyLoop {g : Sat256} {s0 : Sta
       (by native_decide) (by evm_ov),
     push1 ⟨0⟩, swap5, push1 ⟨96⟩, swap5, dup10, and,
     swap4, swap3, swap2, dup3, swap2, swap1, dup1, dup4, dup4]
-  exact ⟨_, _, by simpa using rd6512⟩
+  exact ⟨_, _, by exact rd6512⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferCopyLoopFirst {g : Sat256} {s0 : State}
@@ -1010,7 +1010,7 @@ theorem RD.uniswapSkimSafeTransferCopyTail {g : Sat256} {s0 : State}
       (by unfold skimSafeTransferCallMem2 skimSafeTransferTailWord skimSafeTransferTailMask; rfl)
       (by native_decide) (by evm_ov),
     pop, pop, pop, pop, pop, pop]
-  exact ⟨_, _, by simpa [skimSafeTransferTailMask] using rd6575⟩
+  exact ⟨_, _, by exact rd6575⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferBuiltToCall {g : Sat256} {s0 : State}
@@ -1038,7 +1038,7 @@ theorem RD.uniswapSkimSafeTransferBuiltToCall {g : Sat256} {s0 : State}
   rw [show (⟨68⟩ : UInt256) + ⟨292⟩ = ⟨360⟩ by native_decide,
     show UInt256.sub (⟨360⟩ : UInt256) ⟨292⟩ = ⟨68⟩ by native_decide]
     at rd6594
-  exact ⟨gasArg, _, _, by simpa using rd6594⟩
+  exact ⟨gasArg, _, _, by exact rd6594⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferCallMade {g : Sat256} {s0 : State}
@@ -1072,7 +1072,7 @@ theorem RD.uniswapSkimSafeTransferCallMade {g : Sat256} {s0 : State}
   obtain ⟨σ', z, out, A_in, callGas, k', C', hΘ, rd6595, houtSize⟩ :=
     h.call (by native_decide) hdepth (by evm_ov)
   refine ⟨σ', z, out, A_in, callGas, k', C', ?_, ?_, houtSize⟩
-  · simpa using hΘ
+  · exact hΘ
   · have hlen :
         (min (⟨0⟩ : UInt256) (UInt256.ofNat out.size)).toNat = 0 := by
       have hle : (⟨0⟩ : UInt256) ≤ UInt256.ofNat out.size := by

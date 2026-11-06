@@ -72,8 +72,7 @@ theorem mintFeeSqrtPrefixSmall
           "rootK")
         (.ok (mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK) evm) := by
     rw [hrootKValue] at hrootK
-    simpa [mintFeeAfterRootKFrame, mintFeeAfterRootKStore, resumeAfterInternalCall]
-      using hrootK
+    exact hrootK
   have hrootKLast :=
     uniswapSqrtFunctionCallSuccess_le3
       (caller := mintFeeAfterRootKFrame reserve0 reserve1 feeTo true kLast rootK)
@@ -89,8 +88,7 @@ theorem mintFeeSqrtPrefixSmall
         (.ok (mintFeeAfterRootKLastFrame reserve0 reserve1 feeTo true kLast rootK rootKLast)
           evm) := by
     rw [hrootKLastValue] at hrootKLast
-    simpa [mintFeeAfterRootKLastFrame, mintFeeAfterRootKLastStore,
-      resumeAfterInternalCall] using hrootKLast
+    exact hrootKLast
   simpa [rootK, rootKLast] using
     ExecBlock.consNormal hrootK' (ExecBlock.consNormal hrootKLast' ExecBlock.nil)
 

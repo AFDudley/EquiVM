@@ -38,7 +38,7 @@ theorem RD.uniswapBurnAfterUpdateFeeOn {g : Sat256} {s0 : State} {I : ExecutionE
   obtain ⟨k4895, C4895, rd4895₀⟩ := rd4894.sload (by native_decide) (by evm_ov)
   have rd4895 : RD uniswapV2PairBytecode I g s0 ⟨4895⟩
       (slot8 :: supply :: fee :: R) mem aw rdata σ k4895 C4895 := by
-    simpa only [slot8, solcSlotWordAt, solcSlotWord] using rd4895₀
+    exact rd4895₀
   have rd4928 := evm_run rd4895 with [
     push2 ⟨4929⟩, swap1, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨112⟩, shl, sub, dup1, dup3,
     and, swap2, push1 ⟨1⟩, push1 ⟨112⟩, shl, swap1, div, and, push4 ⟨0xffffffff⟩,

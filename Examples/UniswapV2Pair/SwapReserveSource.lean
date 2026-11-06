@@ -88,6 +88,6 @@ theorem uniswapSwapReserveGuardPrefix (evm : EVM.State) (I : ExecutionEnv)
   obtain ⟨ha0, ha1, hr0, hr1⟩ := swapReserveStore_gets (uniswapLockEnteredState evm) I
   have hreq := evalExpr_swap_reserveRequire (uniswapLockEnteredState evm) ha0 ha1 hr0 hr1
   exact execBlock_append hprefix (ExecBlock.consNormal
-    (ExecStmt.requireTrue (by simpa only [hfit, decide_true] using hreq)) ExecBlock.nil)
+    (ExecStmt.requireTrue (by simpa only [hfit, decide_true] using! hreq)) ExecBlock.nil)
 
 end UniswapV2Pair

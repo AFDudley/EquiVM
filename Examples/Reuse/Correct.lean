@@ -243,16 +243,14 @@ theorem cX_noMatch {σ σ₀ A I} {g : Sat256}
   obtain ⟨k3, C3, h3⟩ := solcSelectorLoad h2 (by decide) (by decide) (by decide) (by decide) (by simp)
   have h4 : RD cBytecode I g (initState σ σ₀ g A I) cFirstArmPc
       [cSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k3 C3 := by
-    simpa [cFirstArmPc, cSelWord, solcFirstArmPcFromPrefix, solcSelectorLoadPc,
-      solcCalldataJumpiPc, solcCalldataRevertPushPc, solcDispatchBodyPc] using h3
+    exact h3
   have h5 := h4
     |>.selectorArmNotTakenAuto (cArmsWellFormed 0 (by omega)) (heq0 0 (by omega)) (by simp)
     |>.selectorArmNotTakenAuto (cArmsWellFormed 1 (by omega)) (heq0 1 (by omega)) (by simp)
   have h48 : ∃ k C, RD cBytecode I g (initState σ σ₀ g A I) ⟨48⟩
       [cSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨k3 + 5 + 5, C3 + 22 + 22, ?_⟩
-    simpa [cFirstArmPc, nthArmPc, selArmNextPc, armTgtWidth, selArmJumpiPc,
-      selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h5
+    exact h5
   obtain ⟨_, _, h48rd⟩ := h48
   exact evm_run h48rd with [
     jumpdest, raw revertStub (by decide) (by decide) (by decide) (by evm_ov) ]
@@ -263,8 +261,7 @@ theorem cDecode_f_ok {I : ExecutionEnv}
     decodeCalldata (Reuse.fTransition.params.map Param.name)
         (transitionSignature Reuse.fTransition).paramTypes I.calldata = some (cArgStore I) := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = _
-  simpa [Reuse.uint256, abiUInt256, cArgStore, cArgValue, cArgWord, calldataWord]
-    using decodeCalldata_uint256_ok (cd := I.calldata) (x := "v") hsz36 hbig
+  exact decodeCalldata_uint256_ok (cd := I.calldata) (x := "v") hsz36 hbig
 
 /-- Calldata decode for `g(uint256)` succeeds when the one word argument is present. -/
 theorem cDecode_g_ok {I : ExecutionEnv}
@@ -272,40 +269,35 @@ theorem cDecode_g_ok {I : ExecutionEnv}
     decodeCalldata (Reuse.gTransition.params.map Param.name)
         (transitionSignature Reuse.gTransition).paramTypes I.calldata = some (cArgStore I) := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = _
-  simpa [Reuse.uint256, abiUInt256, cArgStore, cArgValue, cArgWord, calldataWord]
-    using decodeCalldata_uint256_ok (cd := I.calldata) (x := "v") hsz36 hbig
+  exact decodeCalldata_uint256_ok (cd := I.calldata) (x := "v") hsz36 hbig
 
 /-- `f(uint256)` calldata decode fails when the argument word is incomplete. -/
 theorem cDecode_f_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
     decodeCalldata (Reuse.fTransition.params.map Param.name)
         (transitionSignature Reuse.fTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = none
-  simpa [Reuse.uint256, abiUInt256]
-    using decodeCalldata_uint256_none_short (cd := I.calldata) (x := "v") hshort
+  exact decodeCalldata_uint256_none_short (cd := I.calldata) (x := "v") hshort
 
 /-- `g(uint256)` calldata decode fails when the argument word is incomplete. -/
 theorem cDecode_g_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
     decodeCalldata (Reuse.gTransition.params.map Param.name)
         (transitionSignature Reuse.gTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = none
-  simpa [Reuse.uint256, abiUInt256]
-    using decodeCalldata_uint256_none_short (cd := I.calldata) (x := "v") hshort
+  exact decodeCalldata_uint256_none_short (cd := I.calldata) (x := "v") hshort
 
 /-- `f(uint256)` calldata decode fails on the huge-size branch matching solc's signed check. -/
 theorem cDecode_f_none_huge {I : ExecutionEnv} (hbig : 2 ^ 255 + 4 ≤ I.calldata.size) :
     decodeCalldata (Reuse.fTransition.params.map Param.name)
         (transitionSignature Reuse.fTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = none
-  simpa [Reuse.uint256, abiUInt256]
-    using decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "v") hbig
+  exact decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "v") hbig
 
 /-- `g(uint256)` calldata decode fails on the huge-size branch matching solc's signed check. -/
 theorem cDecode_g_none_huge {I : ExecutionEnv} (hbig : 2 ^ 255 + 4 ≤ I.calldata.size) :
     decodeCalldata (Reuse.gTransition.params.map Param.name)
         (transitionSignature Reuse.gTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["v"] [Reuse.uint256] I.calldata = none
-  simpa [Reuse.uint256, abiUInt256]
-    using decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "v") hbig
+  exact decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "v") hbig
 
 namespace Reasoning.Theory
 

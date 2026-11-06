@@ -44,7 +44,7 @@ theorem uniswapBurnAmountsRuntimeCases
           [burnAmount0Stmt, burnAmount1Stmt] .reverted :=
         ExecBlock.consRevert (ExecStmt.letDeclRevert
           (evalExpr_burn_amount_divZero evm "balance0" liquidity balance0 hliq hb0
-            (by simpa only [hz] using htotal) hfit0))
+            (by simpa only [hz] using! htotal) hfit0))
       rw [hz] at rd4495
       exact Or.inl ⟨hsource, Or.inr (uniswapBurnRuntimeAmount0DivZero rd4495
         (by simp only [List.length_cons]; omega))⟩

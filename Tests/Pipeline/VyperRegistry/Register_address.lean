@@ -392,22 +392,19 @@ theorem raDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (register_addressTransition.params.map Param.name)
       (transitionSignature register_addressTransition).paramTypes I.calldata = some (raStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, register_addressTransition, raStore, argWord_eq] using
-    decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "account") hsz36 hcanon
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "account") hsz36 hcanon
 
 theorem raDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (register_addressTransition.params.map Param.name)
       (transitionSignature register_addressTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, register_addressTransition] using
-    decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "account") hsz hshort
+  exact decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "account") hsz hshort
 
 theorem raDecode_noncanon {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (register_addressTransition.params.map Param.name)
       (transitionSignature register_addressTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, register_addressTransition] using
-    decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "account") hsz36 hnc
+  exact decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "account") hsz36 hnc
 
 /-- `register(address)`: the theorem `Correct.lean` routes selector 2 to. -/
 theorem registryRegister_addressBody {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)

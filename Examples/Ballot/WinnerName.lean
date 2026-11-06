@@ -108,7 +108,7 @@ theorem winnerNameEvalName (evm : EVM.State) (locals : Store) (w : UInt256)
         .fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE
             (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner (winnerNameNameSlot w))) := by
-    simpa [winnerNameNameLoc] using (storageLocLoad_bytes32 evm (winnerNameNameSlot w))
+    exact (storageLocLoad_bytes32 evm (winnerNameNameSlot w))
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .bytes ⟨31, by decide⟩) (hbase := hbase)
     (her := her) (hty := hty) (hloc := hloc)]
   rw [hload]
@@ -396,7 +396,7 @@ theorem ballotWinnerNameBodyCore
           (winningProposalLengthCurrent
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)).toNat := by
       simpa [winningProposalResultCurrent_init,
-        winningProposalLengthWord_eq_current_init] using hbound
+        winningProposalLengthWord_eq_current_init] using! hbound
     obtain ⟨locals', hbody⟩ := ballotWinnerNameBodyReturns
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv) hboundCurrent
@@ -407,7 +407,7 @@ theorem ballotWinnerNameBodyCore
       exact winnerNameNameCurrent_init
     exact (ballotX_winnerName_ok (g := Sat256.ofUInt256 g) hbound hreach)
       |>.reEquivExecutionGen hcode hd hdec hbody (by rfl)
-        (by simpa [hname] using (returnEquiv_of_encode (abit := bytes32)
+        (by simpa [hname] using! (returnEquiv_of_encode (abit := bytes32)
           (rv := .fixedBytes ⟨31, by decide⟩
             (EVM.Word.toBytesBE (winnerNameNameWord σ I)))
           (o := UInt256.toByteArray (winnerNameNameWord σ I))
@@ -418,7 +418,7 @@ theorem ballotWinnerNameBodyCore
           (winningProposalLengthCurrent
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)).toNat := by
       simpa [winningProposalResultCurrent_init,
-        winningProposalLengthWord_eq_current_init] using hbound
+        winningProposalLengthWord_eq_current_init] using! hbound
     have hbody := ballotWinnerNameBodyReverts_oob
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv) hboundCurrent

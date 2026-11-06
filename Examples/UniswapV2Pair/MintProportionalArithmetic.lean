@@ -39,7 +39,7 @@ theorem uniswapMintProportionalArithmeticCases
   by_cases hfit0 : mintAmountProductNat amount0 totalSupply < UInt256.size
   · by_cases hz0 : reserve0 = ⟨0⟩
     · have hsource := uniswapMintProportionalLiquidity0DivZeroReverts evm amount0
-        totalSupply htotal htotalNonzero hamount0 (by simpa only [hz0] using hreserve0) hfit0
+        totalSupply htotal htotalNonzero hamount0 (by simpa only [hz0] using! hreserve0) hfit0
       obtain ⟨_, _, rdMul⟩ := RD.uniswapMintProportionalMul0Entry rd3762 hclean0
         (by simp only [List.length_cons, List.length_nil]; omega)
       obtain ⟨_, _, rdDiv⟩ := RD.uniswapSafeMathMulSuccess
@@ -52,7 +52,7 @@ theorem uniswapMintProportionalArithmeticCases
       · by_cases hz1 : reserve1 = ⟨0⟩
         · have hsource := uniswapMintProportionalLiquidity1DivZeroReverts evm amount0
             amount1 totalSupply reserve0 htotal htotalNonzero hamount0 hamount1 hreserve0
-            (by simpa only [hz1] using hreserve1) hfit0 hfit1 hz0
+            (by simpa only [hz1] using! hreserve1) hfit0 hfit1 hz0
           obtain ⟨_, _, rd3800⟩ := uniswapMintRuntimeProportionalLiquidity0Entry rd3762
             hclean0 hfit0 hz0
           obtain ⟨_, _, rdMul⟩ := RD.uniswapMintProportionalMul1Entry rd3800 hclean1

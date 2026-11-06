@@ -130,8 +130,7 @@ theorem winningProposalEvalVoteCount (evm : EVM.State) (locals : Store) (p : UIn
   have hload :
       storageLocLoad evm (wordLoc (winningProposalVoteCountSlot p)) =
         .int (Int.ofNat (winningProposalVoteCountCurrent evm p).toNat) := by
-    simpa [winningProposalVoteCountCurrent] using
-      (storageLocLoad_uint256 evm (winningProposalVoteCountSlot p))
+    exact (storageLocLoad_uint256 evm (winningProposalVoteCountSlot p))
   rw [evalExpr_storage_scalar (hbackend := rfl) (t := .int uint256Int) (hbase := hbase) (her := her)
     (hty := hty) (hloc := hloc)]
   rw [hload]
@@ -1197,7 +1196,7 @@ theorem ballotWinningProposalBodyCore
     exact winningProposalResultCurrent_init
   exact (ballotX_winningProposal_ok (g := Sat256.ofUInt256 g) hreach)
     |>.reEquivExecutionGen hcode hd hdec hbody (by rfl)
-      (by simpa [hresult] using
+      (by simpa [hresult] using!
         (returnEquiv_of_encode (uint256ReturnEncoding (winningProposalResultWord σ I))))
 
 end Ballot

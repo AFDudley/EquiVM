@@ -1200,7 +1200,7 @@ theorem ballotDelegateX_tailAfterDelegateWeightFrom1134 {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterWeightWord, delegateVoterSlot, initState] using rd1163₀⟩
+      exact rd1163₀⟩
   have rd1167 := evm_run rd1163 with [swap1, swap2, gt, iszero]
   have hweightNat : 1 ≤ (delegateVoterWeightWord σ I w).toNat := by
     have hnz : (delegateVoterWeightWord σ I w).toNat ≠ 0 := by
@@ -1258,7 +1258,7 @@ theorem ballotDelegateX_tailDelegateWeightRevertFrom1134 {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterWeightWord, delegateVoterSlot, initState] using rd1163₀⟩
+      exact rd1163₀⟩
   have rd1167 := evm_run rd1163 with [swap1, swap2, gt, iszero]
   have hgt : UInt256.gt (⟨1⟩ : UInt256) (delegateVoterWeightWord σ I w) = ⟨1⟩ := by
     rw [hdelegateWeight]
@@ -1517,8 +1517,7 @@ theorem ballotDelegateX_loopExitFrom972Current {σ σ₀ A I} {g : Sat256}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot, solcAddrMask, initState,
-        u256_add_comm] using rd1002₀⟩
+      exact rd1002₀⟩
   have rd1005 := evm_run rd1002 with [push2 ⟨256⟩, swap1]
   have rd1006 := RD.div rd1005 (by native_decide) (by norm_num)
   have rd1008 := evm_run rd1006 with [and, iszero]
@@ -1575,8 +1574,7 @@ theorem ballotDelegateX_loopContinueFrom972Current {σ σ₀ A I} {g : Sat256}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot, solcAddrMask, initState,
-        u256_add_comm] using rd1002₀⟩
+      exact rd1002₀⟩
   have rd1005 := evm_run rd1002 with [push2 ⟨256⟩, swap1]
   have rd1006 := RD.div rd1005 (by native_decide) (by norm_num)
   have rd1008 := evm_run rd1006 with [and, iszero]
@@ -1622,8 +1620,7 @@ theorem ballotDelegateX_loopContinueFrom972Current {σ σ₀ A I} {g : Sat256}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot, initState, u256_add_comm]
-        using rd1042₀⟩
+      exact rd1042₀⟩
   have rd1045 := evm_run rd1042 with [push2 ⟨256⟩, swap1]
   have rd1046 := RD.div rd1045 (by native_decide) (by norm_num)
   have rd1054 := evm_run rd1046 with [swap1, swap2, and, swap1, caller, dup3, sub]
@@ -1684,8 +1681,7 @@ theorem ballotDelegateX_loopSenderRevertTailFrom972Current {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot, solcAddrMask, initState,
-        u256_add_comm] using rd1002₀⟩
+      exact rd1002₀⟩
   have rd1005 := evm_run rd1002 with [push2 ⟨256⟩, swap1]
   have rd1006 := RD.div rd1005 (by native_decide) (by norm_num)
   have rd1008 := evm_run rd1006 with [and, iszero]
@@ -1731,8 +1727,7 @@ theorem ballotDelegateX_loopSenderRevertTailFrom972Current {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       unfold delegateCurrentLoopMem
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot, initState, u256_add_comm]
-        using rd1042₀⟩
+      exact rd1042₀⟩
   have rd1045 := evm_run rd1042 with [push2 ⟨256⟩, swap1]
   have rd1046 := RD.div rd1045 (by native_decide) (by norm_num)
   have rd1054 := evm_run rd1046 with [swap1, swap2, and, swap1, caller, dup3, sub]
@@ -1789,7 +1784,7 @@ theorem ballotDelegateX_tailAfterSenderPackedStoreFrom1134 {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty σ k C := by
     exact ⟨_, _, by
       simpa [delegateSenderPackedWord, delegateSenderPackedSlot, initState, u256_add_comm]
-        using rd1182₀⟩
+        using! rd1182₀⟩
   have rd1205 := evm_run rd1182 with [
     push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨168⟩, shl, sub, not, and,
     push2 ⟨256⟩, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩, shl, sub, dup8, and, mul ]
@@ -1804,8 +1799,7 @@ theorem ballotDelegateX_tailAfterSenderPackedStoreFrom1134 {σ σ₀ A I}
   obtain ⟨_, _, rd1211⟩ := rd1210.sstore hp (by decide) (by evm_ov)
   refine Or.inl ⟨hp, ?_⟩
   exact ⟨_, _, by
-    simpa [delegateTailAfterSenderMap, delegateTailSenderPackedStoreWord,
-      delegateSenderPackedWord, delegateSenderPackedSlot, initState] using rd1211⟩
+    exact rd1211⟩
 
 theorem ballotDelegateX_tailDelegateNotVotedBranchFrom1211 {σ σ₀ A I}
     {g : Sat256} {sel w : UInt256}
@@ -1829,7 +1823,7 @@ theorem ballotDelegateX_tailDelegateNotVotedBranchFrom1211 {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
     exact ⟨_, _, by
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot] using rd1214₀⟩
+      exact rd1214₀⟩
   have rd1218 := evm_run rd1214 with [push1 ⟨255⟩, and, iszero]
   have hzero :
       UInt256.isZero
@@ -1865,7 +1859,7 @@ theorem ballotDelegateX_tailDelegateVotedBranchFrom1211 {σ σ₀ A I}
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
     exact ⟨_, _, by
-      simpa [delegateVoterPackedWord, delegateVoterPackedSlot] using rd1214₀⟩
+      exact rd1214₀⟩
   have rd1218 := evm_run rd1214 with [push1 ⟨255⟩, and, iszero]
   have hzero :
       UInt256.isZero
@@ -1904,7 +1898,7 @@ theorem ballotDelegateX_tailNotVotedToCheckedAddFrom1211 {σ σ₀ A I}
         delegateVoterSlot w, delegateSenderSlot I, w, ⟨156⟩, sel]
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
-    exact ⟨_, _, by simpa [delegateSenderWeightWord, initState] using rd1288₀⟩
+    exact ⟨_, _, by exact rd1288₀⟩
   have rd1289 := evm_run rd1288 with [dup2]
   obtain ⟨_, _, rd1290₀⟩ := rd1289.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd1290⟩ : ∃ k C, RD ballotBytecode I g
@@ -1914,7 +1908,7 @@ theorem ballotDelegateX_tailNotVotedToCheckedAddFrom1211 {σ σ₀ A I}
         delegateVoterSlot w, delegateSenderSlot I, w, ⟨156⟩, sel]
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
-    exact ⟨_, _, by simpa [delegateVoterWeightWord, initState] using rd1290₀⟩
+    exact ⟨_, _, by exact rd1290₀⟩
   exact ⟨_, _, evm_run rd1290 with [
     dup3, swap1, push0, swap1, push2 ⟨1304⟩, swap1, dup5, swap1, push2 ⟨1835⟩,
     jump (by jump_dest) ]⟩
@@ -2045,7 +2039,7 @@ theorem ballotDelegateX_tailVotedBoundsCheckFrom1211 {σ σ₀ A I}
         delegateVoterSlot w, delegateSenderSlot I, w, ⟨156⟩, sel]
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
-    exact ⟨_, _, by simpa [delegateSenderWeightWord, initState] using rd1224₀⟩
+    exact ⟨_, _, by exact rd1224₀⟩
   have rd1229 := evm_run rd1224 with [push1 ⟨2⟩, dup3, dup2, add]
   obtain ⟨_, _, rd1230₀⟩ := rd1229.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd1230⟩ : ∃ k C, RD ballotBytecode I g
@@ -2057,7 +2051,7 @@ theorem ballotDelegateX_tailVotedBoundsCheckFrom1211 {σ σ₀ A I}
       (delegateTailAfterSenderMap σ I w) k C := by
     exact ⟨_, _, by
       simpa [delegateVoterVoteWord, delegateVoterVoteSlot, initState, u256_add_comm]
-        using rd1230₀⟩
+        using! rd1230₀⟩
   have rd1231 := evm_run rd1230 with [dup2]
   obtain ⟨_, _, rd1232₀⟩ := rd1231.sload (by decide) (by evm_ov)
   obtain ⟨_, _, rd1232⟩ : ∃ k C, RD ballotBytecode I g
@@ -2068,7 +2062,7 @@ theorem ballotDelegateX_tailVotedBoundsCheckFrom1211 {σ σ₀ A I}
         delegateVoterSlot w, delegateSenderSlot I, w, ⟨156⟩, sel]
       (delegateCurrentLoopMem I w) (UInt256.ofNat 3) ByteArray.empty
       (delegateTailAfterSenderMap σ I w) k C := by
-    exact ⟨_, _, by simpa [delegateTailProposalsLengthWord, initState] using rd1232₀⟩
+    exact ⟨_, _, by exact rd1232₀⟩
   exact ⟨_, _, evm_run rd1232 with [dup2, lt]⟩
 
 theorem ballotDelegateX_tailVotedOobFrom1211 {σ σ₀ A I}
@@ -2148,8 +2142,7 @@ theorem ballotDelegateX_tailVotedToCheckedAddFrom1211 {σ σ₀ A I}
       (delegateProposalBaseMem w (delegateSourceWord I)) (UInt256.ofNat 3)
       ByteArray.empty (delegateTailAfterSenderMap σ I w) k C := by
     exact ⟨_, _, by
-      simpa [delegateTailProposalCountWord, delegateTailProposalCountSlot, initState]
-        using rd1265₀⟩
+      exact rd1265₀⟩
   exact ⟨_, _, evm_run rd1265 with [
     push2 ⟨1274⟩, swap2, swap1, push2 ⟨1835⟩, jump (by jump_dest) ]⟩
 
@@ -2287,10 +2280,7 @@ theorem delegateTailVoterVotedByteCurrent_afterSenderState_init
     delegateTailVoterVotedByteCurrent
         (delegateTailAfterSenderState (initState σ σ₀ g A I) I w) w =
       delegateVoterVotedByte (delegateTailAfterSenderMap σ I w) I w := by
-  simpa [delegateTailVoterVotedByteCurrent, delegateVoterVotedByte,
-    delegateTailVoterPackedCurrent, delegateVoterPackedWord, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage]
-    using congrArg (fun word => UInt256.land ⟨255⟩ word)
+  exact congrArg (fun word => UInt256.land ⟨255⟩ word)
       (delegateTailAfterSenderState_getD_init
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w
         (delegateVoterPackedSlot w))
@@ -2300,9 +2290,7 @@ theorem delegateTailVoterWeightCurrent_afterSenderState_init
     delegateTailVoterWeightCurrent
         (delegateTailAfterSenderState (initState σ σ₀ g A I) I w) w =
       delegateVoterWeightWord (delegateTailAfterSenderMap σ I w) I w := by
-  simpa [delegateTailVoterWeightCurrent, delegateVoterWeightWord, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage]
-    using delegateTailAfterSenderState_getD_init
+  exact delegateTailAfterSenderState_getD_init
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w (delegateVoterSlot w)
 
 theorem delegateTailSenderWeightCurrent_afterSenderState_init
@@ -2310,9 +2298,7 @@ theorem delegateTailSenderWeightCurrent_afterSenderState_init
     delegateSenderWeightCurrent
         (delegateTailAfterSenderState (initState σ σ₀ g A I) I w) I =
       delegateSenderWeightWord (delegateTailAfterSenderMap σ I w) I := by
-  simpa [delegateSenderWeightCurrent, delegateSenderWeightWord, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage]
-    using delegateTailAfterSenderState_getD_init
+  exact delegateTailAfterSenderState_getD_init
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w (delegateSenderSlot I)
 
 theorem delegateTailVoterVoteCurrent_afterSenderState_init
@@ -2320,9 +2306,7 @@ theorem delegateTailVoterVoteCurrent_afterSenderState_init
     delegateTailVoterVoteCurrent
         (delegateTailAfterSenderState (initState σ σ₀ g A I) I w) w =
       delegateVoterVoteWord (delegateTailAfterSenderMap σ I w) I w := by
-  simpa [delegateTailVoterVoteCurrent, delegateVoterVoteWord, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage]
-    using delegateTailAfterSenderState_getD_init
+  exact delegateTailAfterSenderState_getD_init
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w (delegateVoterVoteSlot w)
 
 theorem delegateTailProposalsLengthCurrent_afterSenderState_init
@@ -2330,9 +2314,7 @@ theorem delegateTailProposalsLengthCurrent_afterSenderState_init
     delegateTailProposalsLengthCurrent
         (delegateTailAfterSenderState (initState σ σ₀ g A I) I w) =
       delegateTailProposalsLengthWord σ I w := by
-  simpa [delegateTailProposalsLengthCurrent, delegateTailProposalsLengthWord,
-    Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage]
-    using delegateTailAfterSenderState_getD_init
+  exact delegateTailAfterSenderState_getD_init
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w ⟨2⟩
 
 theorem delegateTailProposalCountCurrent_init {σ σ₀ A I} {g : Sat256}
@@ -2341,9 +2323,7 @@ theorem delegateTailProposalCountCurrent_init {σ σ₀ A I} {g : Sat256}
       delegateTailProposalCountWord σ I w := by
   unfold delegateTailProposalCountCurrent delegateTailProposalCountSlotCurrent
   rw [delegateTailVoterVoteCurrent_afterSenderState_init]
-  simpa [delegateTailProposalCountWord, delegateTailProposalCountSlot, Stele.EVM.storageLoad,
-    State.lookupAccount, Account.lookupStorage, initState, storageStore_executionEnv'']
-    using delegateTailAfterSenderState_getD_init
+  exact delegateTailAfterSenderState_getD_init
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g) w
       (delegateTailProposalCountSlot σ I w)
 
@@ -2409,7 +2389,7 @@ theorem delegateTailFalseSuccessState_accountMap_eq_init {σ σ₀ A I}
     delegateTailUpdatedVoterWeightCurrent, delegateTailUpdatedVoterWeight,
     delegateTailVoterWeightCurrent_afterSenderState_init,
     delegateTailSenderWeightCurrent_afterSenderState_init, storageStore_accountMap,
-    storageStore_executionEnv''] using h
+    storageStore_executionEnv''] using! h
 
 theorem delegateTailTrueSuccessState_accountMap_eq_init {σ σ₀ A I}
     {g : Sat256} (w : UInt256) :
@@ -2425,7 +2405,7 @@ theorem delegateTailTrueSuccessState_accountMap_eq_init {σ σ₀ A I}
     delegateTailProposalCountCurrent_init, delegateTailSenderWeightCurrent_afterSenderState_init,
     delegateTailProposalCountSlot, delegateTailProposalCountSlotCurrent,
     delegateTailVoterVoteCurrent_afterSenderState_init, storageStore_accountMap,
-    storageStore_executionEnv''] using h
+    storageStore_executionEnv''] using! h
 
 /-! ### `EVMStateEquiv` simulation chains for the tail success states (parametrized by `w`)
 

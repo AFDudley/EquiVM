@@ -219,7 +219,7 @@ theorem evalExpr_wrappingSub256_underflow_ok {cfg : Config} {contract : Contract
             (.binary .sub (.binary .add (.intLit (Int.ofNat UInt256.size)) x) y)) =
         .ok (.int (Int.ofNat diff.toNat)) := by
     simp [sourceCheckedUint256, evalExpr?, EvalResult.bind, bind, hx, hy, evalBinaryOp?,
-      sourceUInt256]
+      sourceUInt256, pure]
     rw [if_neg]
     · have hval :
           ((UInt256.size : Nat) : Int) + (a.toNat : Int) - (b.toNat : Int) =

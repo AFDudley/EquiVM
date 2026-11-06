@@ -268,7 +268,7 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
       evmL evm1S evmFeeS I balance0 balance1 feeTo hfeeGuard hfeeCall hfeeDec
       hfeeToAddr hkLastSource (by
         simpa only [evmL, evmS, hreserve0Eq, hreserve1Eq, hkLastEq]
-          using execBlock_append hprefix htail)
+          using! execBlock_append hprefix htail)
     have hbody : ExecTransitionBody config contract evmS (mintStore I)
         mintTransition.body .reverted := ExecFuncBody.execBlockRevert
       (uniswapMintAfterMintFeeReverts_of_call (hperm := hperm) evmS evm0S evm1S I hwv hunlockedStele
@@ -282,7 +282,7 @@ theorem uniswapMintFeeOnKLastNonzeroCompleteFromFactoryCases
         evmL evm1S evmFeeS evmAfter frameAfter I balance0 balance1 feeTo
         hfeeGuard hfeeCall hfeeDec hfeeToAddr hkLastSource
         (by simpa only [evmL, evmS, hreserve0Eq, hreserve1Eq, hkLastEq]
-          using execBlock_append hprefix htail) hreturn
+          using! execBlock_append hprefix htail) hreturn
     have hrecipient : AccountAddress.ofNat (mintToWord I).toNat =
         AccountAddress.ofNat toWord.toNat := by
       rw [htoWord]

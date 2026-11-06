@@ -34,7 +34,7 @@ theorem evalExpr_sqrtFunction_outer_false (evm : EVM.State) (y : UInt256)
     evalExpr? config { contract := contract, locals := sqrtFunctionCallStore y } evm
       (.binary .gt (.var "y") (.intLit 3)) = .ok (.bool false) := by
   simp only [evalExpr?, evalExpr_sqrtFunction_y evm y, EvalResult.bind, bind]
-  simp [evalBinaryOp?]
+  simp [evalBinaryOp?, pure]
   omega
 
 theorem evalExpr_sqrtFunction_inner_true (evm : EVM.State) (y : UInt256)
@@ -42,14 +42,14 @@ theorem evalExpr_sqrtFunction_inner_true (evm : EVM.State) (y : UInt256)
     evalExpr? config { contract := contract, locals := sqrtFunctionCallStore y } evm
       (.binary .ne (.var "y") (.intLit 0)) = .ok (.bool true) := by
   simp only [evalExpr?, evalExpr_sqrtFunction_y evm y, EvalResult.bind, bind]
-  simp [evalBinaryOp?, sqrtFunctionYValue, uniswapUint256Value, uint256Value, hy]
+  simp [evalBinaryOp?, sqrtFunctionYValue, uniswapUint256Value, uint256Value, hy, pure]
 
 theorem evalExpr_sqrtFunction_inner_false (evm : EVM.State) (y : UInt256)
     (hy : y.toNat = 0) :
     evalExpr? config { contract := contract, locals := sqrtFunctionCallStore y } evm
       (.binary .ne (.var "y") (.intLit 0)) = .ok (.bool false) := by
   simp only [evalExpr?, evalExpr_sqrtFunction_y evm y, EvalResult.bind, bind]
-  simp [evalBinaryOp?, sqrtFunctionYValue, uniswapUint256Value, uint256Value, hy]
+  simp [evalBinaryOp?, sqrtFunctionYValue, uniswapUint256Value, uint256Value, hy, pure]
 
 theorem evalExpr_sqrtFunction_return_one (evm : EVM.State) (y : UInt256)
     (hy : y.toNat ≠ 0) :
@@ -165,7 +165,7 @@ theorem evalExpr_sqrtFunction_outer_true (evm : EVM.State) (y : UInt256)
     evalExpr? config { contract := contract, locals := sqrtFunctionCallStore y } evm
       (.binary .gt (.var "y") (.intLit 3)) = .ok (.bool true) := by
   simp only [evalExpr?, evalExpr_sqrtFunction_y evm y, EvalResult.bind, bind]
-  simp [evalBinaryOp?]
+  simp [evalBinaryOp?, pure]
   omega
 
 theorem evalExpr_sqrtFunction_initX (evm : EVM.State) (y : UInt256) :
@@ -175,7 +175,7 @@ theorem evalExpr_sqrtFunction_initX (evm : EVM.State) (y : UInt256) :
   simp only [sqrtFunctionAfterZStore, sqrtFunctionInitialX, sqrtFunctionYInt, evalExpr?,
     EvalResult.ofOption, EvalResult.bind, bind]
   rw [store_get_ne _ _ (by decide), sqrtFunctionCallStore_y]
-  simp [evalBinaryOp?]
+  simp [evalBinaryOp?, pure]
 
 theorem sqrtFunctionAfterInitStore_y (y : UInt256) :
     (sqrtFunctionAfterInitStore y).get? "y" = some (.int (sqrtFunctionYInt y)) := by
@@ -293,7 +293,7 @@ theorem execBlock_sqrtLoopBody (evm : EVM.State) (locals : Store) (y x z : Int)
         sqrtLoopNextXExpr = .ok (.int (sqrtLoopNextX y x)) := by
     simp only [sqrtLoopNextXExpr, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
     rw [sqrtLoopAfterZStore_y locals y x hy, sqrtLoopAfterZStore_x locals x hx]
-    simp [evalBinaryOp?, sqrtLoopNextX, hx0]
+    simp [evalBinaryOp?, sqrtLoopNextX, hx0, pure]
   have hAssignX := assign_sqrtLoop_x evm locals y x hx
   refine ExecBlock.consNormal (ExecStmt.assign
     (hperm := by first | assumption | exact Or.inr ‹_› | exact Or.inl rfl)

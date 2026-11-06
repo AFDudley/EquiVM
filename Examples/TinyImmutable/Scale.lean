@@ -41,7 +41,7 @@ theorem tinyScaleX {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     have h := tinyImmutableBlocks.tinyImmutable_block_181 (immWords := wordsOf (immStore v))
       (by simp) hvalid rd181
     simpa [tinyImmutableBlocks.tinyImmutable_block_181_stack, wordsOf_immStore_owner, wordsOf_immStore_scale,
-      deployedRuntime] using h
+      deployedRuntime] using! h
   have hret := RD.tinyBlocksReturnWord167 (v := v) (R := [⟨167⟩, solcSelectorWord I]) rd167
     (by simp)
   rw [wordOfInt_ofNat_toNat] at hret
@@ -72,6 +72,6 @@ theorem tinyScaleBodyCore
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
       (by simp only [initState]; exact hwv)
   exact (tinyScaleX v hreach).reEquivExecution hcode hd hdec hbody
-    (returnEquiv_of_encode (by simpa [uint256] using uint256ReturnEncoding v.scale))
+    (returnEquiv_of_encode (by exact uint256ReturnEncoding v.scale))
 
 end TinyImmutable

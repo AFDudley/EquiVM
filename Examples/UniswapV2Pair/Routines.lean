@@ -769,9 +769,7 @@ theorem RD.uniswapTransferInternalStoreDebitMem {g : Sat256} {s0 : State}
       (⟨0⟩ :: solcAddrMask :: ⟨64⟩ :: value :: toWord :: src :: ret :: R)
       (uniswapTransferDebitHashMemOf src mem) (UInt256.ofNat 3) rdata
       (sstoreAccountMap ee.codeOwner σ (mapSlot src ⟨1⟩) debit) k' C' := by
-  simpa [uniswapTransferDebitHashMemOf, mapSlot, solcMappingSlot,
-    solcSingleMappingStoreDebitOutPc] using
-    RD.solcSingleMappingStoreDebitMem
+  exact RD.solcSingleMappingStoreDebitMem
       (code := UniswapV2Pair.uniswapV2PairBytecode)
       (pc := ⟨7551⟩) (baseSlot := ⟨1⟩) (newValue := debit)
       (value := value) (aux := toWord) (key := src) (ret := ret) (R := R) h
@@ -1051,9 +1049,7 @@ theorem RD.uniswapTransferInternalStoreCredit {g : Sat256} {s0 : State}
       (⟨64⟩ :: toWord :: solcAddrMask :: ⟨32⟩ :: value :: toWord :: src :: ret :: R)
       (uniswapTransferCreditHashMem src toWord) (UInt256.ofNat 3) rdata
       (sstoreAccountMap ee.codeOwner σ (mapSlot toWord ⟨1⟩) newTo) k' C' := by
-  simpa [solcSingleMappingStoreCreditOutPc, uniswapTransferCreditHashMem,
-    uniswapTransferToHashMem, mapSlot, solcMappingSlot] using
-    RD.solcSingleMappingStoreCreditMem
+  exact RD.solcSingleMappingStoreCreditMem
       (code := UniswapV2Pair.uniswapV2PairBytecode) (pc := ⟨7604⟩)
       (baseSlot := ⟨1⟩) (newValue := newTo) (value := value) (key := toWord)
       (aux := src) (ret := ret) (R := R) (mem := uniswapTransferToHashMem src toWord)
@@ -1476,8 +1472,7 @@ theorem RD.uniswapApproveInternalInnerHash {g : Sat256} {s0 : State} {ee : Execu
         spender :: owner :: ret :: R)
       (twoWordHashMem owner ⟨2⟩ solcFreePtrMem)
       (UInt256.ofNat 3) rdata σ k' C' := by
-  simpa [solcNestedMappingStoreInnerHashOutPc, mapSlot, solcMappingSlot] using
-    RD.solcNestedMappingStoreInnerHash
+  exact RD.solcNestedMappingStoreInnerHash
       (code := UniswapV2Pair.uniswapV2PairBytecode) (pc := ⟨7412⟩)
       (baseSlot := ⟨2⟩) (value := value) (spender := spender)
       (owner := owner) (ret := ret) (R := R) (mem := solcFreePtrMem) h
@@ -1505,8 +1500,7 @@ theorem RD.uniswapApproveInternalStore {g : Sat256} {s0 : State} {ee : Execution
       (UInt256.ofNat 3) rdata
       (sstoreAccountMap ee.codeOwner σ (mapSlot spender (mapSlot owner ⟨2⟩)) value)
       k' C' := by
-  simpa [solcNestedMappingStoreOuterSstoreOutPc, mapSlot, solcMappingSlot] using
-    RD.solcNestedMappingStoreOuterSstore
+  exact RD.solcNestedMappingStoreOuterSstore
       (code := UniswapV2Pair.uniswapV2PairBytecode) (pc := ⟨7441⟩)
       (innerSlot := mapSlot owner ⟨2⟩) (value := value) (spender := spender)
       (owner := owner) (ret := ret) (R := R)

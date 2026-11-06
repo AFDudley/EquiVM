@@ -335,8 +335,7 @@ theorem uniswapSyncBodyReturns_conditionFalse_packed (evm evm0 evm1 : EVM.State)
         (updateReservesStmts (.var "balance0") (.var "balance1"))
         (.ok (syncAfterUpdateFrame balance0 balance1)
           (syncUpdatePackedReserveState evm1 balance0 balance1)) := by
-    simpa [updateReservesStmts] using
-      (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
+    exact (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
   have hlock :=
     uniswapLockExitSuffix (hperm := by simpa [syncUpdatePackedReserveState] using hperm1) (syncUpdatePackedReserveState evm1 balance0 balance1)
       (syncAfterUpdateStore balance0 balance1)
@@ -384,7 +383,7 @@ theorem syncToken0GuardTrue_initState_of_code
       storageStore_accountMap, storageStore_executionEnv, State.lookupAccount, Stele.EVM.storageLoad,
       Account.lookupStorage, uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord,
         σLockS,
-      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using hzero
+      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using! hzero
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evmL.lookupAccount (uniswapAddressAtSlot evmL ⟨6⟩)).option 0
@@ -555,7 +554,7 @@ theorem syncToken1GuardFalse_of_noCode {σ : AccountMap}
       simpa [u256_land_comm] using hcodeEvm
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, token1WordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hcodeEvmRight
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hcodeEvmRight
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm0.lookupAccount (uniswapAddressAtSlot evm0 ⟨7⟩)).option 0
@@ -605,7 +604,7 @@ theorem syncToken1GuardTrue_of_code {σ : AccountMap}
     apply hcodeEvmRight
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, token1WordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hzero
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hzero
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm0.lookupAccount (uniswapAddressAtSlot evm0 ⟨7⟩)).option 0
@@ -881,7 +880,7 @@ theorem uniswapSyncBody
                   (callGas2 := callGas1) (o := o)
                   hPostAccounts0 hσ0 henv0I hdepth
                   ho32 hoSize
-                  (by simpa [balanceOfThisRebuiltStaticcallMem, initState] using hΘ1)
+                  (by exact hΘ1)
               have hPostAccounts1 : σ'' = evm1S.accountMap := hPostAccounts1Eq.symm
               have hsecondGuards :=
                 uniswapSyncRuntimeSecondBalanceOfStaticcallFailureGuard
@@ -1685,7 +1684,7 @@ theorem uniswapSyncBody
                           hbound0 hbound1
                       have rdRev :=
                         RD.uniswapUpdateOverflowGuardSecondReverts
-                          (by simpa [balanceOfThisStaticcallActiveWords] using rd6959)
+                          (by exact rd6959)
                           hfit0 hfail1 hmemSize hmemRead64
                           (by simp only [List.length_cons, List.length_nil]; omega)
                       exact rdRev.reEquivExecutionRevert hcode hdispatch
@@ -1703,7 +1702,7 @@ theorem uniswapSyncBody
                         hbound0
                     have rdRev :=
                       RD.uniswapUpdateOverflowGuardFirstReverts
-                        (by simpa [balanceOfThisStaticcallActiveWords] using rd6959)
+                        (by exact rd6959)
                         hfail0 hmemSize hmemRead64
                         (by simp only [List.length_cons, List.length_nil]; omega)
                     exact rdRev.reEquivExecutionRevert hcode hdispatch

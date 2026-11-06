@@ -106,8 +106,7 @@ theorem erc6909TransferFromX_operatorApproved_toUpdate {σ σ₀ A I}
       UInt256.land ⟨255⟩
         (σ.get? I.codeOwner |>.option ⟨0⟩
           (fun ac => ac.storage.getD (transferFromOperatorSlotI I) ⟨0⟩)) ≠ ⟨0⟩ := by
-    simpa [transferFromOperatorSlot_init, initState, Stele.EVM.storageLoad,
-      State.lookupAccount, Account.lookupStorage] using hopMaskRaw
+    exact hopMaskRaw
   exact ⟨_, _, by
     simpa [transferFromOperatorWord, transferFromOperatorSlot_init, initState,
       Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
@@ -211,8 +210,7 @@ theorem erc6909TransferFromX_operatorFalse_toAllowanceHelper {σ σ₀ A I}
       UInt256.land ⟨255⟩
         (σ.get? I.codeOwner |>.option ⟨0⟩
           (fun ac => ac.storage.getD (transferFromOperatorSlotI I) ⟨0⟩)) = ⟨0⟩ := by
-    simpa [transferFromOperatorSlot_init, initState, Stele.EVM.storageLoad,
-      State.lookupAccount, Account.lookupStorage] using hopMaskRaw
+    exact hopMaskRaw
   exact ⟨_, _, by
     simpa [transferFromOperatorWord, transferFromOperatorSlot_init, initState,
       Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage] using
@@ -365,10 +363,7 @@ theorem erc6909TransferFromX_from1147_afterAllowanceLoad
       (by decide) (by evm_ov) ]
   obtain ⟨k1, C1, rd1193₀⟩ := rd1191.sload (by decide) (by evm_ov)
   exact ⟨k1, C1, by
-    simpa [transferFromCurrentAllowanceWord, transferFromAllowanceSlot_init, initState,
-      Stele.EVM.storageLoad, State.lookupAccount, Account.lookupStorage, idMem, idKeyMem,
-      spenderMem, spenderKeyMem, ownerMem, ownerKeyMem]
-      using rd1193₀⟩
+    exact rd1193₀⟩
 
 def transferFromAllowanceScratchMem (base : ByteArray)
     (I : ExecutionEnv) : ByteArray :=

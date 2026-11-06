@@ -258,37 +258,37 @@ theorem ctorStoreInitcodeRun {σ σ₀ A I} {g : Sat256}
     subst code
     exact evm_run rd0 with [
       raw push1 ⟨32⟩ (ctorStoreDecode0 _) (by evm_ov),
-      raw push1 ⟨28⟩ (by simpa using ctorStoreDecode2 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
-      raw push0 (by simpa using ctorStoreDecode4 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+      raw push1 ⟨28⟩ (by exact ctorStoreDecode2 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+      raw push0 (by exact ctorStoreDecode4 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
       raw codecopy 3 (ctorStoreArgMem w) (UInt256.ofNat 1)
-        (by simpa using ctorStoreDecode5 ((EVM.Word.toBytesBE w).toByteArray))
+        (by exact ctorStoreDecode5 ((EVM.Word.toBytesBE w).toByteArray))
         mem_cost
         rfl
         (by decide) (by evm_ov),
-      raw push0 (by simpa using ctorStoreDecode6 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+      raw push0 (by exact ctorStoreDecode6 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
       raw mload 0 w (UInt256.ofNat 1)
-        (by simpa using ctorStoreDecode7 ((EVM.Word.toBytesBE w).toByteArray))
+        (by exact ctorStoreDecode7 ((EVM.Word.toBytesBE w).toByteArray))
         mem_cost
         (ctorStoreArgMem_mload w)
         (by decide) (by evm_ov),
-      raw push0 (by simpa using ctorStoreDecode8 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov)]
+      raw push0 (by exact ctorStoreDecode8 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov)]
   obtain ⟨k', C', rdAfterStore⟩ :=
     rdBeforeStore.sstore hperm
       (by simpa using ctorStoreDecode9 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov)
   subst code
   exact evm_run rdAfterStore with [
-    raw push1 ⟨8⟩ (by simpa using ctorStoreDecode10 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
-    raw push1 ⟨20⟩ (by simpa using ctorStoreDecode12 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
-    raw push0 (by simpa using ctorStoreDecode14 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+    raw push1 ⟨8⟩ (by exact ctorStoreDecode10 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+    raw push1 ⟨20⟩ (by exact ctorStoreDecode12 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+    raw push0 (by exact ctorStoreDecode14 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
     raw codecopy 0 (ctorStoreReturnMem w) (UInt256.ofNat 1)
-      (by simpa using ctorStoreDecode15 ((EVM.Word.toBytesBE w).toByteArray))
+      (by exact ctorStoreDecode15 ((EVM.Word.toBytesBE w).toByteArray))
       mem_cost
       (ctorStoreRuntime_codecopy_mem w)
       (by decide) (by evm_ov),
-    raw push1 ⟨8⟩ (by simpa using ctorStoreDecode16 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
-    raw push0 (by simpa using ctorStoreDecode18 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+    raw push1 ⟨8⟩ (by exact ctorStoreDecode16 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
+    raw push0 (by exact ctorStoreDecode18 ((EVM.Word.toBytesBE w).toByteArray)) (by evm_ov),
     raw ret 0 ctorStoreRuntimeBytecode
-      (by simpa using ctorStoreDecode19 ((EVM.Word.toBytesBE w).toByteArray))
+      (by exact ctorStoreDecode19 ((EVM.Word.toBytesBE w).toByteArray))
       mem_cost
       (ctorStoreFinal_read w)
       (by evm_ov)]
@@ -300,7 +300,7 @@ theorem ctorStoreLocStore (evm : EVM.State) (i : Int) (h0 : 0 ≤ i) :
         { slot := ⟨0⟩, offset := 0, size := 32, hbound := by decide,
           type := .int (.uint ⟨256, by decide⟩) } (.int i)
       = some (EVM.storageStore evm evm.executionEnv.codeOwner ⟨0⟩ (EVM.word i.toNat)) := by
-  simpa only [wordOfInt_nonneg i h0] using
+  simpa only [wordOfInt_nonneg i h0] using!
     (storageLocStore_uint256_int evm (⟨0⟩ : UInt256) i)
 
 theorem ctorStoreAssign (evm : EVM.State) (L : Store) (i : Int)
@@ -377,10 +377,10 @@ theorem ctorStoreConstructorCorrect :
   · exact typedConstructorRefinementFor.outOfGas
       (Xi_error_of_X (g := g) (by
         rw [← hcode] at hoog
-        simpa [initState, Sat256.ofUInt256] using hoog))
+        exact hoog))
   · have hsuccess := Xi_success_of_X (g := g) (by
       rw [← hcode] at hX
-      simpa [initState, Sat256.ofUInt256] using hX)
+      exact hX)
     rw [hacc] at hsuccess
     refine typedConstructorRefinementFor.execution hsuccess
       (ctorStoreSteleCtorExec (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)

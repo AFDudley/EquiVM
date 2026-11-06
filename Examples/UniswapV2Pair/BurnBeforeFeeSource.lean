@@ -129,7 +129,7 @@ theorem uniswapBurnBodyReverts_mintFeeBlock
       [.internalCall "_mintFee" [.var "_reserve0", .var "_reserve1"] "feeOn"] .reverted :=
     ExecBlock.consRevert hfee
   exact ExecFuncBody.execBlockRevert (by
-    simpa only [burnTransition, burnBeforeFeePrefix, burnCachePrefix, List.append_assoc] using
+    simpa only [burnTransition, burnBeforeFeePrefix, burnCachePrefix, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix hfeeBlock) (by intro f e h; cases h))
 
 end UniswapV2Pair

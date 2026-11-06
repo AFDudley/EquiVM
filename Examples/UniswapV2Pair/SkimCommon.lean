@@ -415,15 +415,14 @@ theorem uniswapDecode_skim_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
-  simpa [skimStore, skimToValue, skimToWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 theorem uniswapDecode_skim_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
+  exact decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
     hsz4 hshort
 
 theorem uniswapDecode_skim_ok_noncanon {I : ExecutionEnv}
@@ -432,7 +431,6 @@ theorem uniswapDecode_skim_ok_noncanon {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (skimTransition.params.map Param.name)
       (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
-  simpa [skimStore, skimToValue, skimToWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 end UniswapV2Pair

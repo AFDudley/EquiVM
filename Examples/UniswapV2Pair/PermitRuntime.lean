@@ -256,9 +256,9 @@ theorem RD.uniswapPermitEcrecoverStaticcallMade {g : Sat256} {s0 : State}
       UInt256.ofNat 20 := by
     native_decide
   refine ⟨σ', z, o, A_in, callGas, k', C', ?_, ?_, houtSize⟩
-  · simpa using htheta
+  · exact htheta
   · rw [haw] at rd5814
-    simpa using rd5814
+    exact rd5814
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapPermitEcrecoverStaticcallDepthReverts {g : Sat256} {s0 : State}
@@ -341,7 +341,7 @@ theorem RD.uniswapPermitEcrecoverStaticcallDepthReverts {g : Sat256} {s0 : State
         value :: spender :: owner :: ret :: R)
       (permitRuntimeEcrecoverStaticcallMem baseMem digest v r s ByteArray.empty)
       (UInt256.ofNat 20) ByteArray.empty σ k' C' := by
-    simpa [permitRuntimeEcrecoverStaticcallMem] using rd5814
+    exact rd5814
   exact RD.solcCallSuccessGuardMissing (okPc := ⟨5830⟩) rd5814' rfl
     (by native_decide) (by native_decide) (by native_decide) (by native_decide)
     (by native_decide) (by native_decide) (by native_decide)
@@ -555,8 +555,7 @@ theorem RD.uniswapPermitApproveInnerHash20 {g : Sat256} {s0 : State} {ee : Execu
     raw dup1 hd26 (by evm_ov),
     raw dup4 hd27 (by evm_ov)]
   exact ⟨_, _, by
-    simpa [solcNestedMappingStoreInnerHashOutPc] using
-      rdInnerHashPrefix.keccak256 0 (mapSlot owner ⟨2⟩)
+    exact rdInnerHashPrefix.keccak256 0 (mapSlot owner ⟨2⟩)
         (UInt256.ofNat 20) hd28 mem_cost hslot (by native_decide) (by evm_ov)⟩
 
 set_option maxHeartbeats 1000000 in
@@ -619,7 +618,7 @@ theorem RD.uniswapPermitApproveStore20 {g : Sat256} {s0 : State} {ee : Execution
     raw swap1 hd14 (by evm_ov)]
   obtain ⟨_, _, rdOut⟩ := rdBeforeStore.sstore hperm hd15
     (by simp only [List.length_cons]; omega)
-  exact ⟨_, _, by simpa [solcNestedMappingStoreOuterSstoreOutPc] using rdOut⟩
+  exact ⟨_, _, by exact rdOut⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapPermitApproveEmitAndJump20 {g : Sat256} {s0 : State} {ee : ExecutionEnv}

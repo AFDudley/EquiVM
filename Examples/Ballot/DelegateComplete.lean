@@ -602,7 +602,7 @@ theorem ballotDelegateChainOOGEquiv
     hsz36 hsize hbig hcanon hweight hvoted hnotself hnext0 hcycle0 hcontinue hreach
   exact reEquiv_outOfGas (Xi_error_of_X (g := g) (by
     rw [← hcode] at hoog
-    simpa [initState, Sat256.ofUInt256] using hoog))
+    exact hoog))
 
 theorem ballotDelegateLoopContinuationEquiv
     {σ σ₀ A I}

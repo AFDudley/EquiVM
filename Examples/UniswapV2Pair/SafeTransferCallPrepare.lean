@@ -40,7 +40,7 @@ theorem RD.uniswapSafeTransferDynamicCallPrepared
   have rd6593 := evm_run rd6586 with [dup1, dup4, sub, dup2, push1 ⟨0⟩, dup7]
   have hp164Bound : (ptr + (⟨164⟩ : UInt256)).toNat < UInt256.size := (ptr + (⟨164⟩ : UInt256)).val.isLt
   have hsub : UInt256.sub ((ptr + ⟨164⟩) + ⟨68⟩) (ptr + ⟨164⟩) = ⟨68⟩ := by
-    simpa only [u256_ofNat_toNat] using
+    simpa only [u256_ofNat_toNat] using!
       (usub_uadd_lit_cancel_mod (base := (ptr + ⟨164⟩).toNat) (n := 68) hp164Bound (by decide))
   rw [u256_add_comm ⟨68⟩ (ptr + ⟨164⟩), hsub, u256_add_assoc ptr ⟨164⟩ ⟨68⟩] at rd6593
   obtain ⟨gasArg, rd6594⟩ := rd6593.gas (by native_decide) (by evm_ov)

@@ -65,7 +65,7 @@ theorem erc20X_transferFromAfterBalanceLoad {σ σ₀ A I} {g : Sat256}
       (by decide) (by evm_ov)]
   obtain ⟨k1, C1, rdAfterLoad⟩ := rdBeforeLoad.sload
     (by vyper_erc20_transferFrom_decode) (by evm_ov)
-  exact ⟨_, _, by simpa [transferFromFromBalanceRaw, transferFromValueWord] using rdAfterLoad⟩
+  exact ⟨_, _, by exact rdAfterLoad⟩
 
 theorem erc20X_transferFromAfterBalanceGuard {σ σ₀ A I} {g : Sat256}
     (hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)
@@ -100,7 +100,7 @@ theorem erc20X_transferFromAfterBalanceGuard {σ σ₀ A I} {g : Sat256}
   have rd445 := evm_run rdAfterLoad with [
     lt, push2 ⟨801⟩,
     jumpiNT (by simpa [transferFromValueWord] using hbalanceGuardRaw)]
-  exact ⟨_, _, by simpa [transferFromFromBalanceRaw] using rd445⟩
+  exact ⟨_, _, by exact rd445⟩
 
 theorem erc20TransferFromX_insufficientBalance {σ σ₀ A I} {g : Sat256}
     (hcanonFrom : (transferFromFromWord I).toNat < EVM.addressModulus)

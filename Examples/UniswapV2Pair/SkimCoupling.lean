@@ -370,7 +370,7 @@ theorem skimFirstSafeTransferCalldata {evm0S : EVM.State}
         (UInt256.sub balance0 reserve0)).readWithPadding 128 68) := by
   have hexcess : skimExcess0Word evm0S balance0 = UInt256.sub balance0 reserve0 :=
     skimExcess0Word_eq_sub_of_reserve hreserve hle
-  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using
+  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using!
     transferCalldataMem_encode (skimToAddress I) (skimExcess0Word evm0S balance0)
 
 theorem skimSecondSafeTransferCalldata {evm2S : EVM.State}
@@ -388,7 +388,7 @@ theorem skimSecondSafeTransferCalldata {evm2S : EVM.State}
   rw [skimSecondSafeTransferCallMem2_read456_68
     (UInt256.ofNat I.codeOwner.val) toWord prevValue (UInt256.sub balance1 reserve1)
     ho32 hoSize hout32 houtSize]
-  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using
+  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using!
     transferCalldataMem_encode (skimToAddress I) (skimExcess1Word evm2S balance1)
 
 theorem skimSecondSafeTransferCalldata_dynamic {evm2S : EVM.State}
@@ -409,7 +409,7 @@ theorem skimSecondSafeTransferCalldata_dynamic {evm2S : EVM.State}
   rw [skimSecondSafeTransferDynamicCallMem2_read_callPtr_68
     (UInt256.ofNat I.codeOwner.val) toWord prevValue
     (UInt256.sub balance1 reserve1) ho32 hoSize hout1Ne hout1Size hout32 houtSize]
-  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using
+  simpa [transferCalldata?, transferCallArgs, hexcess, hto] using!
     transferCalldataMem_encode (skimToAddress I) (skimExcess1Word evm2S balance1)
 
 theorem skimToken1GuardAfterFirstTransfer_false {σ : AccountMap}
@@ -436,8 +436,8 @@ theorem skimToken1GuardAfterFirstTransfer_false {σ : AccountMap}
     | some acc =>
         have hnoAcc : UInt256.ofNat acc.code.size = ⟨0⟩ := by
           simpa [-Std.ExtTreeMap.get?_eq_getElem?, target, addr, htarget,
-            extCodeSizeWord, hacc] using hnoEvm
-        simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using hnoAcc
+            extCodeSizeWord, hacc] using! hnoEvm
+        exact hnoAcc
   have hvar :
       evalExpr? config
         { contract := contract, locals := skimFirstSafeTransferStore evm evm0 I balance0 } evm1
@@ -478,9 +478,9 @@ theorem skimToken1GuardAfterFirstTransfer_true {σ : AccountMap}
         rfl
     | some acc =>
         have hzeroAcc : UInt256.ofNat acc.code.size = ⟨0⟩ := by
-          simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using hzero
+          simpa [-Std.ExtTreeMap.get?_eq_getElem?, hacc] using! hzero
         simpa [-Std.ExtTreeMap.get?_eq_getElem?, target, addr, htarget,
-          extCodeSizeWord, hacc] using hzeroAcc
+          extCodeSizeWord, hacc] using! hzeroAcc
   have hpositive :
       0 <
         (EVM.Word.ofNat ((evm1.lookupAccount addr).option 0 (fun acc => acc.code.size))).toNat :=
@@ -537,7 +537,7 @@ theorem skimToken0GuardFalse_initState_of_noCode
       storageStore_accountMap, storageStore_executionEnv, State.lookupAccount, Stele.EVM.storageLoad,
       Account.lookupStorage, uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord,
         σLockS,
-      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using hnoSteleRight
+      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using! hnoSteleRight
   have hnoSourceWord :
       EVM.Word.ofNat
           ((evmL.lookupAccount (uniswapAddressAtSlot evmL ⟨6⟩)).option 0
@@ -589,7 +589,7 @@ theorem skimToken0GuardTrue_initState_of_code
       storageStore_accountMap, storageStore_executionEnv, State.lookupAccount, Stele.EVM.storageLoad,
       Account.lookupStorage, uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord,
         σLockS,
-      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using hcodeSteleRight
+      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using! hcodeSteleRight
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evmL.lookupAccount (uniswapAddressAtSlot evmL ⟨6⟩)).option 0

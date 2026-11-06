@@ -48,7 +48,7 @@ theorem tinyOwnerX {σ σ₀ A I} {g : Sat256} (v : TinyImmutables)
     have h := tinyImmutableBlocks.tinyImmutable_block_67 (immWords := wordsOf (immStore v))
       (by simp) hvalid rd67
     simpa [tinyImmutableBlocks.tinyImmutable_block_67_stack, wordsOf_immStore_owner, wordsOf_immStore_scale,
-      deployedRuntime] using h
+      deployedRuntime] using! h
   have hret := RD.tinyBlocksReturnAddress106 (v := v) (R := [solcSelectorWord I]) rd106
     (by simp only [List.length_singleton]; omega)
   simpa [tinyOwnerWord_clean v] using hret

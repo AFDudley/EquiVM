@@ -256,21 +256,14 @@ theorem ballotReachHighBody {σ σ₀ A I} {g : Sat256}
       hcode hwv hsz hsize hprefix (by jump_dest) ballotSplitWellFormed
       (by simpa [ballotSelWord, solcSelectorWord] using hpivot)
       (fun j hj => by
-        simpa [ballotHighFirstArmPc, ballotSplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          ballotHighArmsWellFormed j (le_trans hj hi))
+        exact ballotHighArmsWellFormed j (le_trans hj hi))
       (fun j hj => by
-        simpa [ballotSelWord, solcSelectorWord, ballotHighFirstArmPc, ballotSplitPc,
-          selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc,
-          selArmPush4Pc] using heq0 j hj)
+        exact heq0 j hj)
       (by
-        simpa [ballotSelWord, solcSelectorWord, ballotHighFirstArmPc, ballotSplitPc,
-          selArmNextPc, armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc,
-          selArmPush4Pc] using htake)
+        exact htake)
       hjd
       (by
-        simpa [ballotHighFirstArmPc, ballotSplitPc, selArmNextPc, armTgtWidth,
-          selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using hbody))
+        exact hbody))
 
 /-- Reach a body in Ballot's low selector half. -/
 theorem ballotReachLowBody {σ σ₀ A I} {g : Sat256}
@@ -298,20 +291,14 @@ theorem ballotReachLowBody {σ σ₀ A I} {g : Sat256}
       hcode hwv hsz hsize hprefix (by jump_dest) ballotSplitWellFormed
       (by simpa [ballotSelWord, solcSelectorWord] using hpivot) (by jump_dest) (by decide)
       (fun j hj => by
-        simpa [ballotLowFirstArmPc, ballotLowJumpdestPc, ballotSplitPc, armTgt, pushAt,
-          selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          ballotLowArmsWellFormed j (le_trans hj hi))
+        exact ballotLowArmsWellFormed j (le_trans hj hi))
       (fun j hj => by
-        simpa [ballotSelWord, solcSelectorWord, ballotLowFirstArmPc, ballotLowJumpdestPc,
-          ballotSplitPc, armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-          heq0 j hj)
+        exact heq0 j hj)
       (by
-        simpa [ballotSelWord, solcSelectorWord, ballotLowFirstArmPc, ballotLowJumpdestPc,
-          ballotSplitPc, armTgt, pushAt, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using htake)
+        exact htake)
       hjd
       (by
-        simpa [ballotLowFirstArmPc, ballotLowJumpdestPc, ballotSplitPc, armTgt, pushAt,
-          selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using hbody))
+        exact hbody))
 
 /-! ## Per-function body obligations (one `…BodyCore` per `Examples/Ballot/<Fn>.lean`, TODO) -/
 
@@ -518,8 +505,7 @@ theorem ballotX_noMatch {σ σ₀ A I} {g : Sat256}
     have h85' : ∃ k C, RD ballotBytecode I g (initState σ σ₀ g A I) ⟨85⟩
         [ballotSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 5 + 5 + 5 + 5, CS + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [ballotHighFirstArmPc, ballotSplitPc, nthArmPc, selArmNextPc, armTgtWidth,
-        selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h85
+      exact h85
     obtain ⟨_, _, h85rd⟩ := h85'
     exact h85rd.revertStub (by decide) (by decide) (by decide) (by simp)
   · have h88 := RD.selectorSplitTakenAuto hsplit ballotSplitWellFormed hpivot (by jump_dest) (by simp)
@@ -536,9 +522,7 @@ theorem ballotX_noMatch {σ σ₀ A I} {g : Sat256}
     have h133' : ∃ k C, RD ballotBytecode I g (initState σ σ₀ g A I) ⟨133⟩
         [ballotSelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 1 + 5 + 5 + 5 + 5, CS + 22 + 1 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [ballotLowFirstArmPc, ballotLowJumpdestPc, ballotSplitPc, nthArmPc, selArmNextPc,
-        armTgtWidth, armTgt, pushAt, selArmJumpiPc, selArmPushTgtPc, selArmEqPc,
-        selArmPush4Pc] using h133
+      exact h133
     obtain ⟨_, _, h133rd⟩ := h133'
     have h134 := h133rd.jumpdest (by decide) (by simp)
     exact h134.revertStub (by decide) (by decide) (by decide) (by simp)

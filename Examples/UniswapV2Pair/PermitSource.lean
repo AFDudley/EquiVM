@@ -436,7 +436,7 @@ theorem evalPackedArgs_permit_structHash_at {σ σ₀ A I} {g : Sat256}
             ((permitNonceWord σ I).toByteArray.toList ++
               (permitDeadlineWord I).toByteArray.toList))) ?_ ?_ ?_
     · exact evalExpr_permit_afterNonce_owner_uint256_at _ cur I
-    · simpa [word_toBytesBE_eq_toByteArray_toList] using
+    · simpa [word_toBytesBE_eq_toByteArray_toList] using!
         encodePacked_uint256 (permitOwnerMaskedWord I)
     · refine evalPackedArgs_cons
         (v := .int (Int.ofNat (permitSpenderMaskedWord I).toNat))
@@ -446,7 +446,7 @@ theorem evalPackedArgs_permit_structHash_at {σ σ₀ A I} {g : Sat256}
             ((permitNonceWord σ I).toByteArray.toList ++
               (permitDeadlineWord I).toByteArray.toList)) ?_ ?_ ?_
       · exact evalExpr_permit_afterNonce_spender_uint256_at _ cur I
-      · simpa [word_toBytesBE_eq_toByteArray_toList] using
+      · simpa [word_toBytesBE_eq_toByteArray_toList] using!
           encodePacked_uint256 (permitSpenderMaskedWord I)
       · refine evalPackedArgs_cons
           (v := .int (Int.ofNat (permitValueWord I).toNat))
@@ -455,7 +455,7 @@ theorem evalPackedArgs_permit_structHash_at {σ σ₀ A I} {g : Sat256}
             (permitNonceWord σ I).toByteArray.toList ++
               (permitDeadlineWord I).toByteArray.toList) ?_ ?_ ?_
         · exact evalExpr_permit_afterNonce_value_at _ cur I
-        · simpa [word_toBytesBE_eq_toByteArray_toList] using
+        · simpa [word_toBytesBE_eq_toByteArray_toList] using!
             encodePacked_uint256 (permitValueWord I)
         · refine evalPackedArgs_cons
             (v := .int (Int.ofNat (permitNonceWord σ I).toNat))
@@ -463,12 +463,12 @@ theorem evalPackedArgs_permit_structHash_at {σ σ₀ A I} {g : Sat256}
             (tailBytes := (permitDeadlineWord I).toByteArray.toList) ?_ ?_ ?_
           · rw [evalExpr_permit_afterNonce_nonce_at]
             simp [permitNonceLoadedValue, permitNonceLoadedWord_initState_for_hash]
-          · simpa [word_toBytesBE_eq_toByteArray_toList] using
+          · simpa [word_toBytesBE_eq_toByteArray_toList] using!
               encodePacked_uint256 (permitNonceWord σ I)
           · exact evalPackedArgs_single
               (evalExpr_permit_afterNonce_deadline_at _ cur I)
               (by
-                simpa [word_toBytesBE_eq_toByteArray_toList] using
+                simpa [word_toBytesBE_eq_toByteArray_toList] using!
                   encodePacked_uint256 (permitDeadlineWord I))
 
 theorem evalExpr_permit_structHash_at {σ σ₀ A I} {g : Sat256}
@@ -519,8 +519,7 @@ theorem evalExpr_permit_domainSeparator_afterNonce_at {σ σ₀ A I} {g : Sat256
   have hloadInit :
       Stele.EVM.storageLoad evmS evmS.executionEnv.codeOwner ⟨3⟩ =
         permitDomainSeparatorWord σ I := by
-    simpa [evmS, permitDomainSeparatorWord] using
-      (codeOwnerStorageWord_initState (σ := σ)
+    exact (codeOwnerStorageWord_initState (σ := σ)
         (σ₀ := σ₀) (A := A) (I := I) (g := g) (slot := ⟨3⟩))
   have hloadNonce :
       Stele.EVM.storageLoad evmNonceS evmNonceS.executionEnv.codeOwner ⟨3⟩ =
@@ -579,12 +578,12 @@ theorem evalPackedArgs_permit_digest_at {base cur : EVM.State} {σ I}
       (head := (permitDomainSeparatorWord σ I).toByteArray.toList)
       (tailBytes := (permitStructHashWord σ I).toByteArray.toList) ?_ ?_ ?_
     · exact hdomain
-    · simpa [word_toBytesBE_eq_toByteArray_toList] using
+    · simpa [word_toBytesBE_eq_toByteArray_toList] using!
         encodePacked_bytes32 (permitDomainSeparatorWord σ I)
     · exact evalPackedArgs_single
         (evalExpr_permit_afterStructHash_structHash_at base cur I (permitStructHashValue σ I))
         (by
-          simpa [word_toBytesBE_eq_toByteArray_toList] using
+          simpa [word_toBytesBE_eq_toByteArray_toList] using!
             encodePacked_bytes32 (permitStructHashWord σ I))
 
 theorem evalExpr_permit_digest_at {base cur : EVM.State} {σ I}
@@ -1259,7 +1258,7 @@ theorem evalExpr_permit_nonce_next (evm : EVM.State) (I : ExecutionEnv) :
   rw [permitAfterNonceLoadStore_nonce]
   simp only [evalBinaryOp?]
   rw [uadd_toNat, hone]
-  simp [twoPow256, UInt256.size]
+  simp [twoPow256, UInt256.size, pure]
 
 theorem permitAssignNonce (evm : EVM.State) (I : ExecutionEnv) :
     assignStorageRef? config
@@ -1277,8 +1276,7 @@ theorem permitAssignNonce (evm : EVM.State) (I : ExecutionEnv) :
       (evm := evm) (evm' := permitAfterNonceState evm I)
       (loc := wordLoc (permitNonceStorageSlot I))
       (hloc := storageLayout_permit_nonce I)
-      (hstore := by simpa [permitNonceNextLoadedValue, permitAfterNonceState] using
-        (storageLocStore_uint256 evm (permitNonceStorageSlot I)
+      (hstore := by exact (storageLocStore_uint256 evm (permitNonceStorageSlot I)
           (permitNonceNextLoadedWord evm I)))]
   rfl
 

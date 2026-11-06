@@ -103,8 +103,7 @@ theorem ownable2StepOwnerBody {σ σ₀ A I}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (ownerReturnWord σ I).toNat))])) := by
-    simpa [ownerWord, ownerReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      ownable2StepOwnerBodyReturns
+    exact ownable2StepOwnerBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact (ownable2StepX_owner (g := Sat256.ofUInt256 g) hreach)

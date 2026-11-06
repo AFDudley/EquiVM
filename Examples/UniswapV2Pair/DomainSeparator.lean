@@ -65,9 +65,7 @@ theorem uniswapDomainSeparatorBodyCore
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.fixedBytes ⟨31, by decide⟩
             (EVM.Word.toBytesBE (domainSeparatorWord σ I)))])) := by
-    simpa [domainSeparatorWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapDomainSeparatorBodyReturns
+    exact uniswapDomainSeparatorBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact uniswapBytes32GetterBodyCore (entry := ⟨971⟩) (routine := ⟨3133⟩) (slot := ⟨3⟩)

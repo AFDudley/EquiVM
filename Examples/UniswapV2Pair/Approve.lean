@@ -109,9 +109,7 @@ theorem uniswapDecode_approve_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
   show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
-    approveSpenderWord, approveValueWord, calldataWord]
-    using decodeCalldata_legacyAddress_uint256_ok
+  exact decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68
 
 theorem uniswapDecode_approve_none_short {I : ExecutionEnv}
@@ -119,8 +117,7 @@ theorem uniswapDecode_approve_none_short {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = none
-  simpa [uint256, abiUInt256]
-    using decodeCalldata_legacyAddress_uint256_none_short
+  exact decodeCalldata_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "spender") (y := "value") hsz4 hshort
 
 theorem uniswapDecode_approve_ok_noncanon {I : ExecutionEnv}
@@ -129,9 +126,7 @@ theorem uniswapDecode_approve_ok_noncanon {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (approveTransition.params.map Param.name)
       (transitionSignature approveTransition).paramTypes I.calldata = some (approveStore I) := by
   show config.externalABI.decodeCalldata? ["spender", "value"] [legacyAddr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
-    approveSpenderWord, approveValueWord, calldataWord]
-    using decodeCalldata_legacyAddress_uint256_ok
+  exact decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68
 
 /-- The Stele `approve(address,uint256)` body writes `allowance[msg.sender][spender]` and returns

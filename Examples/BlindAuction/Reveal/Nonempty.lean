@@ -598,7 +598,7 @@ theorem RD.blindAuctionPanic32Revert1967 {g : Sat256} {s0 : State} {ee : Executi
       (by decide)
       (by
         simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
-        rw [show (⟨4⟩ : UInt256).toNat = 4 by native_decide]
+        
         rw [activeWords_mstore4_of_ge3 haw]
         simp)
       (by rfl) (activeWords_mstore4_of_ge3 haw) (by evm_ov),
@@ -642,7 +642,7 @@ theorem RD.blindAuctionPanic11Revert2025 {g : Sat256} {s0 : State} {ee : Executi
       (by decide)
       (by
         simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
-        rw [show (⟨4⟩ : UInt256).toNat = 4 by native_decide]
+        
         rw [activeWords_mstore4_of_ge3 haw]
         simp)
       (by rfl) (activeWords_mstore4_of_ge3 haw) (by evm_ov),
@@ -800,7 +800,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen {I} {g : Sat256}
     raw keccak256 0 (revealScratchBidsLengthSlot I) aw (by decide)
       (by
         simp [M]
-        rw [show (⟨64⟩ : UInt256).toNat = 64 by native_decide]
+        
         rw [haw64]
         simp)
       (by simpa [mem2, mem1, revealScratchSenderWord] using hbaseHash) haw64
@@ -811,7 +811,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen {I} {g : Sat256}
       [curLen, revealScratchBidsLengthSlot I, ⟨0⟩, i, refund, len, revealEnd, biddingEnd,
         secretsLen, secretsEnd, fakesLen, fakesEnd, valuesLen, valuesEnd, ⟨276⟩, sel]
       mem2 aw rdata acc k' C' := by
-    exact ⟨_, _, by simpa only [hlenLoad] using rd1039₀⟩
+    exact ⟨_, _, by simpa only [hlenLoad] using! rd1039₀⟩
   have hlt : UInt256.lt i curLen = ⟨1⟩ := ult_one hbound
   have rd1047₀ := evm_run rd1039 with [dup4, swap1, dup2, lt]
   have rd1047 := rd1047₀
@@ -832,7 +832,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen {I} {g : Sat256}
       aw (by decide)
       (by
         simp [M]
-        rw [show (⟨32⟩ : UInt256).toNat = 32 by native_decide]
+        
         rw [haw0]
         simp)
       (by simpa [mem3, mem2, mem1, revealScratchSenderWord] using hdataHash) haw0
@@ -905,7 +905,7 @@ theorem scratch_blindAuctionRevealX_loopBody_bounds_revert {I} {g : Sat256}
     raw keccak256 0 (revealScratchBidsLengthSlot I) aw (by decide)
       (by
         simp [M]
-        rw [show (⟨64⟩ : UInt256).toNat = 64 by native_decide]
+        
         rw [activeWords_keccak64_of_ge3 haw]
         simp)
       (by simpa [mem2, mem1, revealScratchSenderWord] using hbaseHash)
@@ -917,7 +917,7 @@ theorem scratch_blindAuctionRevealX_loopBody_bounds_revert {I} {g : Sat256}
       [curLen, revealScratchBidsLengthSlot I, ⟨0⟩, i, refund, len, revealEnd, biddingEnd,
         secretsLen, secretsEnd, fakesLen, fakesEnd, valuesLen, valuesEnd, ⟨276⟩, sel]
       mem2 aw rdata acc k' C' := by
-    exact ⟨_, _, by simpa only [hlenLoad] using rd1039₀⟩
+    exact ⟨_, _, by simpa only [hlenLoad] using! rd1039₀⟩
   have hlt : UInt256.lt i curLen = ⟨0⟩ := ult_zero hbound
   have rd1047₀ := evm_run rd1039 with [dup4, swap1, dup2, lt]
   have rd1047 := rd1047₀

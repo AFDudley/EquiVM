@@ -280,7 +280,7 @@ theorem wrapperReachTotalSharesBody {σ σ₀ A I} {g : Sat256} {suffix : ByteAr
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 1 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket1 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_1728_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨983101241⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := wrapperBlocks.wrapper_block_1728_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨983101241⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `setHook(address)` (bucket 3, arm entry pc 36). -/
@@ -294,7 +294,7 @@ theorem wrapperReachSetHookBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 3 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket3 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_24_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1040005235⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := wrapperBlocks.wrapper_block_24_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1040005235⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `hook()` (bucket 3, arm entry pc 198). -/
@@ -308,8 +308,8 @@ theorem wrapperReachHookBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 3 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket3 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1040005235⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := wrapperBlocks.wrapper_block_186_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2136636539⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1040005235⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := wrapperBlocks.wrapper_block_186_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2136636539⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `previewUnwrap(uint256)` (bucket 6, arm entry pc 1498). -/
@@ -323,8 +323,8 @@ theorem wrapperReachPreviewUnwrapBody {σ σ₀ A I} {g : Sat256} {suffix : Byte
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 6 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket6 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3725498942⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := wrapperBlocks.wrapper_block_1486_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2862286670⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3725498942⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := wrapperBlocks.wrapper_block_1486_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2862286670⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `shares(address)` (bucket 2, arm entry pc 1681). -/
@@ -338,8 +338,8 @@ theorem wrapperReachSharesBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 2 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket2 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4228666474⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := wrapperBlocks.wrapper_block_1669_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3464243906⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4228666474⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := wrapperBlocks.wrapper_block_1669_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3464243906⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `unwrap(uint256)` (bucket 6, arm entry pc 909). -/
@@ -353,7 +353,7 @@ theorem wrapperReachUnwrapBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 6 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket6 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_897_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3725498942⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := wrapperBlocks.wrapper_block_897_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3725498942⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `wrap(uint256)` (bucket 0, arm entry pc 225). -/
@@ -367,7 +367,7 @@ theorem wrapperReachWrapBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 0 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket0 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_213_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3931737264⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := wrapperBlocks.wrapper_block_213_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3931737264⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `token()` (bucket 2, arm entry pc 1651). -/
@@ -381,7 +381,7 @@ theorem wrapperReachTokenBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
       (by simpa [wrapperSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 8 = 2 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := wrapperBucket2 hcode hm
-  have rd1 := wrapperBlocks.wrapper_block_1639_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4228666474⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := wrapperBlocks.wrapper_block_1639_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4228666474⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Calldata shorter than a selector: the padded word matches no bucket entry. -/
@@ -393,21 +393,21 @@ theorem wrapperX_short {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
   generalize hm : (solcSelectorWord I).toNat % 8 = m at hmlt
   interval_cases m
   · obtain ⟨_, _, rd0⟩ := wrapperBucket0 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_213_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3931737264⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := wrapperBlocks.wrapper_block_213_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3931737264⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := wrapperBucket1 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_1728_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨983101241⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := wrapperBlocks.wrapper_block_1728_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨983101241⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := wrapperBucket2 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4228666474⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_1669_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3464243906⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4228666474⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_1669_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3464243906⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket3 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1040005235⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_186_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2136636539⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1040005235⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_186_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2136636539⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket4 hcode hm
@@ -417,8 +417,8 @@ theorem wrapperX_short {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
     have rd1 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := wrapperBucket6 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3725498942⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_1486_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2862286670⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3725498942⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_1486_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2862286670⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket7 hcode hm
@@ -435,21 +435,21 @@ theorem wrapperX_noMatch {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
   generalize hm : (solcSelectorWord I).toNat % 8 = m at hmlt
   interval_cases m
   · obtain ⟨_, _, rd0⟩ := wrapperBucket0 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_213_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3931737264⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := wrapperBlocks.wrapper_block_213_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3931737264⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := wrapperBucket1 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_1728_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨983101241⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := wrapperBlocks.wrapper_block_1728_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨983101241⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := wrapperBucket2 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4228666474⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_1669_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3464243906⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_1639_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4228666474⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_1669_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3464243906⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket3 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1040005235⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_186_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2136636539⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_24_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1040005235⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_186_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2136636539⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket4 hcode hm
@@ -459,8 +459,8 @@ theorem wrapperX_noMatch {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
     have rd1 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := wrapperBucket6 hcode hm
-    have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3725498942⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := wrapperBlocks.wrapper_block_1486_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2862286670⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := wrapperBlocks.wrapper_block_897_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3725498942⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := wrapperBlocks.wrapper_block_1486_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2862286670⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := wrapperBlocks.wrapper_block_1756 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := wrapperBucket7 hcode hm

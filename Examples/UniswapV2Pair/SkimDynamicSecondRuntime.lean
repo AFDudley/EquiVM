@@ -954,7 +954,7 @@ theorem RD.uniswapSkimSecondBalanceOfStaticcallMade_dynamic {g : Sat256} {s0 : S
       (packedWord :: token1 :: token0 :: toWord :: ⟨570⟩ :: sel :: [])
       (skimSafeTransferReturnDataMem (UInt256.ofNat ee.codeOwner.val) o toWord value out1)
       (skimSafeTransferReturnDataActiveWords out1) out1 σ k5334 C5334 := by
-    simpa [packedWord, solcSlotWordAt, solcSlotWord] using rd5334₀
+    exact rd5334₀
   let aw0 := skimSafeTransferReturnDataActiveWords out1
   let awLoad0 : UInt256 := UInt256.ofNat (MachineState.M aw0.toNat (⟨64⟩ : UInt256).toNat 32)
   have hawLoad0 : awLoad0 = aw0 := by
@@ -974,7 +974,7 @@ theorem RD.uniswapSkimSecondBalanceOfStaticcallMade_dynamic {g : Sat256} {s0 : S
       (fp :: ⟨64⟩ :: packedWord :: token1 :: token0 :: toWord :: ⟨570⟩ :: sel :: [])
       (skimSafeTransferReturnDataMem (UInt256.ofNat ee.codeOwner.val) o toWord value out1)
       aw0 out1 σ (k5334 + 1 + 1 + 1) (C5334 + 3 + 3 + 3) := by
-    simpa [hawLoad0] using rd5343₀
+    simpa [hawLoad0] using! rd5343₀
   have rd5347 := evm_run rd5343 with [
     push4 balanceOfSelectorWord, push1 ⟨224⟩, shl, dup2]
   let awSel := skimSecondBalanceDynamicSelectorWords out1
@@ -1050,10 +1050,8 @@ theorem RD.uniswapSkimSecondBalanceOfStaticcallMade_dynamic {g : Sat256} {s0 : S
     RD.solcStaticcall rd5272 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   refine ⟨σ', z, out2, A_in, callGas, k', C', ?_, ?_, hout2Size⟩
-  · simpa [token1Clean, skimSecondBalanceDynamicStaticcallMem, fp] using hΘ
-  · simpa [packedWord, token1Clean, reserve1Word, reserve112Shift, reserve112Mask,
-      skimSecondBalanceDynamicStaticcallMem, skimSecondBalanceDynamicStaticcallWords, fp]
-      using rd5273
+  · exact hΘ
+  · exact rd5273
 
 theorem RD.uniswapSkimSecondBalanceCallFailureReverts_dynamic {g : Sat256} {s0 : State}
     {ee : ExecutionEnv} {k C : ℕ} {mem out : ByteArray} {aw : UInt256}
@@ -1230,7 +1228,7 @@ theorem RD.uniswapSkimSecondBalanceReturnWordDecodeOk_dynamic
           ho32 hoSize hout1Ne hout1Size hout2_32 hout2Size)
     (by simpa [awLoadRet, awLoad64, aw0, fp, hawLoad64])
     (by omega)
-  exact ⟨_, _, by simpa [awLoadRet, awLoad64, aw0, fp] using rdMloadRet⟩
+  exact ⟨_, _, by exact rdMloadRet⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSecondBalanceOfNoCodeReverts_dynamic {g : Sat256} {s0 : State}
@@ -1254,7 +1252,7 @@ theorem RD.uniswapSkimSecondBalanceOfNoCodeReverts_dynamic {g : Sat256} {s0 : St
       (packedWord :: token1 :: token0 :: toWord :: ⟨570⟩ :: sel :: [])
       (skimSafeTransferReturnDataMem (UInt256.ofNat ee.codeOwner.val) o toWord value out1)
       (skimSafeTransferReturnDataActiveWords out1) out1 σ k5334 C5334 := by
-    simpa [packedWord, solcSlotWordAt, solcSlotWord] using rd5334₀
+    exact rd5334₀
   let aw0 := skimSafeTransferReturnDataActiveWords out1
   let awLoad0 : UInt256 := UInt256.ofNat (MachineState.M aw0.toNat (⟨64⟩ : UInt256).toNat 32)
   have hawLoad0 : awLoad0 = aw0 := by

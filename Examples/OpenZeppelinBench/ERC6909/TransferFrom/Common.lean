@@ -496,7 +496,7 @@ theorem evalExpr_transferFrom_allowance_lt_max_true (evm : EVM.State) (I : Execu
     simpa [UInt256.size] using hlt
   simp only [maxUint256Lit, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [transferFromStoreCurrentAllowance_currentAllowance]
-  simp [evalBinaryOp?, transferFromCurrentAllowanceValue, maxUint256, UInt256.size]
+  simp [evalBinaryOp?, transferFromCurrentAllowanceValue, maxUint256, UInt256.size, pure]
   omega
 
 theorem evalExpr_transferFrom_allowance_lt_max_false (evm : EVM.State) (I : ExecutionEnv)
@@ -508,7 +508,7 @@ theorem evalExpr_transferFrom_allowance_lt_max_false (evm : EVM.State) (I : Exec
     simpa [UInt256.size] using hge
   simp only [maxUint256Lit, evalExpr?, EvalResult.ofOption, EvalResult.bind, bind]
   rw [transferFromStoreCurrentAllowance_currentAllowance]
-  simp [evalBinaryOp?, transferFromCurrentAllowanceValue, maxUint256, UInt256.size]
+  simp [evalBinaryOp?, transferFromCurrentAllowanceValue, maxUint256, UInt256.size, pure]
   omega
 
 theorem evalExpr_transferFrom_allowance_debit (evm : EVM.State) (I : ExecutionEnv)

@@ -43,7 +43,7 @@ theorem uniswapSwapCallbackCases
   have hcond := evalExpr_swap_callbackCondition evm _ hbytes
   rw [hsize] at hcond
   rcases uniswapSwapRuntimeCallbackBranchCases rd1904 (by omega) with ⟨hz, k', C', rd2091⟩ | ⟨hnz, _, _, rd1911⟩
-  · have hc : evalExpr? config caller evm swapCallbackCondition = .ok (.bool false) := by simpa only [hz] using hcond
+  · have hc : evalExpr? config caller evm swapCallbackCondition = .ok (.bool false) := by simpa only [hz] using! hcond
     exact Or.inr ⟨evm, σ, mem, aw, rdata, k', C', by
       simpa only [swapAfterCallbackFrame, if_pos hz] using uniswapSwapCallbackSkip hc,
       hAccounts, hσ0, henv, hready.sizeLo, hready.gap,
@@ -60,7 +60,7 @@ theorem uniswapSwapCallbackCases
     obtain ⟨_, _, rd2054⟩ := uniswapSwapCallbackPrepared rd1911 hready hdata hlen hfit hov
     by_cases hcode : extCodeSizeWord σ (UInt256.land solcAddrMask toWord) = ⟨0⟩
     · have hg : evalExpr? config caller evm (.binary .gt (.extCodeSize (.var "to")) (.intLit 0)) = .ok (.bool false) := by
-        simpa only [hcode] using hguard
+        simpa only [hcode] using! hguard
       exact Or.inl ⟨uniswapSwapCallbackNoCode hc hg,
         uniswapSwapCallbackCannotCallReverts rd2054 (Or.inl hcode) (by simp only [List.length_cons]; omega)⟩
     · have hcodePos : 0 < (extCodeSizeWord σ (UInt256.land solcAddrMask toWord)).toNat :=

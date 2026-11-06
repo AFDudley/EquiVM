@@ -103,9 +103,7 @@ theorem uniswapDecode_transfer_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
   show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
-    transferToWord, transferValueWord, calldataWord]
-    using decodeCalldata_legacyAddress_uint256_ok
+  exact decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "to") (y := "value") hsz68
 
 theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
@@ -113,8 +111,7 @@ theorem uniswapDecode_transfer_none_short {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = none
-  simpa [uint256, abiUInt256]
-    using decodeCalldata_legacyAddress_uint256_none_short
+  exact decodeCalldata_legacyAddress_uint256_none_short
       (cd := I.calldata) (x := "to") (y := "value") hsz4 hshort
 
 theorem uniswapDecode_transfer_ok_noncanon {I : ExecutionEnv}
@@ -123,9 +120,7 @@ theorem uniswapDecode_transfer_ok_noncanon {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
   show config.externalABI.decodeCalldata? ["to", "value"] [legacyAddr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
-    transferToWord, transferValueWord, calldataWord]
-    using decodeCalldata_legacyAddress_uint256_ok
+  exact decodeCalldata_legacyAddress_uint256_ok
       (cd := I.calldata) (x := "to") (y := "value") hsz68
 
 theorem transferStore_to (I : ExecutionEnv) :

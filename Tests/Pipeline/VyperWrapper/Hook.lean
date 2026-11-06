@@ -31,10 +31,9 @@ theorem wrapperHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
     wrapperDispatch_hook (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (hookTransition.params.map Param.name)
       (transitionSignature hookTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, hookTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := wrapperBlocks.wrapper_block_198_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := wrapperBlocks.wrapper_block_198_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := wrapperBlocks.wrapper_block_203 (by simp) rd1
     rw [ulit_toNat' 64 (by decide), ulit_toNat' 32 (by decide),
       toByteArray_write_read_back_of_gap _ (wrapperDispatchMem 3) 64
@@ -51,7 +50,7 @@ theorem wrapperHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immu
         rw [addressReturnEncoding]
         show some (UInt256.ofNat (AccountAddress.ofNat (solcSlotWordAt ⟨0⟩ σ I).toNat).val).toByteArray = _
         rw [word_roundtrip hwf.1]))
-  · have rd1 := wrapperBlocks.wrapper_block_198_taken (by simp) (by simpa using hwv)
+  · have rd1 := wrapperBlocks.wrapper_block_198_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := wrapperBlocks.wrapper_block_1760 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

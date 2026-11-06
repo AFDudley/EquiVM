@@ -202,8 +202,7 @@ theorem erc20TransferFromX_overflow {σ σ₀ A I} {g : Sat256}
           (transferFromAllowanceDebitI σ σ₀ A I g)
           (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm0 I) I) =
         transferFromToBalanceWord evm0 I := by
-    simpa [evm0] using
-      (transferFromToBalanceRawAfterBalance_initState
+    exact (transferFromToBalanceRawAfterBalance_initState
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
   have hoverRaw :
       UInt256.size ≤
@@ -244,7 +243,7 @@ theorem erc20TransferFromX_overflow {σ σ₀ A I} {g : Sat256}
           (transferFromToBalanceRawAfterBalance σ I
             (transferFromAllowanceDebitI σ σ₀ A I g)
             (transferFromBalanceDebitWord (transferFromAfterAllowanceState evm0 I) I)) = ⟨1⟩ by
-          simpa [transferFromValueWord] using hcreditGuardRaw]; decide)
+          exact hcreditGuardRaw]; decide)
       (by vyper_erc20_transferFrom_decode)]
   exact vyperRuntimeRevert801 (σ := σ) (σ₀ := σ₀)
     (A := A) (I := I) (g := g) rd801 rfl (by

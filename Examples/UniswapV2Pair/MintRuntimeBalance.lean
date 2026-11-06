@@ -33,7 +33,7 @@ theorem uniswapMintRuntimeReservesLoaded
       rd2852 (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
   have rd3378 := evm_run rd3376 with [jumpdest, pop]
-  exact ⟨_, _, by simpa [σLock] using rd3378⟩
+  exact ⟨_, _, by exact rd3378⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` slice from loaded reserves to the first
@@ -72,7 +72,7 @@ theorem uniswapMintRuntimeFirstBalanceOfExtcodesize
       [token0Word, reserve1Word σLock I, reserve0Word σLock I,
         ⟨0⟩, ⟨0⟩, ⟨0⟩, toWord, ⟨861⟩, sel]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σLock k3381 C3381 := by
-    simpa [σLock, token0Word, solcSlotWordAt, solcSlotWord] using rd3381₀
+    exact rd3381₀
   have rd3394 := evm_run rd3381 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨128⟩ (UInt256.ofNat 3) (by decide)
@@ -104,7 +104,7 @@ theorem uniswapMintRuntimeFirstBalanceOfExtcodesize
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd3448₀
   rw [← u256_land_comm solcAddrMask] at rd3448₀
   norm_num at rd3448₀
-  exact ⟨_, _, by simpa [σLock, token0Clean, token0Word] using rd3448₀⟩
+  exact ⟨_, _, by exact rd3448₀⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` slice through the first `balanceOf` code-existence
@@ -146,7 +146,7 @@ theorem uniswapMintRuntimeFirstBalanceOfStaticcallReady
       (by native_decide) (by native_decide) (by jump_dest)
       (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa [σLock, token0Word, token0Clean] using rd3462⟩
+  exact ⟨_, _, by exact rd3462⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` slice through `GAS`, stopping at the first
@@ -189,7 +189,7 @@ theorem uniswapMintRuntimeFirstBalanceOfStaticcallEntry
       (by native_decide) (by native_decide) (by jump_dest)
       (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨gasWord, _, _, by simpa [σLock, token0Word, token0Clean] using rd3463⟩
+  exact ⟨gasWord, _, _, by exact rd3463⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` slice through the first opaque
@@ -245,10 +245,9 @@ theorem uniswapMintRuntimeFirstBalanceOfStaticcallMade
     RD.solcStaticcall rd3463 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨σ', z, o, A_in, callGas, k', C',
-    by simpa [σLock, token0Word, token0Clean, initState] using hΘ,
+    by exact hΘ,
     by
-      simpa [σLock, token0Word, token0Clean, balanceOfThisStaticcallMem,
-        balanceOfThisStaticcallActiveWords] using rd3464,
+      exact rd3464,
     hoSize⟩
 
 set_option maxHeartbeats 1000000 in
@@ -350,7 +349,7 @@ theorem uniswapMintRuntimeFirstBalanceOfResultBranches
         (by native_decide) (by native_decide) (by native_decide) (by native_decide)
         (by jump_dest) (by native_decide) (by native_decide) (by native_decide)
         (by simp only [List.length_cons, List.length_nil]; omega)
-    exact ⟨k', C', by simpa [σLock, token0Word, token0Clean] using rd3505⟩
+    exact ⟨k', C', by exact rd3505⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` reverts when `token0.balanceOf(address(this))` targets an
@@ -449,7 +448,7 @@ theorem uniswapMintRuntimeSecondBalanceOfExtcodesizeFromFirst
         ⟨0⟩, toWord, ⟨861⟩, sel]
       (balanceOfThisStaticcallMem (UInt256.ofNat I.codeOwner.val) o)
       balanceOfThisStaticcallActiveWords o σ' k3508 C3508 := by
-    simpa [σLock, token1Word, solcSlotWordAt, solcSlotWord] using rd3508₀
+    exact rd3508₀
   have rd3520 := evm_run rd3508 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨128⟩ balanceOfThisStaticcallActiveWords (by decide)
@@ -491,7 +490,7 @@ theorem uniswapMintRuntimeSecondBalanceOfExtcodesizeFromFirst
   rw [show (⟨128⟩ : UInt256) + ⟨36⟩ = ⟨164⟩ from by decide,
     show UInt256.sub (⟨128⟩ : UInt256) ⟨128⟩ = ⟨0⟩ from by decide,
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd3573₀
-  exact ⟨_, _, by simpa [σLock, token1Word, token1Clean] using rd3573₀⟩
+  exact ⟨_, _, by exact rd3573₀⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` branches after the second `balanceOf` call. -/
@@ -557,7 +556,7 @@ theorem uniswapMintRuntimeSecondBalanceOfResultBranchesFromExtcodesize
     RD.solcStaticcall rd3588 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   refine ⟨σ'', z1, o1, A_in1, callGas1, ?_, ?_, ?_, ?_, ho1Size⟩
-  · simpa [balanceOfThisRebuiltStaticcallMem, initState] using hΘ1
+  · exact hΘ1
   · intro hz1
     have hstatus : (if z1 then (⟨1⟩ : UInt256) else ⟨0⟩) = ⟨0⟩ := by
       simp [hz1]
@@ -683,7 +682,7 @@ theorem uniswapMintRuntimeAmount0SubSuccessFromBalances
       (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
   have rd3661 := evm_run rd3658 with [jumpdest, swap1, pop]
-  exact ⟨_, _, by simpa [σLock, reserve0, reserve1] using rd3661⟩
+  exact ⟨_, _, by exact rd3661⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` slice through the second checked subtraction,
@@ -735,7 +734,7 @@ theorem uniswapMintRuntimeAmount1SubSuccessFromAmount0
       (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
   have rd3690 := evm_run rd3687 with [jumpdest, swap1, pop]
-  exact ⟨_, _, by simpa [σLock, reserve0, reserve1] using rd3690⟩
+  exact ⟨_, _, by exact rd3690⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `mint(address)` reverts when `amount0 = balance0 - _reserve0` underflows. -/

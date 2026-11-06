@@ -67,7 +67,7 @@ theorem uniswapMappingKeccakSlot (baseSlot key : UInt256) :
     UInt256.ofNat (fromByteArrayBigEndian
         (KEC ((uniswapMappingHashMem baseSlot key).readWithPadding 0 64)))
       = mapSlot key baseSlot := by
-  simpa [mapSlot] using solcMappingKeccakSlot baseSlot key
+  exact solcMappingKeccakSlot baseSlot key
 
 /-! ## Return memory after a mapping getter -/
 

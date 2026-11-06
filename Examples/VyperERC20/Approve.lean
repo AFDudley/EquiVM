@@ -128,9 +128,7 @@ theorem erc20Decode_approve_ok {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.approveTransition.params.map Param.name)
       (transitionSignature ERC20.approveTransition).paramTypes I.calldata = some (approveStore I) := by
   show decodeCalldataWithMode DecodeMode.vyper ["spender", "value"] [addr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, approveStore, approveSpenderValue, approveValueValue,
-    approveSpenderWord, approveValueWord, calldataWord]
-    using decodeCalldataWithMode_vyper_addr_uint256_ok
+  exact decodeCalldataWithMode_vyper_addr_uint256_ok
       (cd := I.calldata) (x := "spender") (y := "value") hsz68 hcanon
 
 theorem erc20Decode_approve_none_short {I : ExecutionEnv}
@@ -138,8 +136,7 @@ theorem erc20Decode_approve_none_short {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.approveTransition.params.map Param.name)
       (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["spender", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldataWithMode_vyper_addr_uint256_none_short
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_short
       (cd := I.calldata) (x := "spender") (y := "value") hsz4 hshort
 
 theorem erc20Decode_approve_none_noncanon {I : ExecutionEnv}
@@ -148,8 +145,7 @@ theorem erc20Decode_approve_none_noncanon {I : ExecutionEnv}
     decodeCalldataWithMode DecodeMode.vyper (ERC20.approveTransition.params.map Param.name)
       (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["spender", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, approveSpenderWord]
-    using decodeCalldataWithMode_vyper_addr_uint256_none_noncanon
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_noncanon
       (cd := I.calldata) (x := "spender") (y := "value") hsz68 hnc
 
 theorem erc20ApproveBodyReturns (evm : EVM.State) (I : ExecutionEnv)
@@ -542,7 +538,7 @@ theorem erc20ApproveX_shortarg {σ σ₀ A I} {g : Sat256}
   have hsizeGuard := calldataSizeGuardShort (n := I.calldata.size) (m := 68)
     hsize (by norm_num [UInt256.size]) hshort
   have hsizeGuard68 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨68⟩ = ⟨1⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have rd801 := evm_run rd206 with [
     jumpdest,
     raw push4 approveSelectorWord (by vyper_erc20_approve_decode) (by evm_ov),
@@ -658,7 +654,7 @@ theorem erc20ApproveBodyCore
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata =
               some (approveStore I) := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       by_cases hperm : I.perm = true
       · have hbody := erc20ApproveBodyReturns evm I
           (by simp only [evm, initState]; exact hwv) hperm
@@ -679,7 +675,7 @@ theorem erc20ApproveBodyCore
           vyperERC20Config.externalABI.decodeCalldata?
             (ERC20.approveTransition.params.map Param.name)
             (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
-        simpa [vyperERC20Config] using hdec0
+        exact hdec0
       exact (erc20ApproveX_noncanon_spender (g := Sat256.ofUInt256 g)
           hwv hsz68 hsize hcanonSpender hreach)
         |>.reEquivDecodingFailed hcode hd hdec
@@ -689,7 +685,7 @@ theorem erc20ApproveBodyCore
         vyperERC20Config.externalABI.decodeCalldata?
           (ERC20.approveTransition.params.map Param.name)
           (transitionSignature ERC20.approveTransition).paramTypes I.calldata = none := by
-      simpa [vyperERC20Config] using hdec0
+      exact hdec0
     exact (erc20ApproveX_shortarg (g := Sat256.ofUInt256 g) hwv hsize hshort hreach)
       |>.reEquivDecodingFailed hcode hd hdec
 

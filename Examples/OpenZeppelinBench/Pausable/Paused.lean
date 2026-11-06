@@ -42,7 +42,7 @@ theorem pausableX_paused {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD pausableBenchBytecode I g (initState σ σ₀ g A I) ⟨102⟩
         [pausedRawWord σ I, pausableSelWord I] solcFreePtrMem (UInt256.ofNat 3)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [pausedRawWord, initState] using rd102₀⟩
+    exact ⟨_, _, by exact rd102₀⟩
   have rd105₀ := evm_run rd102 with [push1 ⟨255⟩, and]
   have hmask : UInt256.land ⟨255⟩ (pausedRawWord σ I) = pausedWord σ I := by
     rw [Reasoning.Theory.u256_land_comm]
@@ -126,8 +126,7 @@ theorem pausablePausedBody {σ σ₀ A I}
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(wordToElem .bool (pausedWord σ I))])) := by
-    simpa [pausedRawWord, pausedWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      pausablePausedBodyReturns
+    exact pausablePausedBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   have henc :
@@ -136,8 +135,7 @@ theorem pausablePausedBody {σ σ₀ A I}
     simpa [pausedTransition] using
       returnEquiv_of_encode (abit := boolTy) (rv := wordToElem .bool (pausedWord σ I))
         (o := UInt256.toByteArray (pausedReturnWord σ I))
-        (by simpa [pausedWord, pausedReturnWord] using
-          boolWordReturnEncoding (pausedRawWord σ I))
+        (by exact boolWordReturnEncoding (pausedRawWord σ I))
   exact (pausableX_paused (g := Sat256.ofUInt256 g) hreach)
     |>.reEquivExecution hcode hd hdec hbody henc
 

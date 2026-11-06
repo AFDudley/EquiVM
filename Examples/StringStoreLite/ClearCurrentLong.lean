@@ -1254,8 +1254,7 @@ theorem currentLengthGeneratedLoopFinal_mload128_of_add32
     (off := (⟨128⟩ : UInt256)) (v := len)
     (by simpa [show (⟨128⟩ : UInt256).toNat = 128 from by decide] using hsize128)
     (by
-      simpa [show (⟨128⟩ : UInt256).toNat = 128 from by decide] using
-        currentLengthGeneratedLoopFinal_read128_of_add32
+      exact currentLengthGeneratedLoopFinal_read128_of_add32
           (σ := σ) (I := I) (len := len) (fuel := fuel)
           (finalMloadCost := finalMloadCost) (awLoad := awLoad)
           hcontinue hdone hmloadCost hloadVal hawLoad hadd32)
@@ -1952,7 +1951,7 @@ theorem stringStoreLiteX_clearCurrentLongFinalCopyToDelete {σ σ₀ A I}
       [currentLengthStorageWord σ I slot, ptr, slot, endp, len, ⟨0⟩, ⟨128⟩,
         ⟨0⟩, ⟨0⟩, ⟨153⟩, stringStoreLiteSelWord I]
       m aw ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthStorageWord, initState] using rd400₀⟩
+    exact ⟨_, _, by exact rd400₀⟩
   have rd401 := evm_run rd400 with [dup2]
   have rd402 := rd401.mstore mstoreCost memout awStore
     (by native_decide) hmstoreCost hmemout hawStore (by evm_ov)
@@ -1994,7 +1993,7 @@ theorem stringStoreLiteX_clearCurrentLongCopyContinue {σ σ₀ A I}
       [currentLengthStorageWord σ I slot, ptr, slot, endp, len, ⟨0⟩, ⟨128⟩,
         ⟨0⟩, ⟨0⟩, ⟨153⟩, stringStoreLiteSelWord I]
       m aw ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthStorageWord, initState] using rd400₀⟩
+    exact ⟨_, _, by exact rd400₀⟩
   have rd401 := evm_run rd400 with [dup2]
   have rd402 := rd401.mstore mstoreCost memout awStore
     (by native_decide) hmstoreCost hmemout hawStore (by evm_ov)
@@ -2120,7 +2119,7 @@ theorem stringStoreLiteX_clearCurrentLongReachDeleteWithSchedule
         ⟨0⟩, ⟨153⟩, stringStoreLiteSelWord I]
       (currentLengthMem len) (UInt256.ofNat 5) ByteArray.empty
       σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd343₀⟩
+    exact ⟨_, _, by exact rd343₀⟩
   have hdecodedCopy := stringStoreLiteX_bytesLengthDecoderLongValidMem
     (hreach := ⟨_, _, evm_run rd343' with [
       push2 ⟨351⟩, swap1, push2 ⟨869⟩, jump (by jump_dest)]⟩)
@@ -2447,8 +2446,7 @@ theorem stringStoreLiteX_clearCurrentLongValidGenerated {σ σ₀ A I}
     currentLengthGeneratedFinalCopy_mNoWrap_of_ptr_add32
       (σ := σ) (I := I) (len := len) (fuel := fuel) hadd32 hptrBound
   have hcopyAwLoadEq : copyFinal.awLoad = copyAwStore := by
-    simpa [copyFinal, copyAwStore, copyAwLoad] using
-      currentLengthGeneratedFinalCopy_mload128_aw_eq_awStore_of_mNoWrap
+    exact currentLengthGeneratedFinalCopy_mload128_aw_eq_awStore_of_mNoWrap
         (σ := σ) (I := I) (len := len) (fuel := fuel) hMNoWrap
   have hcopyAwGe5 : 5 ≤ copyFinal.awLoad.toNat := by
     rw [hcopyAwLoadEq]
@@ -2468,8 +2466,7 @@ theorem stringStoreLiteX_clearCurrentLongValidGenerated {σ σ₀ A I}
         (finalMloadCost := copyMloadCost) (awLoad := copyAwLoad)
         hcontinue hdone hcopyMloadCost hcopyLoadVal hcopyAwLoad hadd32
   have hcopySize : copyFinal.memout.size = freePtr.toNat := by
-    simpa [copyFinal, fuel, freePtr] using
-      currentLengthConcreteFuel_finalCopy_size_eq_freePtr
+    exact currentLengthConcreteFuel_finalCopy_size_eq_freePtr
         (σ := σ) (I := I) (len := len) hlenLt hgt31
   have hfreeGe96 : 96 ≤ freePtr.toNat :=
     currentLengthFreePtr_ge96_of_long (len := len) hlenLt hgt31

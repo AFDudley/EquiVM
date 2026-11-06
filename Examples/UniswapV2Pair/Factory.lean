@@ -66,8 +66,7 @@ theorem uniswapFactoryBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.address (AccountAddress.ofNat (factoryReturnWord σ I).toNat))])) := by
-    simpa [factoryWord, factoryReturnWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
-      using uniswapFactoryBodyReturns
+    exact uniswapFactoryBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact uniswapAddressGetterBodyCore (entry := ⟨1324⟩) (routine := ⟨5443⟩) (slot := ⟨5⟩)

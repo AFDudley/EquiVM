@@ -62,9 +62,7 @@ theorem uniswapTotalSupplyBodyCore
         (.returned { contract := contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, solcSlotWordAt, solcSlotWord, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapTotalSupplyBodyReturns
+    exact uniswapTotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact uniswapUint256GetterBodyCore (entry := ⟨853⟩) (routine := ⟨2932⟩) (slot := ⟨0⟩)

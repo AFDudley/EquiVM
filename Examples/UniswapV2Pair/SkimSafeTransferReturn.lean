@@ -55,7 +55,8 @@ theorem RD.uniswapSafeTransferReturnNonemptyHugeReverts {g : Sat256} {s0 : State
   rw [show UInt256.ofNat out.size = rdsz from rfl, heq0] at rd6607
   have rd6610 := evm_run rd6607 with [jumpiNT (by native_decide), push1 ⟨64⟩]
   have rd6611 := RD.mload 0 base gasMarker rd6610 (by native_decide)
-    (by simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide, haw64])
+    (by simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
+        simp_all)
     hcallMem64 haw64
     (by simp only [List.length_cons]; omega)
   let rounded : UInt256 := UInt256.land (UInt256.add rdsz ⟨63⟩) (UInt256.lnot ⟨31⟩)
@@ -64,7 +65,8 @@ theorem RD.uniswapSafeTransferReturnNonemptyHugeReverts {g : Sat256} {s0 : State
     swap2, pop, push1 ⟨31⟩, not, push1 ⟨63⟩, returndatasize, add, and,
     dup3, add, push1 ⟨64⟩]
   have rd6626 := RD.mstore 0 mem2 gasMarker rd6626pre (by native_decide)
-    (by simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide, haw64])
+    (by simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
+        simp_all)
     (by dsimp [mem2]; rfl)
     haw64
     (by simp only [List.length_cons]; omega)
@@ -239,7 +241,7 @@ theorem RD.uniswapSafeTransferReturnNonemptyTrueStatusToLengthLoaded {g : Sat256
       simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide, hawBase])
     hloadBase hawBase
     (by simp only [List.length_cons]; omega)
-  exact ⟨_, _, by simpa [hretPtr] using rd6676⟩
+  exact ⟨_, _, by simpa [hretPtr] using! rd6676⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSafeTransferReturnNonemptyShortReverts {g : Sat256} {s0 : State}
@@ -394,7 +396,8 @@ theorem RD.uniswapSafeTransferReturnNonemptyReturnToCheck {g : Sat256} {s0 : Sta
   have rd6610 := evm_run rd6608 with [jumpiNT (by native_decide), push1 ⟨64⟩]
   have rd6611 := RD.mload 0 dataPtr aw0 rd6610 (by native_decide)
     (by
-      simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide, haw64])
+      simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
+      simp_all)
     hloadPtr haw64
     (by simp only [List.length_cons]; omega)
   let rounded : UInt256 := UInt256.land (rdsz + ⟨63⟩) (UInt256.lnot ⟨31⟩)
@@ -405,7 +408,8 @@ theorem RD.uniswapSafeTransferReturnNonemptyReturnToCheck {g : Sat256} {s0 : Sta
     dup3, add, push1 ⟨64⟩]
   have rd6626 := RD.mstore 0 mem2 aw0 rd6625 (by native_decide)
     (by
-      simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide, haw64])
+      simp [M, show (⟨32⟩ : UInt256).toNat = 32 from by decide]
+      simp_all)
     (by
       rw [show (⟨64⟩ : UInt256).toNat = 64 from by decide])
     haw64
@@ -447,7 +451,7 @@ theorem RD.uniswapSafeTransferReturnNonemptyReturnToCheck {g : Sat256} {s0 : Sta
   have rd6646 := evm_run rd6637 with [push2 ⟨6646⟩, jump (by jump_dest), jumpdest]
   have rd6652 := evm_run rd6646 with [pop, swap2, pop, swap2, pop]
   rw [hmem4] at rd6652
-  exact ⟨_, _, by simpa using rd6652⟩
+  exact ⟨_, _, by exact rd6652⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferNonemptyReturnToCheck {g : Sat256} {s0 : State}

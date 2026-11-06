@@ -48,7 +48,7 @@ theorem blindAuctionX_revealEnd {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I) ⟨487⟩
         [blindAuctionRevealEndWord σ I, ⟨373⟩, blindAuctionSelWord I]
         solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [blindAuctionRevealEndWord, initState] using rd487₀⟩
+    exact ⟨_, _, by exact rd487₀⟩
   have rd373 := evm_run rd487 with [
     dup2, jump (by jump_dest)]
   obtain ⟨_, _, rd206⟩ := blindAuctionRoutineEncodeWord373
@@ -128,8 +128,7 @@ theorem blindAuctionRevealEndBodyCore {σ σ₀ A I}
           (.returned { contract := blindAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.int (Int.ofNat (blindAuctionRevealEndWord σ I).toNat))])) := by
-      simpa [blindAuctionRevealEndWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-        blindAuctionRevealEndBodyReturns
+      exact blindAuctionRevealEndBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (blindAuctionX_revealEnd (g := Sat256.ofUInt256 g) hwv hreach)

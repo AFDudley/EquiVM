@@ -63,7 +63,7 @@ theorem uniswapSqrtRuntimeLargePrefix {g : Sat256} {s0 : State} {ee : ExecutionE
   have rd8058 := evm_run rd8058pre with [jumpiNT (by native_decide)]
   have rd8067 := evm_run rd8058 with [
     pop, dup1, push1 ⟨1⟩, push1 ⟨2⟩, dup3, div, add]
-  exact ⟨_, _, by simpa [UInt256.add] using rd8067⟩
+  exact ⟨_, _, by exact rd8067⟩
 
 set_option maxHeartbeats 1000000 in
 /- Runtime-only `sqrt(uint256)` loop iteration. -/

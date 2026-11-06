@@ -27,23 +27,20 @@ theorem balancesDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (balancesTransition.params.map Param.name)
       (transitionSignature balancesTransition).paramTypes I.calldata = some (balancesStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, balancesTransition, balancesStore, argWord_eq] using
-    decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "arg0") hsz36 hcanon
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "arg0") hsz36 hcanon
 
 theorem balancesDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size)
     (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (balancesTransition.params.map Param.name)
       (transitionSignature balancesTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, balancesTransition] using
-    decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "arg0") hsz hshort
+  exact decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "arg0") hsz hshort
 
 theorem balancesDecode_noncanon {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (balancesTransition.params.map Param.name)
       (transitionSignature balancesTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, balancesTransition] using
-    decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "arg0") hsz36 hnc
+  exact decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "arg0") hsz36 hnc
 
 /-- `balances(address)`: the theorem `Correct.lean` routes selector 2 to. -/
 theorem vyperVaultBalancesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immutablesFit contract imms)
@@ -89,7 +86,7 @@ theorem vyperVaultBalancesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
   have rd2 := vyperVaultBlocks.vyperVault_block_1233_fallthrough (by simp)
     (u256_shiftRight160_zero_of_lt _ hcanon) rd1
   have rd3 := vyperVaultBlocks.vyperVault_block_1244 (by simp) rd2
-  simp only [vyperVaultBlocks.vyperVault_block_1233_fallthrough_stack] at rd3
+  
   -- the scratch memory is `wordAt0Mem 1 (wordAt32Mem arg argMem)`, hashing to the mapping slot
   have hkec : keccakWord (⟨0⟩ : UInt256) (UInt256.ofNat 64)
       ((UInt256.ofNat 1).toByteArray.write 0 ((memLoad (UInt256.ofNat 64)

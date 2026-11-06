@@ -318,7 +318,7 @@ theorem uniswapSkimX_lockEntered {σ σ₀ A I} {g : Sat256} {sel toWord : UInt2
     (pc := ⟨5080⟩) (okPc := ⟨5155⟩) (R := [toWord, ⟨570⟩, sel])
     rd5080 uniswap_lock_enter_ok_wf hperm hunlocked (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa using rd5161⟩
+  exact ⟨_, _, by exact rd5161⟩
 
 /-- In a static call, `skim(address)` halts at the lock-entry `SSTORE`. -/
 theorem uniswapSkimX_lockEnteredStatic {σ σ₀ A I} {g : Sat256} {sel toWord : UInt256}
@@ -406,21 +406,21 @@ theorem uniswapSkimRuntimeFirstBalanceOfExtcodesize
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨5164⟩
       [token0Word, toWord, ⟨570⟩, uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σLock k5164 C5164 := by
-    simpa [σLock, token0Word, solcSlotWordAt, solcSlotWord] using rd5164₀
+    exact rd5164₀
   have rd5166 := evm_run rd5164 with [push1 ⟨7⟩]
   obtain ⟨k5167, C5167, rd5167₀⟩ := rd5166.sload (by native_decide) (by evm_ov)
   have rd5167 : RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨5167⟩
       [token1Word, token0Word, toWord, ⟨570⟩, uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σLock k5167 C5167 := by
-    simpa [σLock, token1Word, solcSlotWordAt, solcSlotWord] using rd5167₀
+    exact rd5167₀
   have rd5169 := evm_run rd5167 with [push1 ⟨8⟩]
   obtain ⟨k5170, C5170, rd5170₀⟩ := rd5169.sload (by native_decide) (by evm_ov)
   have rd5170 : RD uniswapV2PairBytecode I (Sat256.ofUInt256 g)
       (initState σ σ₀ (Sat256.ofUInt256 g) A I) ⟨5170⟩
       [packedWord, token1Word, token0Word, toWord, ⟨570⟩, uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σLock k5170 C5170 := by
-    simpa [σLock, packedWord, solcSlotWordAt, solcSlotWord] using rd5170₀
+    exact rd5170₀
   have rd5183 := evm_run rd5170 with [
     push1 ⟨64⟩, dup1,
     raw mload 0 ⟨128⟩ (UInt256.ofNat 3) (by decide)
@@ -456,8 +456,7 @@ theorem uniswapSkimRuntimeFirstBalanceOfExtcodesize
     show UInt256.sub (⟨128⟩ : UInt256) ⟨128⟩ = ⟨0⟩ from by decide,
     show (⟨0⟩ : UInt256) + ⟨36⟩ = ⟨36⟩ from by decide] at rd5257₀
   exact ⟨_, _, by
-    simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-      reserve0Word] using rd5257₀⟩
+    exact rd5257₀⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` slice through the first `balanceOf` code-existence guard when
@@ -532,8 +531,7 @@ theorem uniswapSkimRuntimeFirstBalanceOfStaticcallReady
       (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨_, _, by
-    simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-      reserve0Word] using rd5271⟩
+    exact rd5271⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` slice through `GAS`, stopping at the first
@@ -609,8 +607,7 @@ theorem uniswapSkimRuntimeFirstBalanceOfStaticcallEntry
       (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨gasWord, _, _, by
-    simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-      reserve0Word] using rd5272⟩
+    exact rd5272⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` slice through the first opaque
@@ -691,11 +688,9 @@ theorem uniswapSkimRuntimeFirstBalanceOfStaticcallMade
     RD.solcStaticcall rd5272 (by native_decide) hdepth
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨σ', z, o, A_in, callGas, k', C',
-    by simpa [σLock, token0Word, token0Clean, initState] using hΘ,
+    by exact hΘ,
     by
-      simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-        reserve0Word, balanceOfThisStaticcallMem, balanceOfThisStaticcallActiveWords] using
-        rd5273,
+      exact rd5273,
     hoSize⟩
 
 set_option maxHeartbeats 1000000 in
@@ -869,7 +864,7 @@ theorem RD.uniswapSkimSafeTransferEntryToFreePtr {g : Sat256} {s0 : State}
     raw mload 0 ⟨128⟩ balanceOfThisStaticcallActiveWords (by native_decide)
       mem_cost (balanceOfThisStaticcallMem_mload64_of_size_ge self o ho32 hoSize)
       (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6375⟩
+  exact ⟨_, _, by exact rd6375⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferFreePtrToMem0 {g : Sat256} {s0 : State}
@@ -888,7 +883,7 @@ theorem RD.uniswapSkimSafeTransferFreePtrToMem0 {g : Sat256} {s0 : State}
     raw mstore 0 (skimSafeTransferMem0 self o) balanceOfThisStaticcallActiveWords
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem0; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6380⟩
+  exact ⟨_, _, by exact rd6380⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferMem0ToMem1 {g : Sat256} {s0 : State}
@@ -907,7 +902,7 @@ theorem RD.uniswapSkimSafeTransferMem0ToMem1 {g : Sat256} {s0 : State}
     raw mstore 0 (skimSafeTransferMem1 self o) balanceOfThisStaticcallActiveWords
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem1; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6384⟩
+  exact ⟨_, _, by exact rd6384⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferMem1ToSignatureWord {g : Sat256} {s0 : State}
@@ -923,7 +918,7 @@ theorem RD.uniswapSkimSafeTransferMem1ToSignatureWord {g : Sat256} {s0 : State}
       (skimSafeTransferMem1 self o) balanceOfThisStaticcallActiveWords o acc k' C' := by
   have rd6417 := h.pushConst skimSafeTransferSignatureWord (width := 32) (op := .PUSH32)
     (by native_decide) (by native_decide) (by evm_ov)
-  exact ⟨_, _, by simpa using rd6417⟩
+  exact ⟨_, _, by exact rd6417⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferSignatureWordToMem2 {g : Sat256} {s0 : State}
@@ -942,7 +937,7 @@ theorem RD.uniswapSkimSafeTransferSignatureWordToMem2 {g : Sat256} {s0 : State}
     raw mstore 0 (skimSafeTransferMem2 self o) balanceOfThisStaticcallActiveWords
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem2; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6423⟩
+  exact ⟨_, _, by exact rd6423⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferMem2ToRecipientStore {g : Sat256} {s0 : State}
@@ -969,7 +964,7 @@ theorem RD.uniswapSkimSafeTransferMem2ToRecipientStore {g : Sat256} {s0 : State}
     raw mstore 9 (skimSafeTransferMem3 self o toWord) (UInt256.ofNat 9)
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem3; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6441⟩
+  exact ⟨_, _, by exact rd6441⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferRecipientStoreToValueStore {g : Sat256} {s0 : State}
@@ -988,7 +983,7 @@ theorem RD.uniswapSkimSafeTransferRecipientStoreToValueStore {g : Sat256} {s0 : 
     raw mstore 3 (skimSafeTransferMem4 self o toWord value) (UInt256.ofNat 10)
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem4; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6449⟩
+  exact ⟨_, _, by exact rd6449⟩
 
 set_option maxHeartbeats 1000000 in
 theorem RD.uniswapSkimSafeTransferValueStoreToCopySetup {g : Sat256} {s0 : State}
@@ -1019,7 +1014,7 @@ theorem RD.uniswapSkimSafeTransferValueStoreToCopySetup {g : Sat256} {s0 : State
     raw mstore 0 (skimSafeTransferMem6 self o toWord value) (UInt256.ofNat 10)
       (by native_decide) mem_cost
       (by unfold skimSafeTransferMem6; rfl) (by native_decide) (by evm_ov)]
-  exact ⟨_, _, by simpa using rd6466⟩
+  exact ⟨_, _, by exact rd6466⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` first `balanceOf` slice for the call-depth limit.
@@ -1169,8 +1164,7 @@ theorem uniswapSkimRuntimeFirstBalanceOfStaticcallSuccessGuard
       (by native_decide) (by jump_dest) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨k', C', by
-    simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-      reserve0Word] using rd5291⟩
+    exact rd5291⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` slice decoding the first successful `balanceOf` return word. -/
@@ -1271,8 +1265,7 @@ theorem uniswapSkimRuntimeFirstBalanceOfReturnWordDecoded
       (by jump_dest) (by native_decide) (by native_decide) (by native_decide)
       (by simp only [List.length_cons, List.length_nil]; omega)
   exact ⟨k', C', by
-    simpa [σLock, token0Word, token1Word, packedWord, token0Clean, token1Clean,
-      reserve0Word] using rd5314⟩
+    exact rd5314⟩
 
 set_option maxHeartbeats 1000000 in
 /-- Runtime-only `skim(address)` slice showing that a successful first `balanceOf` call with

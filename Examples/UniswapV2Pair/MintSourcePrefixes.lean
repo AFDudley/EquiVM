@@ -1252,9 +1252,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOffReturn_of_call
         (by simpa [totalSupply, reserve0, reserve1] using hliquidity) hliqNonzero
         hfitSupply hfitBalance hbound0 hbound1 helapsed
   have hthrough := execBlock_append hprefix htail
-  simpa only [mintTransition, mintLiquidityBranchStmt, mintInitialLiquidityBranchStmts,
-    mintProportionalLiquidityBranchStmts, mintAfterLiquidityTailStmts, List.append_assoc,
-    afterTotalSupplyLocals, totalSupply, reserve0, reserve1] using hthrough
+  exact hthrough
 
 theorem uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextLocals : Store)
@@ -1452,9 +1450,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOffCumulativeReturn_of_call
         (intOfNat_toNat_ne_zero_of_u256_ne_zero reserve1
           (by simpa [reserve1] using hreserve1Nonzero))
   have hthrough := execBlock_append hprefix htail
-  simpa only [mintTransition, mintLiquidityBranchStmt, mintInitialLiquidityBranchStmts,
-    mintProportionalLiquidityBranchStmts, mintAfterLiquidityTailStmts, List.append_assoc,
-    afterTotalSupplyLocals, totalSupply, reserve0, reserve1] using hthrough
+  exact hthrough
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
@@ -1664,9 +1660,7 @@ theorem uniswapMintAfterMintFeeProportionalFeeOnReturn_of_call
         hfitSupply hfitBalance hbound0 hbound1 helapsed
         hfitKLast
   have hthrough := execBlock_append hprefix htail
-  simpa only [mintTransition, mintLiquidityBranchStmt, mintInitialLiquidityBranchStmts,
-    mintProportionalLiquidityBranchStmts, mintAfterLiquidityTailStmts, List.append_assoc,
-    afterTotalSupplyLocals, totalSupply, reserve0, reserve1] using hthrough
+  exact hthrough
 
 theorem uniswapMintAfterMintFeeProportionalFeeOnCumulativeReturn_of_call
     (evm evm0 evm1 evmAfter : EVM.State) (I : ExecutionEnv) (nextLocals : Store)

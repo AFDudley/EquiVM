@@ -372,9 +372,7 @@ theorem RD.uniswapUpdateStorePackedReserves {g : Sat256} {s0 : State}
   obtain ⟨_, _, rd7339⟩ := rd7338.sstore hperm (by native_decide)
     (by simp only [List.length_cons]; omega)
   exact ⟨_, _, by
-    simpa [uniswapUpdatePackedReserveWord, solcSlotWordAt, solcSlotWord, reserve112Shift,
-      reserve112Mask,
-      reserve224Shift, reserve32Mask] using rd7339⟩
+    exact rd7339⟩
 
 set_option maxHeartbeats 3000000 in
 /-- Shared `_update` suffix that emits the `Sync(uint112,uint112)` event from the packed reserve

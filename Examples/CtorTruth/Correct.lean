@@ -58,7 +58,7 @@ theorem ctorTruthEvmSelector {cd : ByteArray} (hsz : 4 ≤ cd.size) :
 theorem ctorTruthDecode_empty {I : Ethereum.ExecutionEnv} (hsz : 4 ≤ I.calldata.size) :
     decodeCalldata (CtorTruth.truthTransition.params.map Param.name)
       (transitionSignature CtorTruth.truthTransition).paramTypes I.calldata = some ∅ := by
-  simpa [CtorTruth.truthTransition] using truthDecode_empty (I := I) hsz
+  exact truthDecode_empty (I := I) hsz
 
 theorem ctorTruthReEquiv_callvalueZero
     {σ σ₀ A I} {g : Sat256}

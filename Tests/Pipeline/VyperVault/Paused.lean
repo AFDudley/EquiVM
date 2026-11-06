@@ -34,10 +34,9 @@ theorem vyperVaultPausedBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit :
       (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (pausedTransition.params.map Param.name)
       (transitionSignature pausedTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, pausedTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1165_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1165_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1170 (by simp) rd1
     have hmemsize : (vyperVaultDispatchMem 10).size = 32 := by native_decide
     rw [ulit_toNat' 64 (by decide), ulit_toNat' 32 (by decide),
@@ -65,7 +64,7 @@ theorem vyperVaultPausedBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit :
       exact returnEquiv_of_encode (by simpa [wordToElem] using boolFalseReturnEncoding)
     · rw [h1]
       exact returnEquiv_of_encode (by simpa [wordToElem] using boolTrueReturnEncoding)
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1165_taken (by simp) (by simpa using hwv)
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1165_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1403 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

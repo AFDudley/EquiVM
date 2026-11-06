@@ -127,7 +127,7 @@ theorem uniswapAssignUnlocked (evm : EVM.State) (locals : Store) (val : UInt256)
       (her := evalStorageRef_uniswap_unlocked evm locals)
       (hty := by simp [storageTypeAt?, contract, storageDecls, uint256St])
       (hloc := by rfl)
-  simpa [uniswapUnlockedState] using storageLocStore_uint256 evm ⟨12⟩ val
+  exact storageLocStore_uint256 evm ⟨12⟩ val
 
 theorem uniswapAssignUnlockedZero (evm : EVM.State) (locals : Store)
     (hbase : locals.get? "unlocked" = none) :
@@ -906,8 +906,7 @@ theorem uniswapCheckedExternalBalanceOfThisSuccess (evm evm' : EVM.State) (local
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar)
       (.ok { contract := contract, locals := locals.insert retVar value } evm') := by
-  simpa [balanceOfThisStmts] using
-    checkedExternalCallSuccess (hperm := Or.inl rfl)
+  exact checkedExternalCallSuccess (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -929,8 +928,7 @@ theorem uniswapCheckedExternalBalanceOfThisFailure (evm evm' : EVM.State) (local
       "balanceOf" 0 [.address evm.executionEnv.codeOwner] (false, evm', out) false) :
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
-  simpa [balanceOfThisStmts] using
-    checkedExternalCallFailure (hperm := Or.inl rfl)
+  exact checkedExternalCallFailure (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -954,8 +952,7 @@ theorem uniswapCheckedExternalBalanceOfThisDecodeRevert
     (hdec : config.externalABI.decode? "balanceOf" out = none) :
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
-  simpa [balanceOfThisStmts] using
-    checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
+  exact checkedExternalCallDecodeRevert (hperm := Or.inl rfl)
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (target := uniswapAddressAtSlot evm slot)
       hguard
@@ -970,8 +967,7 @@ theorem uniswapCheckedExternalBalanceOfThisNoCode (evm : EVM.State) (locals : St
         (.binary .gt (.extCodeSize (.storage ref)) (.intLit 0)) = .ok (.bool false)) :
     ExecBlock config { contract := contract, locals := locals } evm
       (balanceOfThisStmts (.storage ref) retVar) .reverted := by
-  simpa [balanceOfThisStmts] using
-    checkedExternalCallNoCode
+  exact checkedExternalCallNoCode
       (receiver := .storage ref) (name := "balanceOf") (sendVal := 0) (args := [this])
       (retVar := retVar)
       hguard

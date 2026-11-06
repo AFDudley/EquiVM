@@ -96,9 +96,7 @@ theorem erc20Decode_transfer_ok {I : ExecutionEnv}
     decodeCalldata (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = some (transferStore I) := by
   show decodeCalldata ["to", "value"] [addr, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferStore, transferToValue, transferValueValue,
-    transferToWord, transferValueWord, calldataWord]
-    using decodeCalldata_addr_uint256_ok
+  exact decodeCalldata_addr_uint256_ok
       (cd := I.calldata) (x := "to") (y := "value") hsz68 hbig hcanon
 
 theorem erc20Decode_transfer_none_short {I : ExecutionEnv}
@@ -106,8 +104,7 @@ theorem erc20Decode_transfer_none_short {I : ExecutionEnv}
     decodeCalldata (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_addr_uint256_none_short
+  exact decodeCalldata_addr_uint256_none_short
       (cd := I.calldata) (x := "to") (y := "value") hsz4 hshort
 
 theorem erc20Decode_transfer_none_noncanon {I : ExecutionEnv}
@@ -116,8 +113,7 @@ theorem erc20Decode_transfer_none_noncanon {I : ExecutionEnv}
     decodeCalldata (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferToWord]
-    using decodeCalldata_addr_uint256_none_noncanon
+  exact decodeCalldata_addr_uint256_none_noncanon
       (cd := I.calldata) (x := "to") (y := "value") hsz68 hbig hnc
 
 theorem erc20Decode_transfer_none_huge {I : ExecutionEnv}
@@ -125,8 +121,7 @@ theorem erc20Decode_transfer_none_huge {I : ExecutionEnv}
     decodeCalldata (transferTransition.params.map Param.name)
       (transitionSignature transferTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["to", "value"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_addr_uint256_none_huge
+  exact decodeCalldata_addr_uint256_none_huge
       (cd := I.calldata) (x := "to") (y := "value") hbig
 
 theorem transferStore_to (I : ExecutionEnv) :
@@ -1143,8 +1138,7 @@ theorem erc20TransferX_afterRequire {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         ⟨0⟩, transferValueWord I, transferToWord I, ⟨300⟩, sel]
       (balanceOfHashMem (transferSenderWord I)) (UInt256.ofNat 3) ByteArray.empty σ
       k1 C1 := by
-    simpa [transferFromBalanceWord, transferSenderSlot, transferSenderSlotI, initState]
-      using rd1429₀
+    exact rd1429₀
   have hlt : UInt256.lt (transferFromBalanceWord (initState σ σ₀ g A I))
       (transferValueWord I) = ⟨0⟩ := ult_zero henough
   exact ⟨_, _, evm_run rd1429 with [
@@ -1178,8 +1172,7 @@ theorem erc20TransferX_insufficient {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         ⟨0⟩, transferValueWord I, transferToWord I, ⟨300⟩, sel]
       (balanceOfHashMem (transferSenderWord I)) (UInt256.ofNat 3) ByteArray.empty σ
       k1 C1 := by
-    simpa [transferFromBalanceWord, transferSenderSlot, transferSenderSlotI, initState]
-      using rd1429₀
+    exact rd1429₀
   have hltw : UInt256.lt (transferFromBalanceWord (initState σ σ₀ g A I))
       (transferValueWord I) = ⟨1⟩ := ult_one hlt
   have rd1430₀ := evm_run rd1429 with [ lt ]
@@ -1428,9 +1421,7 @@ theorem erc20TransferX_afterDebit {σ σ₀ A I} {g : Sat256} {sel : UInt256}
         transferToWord I, ⟨300⟩, sel]
       (balanceOfHashMem (transferSenderWord I)) (UInt256.ofNat 3) ByteArray.empty σ
       k1 C1 := by
-    simpa [transferFromBalanceWord, transferSenderSlot, transferSenderSlotI, initState,
-      Stele.EVM.storageLoad]
-      using rd1559₀
+    exact rd1559₀
   have rd2552 := evm_run rd1559 with [
     push2 ⟨1568⟩, swap2, swap1, push2 ⟨2552⟩, jump erc20_jd ]
   obtain ⟨k2, C2, rd1568₀⟩ := erc20RoutineCheckedSub rd2552 henough erc20_jd
@@ -1500,7 +1491,7 @@ theorem erc20TransferX_afterCredit {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     simpa [transferToBalanceWord, transferAfterDebitState, transferSenderSlot,
       transferSenderSlotI, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap]
-      using rd1641₀
+      using! rd1641₀
   have rd2603 := evm_run rd1641 with [
     push2 ⟨1650⟩, swap2, swap1, push2 ⟨2603⟩, jump erc20_jd ]
   obtain ⟨k2, C2, rd1650₀⟩ := erc20RoutineCheckedAdd rd2603
@@ -1558,7 +1549,7 @@ theorem erc20TransferX_overflow {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     simpa [transferToBalanceWord, transferAfterDebitState, transferSenderSlot,
       transferSenderSlotI, initState, Stele.EVM.storageLoad, State.lookupAccount,
       Account.lookupStorage, storageStore_accountMap]
-      using rd1641₀
+      using! rd1641₀
   have rd2603 := evm_run rd1641 with [
     push2 ⟨1650⟩, swap2, swap1, push2 ⟨2603⟩, jump erc20_jd ]
   exact erc20RoutineCheckedAdd_overflow rd2603

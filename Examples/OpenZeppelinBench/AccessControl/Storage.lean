@@ -19,7 +19,7 @@ theorem accessControlStorageLocLoad_bytes32 (evm : EVM.State) (slot : UInt256) :
     storageLocLoad evm (bytes32Loc slot)
       = .fixedBytes ⟨31, by decide⟩
           (EVM.Word.toBytesBE (Stele.EVM.storageLoad evm evm.executionEnv.codeOwner slot)) := by
-  simpa [bytes32Loc] using storageLocLoad_bytes32 evm slot
+  exact storageLocLoad_bytes32 evm slot
 
 
 end OpenZeppelinBench.AccessControl

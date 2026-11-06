@@ -154,7 +154,7 @@ theorem bidsArrayIndexInBounds_revert (evm : EVM.State) (I : ExecutionEnv)
   simp [arrayIndexInBounds?, storageTypeAt?, storageTypeStep?, blindAuctionContract,
     storageDecls, bidsIndexKey]
   rw [bidsArrayLength evm (bidsAddressKey I)]
-  simp [bidsAddressKey, hleStorage]
+  simp [bidsAddressKey, hleStorage, ← Nat.not_le]
 
 theorem evalStorageRef_bidsField_ok (evm : EVM.State) (I : ExecutionEnv) (field : Ident)
     (hbound : (bidsIndexWord I).toNat < (bidsLengthCurrent evm I).toNat) :
@@ -252,8 +252,7 @@ theorem blindAuctionBidsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       have hloadBlinded :
           storageLocLoad evm (blindAuctionBytes32Loc (bidsElementSlot I)) =
             .fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE (bidsBlindedCurrent evm I)) := by
-        simpa [bidsBlindedCurrent] using
-          storageLocLoad_bytes32 evm (bidsElementSlot I)
+        exact storageLocLoad_bytes32 evm (bidsElementSlot I)
       have hloadDeposit :
           storageLocLoad evm (blindAuctionUint256Loc (bidsDepositSlot I)) =
             .int (Int.ofNat (bidsDepositCurrent evm I).toNat) := by
@@ -618,9 +617,7 @@ theorem blindAuctionDecode_bids_ok {I : ExecutionEnv}
     decodeCalldata (bidsGetter.params.map Param.name)
       (transitionSignature bidsGetter).paramTypes I.calldata = some (bidsStore I) := by
   show decodeCalldata ["a", "i"] [addr, uint256] I.calldata = some (bidsStore I)
-  simpa [bidsStore, bidsAddressValue, bidsIndexValue, bidsAddressWord, bidsIndexWord, addr,
-    uint256, abiUInt256, calldataWord] using
-    decodeCalldata_addr_uint256_ok (cd := I.calldata) (x := "a") (y := "i")
+  exact decodeCalldata_addr_uint256_ok (cd := I.calldata) (x := "a") (y := "i")
       hsz68 hbig hcanon
 
 theorem blindAuctionDecode_bids_none_short {I : ExecutionEnv}
@@ -628,8 +625,7 @@ theorem blindAuctionDecode_bids_none_short {I : ExecutionEnv}
     decodeCalldata (bidsGetter.params.map Param.name)
       (transitionSignature bidsGetter).paramTypes I.calldata = none := by
   show decodeCalldata ["a", "i"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_none_short (cd := I.calldata) (x := "a") (y := "i")
+  exact decodeCalldata_addr_uint256_none_short (cd := I.calldata) (x := "a") (y := "i")
       hsz4 hshort
 
 theorem blindAuctionDecode_bids_none_noncanon {I : ExecutionEnv}
@@ -638,8 +634,7 @@ theorem blindAuctionDecode_bids_none_noncanon {I : ExecutionEnv}
     decodeCalldata (bidsGetter.params.map Param.name)
       (transitionSignature bidsGetter).paramTypes I.calldata = none := by
   show decodeCalldata ["a", "i"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, bidsAddressWord, calldataWord] using
-    decodeCalldata_addr_uint256_none_noncanon (cd := I.calldata) (x := "a") (y := "i")
+  exact decodeCalldata_addr_uint256_none_noncanon (cd := I.calldata) (x := "a") (y := "i")
       hsz68 hbig hnc
 
 theorem blindAuctionDecode_bids_none_huge {I : ExecutionEnv}
@@ -647,8 +642,7 @@ theorem blindAuctionDecode_bids_none_huge {I : ExecutionEnv}
     decodeCalldata (bidsGetter.params.map Param.name)
       (transitionSignature bidsGetter).paramTypes I.calldata = none := by
   show decodeCalldata ["a", "i"] [addr, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256] using
-    decodeCalldata_addr_uint256_none_huge (cd := I.calldata) (x := "a") (y := "i") hbig
+  exact decodeCalldata_addr_uint256_none_huge (cd := I.calldata) (x := "a") (y := "i") hbig
 
 theorem blindAuctionBidsX_callvalue_ne {σ σ₀ A I} {g : Sat256}
     (hreach : ∃ k C, RD blindAuctionBytecode I g
@@ -697,7 +691,7 @@ theorem blindAuctionBidsX_decoded {σ σ₀ A I} {g : Sat256}
         (UInt256.land
           (uInt256OfByteArray (I.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨1⟩ := by
-    simpa [bidsAddressWord, calldataWord, solcAddrMask] using hclean
+    exact hclean
   obtain ⟨_, _, rd1660⟩ := blindAuctionBidsX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) hwv hreach
   have rd1700 := evm_run rd1660 with [
@@ -708,7 +702,7 @@ theorem blindAuctionBidsX_decoded {σ σ₀ A I} {g : Sat256}
       jumpdest ]
   have rd1701 := RD.swap5 rd1700 (by decide) (by evm_ov)
   exact ⟨_, _, by
-    simpa [bidsAddressWord, bidsIndexWord, calldataWord] using evm_run rd1701 with [
+    exact evm_run rd1701 with [
       push1 ⟨32⟩, swap4, swap1, swap4, add, calldataload,
       swap4, pop, pop, pop, jump (by jump_dest),
       jumpdest, push2 ⟨510⟩, jump (by jump_dest) ]⟩
@@ -760,7 +754,7 @@ theorem blindAuctionBidsX_decodeRevert_noncanon {σ σ₀ A I} {g : Sat256}
         (UInt256.land
           (uInt256OfByteArray (I.calldata.readBytes (⟨4⟩ : UInt256).toNat 32))
           (UInt256.sub (UInt256.shiftLeft (⟨1⟩ : UInt256) ⟨160⟩) ⟨1⟩)) = ⟨0⟩ := by
-    simpa [bidsAddressWord, calldataWord, solcAddrMask] using hnc
+    exact hnc
   obtain ⟨_, _, rd1660⟩ := blindAuctionBidsX_toDecoder
     (σ := σ) (σ₀ := σ₀) (A := A) (g := g) hwv hreach
   exact evm_run rd1660 with [

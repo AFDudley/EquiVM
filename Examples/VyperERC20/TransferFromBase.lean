@@ -234,10 +234,7 @@ theorem erc20Decode_transferFrom_ok {I : ExecutionEnv}
         some (transferFromStore I) := by
   show decodeCalldataWithMode DecodeMode.vyper ["from", "to", "value"] [addr, addr, uint256]
     I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferFromStore, transferFromFromValue,
-    transferFromToValue, transferFromValueValue, transferFromFromWord, transferFromToWord,
-    transferFromValueWord, calldataWord]
-    using decodeCalldataWithMode_vyper_address_address_uint256_ok
+  exact decodeCalldataWithMode_vyper_address_address_uint256_ok
       (cd := I.calldata) (x := "from") (y := "to") (z := "value")
       hsz100 hcanonFrom hcanonTo
 
@@ -247,8 +244,7 @@ theorem erc20Decode_transferFrom_none_short {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["from", "to", "value"] [addr, addr, uint256]
     I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldataWithMode_vyper_address_address_uint256_none_short
+  exact decodeCalldataWithMode_vyper_address_address_uint256_none_short
       (cd := I.calldata) (x := "from") (y := "to") (z := "value") hsz4 hshort
 
 theorem erc20Decode_transferFrom_none_noncanon_from {I : ExecutionEnv}
@@ -258,8 +254,7 @@ theorem erc20Decode_transferFrom_none_noncanon_from {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["from", "to", "value"] [addr, addr, uint256]
     I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferFromFromWord]
-    using decodeCalldataWithMode_vyper_address_address_uint256_none_noncanon0
+  exact decodeCalldataWithMode_vyper_address_address_uint256_none_noncanon0
       (cd := I.calldata) (x := "from") (y := "to") (z := "value")
       hsz100 hnc
 
@@ -271,8 +266,7 @@ theorem erc20Decode_transferFrom_none_noncanon_to {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldataWithMode DecodeMode.vyper ["from", "to", "value"] [addr, addr, uint256]
     I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferFromFromWord, transferFromToWord]
-    using decodeCalldataWithMode_vyper_address_address_uint256_none_noncanon1
+  exact decodeCalldataWithMode_vyper_address_address_uint256_none_noncanon1
       (cd := I.calldata) (x := "from") (y := "to") (z := "value")
       hsz100 hcanonFrom hnc
 
@@ -2364,7 +2358,7 @@ theorem erc20TransferFromX_shortarg {σ σ₀ A I} {g : Sat256}
   have hsizeGuard := calldataSizeGuardShort (n := I.calldata.size) (m := 100)
     hsize (by norm_num [UInt256.size]) hshort
   have hsizeGuard100 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨100⟩ = ⟨1⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have rd801 := evm_run rd331 with [
     jumpdest,
     raw push4 transferFromSelectorWord (by vyper_erc20_transferFrom_decode) (by evm_ov),
@@ -2386,7 +2380,7 @@ theorem erc20TransferFromX_noncanon_from {σ σ₀ A I} {g : Sat256}
   obtain ⟨_, _, rd331⟩ := hreach
   have hsizeGuard := calldataSizeGuardOk (n := I.calldata.size) (m := 100) hsz100 hsize
   have hsizeGuard100 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨100⟩ = ⟨0⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have hcanonGuard : UInt256.shiftRight (transferFromFromWord I) ⟨160⟩ ≠ ⟨0⟩ := by
     intro hzero
     exact hnc (u256_lt_addressModulus_of_shiftRight160_zero (transferFromFromWord I) hzero)
@@ -2418,7 +2412,7 @@ theorem erc20TransferFromX_noncanon_to {σ σ₀ A I} {g : Sat256}
   obtain ⟨_, _, rd331⟩ := hreach
   have hsizeGuard := calldataSizeGuardOk (n := I.calldata.size) (m := 100) hsz100 hsize
   have hsizeGuard100 : UInt256.lt (UInt256.ofNat I.calldata.size) ⟨100⟩ = ⟨0⟩ := by
-    simpa using hsizeGuard
+    exact hsizeGuard
   have hcanonFromGuard : UInt256.shiftRight (transferFromFromWord I) ⟨160⟩ = ⟨0⟩ :=
     u256_shiftRight160_zero_of_lt (transferFromFromWord I) hcanonFrom
   have hcanonToGuard : UInt256.shiftRight (transferFromToWord I) ⟨160⟩ ≠ ⟨0⟩ := by

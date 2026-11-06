@@ -235,17 +235,14 @@ theorem erc20TotalSupplyBodyCore
         (ERC20.totalSupplyTransition.params.map Param.name)
         (transitionSignature ERC20.totalSupplyTransition).paramTypes I.calldata =
           some ∅ := by
-    simpa [vyperERC20Config, erc20Contract, ERC20.totalSupplyTransition]
-      using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   have hbody :
       ExecTransitionBody vyperERC20Config erc20Contract
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅ ERC20.totalSupplyTransition.body
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      erc20TotalSupplyBodyReturns
+    exact erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact (erc20X_totalSupplyFromEntry (g := Sat256.ofUInt256 g) hwv hreach)

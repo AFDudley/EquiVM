@@ -177,13 +177,11 @@ theorem ballotProposalsBodyReturns (evm : EVM.State) (I : ExecutionEnv)
       have hnameLoad :
           storageLocLoad evm (proposalNameLoc I) =
             .fixedBytes ⟨31, by decide⟩ (EVM.Word.toBytesBE (proposalNameCurrent evm I)) := by
-        simpa [proposalNameLoc, proposalNameCurrent] using
-          (storageLocLoad_bytes32 evm (proposalNameSlot I))
+        exact (storageLocLoad_bytes32 evm (proposalNameSlot I))
       have hcountLoad :
           storageLocLoad evm (wordLoc (proposalCountSlot I)) =
             .int (Int.ofNat (proposalCountCurrent evm I).toNat) := by
-        simpa [proposalCountCurrent] using
-          (storageLocLoad_uint256 evm (proposalCountSlot I))
+        exact (storageLocLoad_uint256 evm (proposalCountSlot I))
       simp only [Stele.evalExprs?.eq_def,
         evalExpr_storage_scalar (hbackend := rfl) (t := .bytes ⟨31, by decide⟩) (hbase := hbaseName)
           (her := herName) (hty := htyName) (hloc := hlocName),
@@ -592,21 +590,20 @@ theorem ballotDecode_proposals_ok {I : ExecutionEnv}
     decodeCalldata (proposalsGetter.params.map Param.name)
       (transitionSignature proposalsGetter).paramTypes I.calldata = some (proposalsStore I) := by
   show decodeCalldata ["i"] [uint256] I.calldata = some (proposalsStore I)
-  simpa [proposalsStore, proposalsIndexValue, proposalsIndexWord, uint256, calldataWord]
-    using decodeCalldata_uint256_ok (cd := I.calldata) (x := "i") hsz36 hbig
+  exact decodeCalldata_uint256_ok (cd := I.calldata) (x := "i") hsz36 hbig
 
 theorem ballotDecode_proposals_none_short {I : ExecutionEnv} (hshort : I.calldata.size < 36) :
     decodeCalldata (proposalsGetter.params.map Param.name)
       (transitionSignature proposalsGetter).paramTypes I.calldata = none := by
   show decodeCalldata ["i"] [uint256] I.calldata = none
-  simpa [uint256] using decodeCalldata_uint256_none_short (cd := I.calldata) (x := "i") hshort
+  exact decodeCalldata_uint256_none_short (cd := I.calldata) (x := "i") hshort
 
 theorem ballotDecode_proposals_none_huge {I : ExecutionEnv}
     (hbig : 2 ^ 255 + 4 ≤ I.calldata.size) :
     decodeCalldata (proposalsGetter.params.map Param.name)
       (transitionSignature proposalsGetter).paramTypes I.calldata = none := by
   show decodeCalldata ["i"] [uint256] I.calldata = none
-  simpa [uint256] using decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "i") hbig
+  exact decodeCalldata_uint256_none_huge (cd := I.calldata) (x := "i") hbig
 
 theorem ballotProposalsBodyCore
     {σ σ₀ A I} {g : UInt256} {sel : UInt256}

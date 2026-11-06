@@ -23,22 +23,19 @@ theorem rauDecode_ok {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (register_address_uint256Transition.params.map Param.name)
       (transitionSignature register_address_uint256Transition).paramTypes I.calldata = some (rauStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, register_address_uint256Transition, rauStore, argWord_eq, argWord2_eq] using
-    decodeCalldataWithMode_vyper_addr_uint256_ok (cd := I.calldata) (x := "account") (y := "weight") hsz68 hcanon
+  exact decodeCalldataWithMode_vyper_addr_uint256_ok (cd := I.calldata) (x := "account") (y := "weight") hsz68 hcanon
 
 theorem rauDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 68) :
     config.externalABI.decodeCalldata? (register_address_uint256Transition.params.map Param.name)
       (transitionSignature register_address_uint256Transition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, register_address_uint256Transition] using
-    decodeCalldataWithMode_vyper_addr_uint256_none_short (cd := I.calldata) (x := "account") (y := "weight") hsz hshort
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_short (cd := I.calldata) (x := "account") (y := "weight") hsz hshort
 
 theorem rauDecode_noncanon {I : ExecutionEnv} (hsz68 : 68 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (register_address_uint256Transition.params.map Param.name)
       (transitionSignature register_address_uint256Transition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, register_address_uint256Transition] using
-    decodeCalldataWithMode_vyper_addr_uint256_none_noncanon (cd := I.calldata) (x := "account") (y := "weight") hsz68 hnc
+  exact decodeCalldataWithMode_vyper_addr_uint256_none_noncanon (cd := I.calldata) (x := "account") (y := "weight") hsz68 hnc
 
 /-- `register(address,uint256)`: the theorem `Correct.lean` routes selector 3 to. -/
 theorem registryRegister_address_uint256Body {σ σ₀ A I} {g : UInt256} (hwf : storageWF σ I)

@@ -71,7 +71,7 @@ theorem uniswapMintTailRuntimeCases
       rd3926, hmemUpd, hmemUpd64⟩
   · refine Or.inl ⟨?_, rdRev⟩
     simpa only [mintAfterLiquidityTailStmts, updateReservesStmtsWith, List.append_assoc,
-      List.cons_append, List.nil_append] using
+      List.cons_append, List.nil_append] using!
       execBlock_append hprefix (ExecBlock.consRevert (stmts :=
         [.ite (.var "feeOn")
           [.assign .storage kLastRef

@@ -140,16 +140,16 @@ theorem uniswapMintInitialAfterMintFeeCases
       apply ExecFuncBody.execBlockRevert
       have hthrough := execBlock_append hprefix (by
         simpa only [locals, htotalEq, htotalZero] using htail)
-      simpa only [mintTransition, mintAfterLiquidityTailStmts, List.append_assoc] using hthrough
+      exact hthrough
     exact rdRev.reEquivExecutionRevert hcode hdispatch (uniswapDecode_mint_ok hsz36) hbody
   · have hbody : ExecTransitionBody config contract evmS (mintStore I)
         mintTransition.body (.returned frameRet evmRet (some [uniswapUint256Value liquidity])) := by
       apply ExecFuncBody.execBlockRet
       have hthrough := execBlock_append hprefix (by
         simpa only [locals, htotalEq, htotalZero] using htail)
-      simpa only [mintTransition, mintAfterLiquidityTailStmts, List.append_assoc] using hthrough
+      exact hthrough
     exact rdRet.reEquivExecutionGen hcode hdispatch (uniswapDecode_mint_ok hsz36)
       hbody hRetAccounts
-      (returnEquiv_of_encode (by simpa only [uint256] using uint256ReturnEncoding liquidity))
+      (returnEquiv_of_encode (by exact uint256ReturnEncoding liquidity))
 
 end UniswapV2Pair

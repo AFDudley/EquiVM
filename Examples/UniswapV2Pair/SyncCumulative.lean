@@ -764,7 +764,7 @@ theorem evalExpr_sync_update_price0Cumulative_with
     syncUpdateTimeElapsedStoreWith_reserve1, syncUpdateTimeElapsedStoreWith_reserve0,
     syncUpdateTimeElapsedStoreWith_timeElapsed]
   unfold syncTimeElapsedValue
-  simp [evalBinaryOp?, hreserve0Nat, twoPow256]
+  simp [evalBinaryOp?, hreserve0Nat, twoPow256, pure]
 
 theorem evalExpr_sync_update_price1Cumulative_with
     (storageEvm updateEvm : EVM.State) (balance0 balance1 reserve0 reserve1 : UInt256)
@@ -791,7 +791,7 @@ theorem evalExpr_sync_update_price1Cumulative_with
     syncUpdateTimeElapsedStoreWith_reserve0, syncUpdateTimeElapsedStoreWith_reserve1,
     syncUpdateTimeElapsedStoreWith_timeElapsed]
   unfold syncTimeElapsedValue
-  simp [evalBinaryOp?, hreserve1Nat, twoPow256]
+  simp [evalBinaryOp?, hreserve1Nat, twoPow256, pure]
 
 set_option maxHeartbeats 1000000 in
 theorem uniswapUpdateFunctionReturns_conditionTrue_packed
@@ -824,13 +824,11 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed
   have hstoreP0 :
       storageLocStore evm (wordLoc ⟨9⟩) (syncPrice0CumulativeValueAt evm evm) =
         some evmP0 := by
-    simpa [evmP0, syncPrice0CumulativeValueAt] using
-      storageLocStore_uint256_int evm ⟨9⟩ (syncPrice0CumulativeIntAt evm evm)
+    exact storageLocStore_uint256_int evm ⟨9⟩ (syncPrice0CumulativeIntAt evm evm)
   have hstoreP1 :
       storageLocStore evmP0 (wordLoc ⟨10⟩) (syncPrice1CumulativeValueAt evmP0 evm) =
         some evmP1 := by
-    simpa [evmP1, syncPrice1CumulativeValueAt] using
-      storageLocStore_uint256_int evmP0 ⟨10⟩ (syncPrice1CumulativeIntAt evmP0 evm)
+    exact storageLocStore_uint256_int evmP0 ⟨10⟩ (syncPrice1CumulativeIntAt evmP0 evm)
   have hstoreR0 :
       storageLocStore evmP1 (uint112Loc0 ⟨8⟩) (uniswapUint256Value balance0) =
         some evmR0 := by
@@ -985,15 +983,13 @@ theorem uniswapUpdateFunctionReturns_conditionTrue_packed_with
       storageLocStore evm (wordLoc ⟨9⟩)
           (syncPrice0CumulativeValueAtWith evm evm reserve0 reserve1) =
         some evmP0 := by
-    simpa [evmP0, syncPrice0CumulativeValueAtWith] using
-      storageLocStore_uint256_int evm ⟨9⟩
+    exact storageLocStore_uint256_int evm ⟨9⟩
         (syncPrice0CumulativeIntAtWith evm evm reserve0 reserve1)
   have hstoreP1 :
       storageLocStore evmP0 (wordLoc ⟨10⟩)
           (syncPrice1CumulativeValueAtWith evmP0 evm reserve0 reserve1) =
         some evmP1 := by
-    simpa [evmP1, syncPrice1CumulativeValueAtWith] using
-      storageLocStore_uint256_int evmP0 ⟨10⟩
+    exact storageLocStore_uint256_int evmP0 ⟨10⟩
         (syncPrice1CumulativeIntAtWith evmP0 evm reserve0 reserve1)
   have hstoreR0 :
       storageLocStore evmP1 (uint112Loc0 ⟨8⟩) (uniswapUint256Value balance0) =
@@ -1212,8 +1208,7 @@ theorem uniswapSyncBodyReturns_conditionTrue_packed (evm evm0 evm1 : EVM.State)
         (updateReservesStmts (.var "balance0") (.var "balance1"))
         (.ok (syncAfterUpdateFrame balance0 balance1)
           (syncUpdateCumulativePackedReserveState evm1 balance0 balance1)) := by
-    simpa [updateReservesStmts] using
-      (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
+    exact (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
   have hlock :=
     uniswapLockExitSuffix (hperm := by simpa [syncUpdateCumulativePackedReserveState] using hperm1) (syncUpdateCumulativePackedReserveState evm1 balance0 balance1)
       (syncAfterUpdateStore balance0 balance1)
@@ -1331,8 +1326,7 @@ theorem RD.uniswapUpdateCumulativesToReturn {g : Sat256} {s0 : State}
         native_decide)
       (by native_decide) hperm (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  simpa [uniswapUpdateCumulativeReturnMap] using
-    RD.uniswapSyncAfterUpdateToReturn rd6363 hperm
+  exact RD.uniswapSyncAfterUpdateToReturn rd6363 hperm
 
 set_option maxHeartbeats 1000000 in
 set_option maxRecDepth 100000000 in

@@ -121,8 +121,7 @@ theorem erc20TotalSupplyBodyCore
         (.returned { contract := erc20Contract, locals := ∅ }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (totalSupplyWord σ I).toNat))])) := by
-    simpa [totalSupplyWord, initState, Stele.EVM.storageLoad, State.lookupAccount] using
-      erc20TotalSupplyBodyReturns
+    exact erc20TotalSupplyBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         (by simp only [initState]; exact hwv) (by simp)
   exact (erc20X_totalSupply (g := Sat256.ofUInt256 g) hreach).reEquivExecutionGen

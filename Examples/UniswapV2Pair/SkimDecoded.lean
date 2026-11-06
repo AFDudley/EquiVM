@@ -321,7 +321,7 @@ theorem uniswapSkimBodyDecoded
                   wordOfInt_zero.symm ?_ rfl ?_ ?_
                 · refine ⟨callGas1, A_in1, ?_⟩
                   simpa [evm0E, token0CleanE, token0WordE, safeData0, safeValue0, hperm,
-                    accountAddress_roundtrip] using hΘsafeEq
+                    accountAddress_roundtrip] using! hΘsafeEq
                 · show (⟨0⟩ : UInt256) ≤ _
                   exact Fin.zero_le _
                 · intro hdepthEq
@@ -800,7 +800,7 @@ theorem uniswapSkimBodyDecoded
                               wordOfInt_zero.symm ?_ rfl ?_ ?_
                             · refine ⟨callGas3, A_in3, ?_⟩
                               simpa [evm2E, safeData1, safeValue1, hperm,
-                                accountAddress_roundtrip] using hΘsafeEq1
+                                accountAddress_roundtrip] using! hΘsafeEq1
                             · show (⟨0⟩ : UInt256) ≤ _
                               exact Fin.zero_le _
                             · intro hdepthEq
@@ -1240,7 +1240,7 @@ theorem uniswapSkimBodyDecoded
                             (v := ⟨0⟩) (v' := ⟨0⟩) (d := safeData0)
                             (e := I.depth + 1) (H := I.header)
                             (blocks := I.blocks) (w := I.perm)
-                            (by simpa [evm0E, safeData0, safeValue0, hperm] using hΘsafeEq)
+                            (by exact hΘsafeEq)
                             (by
                               exact Ethereum.EVM.ByteArray.readWithPadding_size_le_maxReturnDataSizeByGas
                                 _ _ _ (by norm_num [Ethereum.EVM.maxReturnDataSizeByGas,
@@ -1419,8 +1419,8 @@ theorem uniswapSkimBodyDecoded
                                     safeValue0 out1 out2)
                                   (skimSecondBalanceDynamicStaticcallWords out1)
                                   out2 σ2 k5314 C5314 := by
-                                simpa [balance1, reserve1E, u256_land_comm, hawBalance] using
-                                  rd5314
+                                rw [hawBalance] at rd5314
+                                simpa [balance1, reserve1E, u256_land_comm] using rd5314
                               by_cases hlt1 : balance1.toNat < reserve1E.toNat
                               · obtain ⟨k6879, C6879, rd6879⟩ :=
                                   RD.uniswapSkimFirstExcessToSub rd5314'
@@ -1524,8 +1524,7 @@ theorem uniswapSkimBodyDecoded
                                     (e := I.depth + 1) (H := I.header)
                                     (blocks := I.blocks) (w := I.perm)
                                     (by
-                                      simpa [evm2E, safeData1, safeValue1, hperm] using
-                                        hΘsafeEq1)
+                                      exact hΘsafeEq1)
                                     (by
                                       exact
                                         Ethereum.EVM.ByteArray.readWithPadding_size_le_maxReturnDataSizeByGas
@@ -1544,7 +1543,7 @@ theorem uniswapSkimBodyDecoded
                                     wordOfInt_zero.symm ?_ rfl ?_ ?_
                                   · refine ⟨callGas3, A_in3, ?_⟩
                                     simpa [evm2E, safeData1, safeValue1, hperm,
-                                      accountAddress_roundtrip] using hΘsafeEq1
+                                      accountAddress_roundtrip] using! hΘsafeEq1
                                   · show (⟨0⟩ : UInt256) ≤ _
                                     exact Fin.zero_le _
                                   · intro hdepthEq

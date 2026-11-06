@@ -17,8 +17,7 @@ theorem uniswapMinimumLiquidityBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals minimumLiquidityTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat minimumLiquidityWord.toNat))])) := by
-  simpa [minimumLiquidityTransition, minimumLiquidity, minimumLiquidityWord] using
-    uniswapIntLiteralBodyReturns evm locals minimumLiquidity h
+  exact uniswapIntLiteralBodyReturns evm locals minimumLiquidity h
 
 /-- From `MINIMUM_LIQUIDITY()`'s external body entry (pc 1278), bytecode returns `1000`. -/
 theorem uniswapX_minimumLiquidity {σ σ₀ A I} {g : Sat256} {sel : UInt256}
@@ -69,7 +68,7 @@ theorem uniswapMinimumLiquidityBodyCore
         minimumLiquidityTransition.returnType := by
     rw [minimumLiquidityTransition]
     exact returnEquiv_of_encode
-      (by simpa [uint256] using uint256ReturnEncoding minimumLiquidityWord)
+      (by exact uint256ReturnEncoding minimumLiquidityWord)
   exact (RD.uniswapWordConstGetterExternal (g := Sat256.ofUInt256 g)
       (entry := ⟨1278⟩) (routine := ⟨5074⟩) (val := minimumLiquidityWord)
       (width := 2) (op := .PUSH2) hreach uniswap_word_getter_entry_wf

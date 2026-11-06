@@ -311,8 +311,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOffReturn
             (syncUpdatePackedReserveState
               (mintFunctionPostState evmMinimum recipient liquidity) balance0 balance1))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [mintAfterLiquidityTailStmts, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
+    exact uniswapMintLiquidityMintUpdateElapsedZeroFeeOffReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
         (locals := afterMinimum.locals) evmMinimum recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter hunlockedBaseAfter
@@ -488,8 +487,7 @@ theorem uniswapMintInitialLiquidityUpdateElapsedZeroFeeOnReturn
               (syncUpdatePackedReserveState
                 (mintFunctionPostState evmMinimum recipient liquidity) balance0 balance1)))
           (some [uniswapUint256Value liquidity])) := by
-    simpa [mintAfterLiquidityTailStmts, afterMint, afterUpdate] using
-      uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
+    exact uniswapMintLiquidityMintUpdateElapsedZeroFeeOnReturn (hperm := by simpa [evmMinimum, mintFunctionPostState, mintFunctionAfterTotalSupplyState] using hperm)
         (locals := afterMinimum.locals) evmMinimum recipient balance0 balance1 reserve0 reserve1
         liquidity htoAfter hliqAfter hbalance0After hbalance1After hfeeOnAfter
         hreserve0After hreserve1After hreserve0BaseAfter hreserve1BaseAfter hkLastBaseAfter
@@ -519,7 +517,7 @@ theorem uniswapMintRuntimeInitialLiquidityAfterRootUnderflowReverts
     at rd6879pre
   have rd6879 := rd6879pre.jump (by native_decide) (by jump_dest) (by evm_ov)
   exact RD.uniswapSafeMathSubUnderflow_aw6_size164_shared
-    (by simpa [feeToStaticcallActiveWords, balanceOfThisStaticcallActiveWords] using rd6879)
+    (by exact rd6879)
     hrootLt hmem hmem64
     (by simp only [List.length_cons, List.length_nil]; omega)
 

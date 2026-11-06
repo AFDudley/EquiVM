@@ -67,7 +67,7 @@ theorem uniswapBurnBody
             (solcSlotWordAt ⟨6⟩ (sstoreAccountMap I.codeOwner σ ⟨12⟩ ⟨0⟩) I)) = ⟨0⟩
       · have hbody := uniswapBurnBodyReverts_firstNoCode (hperm := hperm) evmS I
           (by simpa only [evmS, initState] using hwv) hunlockedStele
-          (by simpa only [hnoCode] using hguard)
+          (by simpa only [hnoCode] using! hguard)
         exact (uniswapBurnRuntimeFirstBalanceOfMissingCodeReverts rd4267 hnoCode
           (by simp only [List.length_cons, List.length_nil]; omega)).reEquivExecutionRevert
             hcode hdispatch (uniswapDecode_burn_ok hsz36) hbody
@@ -154,7 +154,7 @@ theorem uniswapBurnBody
               by_cases hnoCode1 : extCodeSizeWord σ0 token1 = ⟨0⟩
               · have hsecond := checkedExternalCallVarNoCode (retVar := "balance1")
                   (name := "balanceOf") (sendVal := 0) (args := [this]) (perm := false)
-                  (by simpa only [hnoCode1] using hguard1)
+                  (by simpa only [hnoCode1] using! hguard1)
                 exact (uniswapBurnRuntimeSecondBalanceOfMissingCodeReverts rd4387 hnoCode1
                   (by simp only [List.length_cons, List.length_nil]; omega)).reEquivExecutionRevert
                     hcode hdispatch (uniswapDecode_burn_ok hsz36)

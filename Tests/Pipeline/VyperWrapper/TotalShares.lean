@@ -29,10 +29,9 @@ theorem wrapperTotalSharesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
   have hd : dispatchMsg contract I.calldata = some totalSharesTransition := wrapperDispatch_totalShares hsel
   have hdec : config.externalABI.decodeCalldata? (totalSharesTransition.params.map Param.name)
       (transitionSignature totalSharesTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, totalSharesTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := wrapperBlocks.wrapper_block_1740_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := wrapperBlocks.wrapper_block_1740_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := wrapperBlocks.wrapper_block_1745 (by simp) rd1
     rw [ulit_toNat' 64 (by decide), ulit_toNat' 32 (by decide),
       toByteArray_write_read_back_of_gap _ (wrapperDispatchMem 1) 64
@@ -45,7 +44,7 @@ theorem wrapperTotalSharesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit
         ((ABlock.start.requireStep (evalCallvalueEq_true (by simpa [initState] using hwv))).returns ?_)
       rw [evalTsRead imms ∅ _ (by simp), storageLoad_initState_ofUInt256_solcSlotWordAt]
     exact rd2.reEquivExecution hcode' hd hdec hbody (returnEquiv_of_encode (uint256ReturnEncoding _))
-  · have rd1 := wrapperBlocks.wrapper_block_1740_taken (by simp) (by simpa using hwv)
+  · have rd1 := wrapperBlocks.wrapper_block_1740_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := wrapperBlocks.wrapper_block_1760 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

@@ -59,7 +59,7 @@ theorem unpauseAssign (evm : EVM.State) :
     decide
   have hstore :
       storageLocStore evm (boolLoc ⟨0⟩) (.bool false) = some (unpausePostState evm) := by
-    simpa [unpausePostState] using storageLocStore_bool_false_offset0 evm ⟨0⟩
+    exact storageLocStore_bool_false_offset0 evm ⟨0⟩
   exact assignStorageRef_storage_scalar_value (hbackend := rfl) (cfg := config)
     (stele := { contract := contract, locals := ∅ }) (evm := evm) (evm' := unpausePostState evm)
     (slot := pausedRef) (er := { base := "_paused", steps := [] }) (ty := boolSt)
@@ -78,7 +78,7 @@ theorem pausableUnpauseBodyReturns (evm : EVM.State)
   refine ExecFuncBody.execBlockOK ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hnzPaused : pausedWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
+    exact hnz
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalPausedTrue evm ∅ hnzPaused (by simp))) ?_
   exact ExecBlock.consNormal (ExecStmt.assign
@@ -97,7 +97,7 @@ theorem pausableUnpauseBodyStatic (evm : EVM.State)
   refine ExecFuncBody.execBlockStatic ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hnzPaused : pausedWord evm.accountMap evm.executionEnv ≠ ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hnz
+    exact hnz
   refine ExecBlock.consNormal
     (ExecStmt.requireTrue (pausableEvalPausedTrue evm ∅ hnzPaused (by simp))) ?_
   exact ExecBlock.consStatic
@@ -112,7 +112,7 @@ theorem pausableUnpauseBodyReverts_notPaused (evm : EVM.State)
   refine ExecFuncBody.execBlockRevert ?_
   refine ExecBlock.consNormal (ExecStmt.requireTrue (evalCallvalueEq_true hwv)) ?_
   have hzeroPaused : pausedWord evm.accountMap evm.executionEnv = ⟨0⟩ := by
-    simpa [pausedWord, pausedRawWord, Stele.EVM.storageLoad] using hzero
+    exact hzero
   exact ExecBlock.consRevert
     (ExecStmt.requireFalse (pausableEvalPausedFalse evm ∅ hzeroPaused (by simp)))
 
@@ -141,7 +141,7 @@ theorem pausableX_unpause_success {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨203⟩
       [pausedRawWord σ I, ⟨0⟩, ⟨157⟩, ⟨97⟩, pausableSelWord I] solcFreePtrMem
       (UInt256.ofNat 3) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [pausedRawWord] using rd203₀⟩
+    exact ⟨_, _, by exact rd203₀⟩
   have rd207₀ := evm_run rd203 with [push1 ⟨255⟩, not, and]
   have rd207 := rd207₀
   have hland : UInt256.land (UInt256.lnot ⟨255⟩) (pausedRawWord σ I) =
@@ -160,7 +160,7 @@ theorem pausableX_unpause_success {σ σ₀ A I} {g : Sat256}
       (initState σ σ₀ g A I) ⟨209⟩
       [⟨157⟩, ⟨97⟩, pausableSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty (unpausePostMap σ I) k C := by
-    exact ⟨_, _, by simpa [unpausePostMap] using rd209₀⟩
+    exact ⟨_, _, by exact rd209₀⟩
   have rd242 := rd209.pushConst unpausedTopic (width := 32) (op := .PUSH32)
     (by decide) (by decide) (by evm_ov)
   have rd243 := evm_run rd242 with [caller, jumpdest]
@@ -231,14 +231,12 @@ theorem pausableUnpauseBody {σ σ₀ A I}
       (initState σ σ₀ (Sat256.ofUInt256 g) A I)
       (by simp only [initState]; exact hwv)
       (by
-        simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
-          using hzero)
+        exact hzero)
     exact (pausableX_unpause_revert (g := Sat256.ofUInt256 g) hreach hzero)
       |>.reEquivExecutionRevert hcode hd hdec hbody
   · have hnzS : UInt256.land (Stele.EVM.storageLoad (initState σ σ₀ (Sat256.ofUInt256 g) A I)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I).executionEnv.codeOwner ⟨0⟩) ⟨255⟩ ≠ ⟨0⟩ := by
-      simpa [pausedWord, pausedRawWord, initState, Stele.EVM.storageLoad, State.lookupAccount]
-        using hzero
+      exact hzero
     by_cases hperm : I.perm = true
     · have hbody := pausableUnpauseBodyReturns (hperm := hperm)
         (initState σ σ₀ (Sat256.ofUInt256 g) A I)

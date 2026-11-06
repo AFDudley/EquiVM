@@ -47,7 +47,7 @@ theorem uniswapSwapDecodeToPayloadGuard {s0 : State} {I : ExecutionEnv} {σ : Ac
     rw [show (⟨4294967296⟩ : UInt256).toNat = 4294967296 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     simpa [swapDataOffset, swapDataOffsetWord, calldataWord,
       show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide] using hoffLe
@@ -81,7 +81,7 @@ theorem uniswapSwapDecodeToPayloadGuard {s0 : State} {I : ExecutionEnv} {σ : Ac
         show (((⟨4⟩ : UInt256) + ⟨96⟩).toNat) = 100 from by decide]
     have hoffLe : swapDataOffset I ≤ 4294967296 := by
       have : ¬ 4294967296 < swapDataOffset I := by
-        simpa [solcLegacyMaxU32] using hoffMax
+        exact hoffMax
       omega
     have hleft1 :
         (((⟨4⟩ : UInt256) +

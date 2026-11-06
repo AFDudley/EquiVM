@@ -20,8 +20,7 @@ theorem uniswapDecimalsBodyReturns (evm : EVM.State) (locals : Store)
     ExecTransitionBody config contract evm locals decimalsTransition.body
       (.returned { contract := contract, locals := locals } evm
         (some [(.int (Int.ofNat decimalsReturnWord.toNat))])) := by
-  simpa [decimalsTransition, decimalsReturnWord, decimalsWord] using
-    uniswapIntLiteralBodyReturns evm locals 18 h
+  exact uniswapIntLiteralBodyReturns evm locals 18 h
 
 /-- From `decimals()`'s external body entry (pc 941), bytecode returns `18` as uint8. -/
 theorem uniswapX_decimals {σ σ₀ A I} {g : Sat256} {sel : UInt256}
@@ -72,7 +71,7 @@ theorem uniswapDecimalsBodyCore
     rw [decimalsTransition]
     exact returnEquiv_of_encode
       (by
-        simpa [uint8] using uint8ReturnEncoding decimalsReturnWord (by native_decide))
+        exact uint8ReturnEncoding decimalsReturnWord (by native_decide))
   exact (RD.uniswapUint8ConstGetterExternal (g := Sat256.ofUInt256 g)
       (entry := ⟨941⟩) (routine := ⟨3128⟩) (val := decimalsWord)
       (width := 1) (op := .PUSH1) hreach uniswap_getter_entry_wf

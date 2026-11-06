@@ -149,8 +149,7 @@ theorem erc6909X_noMatch {σ σ₀ A I} {g : Sat256}
         (initState σ σ₀ g A I) ⟨85⟩ [erc6909SelWord I] solcFreePtrMem
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 5 + 5 + 5 + 5, CS + 22 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [erc6909HighFirstArmPc, erc6909SplitPc, nthArmPc, selArmNextPc,
-        armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h85
+      exact h85
     obtain ⟨_, _, h85rd⟩ := h85'
     exact h85rd.revertStub (by decide) (by decide) (by decide) (by simp)
   · have h88 := RD.selectorSplitTakenAuto hsplit erc6909SplitWellFormed hpivot
@@ -168,11 +167,7 @@ theorem erc6909X_noMatch {σ σ₀ A I} {g : Sat256}
         (initState σ σ₀ g A I) ⟨132⟩ [erc6909SelWord I] solcFreePtrMem
         (UInt256.ofNat 3) ByteArray.empty σ k C := by
       refine ⟨kS + 5 + 1 + 5 + 5 + 5 + 5, CS + 22 + 1 + 22 + 22 + 22 + 22, ?_⟩
-      simpa [erc6909LowRestFirstArmPc, erc6909LowFirstArmPc, erc6909LowJumpdestPc,
-        erc6909SplitPc, nthArmPc, selArmNextPc, armTgtWidth, armTgt, pushAt,
-        selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc, selArmPushSelPcW,
-        selArmEqPcW, selArmPushTgtPcW, selArmJumpiPcW, selArmNextPcW, armTgtW,
-        armTgtWidthW] using h132
+      exact h132
     obtain ⟨_, _, h132rd⟩ := h132'
     have h133 := h132rd.jumpdest (by decide) (by simp)
     exact h133.revertStub (by decide) (by decide) (by decide) (by simp)

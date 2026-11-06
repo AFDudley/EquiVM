@@ -26,22 +26,19 @@ theorem sharesDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (sharesTransition.params.map Param.name)
       (transitionSignature sharesTransition).paramTypes I.calldata = some (sharesStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, sharesTransition, sharesStore, argWord_eq] using
-    decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "arg0") hsz36 hcanon
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "arg0") hsz36 hcanon
 
 theorem sharesDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (sharesTransition.params.map Param.name)
       (transitionSignature sharesTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, sharesTransition] using
-    decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "arg0") hsz hshort
+  exact decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "arg0") hsz hshort
 
 theorem sharesDecode_noncanon {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (sharesTransition.params.map Param.name)
       (transitionSignature sharesTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, sharesTransition] using
-    decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "arg0") hsz36 hnc
+  exact decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "arg0") hsz36 hnc
 
 /-- The argument at offset 64 over the dispatcher memory, and the hash scratch over it. -/
 abbrev shM1 (I : ExecutionEnv) : ByteArray := (argWord I).toByteArray.write 0 (wrapperDispatchMem 2) 64 32

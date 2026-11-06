@@ -1088,7 +1088,7 @@ theorem blindAuctionCtorAssignBeneficiary (evm : EVM.State) (biddingTime revealT
           EvaledStorageRef) = some addrSt
         decide)
       (hloc := blindAuctionConfig_storage_beneficiary)
-  simpa [blindAuctionCtorAfterBeneficiaryState, accountAddress_of_addressWord_toNat] using
+  simpa [blindAuctionCtorAfterBeneficiaryState, accountAddress_of_addressWord_toNat] using!
     storageLocStore_address_offset0 evm ⟨0⟩ (EVM.word beneficiaryAddress)
       (addressWord_canonical_of_address beneficiaryAddress)
 
@@ -1755,8 +1755,8 @@ theorem blindAuctionConstructorCorrect :
         (g := Sat256.ofUInt256 g) bidWord revealWord beneficiaryAddress hcodeCtor
         hperm hwv hoverBid
       rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
-      · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-      · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+      · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+      · refine typedConstructorRefinementFor.execution (by exact hrev)
           (blindAuctionSteleCtorExecReverts_biddingOverflow (hperm := by assumption)
             (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
             biddingTime revealTime beneficiaryAddress h0Bid hltBid hwv (by
@@ -1775,8 +1775,8 @@ theorem blindAuctionConstructorCorrect :
           (g := Sat256.ofUInt256 g) bidWord revealWord beneficiaryAddress hcodeCtor
           hperm hwv (by simpa [bidWord] using hoverBid) hoverReveal
         rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
-        · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-        · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+        · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+        · refine typedConstructorRefinementFor.execution (by exact hrev)
             (blindAuctionSteleCtorExecReverts_revealOverflow (hperm := by assumption)
               (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
               biddingTime revealTime beneficiaryAddress h0Bid hltBid h0Reveal hltReveal hwv
@@ -1793,10 +1793,10 @@ theorem blindAuctionConstructorCorrect :
         · exact typedConstructorRefinementFor.outOfGas
             (Xi_error_of_X (g := g) (by
               rw [← hcodeCtor] at hOOG
-              simpa [Sat256.ofUInt256] using hOOG))
+              exact hOOG))
         · have hsuccess := Xi_success_of_X (g := g) (by
             rw [← hcodeCtor] at hX
-            simpa [Sat256.ofUInt256] using hX)
+            exact hX)
           let oldSlotEvm : UInt256 :=
             (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))
           let oldSlotStele : UInt256 :=
@@ -1875,7 +1875,7 @@ theorem blindAuctionConstructorCorrect :
             simpa [blindAuctionCtorPostState, blindAuctionCtorAfterBiddingEndState,
               blindAuctionCtorAfterBeneficiaryState, storageStore_accountMap,
               storageStore_executionEnv, initState, beneficiaryStoreWordStele,
-              oldSlotStele, biddingEndWordStele, revealEndWordStele] using hmap
+              oldSlotStele, biddingEndWordStele, revealEndWordStele] using! hmap
   · let bidWordBytes := (EVM.Word.toBytesBE bidWord).toByteArray
     let revealWordBytes := (EVM.Word.toBytesBE revealWord).toByteArray
     let beneficiaryWordBytes := (EVM.Word.toBytesBE (EVM.word beneficiaryAddress)).toByteArray
@@ -1888,8 +1888,8 @@ theorem blindAuctionConstructorCorrect :
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) tail hcodeTail hwv
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
-    · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-    · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+    · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+    · refine typedConstructorRefinementFor.execution (by exact hrev)
         (blindAuctionSteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           biddingTime revealTime beneficiaryAddress hwv) ?_

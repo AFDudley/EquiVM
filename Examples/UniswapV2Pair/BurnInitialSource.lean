@@ -52,7 +52,7 @@ theorem uniswapBurnCachePrefix (evm : EVM.State) (I : ExecutionEnv)
       (.ok { contract := contract, locals := burnCacheStore evmL I } evmL) :=
     ExecBlock.consNormal (ExecStmt.letDecl htok0)
       (ExecBlock.consNormal (ExecStmt.letDecl htok1) ExecBlock.nil)
-  simpa only [burnCachePrefix, List.append_assoc] using execBlock_append hres htokens
+  simpa only [burnCachePrefix, List.append_assoc] using! execBlock_append hres htokens
 
 theorem uniswapAddressAtSlot_eq_runtime
     {σ : AccountMap} {I : ExecutionEnv} {evm : EVM.State} (slot : UInt256)

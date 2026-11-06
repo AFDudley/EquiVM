@@ -9,7 +9,7 @@ theorem swapRuntimeWords_eq {I : ExecutionEnv}
     (hoffMax : ¬ solcLegacyMaxU32 < swapDataOffset I) :
     swapRuntimeDataSizeWord I = swapDataSizeWord I ∧
     (swapRuntimePayloadPtr I).toNat = 4 + swapDataOffset I + 32 := by
-  have hoff : swapDataOffset I ≤ 4294967296 := by simpa [solcLegacyMaxU32] using Nat.le_of_not_gt hoffMax
+  have hoff : swapDataOffset I ≤ 4294967296 := by exact Nat.le_of_not_gt hoffMax
   have hcap : 4 + 4294967296 + 32 < UInt256.size := by native_decide
   have h4 : ((⟨4⟩ : UInt256) + swapDataOffsetWord I).toNat = 4 + swapDataOffset I := by
     rw [uadd_toNat, show (⟨4⟩ : UInt256).toNat = 4 by rfl,
@@ -30,8 +30,8 @@ theorem swapRuntimePayloadGuard_ok {I : ExecutionEnv}
       (swapRuntimeCalldataEnd I) = ⟨0⟩ ∧
     UInt256.gt (swapRuntimeDataSizeWord I) ⟨4294967296⟩ = ⟨0⟩ := by
   obtain ⟨hlen, hptr⟩ := swapRuntimeWords_eq hoffMax
-  have hoff : swapDataOffset I ≤ 4294967296 := by simpa [solcLegacyMaxU32] using Nat.le_of_not_gt hoffMax
-  have hlenB : swapDataSize I ≤ 4294967296 := by simpa [solcLegacyMaxU32] using Nat.le_of_not_gt hlenMax
+  have hoff : swapDataOffset I ≤ 4294967296 := by exact Nat.le_of_not_gt hoffMax
+  have hlenB : swapDataSize I ≤ 4294967296 := by exact Nat.le_of_not_gt hlenMax
   have hcap : 4 + 4294967296 + 32 + 4294967296 < UInt256.size := by native_decide
   have hmul : (UInt256.mul (swapRuntimeDataSizeWord I) ⟨1⟩).toNat = swapDataSize I := by
     rw [u256_mul_toNat, hlen, show (⟨1⟩ : UInt256).toNat = 1 by rfl, Nat.mul_one,

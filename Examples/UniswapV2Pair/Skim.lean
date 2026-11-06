@@ -17,7 +17,7 @@ theorem uniswapSkimBody
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
       show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
-        using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+        using! decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     exact uniswapSkimBodyDecoded hcode hsize hperm hwv hsel hdispatch hsz36 hdecode
   · exact uniswapSkimBodyDecodeFailed_short hcode hsize hwv hsel (by omega) hdispatch
 
@@ -38,7 +38,7 @@ theorem uniswapSkimBodyAnyPerm
         (transitionSignature skimTransition).paramTypes I.calldata = some (skimStore I) := by
       show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
       simpa only [skimStore, skimToValue, skimToWord, calldataWord]
-        using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+        using! decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
     have hsz4 : 4 ≤ I.calldata.size :=
       calldata_size_ge_of_selIs I ⟨#[0xbc, 0x25, 0xcf, 0x77]⟩ rfl hsel
     have hdecoded :=

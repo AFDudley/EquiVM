@@ -36,10 +36,9 @@ theorem vyperVaultOwnerBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : 
       (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (ownerTransition.params.map Param.name)
       (transitionSignature ownerTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, ownerTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1193_fallthrough (by simp) (by simpa using hwv) rd
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1193_fallthrough (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1198 (immWords := wordsOf imms) (by simp) rd1
     have hbody : ExecTransitionBody config contract (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
         ownerTransition.body
@@ -51,7 +50,7 @@ theorem vyperVaultOwnerBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : 
           (evalImmutable_OWNER hget ∅ _))
     exact rd2.reEquivExecution hcode' hd hdec hbody
       (returnEquiv_of_encode (by rw [suffixWords_OWNER, wordsOf_OWNER hget]; exact addressReturnEncoding a))
-  · have rd1 := vyperVaultBlocks.vyperVault_block_1193_taken (by simp) (by simpa using hwv)
+  · have rd1 := vyperVaultBlocks.vyperVault_block_1193_taken (by simp) (by simpa [Ethereum.UInt256_ofNat_0] using hwv)
       (by apply D_J_contains_append_left; jump_dest) rd
     have rd2 := vyperVaultBlocks.vyperVault_block_1403 (by simp) rd1
     exact RDrev.reEquivOfDispatch hcode' hd

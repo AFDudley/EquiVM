@@ -33,14 +33,12 @@ abbrev dL1 (I : ExecutionEnv) : Store := (dStore I).insert "__c0" .unit
 theorem dDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (deactivateTransition.params.map Param.name)
       (transitionSignature deactivateTransition).paramTypes I.calldata = some (dStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, deactivateTransition, dStore, argWord_eq] using
-    decodeMode_uint256_ok "id" I.calldata hsz36
+  exact decodeMode_uint256_ok "id" I.calldata hsz36
 
 theorem dDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (deactivateTransition.params.map Param.name)
       (transitionSignature deactivateTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, deactivateTransition] using
-    decodeMode_uint256_none_short "id" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "id" I.calldata hsz hshort
 
 /-- The words of `entries[id]` at the initial state. -/
 abbrev dAcc (σ : AccountMap) (I : ExecutionEnv) : UInt256 := solcSlotWordAt (entrySlot (argWord I)) σ I

@@ -27,22 +27,19 @@ theorem setHookDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     config.externalABI.decodeCalldata? (setHookTransition.params.map Param.name)
       (transitionSignature setHookTransition).paramTypes I.calldata = some (setHookStore I) := by
   rw [argWord_eq] at hcanon
-  simpa [config, contract, Syntax.contractSyntax, setHookTransition, setHookStore, argWord_eq] using
-    decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "target") hsz36 hcanon
+  exact decodeCalldataWithMode_vyper_address_ok (cd := I.calldata) (x := "target") hsz36 hcanon
 
 theorem setHookDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (setHookTransition.params.map Param.name)
       (transitionSignature setHookTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, setHookTransition] using
-    decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "target") hsz hshort
+  exact decodeCalldataWithMode_vyper_address_none_short (cd := I.calldata) (x := "target") hsz hshort
 
 theorem setHookDecode_noncanon {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size)
     (hnc : ¬ (argWord I).toNat < EVM.addressModulus) :
     config.externalABI.decodeCalldata? (setHookTransition.params.map Param.name)
       (transitionSignature setHookTransition).paramTypes I.calldata = none := by
   rw [argWord_eq] at hnc
-  simpa [config, contract, Syntax.contractSyntax, setHookTransition] using
-    decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "target") hsz36 hnc
+  exact decodeCalldataWithMode_vyper_address_none_noncanon (cd := I.calldata) (x := "target") hsz36 hnc
 
 /-- `setHook(address)`: the theorem `Correct.lean` routes selector 1 to. -/
 theorem wrapperSetHookBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immutablesFit contract imms)

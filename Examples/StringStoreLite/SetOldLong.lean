@@ -1176,7 +1176,7 @@ theorem stringStoreLiteX_setStoreHelperZero {σinit σ₀ A I} {g : Sat256}
         mem aw rdata (sstoreAccountMap I.codeOwner τ slot ⟨0⟩) k C := by
     exact ⟨_, _, by
       simpa [-Std.ExtTreeMap.get?_eq_getElem?, initState, sstoreAccountMap,
-        hstored] using rd1126₀⟩
+        hstored] using! rd1126₀⟩
   have rd1184 := evm_run rd1126 with [
     pop, pop, pop, pop, jump (by jump_dest),
     jumpdest, pop, pop, pop, jump (by jump_dest)]
@@ -1306,7 +1306,7 @@ theorem stringStoreLiteX_setEmptyWriteZeroFrom1405 {σinit σ₀ A I}
           stringStoreLiteSelWord I]
         mem aw rdata
         (sstoreAccountMap I.codeOwner τ ⟨0⟩ ⟨0⟩) k C := by
-    exact ⟨_, _, by simpa [sstoreAccountMap, initState, hpacked0] using rd1449₀⟩
+    exact ⟨_, _, by exact rd1449₀⟩
   exact ⟨_, _, evm_run rd1449 with [
     pop, push2 ⟨1549⟩, jump (by jump_dest),
     jumpdest, pop, pop, pop, pop, pop, pop, jump (by jump_dest)]⟩
@@ -1368,8 +1368,7 @@ theorem stringStoreLiteX_setWriteLongReachLoopFrom1405
   have rd1468 := evm_run rd929 with [
     swap1, pop, swap2, swap1, pop, jump (by jump_dest)]
   exact ⟨_, _, by
-    simpa [clearCurrentBaseWord_eq_solidityBytesDataBaseSlot] using
-      (evm_run rd1468 with [jumpdest, push0])⟩
+    exact (evm_run rd1468 with [jumpdest, push0])⟩
 
 
 theorem setDecodedValueBytes_full_chunk_length {I : ExecutionEnv} {len : UInt256} {i : Nat}
@@ -1509,7 +1508,7 @@ theorem stringStoreLiteX_setLongDataWordsLoopStep
           ⟨0⟩, ⟨128⟩, ⟨0⟩, len, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         mem awLoad rdata
         (sstoreAccountMap I.codeOwner τ slot word) k C := by
-    exact ⟨_, _, by simpa [sstoreAccountMap, initState] using rd1485₀⟩
+    exact ⟨_, _, by exact rd1485₀⟩
   have rd1495pre := evm_run rd1485 with [
     push1 ⟨1⟩, dup3, add, swap2, pop,
     push1 ⟨32⟩, dup6, add]
@@ -2154,7 +2153,7 @@ theorem stringStoreLiteX_setLongDataWordsLoopDoneNoTail
         mem aw rdata
         (sstoreAccountMap I.codeOwner τ ⟨0⟩
           (len * (⟨2⟩ : UInt256) + ⟨1⟩)) k C := by
-    exact ⟨_, _, by simpa [sstoreAccountMap, initState] using rd1546₀⟩
+    exact ⟨_, _, by exact rd1546₀⟩
   have rd1556 := evm_run rd1546 with [
     pop, pop, pop,
     jumpdest, pop, pop, pop, pop, pop, pop]
@@ -2200,7 +2199,7 @@ theorem solidityDataWordsForwardFrom_eq_longDataWordsForwardFrom_tail
           (clearCurrentBaseMemFrom (setPaddedMem I.calldata len payloadStart))
           fullFuel := by
     have hbase0 : clearCurrentBaseWord + UInt256.ofNat 0 = clearCurrentBaseWord := by
-      simpa using uint256_add_zero_right clearCurrentBaseWord
+      simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right clearCurrentBaseWord
     have hstride : UInt256.ofNat 32 = (⟨32⟩ : UInt256) := by native_decide
     simpa [fullFuel, hbase0, hstride] using hfull
   have htailWord :
@@ -2309,7 +2308,7 @@ theorem stringStoreLiteX_setLongDataWordsLoopDoneTail
           ⟨0⟩, ⟨128⟩, ⟨0⟩, len, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         mem awLoad rdata
         (sstoreAccountMap I.codeOwner τ slot (longDataTailMaskedWord word len)) k C := by
-    exact ⟨_, _, by simpa [sstoreAccountMap, initState, longDataTailMaskedWord] using rd1535₀⟩
+    exact ⟨_, _, by exact rd1535₀⟩
   have rd1542pre := evm_run rd1535 with [pop, jumpdest, push1 ⟨1⟩, push1 ⟨2⟩]
   have rd1543 := RD.dup9 rd1542pre (by native_decide) (by evm_ov)
   have rd1545pre₀ := evm_run rd1543 with [mul, add]
@@ -2324,7 +2323,7 @@ theorem stringStoreLiteX_setLongDataWordsLoopDoneTail
         (sstoreAccountMap I.codeOwner
           (sstoreAccountMap I.codeOwner τ slot (longDataTailMaskedWord word len))
           ⟨0⟩ (len * (⟨2⟩ : UInt256) + ⟨1⟩)) k C := by
-    exact ⟨_, _, by simpa [sstoreAccountMap, initState] using rd1546₀⟩
+    exact ⟨_, _, by exact rd1546₀⟩
   have rd1556 := evm_run rd1546 with [
     pop, pop, pop,
     jumpdest, pop, pop, pop, pop, pop, pop]
@@ -2841,7 +2840,7 @@ theorem stringStoreLiteX_setShortValidWriteLongReach1405
           ⟨0⟩, ⟨128⟩, ⟨0⟩, len, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         (setPaddedMem I.calldata len payloadStart) (setHelperEntryAw len)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd1390₀⟩
+    exact ⟨_, _, by exact rd1390₀⟩
   have hvalidHeader :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt
@@ -2926,7 +2925,7 @@ theorem stringStoreLiteX_setEmptyWriteLongValidToClearLoop {σ σ₀ A I}
         [currentLengthHeaderWord σ I, ⟨1394⟩, ⟨0⟩, ⟨0⟩, ⟨128⟩, ⟨261⟩,
           ⟨0⟩, ⟨128⟩, ⟨0⟩, ⟨0⟩, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         currentLengthZeroReturnMem (UInt256.ofNat 6) ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd1390₀⟩
+    exact ⟨_, _, by exact rd1390₀⟩
   have hvalidHeader :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) ≠
@@ -3184,7 +3183,7 @@ theorem stringStoreLiteX_setShortNonemptyWriteLongValidToClearLoop
           ⟨0⟩, ⟨128⟩, ⟨0⟩, newLen, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         (setPaddedMem I.calldata newLen payloadStart) (setHelperEntryAw newLen)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd1390₀⟩
+    exact ⟨_, _, by exact rd1390₀⟩
   have hvalidHeader :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) ≠
@@ -3350,7 +3349,7 @@ theorem stringStoreLiteX_setLongNonemptyWriteLongValidToClearLoop
           ⟨0⟩, ⟨128⟩, ⟨0⟩, newLen, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         (setPaddedMem I.calldata newLen payloadStart) (setHelperEntryAw newLen)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd1390₀⟩
+    exact ⟨_, _, by exact rd1390₀⟩
   have hvalidHeader :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) ≠
@@ -3500,7 +3499,7 @@ theorem stringStoreLiteX_setLongNonemptyWriteLongValidNoClearTo1405
           ⟨0⟩, ⟨128⟩, ⟨0⟩, newLen, payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         (setPaddedMem I.calldata newLen payloadStart) (setHelperEntryAw newLen)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [currentLengthHeaderWord, initState] using rd1390₀⟩
+    exact ⟨_, _, by exact rd1390₀⟩
   have hvalidHeader :
       UInt256.sub (UInt256.land (currentLengthHeaderWord σ I) ⟨1⟩)
         (UInt256.lt (UInt256.div (currentLengthHeaderWord σ I) ⟨2⟩) ⟨32⟩) ≠
@@ -3791,7 +3790,7 @@ theorem stringStoreLiteX_setWriteShortNonemptyFrom1405AfterClearBase
           payloadStart, ⟨93⟩, stringStoreLiteSelWord I]
         (clearCurrentBaseMemFrom (setPaddedMem I.calldata len payloadStart))
         (setHelperPayloadAw len) ByteArray.empty τ k' C' := by
-    exact ⟨_, _, by simpa only using evm_run rd1434 with [swap1, pop]⟩
+    exact ⟨_, _, by exact evm_run rd1434 with [swap1, pop]⟩
   obtain ⟨_, _, rd1436'⟩ := rd1436
   exact stringStoreLiteX_setWriteShortPackedFrom1436
     (g := g) (σinit := σinit) (τ := τ)
@@ -4071,7 +4070,7 @@ theorem clearDataWordsForwardFrom_shift_clearCurrentBase
     rw [clearCurrentBaseWord_eq_solidityBytesDataBaseSlot]
     rfl
   have hidx : UInt256.ofNat offset + UInt256.ofNat 0 = UInt256.ofNat offset := by
-    simpa using uint256_add_zero_right (UInt256.ofNat offset)
+    simpa [Ethereum.UInt256_ofNat_0] using uint256_add_zero_right (UInt256.ofNat offset)
   simpa [hbase, hidx] using hshift
 
 theorem clearSolidityBytesDataWordsFrom_double_current_accountMap
@@ -4346,13 +4345,13 @@ theorem stringStoreLiteSetShortNonemptyLongValidRuntime
       (header := currentLengthHeaderWord σ I) (len := oldLen)
       (value := setDecodedValueBytes I)
       hvalueSizeShort hload hflag rfl (by simpa [oldLen] using hvalid)
-    simpa only [evmStele1] using hwrite₀
+    exact hwrite₀
   have hretEnc :
       returnEquiv (UInt256.toByteArray len) (some [.int (setDecodedValueBytes I).size])
         [(.elem (.int (.uint ⟨256, by decide⟩)))] := by
     have hlenSize : len.toNat = (setDecodedValueBytes I).size := by
       rw [setDecodedValueBytes_size hpayload, hlenAbi]
-    simpa only [hlenSize] using returnEquiv_of_encode (uint256ReturnEncoding len)
+    simpa only [hlenSize] using! returnEquiv_of_encode (uint256ReturnEncoding len)
   have hheaderEq :
       setShortPackedHeader (setHelperPayloadWord I.calldata len payloadStart) len =
         solidityShortBytesWord (setDecodedValueBytes I) :=
@@ -4504,7 +4503,7 @@ theorem stringStoreLiteSetEmptyLongValidRuntime {σ σ₀ A I}
     have hwrite₀ := writeCurrentShortFromLongPrepared (evm := evmStele0)
       (header := currentLengthHeaderWord σ I) (len := len) (value := ByteArray.empty)
       (by decide) hloadBytes hflag rfl (by simpa [len] using hvalid)
-    simpa only [evmStele1, hshortEmpty] using hwrite₀
+    simpa only [evmStele1, hshortEmpty] using! hwrite₀
   by_cases hperm : I.perm = true
   swap
   · have hpf : I.perm = false := by simpa using hperm

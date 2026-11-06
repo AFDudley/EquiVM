@@ -92,8 +92,7 @@ theorem vyperVaultCollectFeesBody {σ σ₀ A I} {g : UInt256} (imms : Store) (h
       (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (collectFeesTransition.params.map Param.name)
       (transitionSignature collectFeesTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, collectFeesTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   have hmemsize : (vyperVaultDispatchMem 9).size = 32 := by native_decide
   by_cases hwv : I.weiValue = ⟨0⟩
   swap

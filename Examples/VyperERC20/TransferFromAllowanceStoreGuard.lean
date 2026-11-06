@@ -60,7 +60,7 @@ theorem erc20X_transferFromAllowanceStoreGuard {σ σ₀ A I} {g : Sat256}
       UInt256.sub (transferFromCurrentAllowanceRaw σ I)
           (uInt256OfByteArray (I.calldata.readBytes (⟨68⟩ : UInt256).toNat 32)) =
         transferFromAllowanceDebitWord evm0 I := by
-    simpa [transferFromValueWord] using hdebitWordRaw
+    exact hdebitWordRaw
   have rd465 := evm_run rd445 with [
     push1 ⟨128⟩,
     raw mload 0 (transferFromCurrentAllowanceRaw σ I) (UInt256.ofNat 5)
@@ -77,8 +77,8 @@ theorem erc20X_transferFromAllowanceStoreGuard {σ σ₀ A I} {g : Sat256}
       (by decide) (by evm_ov),
     push1 ⟨68⟩, calldataload,
     dup1, dup3, sub, dup3, dup2, gt, push2 ⟨801⟩,
-    jumpiNT (by simpa [transferFromValueWord] using hdebitGuardRaw),
+    jumpiNT (by exact hdebitGuardRaw),
     swap1, pop, swap1, pop]
-  exact ⟨_, _, by simpa [evm0, hdebitWordRaw'] using rd465⟩
+  exact ⟨_, _, by simpa [evm0, hdebitWordRaw'] using! rd465⟩
 
 end VyperERC20

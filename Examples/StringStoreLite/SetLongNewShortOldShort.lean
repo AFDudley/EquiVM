@@ -132,13 +132,13 @@ theorem stringStoreLiteSetNewShortOldShortValidRuntime
       (header := currentLengthHeaderWord σ I) (len := oldLen)
       (value := setDecodedValueBytes I)
       hvalueSizeShort hload hpacked hflag rfl (by simpa [oldLen] using hvalid)
-    simpa only [evmStele1] using hwrite₀
+    exact hwrite₀
   have hretEnc :
       returnEquiv (UInt256.toByteArray len) (some [.int (setDecodedValueBytes I).size])
         [(.elem (.int (.uint ⟨256, by decide⟩)))] := by
     have hlenSize : len.toNat = (setDecodedValueBytes I).size := by
       rw [setDecodedValueBytes_size hpayload, hlenAbi]
-    simpa only [hlenSize] using returnEquiv_of_encode (uint256ReturnEncoding len)
+    simpa only [hlenSize] using! returnEquiv_of_encode (uint256ReturnEncoding len)
   have hheaderEq :
       setShortPackedHeader (setHelperPayloadWord I.calldata len payloadStart) len =
         solidityShortBytesWord (setDecodedValueBytes I) :=

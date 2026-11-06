@@ -76,7 +76,7 @@ theorem uniswapBurnBodyReverts_amounts
     ExecTransitionBody config contract evm (burnStore I) burnTransition.body .reverted := by
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeAmountsPrefix, burnBeforeFeePrefix, burnCachePrefix,
-      burnAmount0Stmt, burnAmount1Stmt, List.append_assoc] using
+      burnAmount0Stmt, burnAmount1Stmt, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix hamounts) (by intro f e h; cases h))
 
 end UniswapV2Pair

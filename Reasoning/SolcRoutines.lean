@@ -1461,52 +1461,52 @@ theorem RD.solcErrorStringCopyReverts
   have rdLoad := evm_run rd with [raw push1 ⟨64⟩ hwf.d0 (by evm_ov)]
   have rdSelector := RD.mloadWord rdLoad hwf.d2 rfl (by omega)
   have rdRaw := rdSelector.pushConst (⟨4594637⟩ : UInt256) (width := 3) (op := .PUSH3)
-    (by decide) (by simpa only [u256_add_assoc] using hwf.d3) (by evm_ov)
+    (by decide) (by simpa only [u256_add_assoc] using! hwf.d3) (by evm_ov)
   have rdStore0 := evm_run rdRaw with [
-    raw push1 ⟨229⟩ (by simpa only [u256_add_assoc] using hwf.d7) (by evm_ov),
-    raw shl (by simpa only [u256_add_assoc] using hwf.d9) (by evm_ov),
-    raw dup2 (by simpa only [u256_add_assoc] using hwf.d10) (by evm_ov)]
-  have rdHeader := RD.mstoreWord rdStore0 (by simpa only [u256_add_assoc] using hwf.d11) (by evm_ov)
+    raw push1 ⟨229⟩ (by simpa only [u256_add_assoc] using! hwf.d7) (by evm_ov),
+    raw shl (by simpa only [u256_add_assoc] using! hwf.d9) (by evm_ov),
+    raw dup2 (by simpa only [u256_add_assoc] using! hwf.d10) (by evm_ov)]
+  have rdHeader := RD.mstoreWord rdStore0 (by simpa only [u256_add_assoc] using! hwf.d11) (by evm_ov)
   have rdStore1 := evm_run rdHeader with [
-    raw push1 ⟨4⟩ (by simpa only [u256_add_assoc] using hwf.d12) (by evm_ov),
-    raw add (by simpa only [u256_add_assoc] using hwf.d14) (by evm_ov),
-    raw dup1 (by simpa only [u256_add_assoc] using hwf.d15) (by evm_ov),
-    raw dup1 (by simpa only [u256_add_assoc] using hwf.d16) (by evm_ov),
-    raw push1 ⟨32⟩ (by simpa only [u256_add_assoc] using hwf.d17) (by evm_ov),
-    raw add (by simpa only [u256_add_assoc] using hwf.d19) (by evm_ov),
-    raw dup3 (by simpa only [u256_add_assoc] using hwf.d20) (by evm_ov),
-    raw dup2 (by simpa only [u256_add_assoc] using hwf.d21) (by evm_ov),
-    raw sub (by simpa only [u256_add_assoc] using hwf.d22) (by evm_ov),
-    raw dup3 (by simpa only [u256_add_assoc] using hwf.d23) (by evm_ov)]
-  have rdLength := RD.mstoreWord rdStore1 (by simpa only [u256_add_assoc] using hwf.d24) (by evm_ov)
+    raw push1 ⟨4⟩ (by simpa only [u256_add_assoc] using! hwf.d12) (by evm_ov),
+    raw add (by simpa only [u256_add_assoc] using! hwf.d14) (by evm_ov),
+    raw dup1 (by simpa only [u256_add_assoc] using! hwf.d15) (by evm_ov),
+    raw dup1 (by simpa only [u256_add_assoc] using! hwf.d16) (by evm_ov),
+    raw push1 ⟨32⟩ (by simpa only [u256_add_assoc] using! hwf.d17) (by evm_ov),
+    raw add (by simpa only [u256_add_assoc] using! hwf.d19) (by evm_ov),
+    raw dup3 (by simpa only [u256_add_assoc] using! hwf.d20) (by evm_ov),
+    raw dup2 (by simpa only [u256_add_assoc] using! hwf.d21) (by evm_ov),
+    raw sub (by simpa only [u256_add_assoc] using! hwf.d22) (by evm_ov),
+    raw dup3 (by simpa only [u256_add_assoc] using! hwf.d23) (by evm_ov)]
+  have rdLength := RD.mstoreWord rdStore1 (by simpa only [u256_add_assoc] using! hwf.d24) (by evm_ov)
   have rdStore2 := evm_run rdLength with [
-    raw push1 len (by simpa only [u256_add_assoc] using hwf.d25) (by evm_ov),
-    raw dup2 (by simpa only [u256_add_assoc] using hwf.d27) (by evm_ov)]
+    raw push1 len (by simpa only [u256_add_assoc] using! hwf.d25) (by evm_ov),
+    raw dup2 (by simpa only [u256_add_assoc] using! hwf.d27) (by evm_ov)]
   have rdPayload :=
-    RD.mstoreWord rdStore2 (by simpa only [u256_add_assoc] using hwf.d28) (by evm_ov)
+    RD.mstoreWord rdStore2 (by simpa only [u256_add_assoc] using! hwf.d28) (by evm_ov)
   have rdCopy := evm_run rdPayload with [
-    raw push1 ⟨32⟩ (by simpa only [u256_add_assoc] using hwf.d29) (by evm_ov),
-    raw add (by simpa only [u256_add_assoc] using hwf.d31) (by evm_ov),
-    raw dup1 (by simpa only [u256_add_assoc] using hwf.d32) (by evm_ov),
-    raw push2 source (by simpa only [u256_add_assoc] using hwf.d33) (by evm_ov),
-    raw push1 len (by simpa only [u256_add_assoc] using hwf.d36) (by evm_ov),
-    raw swap2 (by simpa only [u256_add_assoc] using hwf.d38) (by evm_ov)]
-  have rdEnd := RD.codecopyAny rdCopy (by simpa only [u256_add_assoc] using hwf.d39) (by evm_ov)
+    raw push1 ⟨32⟩ (by simpa only [u256_add_assoc] using! hwf.d29) (by evm_ov),
+    raw add (by simpa only [u256_add_assoc] using! hwf.d31) (by evm_ov),
+    raw dup1 (by simpa only [u256_add_assoc] using! hwf.d32) (by evm_ov),
+    raw push2 source (by simpa only [u256_add_assoc] using! hwf.d33) (by evm_ov),
+    raw push1 len (by simpa only [u256_add_assoc] using! hwf.d36) (by evm_ov),
+    raw swap2 (by simpa only [u256_add_assoc] using! hwf.d38) (by evm_ov)]
+  have rdEnd := RD.codecopyAny rdCopy (by simpa only [u256_add_assoc] using! hwf.d39) (by evm_ov)
   have rdLoadFinal := evm_run rdEnd with [
-    raw push1 ⟨64⟩ (by simpa only [u256_add_assoc] using hwf.d40) (by evm_ov),
-    raw add (by simpa only [u256_add_assoc] using hwf.d42) (by evm_ov),
-    raw swap2 (by simpa only [u256_add_assoc] using hwf.d43) (by evm_ov),
-    raw pop (by simpa only [u256_add_assoc] using hwf.d44) (by evm_ov),
-    raw pop (by simpa only [u256_add_assoc] using hwf.d45) (by evm_ov),
-    raw push1 ⟨64⟩ (by simpa only [u256_add_assoc] using hwf.d46) (by evm_ov)]
+    raw push1 ⟨64⟩ (by simpa only [u256_add_assoc] using! hwf.d40) (by evm_ov),
+    raw add (by simpa only [u256_add_assoc] using! hwf.d42) (by evm_ov),
+    raw swap2 (by simpa only [u256_add_assoc] using! hwf.d43) (by evm_ov),
+    raw pop (by simpa only [u256_add_assoc] using! hwf.d44) (by evm_ov),
+    raw pop (by simpa only [u256_add_assoc] using! hwf.d45) (by evm_ov),
+    raw push1 ⟨64⟩ (by simpa only [u256_add_assoc] using! hwf.d46) (by evm_ov)]
   have rdTail :=
-    RD.mloadWord rdLoadFinal (by simpa only [u256_add_assoc] using hwf.d48) rfl (by evm_ov)
+    RD.mloadWord rdLoadFinal (by simpa only [u256_add_assoc] using! hwf.d48) rfl (by evm_ov)
   have rdRev := evm_run rdTail with [
-    raw dup1 (by simpa only [u256_add_assoc] using hwf.d49) (by evm_ov),
-    raw swap2 (by simpa only [u256_add_assoc] using hwf.d50) (by evm_ov),
-    raw sub (by simpa only [u256_add_assoc] using hwf.d51) (by evm_ov),
-    raw swap1 (by simpa only [u256_add_assoc] using hwf.d52) (by evm_ov)]
-  exact RD.revAny rdRev (by simpa only [u256_add_assoc] using hwf.d53) (by evm_ov)
+    raw dup1 (by simpa only [u256_add_assoc] using! hwf.d49) (by evm_ov),
+    raw swap2 (by simpa only [u256_add_assoc] using! hwf.d50) (by evm_ov),
+    raw sub (by simpa only [u256_add_assoc] using! hwf.d51) (by evm_ov),
+    raw swap1 (by simpa only [u256_add_assoc] using! hwf.d52) (by evm_ov)]
+  exact RD.revAny rdRev (by simpa only [u256_add_assoc] using! hwf.d53) (by evm_ov)
 
 
 @[reducible] def solcUint48Offset0SlotGetterWf

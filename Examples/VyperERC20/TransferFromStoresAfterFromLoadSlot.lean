@@ -51,8 +51,7 @@ theorem erc20X_transferFromAfterFromLoadSlot {σ σ₀ A I} {g : Sat256}
       transferFromFromBalanceRawAfterAllowance σ I
           (transferFromAllowanceDebitI σ σ₀ A I g) =
         transferFromFromBalanceWord evm1 I := by
-    simpa [evm0, evm1] using
-      (transferFromFromBalanceRawAfterAllowance_initState
+    exact (transferFromFromBalanceRawAfterAllowance_initState
         (σ := σ) (σ₀ := σ₀) (A := A) (I := I) (g := g))
   have hpc508 :
       (⟨502⟩ : UInt256) + UInt256.ofNat 2 + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ + ⟨1⟩ =
@@ -68,6 +67,6 @@ theorem erc20X_transferFromAfterFromLoadSlot {σ σ₀ A I} {g : Sat256}
   obtain ⟨k1, C1, rd508⟩ := rd507.sload
     (by vyper_erc20_transferFrom_decode) (by evm_ov)
   exact ⟨_, _, by
-    simpa [evm0, evm1, hpc508, hfromLoadRaw.symm, transferFromAfterFromLoadMemI] using rd508⟩
+    exact rd508⟩
 
 end VyperERC20

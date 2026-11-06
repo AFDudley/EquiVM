@@ -151,8 +151,7 @@ theorem vyperVaultDepositBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit 
       (selIs_exclusive (by native_decide) hsel) (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (depositTransition.params.map Param.name)
       (transitionSignature depositTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, depositTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   have hmemsize : (vyperVaultDispatchMem 9).size = 32 := by native_decide
   rcases hwf with h0 | h1
   swap

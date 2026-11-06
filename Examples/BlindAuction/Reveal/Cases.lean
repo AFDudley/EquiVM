@@ -135,7 +135,7 @@ theorem scratch_revealLoopBody_refundOverflow_from1247_pair {I} {g : Sat256}
       [deposit, secret, fakeWord, value, slot, i, refund, len, revealEnd, biddingEnd,
         secretsLen, secretsEnd, fakesLen, fakesEnd, valuesLen, valuesEnd, ⟨276⟩, sel]
       mem aw rdata σ k' C' := by
-    exact ⟨_, _, by simpa only [hdepositEvm] using rd1253₀⟩
+    exact ⟨_, _, by simpa only [hdepositEvm] using! rd1253₀⟩
   have rd2045 := evm_run rd1253 with [push2 ⟨1262⟩, swap1, dup8, push2 ⟨2045⟩,
     jump (by jump_dest)]
   exact ⟨hsrc,
@@ -533,7 +533,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen_concrete {I} {g :
     raw keccak256 0 (revealScratchBidsLengthSlot I) aw (by decide)
       (by
         simp [M]
-        rw [show (⟨64⟩ : UInt256).toNat = 64 by native_decide]
+        
         rw [haw64]
         simp)
       (by
@@ -555,7 +555,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen_concrete {I} {g :
       [curLen, revealScratchBidsLengthSlot I, ⟨0⟩, i, refund, len, revealEnd, biddingEnd,
         secretsLen, secretsEnd, fakesLen, fakesEnd, valuesLen, valuesEnd, ⟨276⟩, sel]
       mem2 aw rdata acc k' C' := by
-    exact ⟨_, _, by simpa only [hlenLoad] using rd1039₀⟩
+    exact ⟨_, _, by simpa only [hlenLoad] using! rd1039₀⟩
   have hlt : UInt256.lt i curLen = ⟨1⟩ := ult_one hbound
   have rd1047₀ := evm_run rd1039 with [dup4, swap1, dup2, lt]
   have rd1047 := rd1047₀
@@ -576,7 +576,7 @@ theorem scratch_blindAuctionRevealX_loopBody_toElemSlot_curLen_concrete {I} {g :
       aw (by decide)
       (by
         simp [M]
-        rw [show (⟨32⟩ : UInt256).toNat = 32 by native_decide]
+        
         rw [haw0]
         simp)
       (by simpa [mem3, mem2, mem1, revealScratchSenderWord] using hdataHash) haw0
@@ -1046,8 +1046,7 @@ theorem scratch_revealLoopAdvance_refundAdded_zeroBlinded {I} {g : Sat256}
         (scratch_revealZeroBlindedState evm a.idx) scratch_revealLoopPostStmts
         (.ok { contract := blindAuctionContract, locals := L2 }
           (scratch_revealZeroBlindedState evm a.idx)) := by
-    simpa [L2, nextIdx] using
-      scratch_revealLoopPostStep (scratch_revealZeroBlindedState evm a.idx) L1 a.idx hiL1
+    exact scratch_revealLoopPostStep (scratch_revealZeroBlindedState evm a.idx) L1 a.idx hiL1
         hidxFit
   let nextCursor : RevealLoopCursor :=
     { idx := nextIdx,
@@ -1204,7 +1203,7 @@ theorem scratch_revealLoopAdvance_of_get {I} {g : Sat256}
       ExecBlock blindAuctionConfig { contract := blindAuctionContract, locals := L1 }
         evm1 scratch_revealLoopPostStmts
         (.ok { contract := blindAuctionContract, locals := L2 } evm1) := by
-    simpa [L2, nextIdx] using scratch_revealLoopPostStep evm1 L1 a.idx hiL1 hidxFit
+    exact scratch_revealLoopPostStep evm1 L1 a.idx hiL1 hidxFit
   let nextCursor : RevealLoopCursor :=
     { idx := nextIdx,
       refund := newRefund,

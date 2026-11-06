@@ -46,7 +46,7 @@ theorem uniswapBurnBodyReverts_updatedBalance0 (evm evmT : EVM.State) (I : Execu
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeUpdatedBalancesPrefix, burnBeforeTransfersPrefix, burnBeforeAmountsPrefix,
       burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term (execBlock_append hprefix hcall) (by intro f e h; cases h))
 
 abbrev burnBeforeUpdatePrefix : List Stmt := burnBeforeUpdatedBalancesPrefix ++
@@ -58,7 +58,7 @@ theorem uniswapBurnBodyReverts_beforeUpdate (evm : EVM.State) (I : ExecutionEnv)
   exact ExecFuncBody.execBlockRevert (by
     simpa only [burnTransition, burnBeforeUpdatePrefix, burnBeforeUpdatedBalancesPrefix, burnBeforeTransfersPrefix,
       burnBeforeAmountsPrefix, burnBeforeFeePrefix, burnCachePrefix, burnAmount0Stmt, burnAmount1Stmt,
-      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using
+      burnAmountsRequireStmt, burnAmountsRequireExpr, burnInternalBurnStmt, List.append_assoc] using!
       execBlock_append_term hprefix (by intro f e h; cases h))
 
 end UniswapV2Pair

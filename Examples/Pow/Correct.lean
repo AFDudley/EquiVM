@@ -45,14 +45,14 @@ theorem evalMul2 {cfg : Config} {C : ContractDecl} {L : Stele.Store} {evm : EVM.
     (hr : L.get? "r" = some (.int a)) :
     evalExpr? cfg { contract := C, locals := L } evm (.binary .mul (.var "r") (.intLit 2))
       = .ok (.int (a * 2)) := by
-  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hr]
+  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hr, pure]
 
 /-- `i + 1` evaluates from the locals. -/
 theorem evalAdd1 {cfg : Config} {C : ContractDecl} {L : Stele.Store} {evm : EVM.State} {a : Int}
     (hi : L.get? "i" = some (.int a)) :
     evalExpr? cfg { contract := C, locals := L } evm (.binary .add (.var "i") (.intLit 1))
       = .ok (.int (a + 1)) := by
-  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hi]
+  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hi, pure]
 
 /-- The loop body of `pow2`. -/
 def powLoopBody : List Stmt :=
@@ -68,7 +68,7 @@ theorem evalReqN {cfg : Config} {C : ContractDecl} {L : Stele.Store} {evm : EVM.
     evalExpr? cfg { contract := C, locals := L } evm
         (.binary .lt (.var "n") (.intLit 256)) = .ok (.bool true) := by
   have h : (Int.ofNat N < (256 : Int)) := by simp only [Int.ofNat_eq_natCast]; omega
-  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hn]
+  simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hn, pure]
   rw [decide_eq_true h]
 
 end Pow
@@ -834,7 +834,7 @@ theorem powBodyReverts_n (evm : EVM.State) (locals : Stele.Store) {N : ℕ}
     (ABlock.start.requireStep (evalCallvalueEq_true hwv)).requireRevert (by
       have h : ¬ (Int.ofNat N < (256 : Int)) := by simp only [Int.ofNat_eq_natCast]; omega
       show evalExpr? powConfig _ evm (.binary .lt (.var "n") (.intLit 256)) = .ok (.bool false)
-      simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hn]
+      simp only [evalExpr?, EvalResult.bind, bind, evalBinaryOp?, EvalResult.ofOption, hn, pure]
       rw [decide_eq_false h])
 
 /-! ## ABI encoding of the `uint256` return value `2^n` -/

@@ -72,11 +72,7 @@ theorem erc6909Decode_transferFrom_ok {I : ExecutionEnv}
         some (transferFromStore I) := by
   show decodeCalldata ["sender", "receiver", "id", "amount"]
       [addr, addr, uint256, uint256] I.calldata = _
-  simpa [addr, uint256, abiUInt256, transferFromStore, transferFromSenderValue,
-    transferFromReceiverValue, transferFromIdValue, transferFromAmountValue,
-    transferFromSenderWord, transferFromReceiverWord, transferFromIdWord,
-    transferFromAmountWord, calldataWord]
-    using decodeCalldata_address_address_uint256_uint256_ok
+  exact decodeCalldata_address_address_uint256_uint256_ok
       (cd := I.calldata) (x := "sender") (y := "receiver") (z := "id") (w := "amount")
       hsz132 hbig hcanonSender hcanonReceiver
 
@@ -86,8 +82,7 @@ theorem erc6909Decode_transferFrom_none_short {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["sender", "receiver", "id", "amount"]
       [addr, addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_address_address_uint256_uint256_none_short
+  exact decodeCalldata_address_address_uint256_uint256_none_short
       (cd := I.calldata) (x := "sender") (y := "receiver") (z := "id") (w := "amount")
       hsz4 hshort
 
@@ -98,8 +93,7 @@ theorem erc6909Decode_transferFrom_none_noncanon_sender {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["sender", "receiver", "id", "amount"]
       [addr, addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferFromSenderWord]
-    using decodeCalldata_address_address_uint256_uint256_none_noncanon0
+  exact decodeCalldata_address_address_uint256_uint256_none_noncanon0
       (cd := I.calldata) (x := "sender") (y := "receiver") (z := "id") (w := "amount")
       hsz132 hbig hnc
 
@@ -111,9 +105,7 @@ theorem erc6909Decode_transferFrom_none_noncanon_receiver {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["sender", "receiver", "id", "amount"]
       [addr, addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256, calldataWord, transferFromSenderWord,
-    transferFromReceiverWord]
-    using decodeCalldata_address_address_uint256_uint256_none_noncanon1
+  exact decodeCalldata_address_address_uint256_uint256_none_noncanon1
       (cd := I.calldata) (x := "sender") (y := "receiver") (z := "id") (w := "amount")
       hsz132 hbig hcanonSender hnc
 
@@ -123,8 +115,7 @@ theorem erc6909Decode_transferFrom_none_huge {I : ExecutionEnv}
       (transitionSignature transferFromTransition).paramTypes I.calldata = none := by
   show decodeCalldata ["sender", "receiver", "id", "amount"]
       [addr, addr, uint256, uint256] I.calldata = none
-  simpa [addr, uint256, abiUInt256]
-    using decodeCalldata_address_address_uint256_uint256_none_huge
+  exact decodeCalldata_address_address_uint256_uint256_none_huge
       (cd := I.calldata) (x := "sender") (y := "receiver") (z := "id") (w := "amount")
       hbig
 

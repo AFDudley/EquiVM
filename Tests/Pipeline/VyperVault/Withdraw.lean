@@ -65,14 +65,12 @@ theorem decodeMode_uint256_none_short (cd : ByteArray) (hsz : 4 ≤ cd.size) (hs
 theorem withdrawDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = some (wStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, withdrawTransition, wStore, argWord_eq] using
-    decodeMode_uint256_ok I.calldata hsz36
+  exact decodeMode_uint256_ok I.calldata hsz36
 
 theorem withdrawDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (withdrawTransition.params.map Param.name)
       (transitionSignature withdrawTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, withdrawTransition] using
-    decodeMode_uint256_none_short I.calldata hsz hshort
+  exact decodeMode_uint256_none_short I.calldata hsz hshort
 
 /-! ### Account maps and EVM states along the path -/
 

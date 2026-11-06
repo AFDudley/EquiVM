@@ -56,7 +56,7 @@ theorem syncToken0GuardFalse_initState_of_noCode
       storageStore_accountMap, storageStore_executionEnv, State.lookupAccount, Stele.EVM.storageLoad,
       Account.lookupStorage, uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord,
         σLockS,
-      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using hnoSteleRight
+      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using! hnoSteleRight
   have hnoSourceWord :
       EVM.Word.ofNat
           ((evmL.lookupAccount (uniswapAddressAtSlot evmL ⟨6⟩)).option 0
@@ -587,7 +587,7 @@ theorem uniswapSyncBodyReturns_conditionFalse (evm evm0 evm1 : EVM.State)
       ExecBlock config { contract := contract, locals := syncBalanceStore balance0 balance1 } evm1
         (updateReservesStmts (.var "balance0") (.var "balance1"))
         (.ok (syncAfterUpdateFrame balance0 balance1) evm2) := by
-    simpa [updateReservesStmts] using
+    simpa [updateReservesStmts, updateReservesStmtsWith] using
       (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
   have hlock := uniswapLockExitSuffix (hperm := by simpa only [henv2] using hperm1) evm2 (syncAfterUpdateStore balance0 balance1)
     (by simp [syncAfterUpdateStore, syncBalanceStore, uniswapBalanceOfStore])
@@ -668,7 +668,7 @@ theorem uniswapSyncBodyReturns_conditionTrue (evm evm0 evm1 : EVM.State)
       ExecBlock config { contract := contract, locals := syncBalanceStore balance0 balance1 } evm1
         (updateReservesStmts (.var "balance0") (.var "balance1"))
         (.ok (syncAfterUpdateFrame balance0 balance1) evm2) := by
-    simpa [updateReservesStmts] using
+    simpa [updateReservesStmts, updateReservesStmtsWith] using
       (ExecBlock.consNormal hupdateStmt ExecBlock.nil)
   have hlock := uniswapLockExitSuffix (hperm := by simpa only [henv2] using hperm1) evm2 (syncAfterUpdateStore balance0 balance1)
     (by simp [syncAfterUpdateStore, syncBalanceStore, uniswapBalanceOfStore])

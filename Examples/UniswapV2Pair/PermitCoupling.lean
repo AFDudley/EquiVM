@@ -525,8 +525,7 @@ theorem uniswapPermitX_nonceStoredSplit {σ σ₀ A I} {g : Sat256} {sel : UInt2
   refine Or.inl ⟨hperm, ?_⟩
   obtain ⟨_, _, rd5589⟩ := rd5588.sstore hperm (by decide) (by evm_ov)
   exact ⟨_, _, by
-    simpa [permitDomainSeparatorWord, permitNonceWord, permitNonceNextWord,
-      permitAfterNonceAccountMap, codeOwnerStorageWord] using rd5589⟩
+    exact rd5589⟩
 
 theorem uniswapPermitX_nonceStored {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (hperm : I.perm = true)
@@ -680,7 +679,7 @@ theorem uniswapPermitX_ecrecoverStaticcallMade
       (by simp only [List.length_singleton]; omega)
   refine ⟨σ', z, o, A_in, callGas, k, C, ?_, ?_, hoSize⟩
   · simpa [initState, permitEcrecoverInputMem] using hΘ
-  · simpa [permitEcrecoverInputMem, permitEcrecoverStaticcallMem] using rd5814
+  · exact rd5814
 
 theorem uniswapPermitX_ecrecoverStaticcallDepthReverts
     {σ σ₀ A I} {g : Sat256} {sel : UInt256}

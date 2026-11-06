@@ -49,15 +49,14 @@ theorem uniswapDecode_nonces_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = some (noncesStore I) := by
   show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = _
-  simpa [noncesStore, noncesOwnerValue, noncesOwnerWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "owner") hsz36
 
 theorem uniswapDecode_nonces_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (noncesTransition.params.map Param.name)
       (transitionSignature noncesTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["owner"] [legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
+  exact decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "owner")
     hsz4 hshort
 
 /-- The Stele `nonces(address)` body returns `nonces[owner]`. -/
@@ -179,15 +178,13 @@ theorem uniswapNoncesBodyCoreOk
         (.returned { contract := contract, locals := noncesStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (noncesWord σ I).toNat))])) := by
-    simpa [noncesWord, noncesStorageSlot, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapNoncesBodyReturns
+    exact uniswapNoncesBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
   exact (uniswapX_nonces_ok (g := Sat256.ofUInt256 g) hsz36 hsize hreach)
     |>.reEquivExecution hcode hdispatch hdecode hbody
       (returnEquiv_of_encode
-        (by simpa [uint256] using uint256ReturnEncoding (noncesWord σ I)))
+        (by exact uint256ReturnEncoding (noncesWord σ I)))
 
 /-- Short-calldata decode-failure refinement slice for `nonces(address)`.
 

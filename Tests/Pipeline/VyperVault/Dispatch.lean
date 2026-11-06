@@ -344,7 +344,7 @@ theorem vyperVaultReachAvailableBody {σ σ₀ A I} {g : Sat256} {suffix : ByteA
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 7 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket7 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_1270_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨269060821⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_1270_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨269060821⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `setPaused(bool)` (bucket 10, arm entry pc 984). -/
@@ -358,7 +358,7 @@ theorem vyperVaultReachSetPausedBody {σ σ₀ A I} {g : Sat256} {suffix : ByteA
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 10 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket10 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_972_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨381913916⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_972_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨381913916⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `balances(address)` (bucket 8, arm entry pc 1223). -/
@@ -372,8 +372,8 @@ theorem vyperVaultReachBalancesBody {σ σ₀ A I} {g : Sat256} {suffix : ByteAr
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 8 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket8 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := vyperVaultBlocks.vyperVault_block_1211_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨669136355⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := vyperVaultBlocks.vyperVault_block_1211_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨669136355⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `withdraw(uint256)` (bucket 3, arm entry pc 683). -/
@@ -387,7 +387,7 @@ theorem vyperVaultReachWithdrawBody {σ σ₀ A I} {g : Sat256} {suffix : ByteAr
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 3 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket3 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_671_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨773487949⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_671_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨773487949⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `paused()` (bucket 10, arm entry pc 1165). -/
@@ -401,8 +401,8 @@ theorem vyperVaultReachPausedBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArra
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 10 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket10 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨381913916⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := vyperVaultBlocks.vyperVault_block_1153_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨1553423035⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨381913916⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := vyperVaultBlocks.vyperVault_block_1153_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨1553423035⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `totalDeposits()` (bucket 6, arm entry pc 1355). -/
@@ -416,7 +416,7 @@ theorem vyperVaultReachTotalDepositsBody {σ σ₀ A I} {g : Sat256} {suffix : B
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 6 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket6 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_1343_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2106073239⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_1343_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2106073239⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `owner()` (bucket 8, arm entry pc 1193). -/
@@ -430,7 +430,7 @@ theorem vyperVaultReachOwnerBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArray
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 8 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket8 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_1181_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_1181_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨2376452955⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `collectFees()` (bucket 9, arm entry pc 473). -/
@@ -444,8 +444,8 @@ theorem vyperVaultReachCollectFeesBody {σ σ₀ A I} {g : Sat256} {suffix : Byt
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 9 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket9 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3504541104⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
-  have rd2 := vyperVaultBlocks.vyperVault_block_461_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3363399026⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
+  have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3504541104⟩) ≠ ⟨0⟩ by rw [hword]; native_decide)) (by apply D_J_contains_append_left; jump_dest) rd0
+  have rd2 := vyperVaultBlocks.vyperVault_block_461_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3363399026⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd1
   exact ⟨_, _, rd2⟩
 
 /-- Dispatcher path to `deposit()` (bucket 9, arm entry pc 36). -/
@@ -459,7 +459,7 @@ theorem vyperVaultReachDepositBody {σ σ₀ A I} {g : Sat256} {suffix : ByteArr
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 9 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket9 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_24_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨3504541104⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_24_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨3504541104⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Dispatcher path to `feesCollected()` (bucket 5, arm entry pc 1383). -/
@@ -473,7 +473,7 @@ theorem vyperVaultReachFeesCollectedBody {σ σ₀ A I} {g : Sat256} {suffix : B
       (by simpa [vyperVaultSelBytes] using hsel)
   have hm : (solcSelectorWord I).toNat % 11 = 5 := by rw [hword]; native_decide
   obtain ⟨_, _, rd0⟩ := vyperVaultBucket5 hcode hm
-  have rd1 := vyperVaultBlocks.vyperVault_block_1371_fallthrough (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using (show (UInt256.xor (solcSelectorWord I) ⟨4033993562⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
+  have rd1 := vyperVaultBlocks.vyperVault_block_1371_fallthrough (suffix := suffix) (by simp) (by exact (show (UInt256.xor (solcSelectorWord I) ⟨4033993562⟩) = ⟨0⟩ by rw [hword]; native_decide)) rd0
   exact ⟨_, _, rd1⟩
 
 /-- Calldata shorter than a selector: the padded word matches no bucket entry. -/
@@ -494,37 +494,37 @@ theorem vyperVaultX_short {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
     have rd1 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket3 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_671_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨773487949⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_671_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨773487949⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket4 hcode hm
     have rd1 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket5 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1371_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4033993562⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1371_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨4033993562⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket6 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1343_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2106073239⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1343_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2106073239⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket7 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1270_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨269060821⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1270_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨269060821⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket8 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2376452955⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_1211_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨669136355⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨2376452955⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_1211_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨669136355⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket9 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3504541104⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_461_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3363399026⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3504541104⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_461_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨3363399026⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket10 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨381913916⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_1153_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1553423035⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨381913916⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_1153_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_short (sel := ⟨1553423035⟩) hshort (by native_decide))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
 
@@ -547,37 +547,37 @@ theorem vyperVaultX_noMatch {σ σ₀ A I} {g : Sat256} {suffix : ByteArray}
     have rd1 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket3 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_671_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨773487949⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_671_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨773487949⟩) hsz (by native_decide) (hnm 3 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket4 hcode hm
     have rd1 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd0
     exact rd1
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket5 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1371_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4033993562⟩) hsz (by native_decide) (hnm 9 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1371_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨4033993562⟩) hsz (by native_decide) (hnm 9 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket6 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1343_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2106073239⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1343_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2106073239⟩) hsz (by native_decide) (hnm 5 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket7 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1270_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨269060821⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd1 := vyperVaultBlocks.vyperVault_block_1270_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨269060821⟩) hsz (by native_decide) (hnm 0 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
     have rd2 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd1
     exact rd2
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket8 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2376452955⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_1211_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨669136355⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_1181_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨2376452955⟩) hsz (by native_decide) (hnm 6 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_1211_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨669136355⟩) hsz (by native_decide) (hnm 2 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket9 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3504541104⟩) hsz (by native_decide) (hnm 8 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_461_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3363399026⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_24_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3504541104⟩) hsz (by native_decide) (hnm 8 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_461_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨3363399026⟩) hsz (by native_decide) (hnm 7 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
   · obtain ⟨_, _, rd0⟩ := vyperVaultBucket10 hcode hm
-    have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨381913916⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
-    have rd2 := vyperVaultBlocks.vyperVault_block_1153_taken (suffix := suffix) (by simp) (by simpa [solcSelectorWord] using u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1553423035⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
+    have rd1 := vyperVaultBlocks.vyperVault_block_972_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨381913916⟩) hsz (by native_decide) (hnm 1 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd0
+    have rd2 := vyperVaultBlocks.vyperVault_block_1153_taken (suffix := suffix) (by simp) (by exact u256_xor_ne_zero_of_ne (selectorWord_ne_of_selector_false (sel := ⟨1553423035⟩) hsz (by native_decide) (hnm 4 (by omega)))) (by apply D_J_contains_append_left; jump_dest) rd1
     have rd3 := vyperVaultBlocks.vyperVault_block_1399 (suffix := suffix) (by simp) rd2
     exact rd3
 

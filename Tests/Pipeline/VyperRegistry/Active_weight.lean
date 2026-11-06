@@ -356,8 +356,7 @@ theorem registryActive_weightBody {σ σ₀ A I} {g : UInt256} (_hwf : storageWF
     registryDispatch_active_weight (selIs_exclusive (by native_decide) hsel) hsel
   have hdec : config.externalABI.decodeCalldata? (active_weightTransition.params.map Param.name)
       (transitionSignature active_weightTransition).paramTypes I.calldata = some ∅ := by
-    simpa [config, contract, Syntax.contractSyntax, active_weightTransition] using
-      (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
+    exact (decodeCalldataWithMode_empty_ok (mode := DecodeMode.vyper) (cd := I.calldata) hsz)
   by_cases hwv : I.weiValue = ⟨0⟩
   swap
   · have rd1 := registryBlocks.registry_block_268_taken (by simp) (fun h => hwv h) (by jump_dest) rd

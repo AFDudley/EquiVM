@@ -197,8 +197,7 @@ theorem erc20X_noMatch {σ σ₀ A I} {g : Sat256}
   obtain ⟨k3, C3, h3⟩ := solcSelectorLoad h2 (by decide) (by decide) (by decide) (by decide) (by simp)
   have h4 : RD erc20Bytecode I g (initState σ σ₀ g A I) erc20FirstArmPc
       [erc20SelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k3 C3 := by
-    simpa [erc20FirstArmPc, erc20SelWord, solcFirstArmPcFromPrefix, solcSelectorLoadPc,
-      solcCalldataJumpiPc, solcCalldataRevertPushPc, solcDispatchBodyPc] using h3
+    exact h3
   have h5 := h4
     |>.selectorArmNotTakenAuto (erc20ArmsWellFormed 0 (by omega)) (heq0 0 (by omega)) (by simp)
     |>.selectorArmNotTakenAuto (erc20ArmsWellFormed 1 (by omega)) (heq0 1 (by omega)) (by simp)
@@ -209,8 +208,7 @@ theorem erc20X_noMatch {σ σ₀ A I} {g : Sat256}
   have h96 : ∃ k C, RD erc20Bytecode I g (initState σ σ₀ g A I) ⟨96⟩
       [erc20SelWord I] solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ k C := by
     refine ⟨k3 + 5 + 5 + 5 + 5 + 5 + 5, C3 + 22 + 22 + 22 + 22 + 22 + 22, ?_⟩
-    simpa [erc20FirstArmPc, nthArmPc, selArmNextPc, armTgtWidth, selArmJumpiPc,
-      selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using h5
+    exact h5
   obtain ⟨_, _, h96rd⟩ := h96
   exact evm_run h96rd with [
     jumpdest, raw revertStub (by decide) (by decide) (by decide) (by evm_ov) ]
@@ -923,10 +921,10 @@ theorem erc20ConstructorCorrect :
     · exact typedConstructorRefinementFor.outOfGas
         (Xi_error_of_X (g := g) (by
           rw [← hcodeCtor] at hOOG
-          simpa [Sat256.ofUInt256] using hOOG))
+          exact hOOG))
     · have hsuccess := Xi_success_of_X (g := g) (by
         rw [← hcodeCtor] at hX
-        simpa [Sat256.ofUInt256] using hX)
+        exact hX)
       rw [hacc] at hsuccess
       refine typedConstructorRefinementFor.execution hsuccess
         (erc20SteleCtorExecSuccess
@@ -942,8 +940,8 @@ theorem erc20ConstructorCorrect :
       (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
       (g := Sat256.ofUInt256 g) tail hcodeTail hwv
     rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
-    · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-    · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+    · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+    · refine typedConstructorRefinementFor.execution (by exact hrev)
         (erc20SteleCtorExecReverts_nonpayable
           (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
           initialSupply hwv) ?_

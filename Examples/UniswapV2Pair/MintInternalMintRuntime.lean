@@ -24,7 +24,7 @@ theorem uniswapInternalMintRuntimeTotalSupplyAddEntry
   have rd8132 : RD uniswapV2PairBytecode ee g s0 ⟨8132⟩
       (solcSlotWordAt ⟨0⟩ σ ee :: value :: recipient :: ret :: R)
       mem aw rdata σ k8132 C8132 := by
-    simpa [solcSlotWordAt, solcSlotWord] using rd8132₀
+    exact rd8132₀
   have rd8515pre := evm_run rd8132 with [
     push2 ⟨8147⟩, swap1, dup3, push4 ⟨0xffffffff⟩, push2 ⟨8515⟩, and]
   have hpc8515 : UInt256.land (⟨8515⟩ : UInt256) ⟨0xffffffff⟩ = ⟨8515⟩ := by
@@ -245,7 +245,7 @@ theorem mintFunctionPostState_accountMap_eq_of_runtimeMintRecipient
         (mapSlot (UInt256.land recipientWord solcAddrMask) ⟨1⟩)) hafterTotal
     simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, henv, henvAfter, hslotSource, hslotRuntime]
-      using hword.symm
+      using! hword.symm
   have hnewBalance :
       mintFunctionToBalanceNewWord evm recipient liquidity =
         uniswapCodeOwnerStorageWord I
@@ -341,7 +341,7 @@ theorem mintFunctionPostState_accountMap_eq_of_runtimeMint
       hafterTotal
     simpa [mintFunctionToBalanceWord, uniswapCodeOwnerStorageWord, Stele.EVM.storageLoad,
       State.lookupAccount, Account.lookupStorage, henv, henvAfter, hslotSource, hslotRuntime]
-      using hword.symm
+      using! hword.symm
   have hnewBalance :
       mintFunctionToBalanceNewWord evm recipient liquidity =
         uniswapCodeOwnerStorageWord I
@@ -505,7 +505,7 @@ theorem uniswapInternalMintRuntimeRecipientBalanceAddEntry
         value :: recipient :: ret :: R)
       (uniswapInternalMintBalanceHashMem recipient mem) feeToStaticcallActiveWords rdata
       σ k8175 C8175 := by
-    simpa [uniswapCodeOwnerStorageWord, codeOwnerStorageWord] using rd8175₀
+    exact rd8175₀
   have rd8515pre := evm_run rd8175' with [
     push2 ⟨8190⟩, swap1, dup3, push4 ⟨0xffffffff⟩, push2 ⟨8515⟩, and]
   have hpc8515 : UInt256.land (⟨8515⟩ : UInt256) ⟨0xffffffff⟩ = ⟨8515⟩ := by
@@ -570,7 +570,7 @@ theorem uniswapInternalMintRuntimeRecipientBalanceStoredEntry
     (by simp only [List.length_cons]; omega)
   have rd8221 := evm_run rd8218 with [swap5, swap1, swap5]
   obtain ⟨_, _, rd8222⟩ := rd8221.sstore hperm (by native_decide) (by evm_ov)
-  exact ⟨_, _, by simpa [key] using rd8222⟩
+  exact ⟨_, _, by exact rd8222⟩
 
 set_option maxHeartbeats 1000000 in
 /- Runtime-only shared internal `_mint` routine: emit `Transfer(0, recipient, value)` and jump

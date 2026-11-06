@@ -897,7 +897,7 @@ theorem safeTransferRuntimeCallMem2_read292_68
   have h := safeTransferDynamicCallMem2_calldata (base := base) ⟨128⟩ toWord value
     (by omega) (by change 128 - base.size < USize.size; rw [hbase]; exact lt_usize 0 (by omega))
     (by change base.size ≤ 128 + 132; omega) (by native_decide)
-  simpa only [safeTransferDynamicCallMem2_default] using h
+  exact h
 
 theorem safeTransferRuntimeCallMem2_mload64
     {base : ByteArray} (toWord value : UInt256)
@@ -951,8 +951,8 @@ theorem RD.uniswapSafeTransferEntryToCallMade {g : Sat256} {s0 : State}
       (by omega) (by change 128 - base.size < USize.size; rw [hbase]; exact lt_usize 0 (by omega))
       (by decide) (by change base.size ≤ 128 + 228; omega) (by native_decide) (by native_decide) hdepth hR
   refine ⟨σ', z, out, A_in, callGas, ⟨0⟩, k', C', ?_, ?_, houtSize⟩
-  · simpa only [safeTransferDynamicCallMem2_default] using hΘ
-  · simpa only [safeTransferDynamicCallMem2_default, safeTransferDynamicCallWords2_default] using rd6595
+  · exact hΘ
+  · exact rd6595
 
 def safeTransferRuntimeReturnDataRounded (out : ByteArray) : UInt256 :=
   UInt256.land (UInt256.ofNat out.size + ⟨63⟩) (UInt256.lnot ⟨31⟩)

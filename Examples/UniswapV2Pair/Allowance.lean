@@ -88,9 +88,7 @@ theorem uniswapDecode_allowance_ok {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = some (allowanceStore I) := by
   show config.externalABI.decodeCalldata? ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = _
-  simpa [allowanceStore, allowanceOwnerValue, allowanceSpenderValue, allowanceOwnerWord,
-    allowanceSpenderWord, calldataWord]
-    using decodeCalldata_legacyAddress_legacyAddress_ok (cd := I.calldata) (x := "owner")
+  exact decodeCalldata_legacyAddress_legacyAddress_ok (cd := I.calldata) (x := "owner")
       (y := "spender") hsz68
 
 theorem uniswapDecode_allowance_none_short {I : ExecutionEnv}
@@ -98,7 +96,7 @@ theorem uniswapDecode_allowance_none_short {I : ExecutionEnv}
     config.externalABI.decodeCalldata? (allowanceTransition.params.map Param.name)
       (transitionSignature allowanceTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["owner", "spender"] [legacyAddr, legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_legacyAddress_none_short
+  exact decodeCalldata_legacyAddress_legacyAddress_none_short
     (cd := I.calldata) (x := "owner") (y := "spender") hsz4 hshort
 
 /-- The Stele `allowance(address,address)` body returns `allowance[owner][spender]`. -/
@@ -244,15 +242,13 @@ theorem uniswapAllowanceBodyCoreOk
         (.returned { contract := contract, locals := allowanceStore I }
           (initState σ σ₀ (Sat256.ofUInt256 g) A I)
           (some [(.int (Int.ofNat (allowanceWord σ I).toNat))])) := by
-    simpa [allowanceWord, allowanceStorageSlot, initState, Stele.EVM.storageLoad,
-      State.lookupAccount] using
-      uniswapAllowanceBodyReturns
+    exact uniswapAllowanceBodyReturns
         (initState σ σ₀ (Sat256.ofUInt256 g) A I) I
         (by simp only [initState]; exact hwv)
   exact (uniswapX_allowance_ok (g := Sat256.ofUInt256 g) hsz68 hsize hreach)
     |>.reEquivExecution hcode hdispatch hdecode hbody
       (returnEquiv_of_encode
-        (by simpa [uint256] using uint256ReturnEncoding (allowanceWord σ I)))
+        (by exact uint256ReturnEncoding (allowanceWord σ I)))
 
 /-- Short-calldata decode-failure refinement slice for `allowance(address,address)`.
 

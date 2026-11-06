@@ -30,14 +30,12 @@ abbrev pStore (I : ExecutionEnv) : Store := (∅ : Store).insert "sharesOut" (ui
 theorem pDecode_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size) :
     config.externalABI.decodeCalldata? (previewUnwrapTransition.params.map Param.name)
       (transitionSignature previewUnwrapTransition).paramTypes I.calldata = some (pStore I) := by
-  simpa [config, contract, Syntax.contractSyntax, previewUnwrapTransition, pStore, argWord_eq] using
-    decodeMode_uint256_ok "sharesOut" I.calldata hsz36
+  exact decodeMode_uint256_ok "sharesOut" I.calldata hsz36
 
 theorem pDecode_short {I : ExecutionEnv} (hsz : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (previewUnwrapTransition.params.map Param.name)
       (transitionSignature previewUnwrapTransition).paramTypes I.calldata = none := by
-  simpa [config, contract, Syntax.contractSyntax, previewUnwrapTransition] using
-    decodeMode_uint256_none_short "sharesOut" I.calldata hsz hshort
+  exact decodeMode_uint256_none_short "sharesOut" I.calldata hsz hshort
 
 /-- `previewUnwrap(uint256)`: the theorem `Correct.lean` routes selector 3 to. -/
 theorem wrapperPreviewUnwrapBody {σ σ₀ A I} {g : UInt256} (imms : Store) (hfit : immutablesFit contract imms)

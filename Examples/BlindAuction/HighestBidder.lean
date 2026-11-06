@@ -57,7 +57,7 @@ theorem blindAuctionX_highestBidder {σ σ₀ A I} {g : Sat256}
       ∃ k C, RD blindAuctionBytecode I g (initState σ σ₀ g A I) ⟨434⟩
         [highestBidderWord σ I, blindAuctionSelWord I] solcFreePtrMem (UInt256.ofNat 3)
         ByteArray.empty σ k C := by
-    exact ⟨_, _, by simpa [highestBidderWord, initState] using rd434₀⟩
+    exact ⟨_, _, by exact rd434₀⟩
   have rd308 := evm_run rd434 with [
     push2 ⟨308⟩, swap1, push1 ⟨1⟩, push1 ⟨1⟩, push1 ⟨160⟩,
     shl, sub, and, dup2, jump (by jump_dest)]
@@ -150,8 +150,7 @@ theorem blindAuctionHighestBidderBodyCore {σ σ₀ A I}
           (.returned { contract := blindAuctionContract, locals := ∅ }
             (initState σ σ₀ (Sat256.ofUInt256 g) A I)
             (some [(.address (AccountAddress.ofNat (highestBidderReturnWord σ I).toNat))])) := by
-      simpa [highestBidderWord, highestBidderReturnWord, initState, Stele.EVM.storageLoad,
-        State.lookupAccount] using blindAuctionHighestBidderBodyReturns
+      exact blindAuctionHighestBidderBodyReturns
           (initState σ σ₀ (Sat256.ofUInt256 g) A I) ∅
           (by simp only [initState]; exact hwv) (by simp)
     exact (blindAuctionX_highestBidder (g := Sat256.ofUInt256 g) hwv hreach)

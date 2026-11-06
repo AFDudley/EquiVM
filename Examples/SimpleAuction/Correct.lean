@@ -660,7 +660,7 @@ theorem simpleAuctionCtorAssignBeneficiary (evm : EVM.State) (biddingTime : Int)
         decide)
       (hloc := simpleAuctionConfig_storage_beneficiary)
       (hleaf := Or.inl ⟨_, rfl⟩)
-  simpa [simpleAuctionCtorAfterBeneficiaryState, accountAddress_of_addressWord_toNat] using
+  simpa [simpleAuctionCtorAfterBeneficiaryState, accountAddress_of_addressWord_toNat] using!
     storageLocStore_address_offset0 evm ⟨0⟩ (EVM.word beneficiaryAddress)
       (addressWord_canonical_of_address beneficiaryAddress)
 
@@ -847,7 +847,7 @@ theorem simpleAuctionSteleCtorExecReverts_overflow
       (ExecStmt.requireTrue (evalCallvalueEq_true (cfg := simpleAuctionConfig)
       (stele := frame)
       (evm := evm0)
-      (by simpa [initState] using hwv))) ?_
+      (by exact hwv))) ?_
     refine ExecBlock.consNormal (stele' := frame) (evm' := evm1) ?_ ?_
     · exact ExecStmt.assign
         (hperm := Or.inr (by simpa [evm0, initState] using hperm))
@@ -1010,8 +1010,8 @@ theorem simpleAuctionConstructorEquiv_nonpayable
     (σ := σ) (σ₀ := σ₀) (A := A) (I := I)
     (g := Sat256.ofUInt256 g) tail hcodeTail hwv
   rcases hrd.xiResult hcodeTail with hOOG | ⟨g', o, hrev⟩
-  · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-  · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+  · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+  · refine typedConstructorRefinementFor.execution (by exact hrev)
       (simpleAuctionSteleCtorExecReverts_nonpayable
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress hwv) ?_
@@ -1052,8 +1052,8 @@ theorem simpleAuctionConstructorEquiv_overflow
     (g := Sat256.ofUInt256 g) (EVM.word biddingTime.toNat) beneficiaryAddress hcodeCtor
     hperm hwv hover
   rcases hrd.xiResult hcodeCtor with hOOG | ⟨g', o, hrev⟩
-  · exact typedConstructorRefinementFor.outOfGas (by simpa [Sat256.ofUInt256] using hOOG)
-  · refine typedConstructorRefinementFor.execution (by simpa [Sat256.ofUInt256] using hrev)
+  · exact typedConstructorRefinementFor.outOfGas (by exact hOOG)
+  · refine typedConstructorRefinementFor.execution (by exact hrev)
       (simpleAuctionSteleCtorExecReverts_overflow (hperm := by assumption)
         (σ := σ) (σ₀ := σ₀) (g := g) (A := A) (I := I)
         biddingTime beneficiaryAddress h0 hlt hwv hover) ?_
@@ -1097,10 +1097,10 @@ theorem simpleAuctionConstructorEquiv_success
   · exact typedConstructorRefinementFor.outOfGas
       (Xi_error_of_X (g := g) (by
         rw [← hcodeCtor] at hOOG
-        simpa [Sat256.ofUInt256] using hOOG))
+        exact hOOG))
   · have hsuccess := Xi_success_of_X (g := g) (by
       rw [← hcodeCtor] at hX
-      simpa [Sat256.ofUInt256] using hX)
+      exact hX)
     let beneficiaryStoreWordEvm : UInt256 :=
       setAddressOffset0Word
         (σ.get? I.codeOwner |>.option ⟨0⟩ (fun ac => ac.storage.getD ⟨0⟩ ⟨0⟩))

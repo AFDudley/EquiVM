@@ -89,7 +89,7 @@ theorem vyperVaultConstructorCorrect :
         (by simpa using Xi_error_of_X (by rw [← hcodeC] at hoog; exact hoog))
     · have hxi := Xi_success_of_X (by rw [← hcodeC] at hX; exact hX)
       rw [hacc] at hxi
-      exact typedConstructorRefinementFor.execution (by simpa using hxi)
+      exact typedConstructorRefinementFor.execution (by exact hxi)
         (steleCtorExec.intro rfl (by rfl) (by rfl) hbody)
         (ctorResultEquiv.success rfl rfl rfl (by
           show vyperVaultBytecode ++ (UInt256.ofNat I.source.val).toByteArray =

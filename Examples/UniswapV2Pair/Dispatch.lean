@@ -645,8 +645,7 @@ theorem uniswapReachLowSplit {σ σ₀ A I} {g : Sat256}
   have h250 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapLowSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k32 + 5 + 1) (C32 + 22 + 1) := by
-    simpa [uniswapLowSplitPc, uniswapRootSplitPc, armTgt, pushAt] using
-      h249.jumpdest (by decide) (by simp)
+    exact h249.jumpdest (by decide) (by simp)
   exact ⟨_, _, h250⟩
 
 /-- Reach the high-half split from the root split. -/
@@ -665,9 +664,7 @@ theorem uniswapReachHighSplit {σ σ₀ A I} {g : Sat256}
   have h43 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k32 + 5) (C32 + 22) := by
-    simpa [uniswapHighSplitPc, uniswapRootSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h32 uniswapRootSplitWellFormed hroot (by simp)
+    exact RD.selectorSplitNotTakenAuto h32 uniswapRootSplitWellFormed hroot (by simp)
   exact ⟨_, _, h43⟩
 
 /-- Reach the first arm in Uniswap's lowest selector group. -/
@@ -692,8 +689,7 @@ theorem uniswapReachLowestFirstArm {σ σ₀ A I} {g : Sat256}
   have h359 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapLowestFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k250 + 5 + 1) (C250 + 22 + 1) := by
-    simpa [uniswapLowestFirstArmPc, uniswapLowestJumpdestPc, uniswapLowSplitPc, armTgt, pushAt]
-      using h358.jumpdest (by decide) (by simp)
+    exact h358.jumpdest (by decide) (by simp)
   exact ⟨_, _, h359⟩
 
 /-- Reach the first arm in Uniswap's middle-low selector group. -/
@@ -715,9 +711,7 @@ theorem uniswapReachMidLowFirstArm {σ σ₀ A I} {g : Sat256}
   have h261 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapMidLowSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k250 + 5) (C250 + 22) := by
-    simpa [uniswapMidLowSplitPc, uniswapLowSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h250 uniswapLowSplitWellFormed hlow (by simp)
+    exact RD.selectorSplitNotTakenAuto h250 uniswapLowSplitWellFormed hlow (by simp)
   have h320 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       (armTgt uniswapV2PairBytecode uniswapMidLowSplitPc) [uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ (k250 + 5 + 5)
@@ -726,8 +720,7 @@ theorem uniswapReachMidLowFirstArm {σ σ₀ A I} {g : Sat256}
   have h321 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapMidLowFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k250 + 5 + 5 + 1) (C250 + 22 + 22 + 1) := by
-    simpa [uniswapMidLowFirstArmPc, uniswapMidLowJumpdestPc, uniswapMidLowSplitPc, armTgt, pushAt]
-      using h320.jumpdest (by decide) (by simp)
+    exact h320.jumpdest (by decide) (by simp)
   exact ⟨_, _, h321⟩
 
 /-- Reach the first arm in Uniswap's low-upper selector group. -/
@@ -750,14 +743,12 @@ theorem uniswapReachLowUpperFirstArm {σ σ₀ A I} {g : Sat256}
   have h261 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapMidLowSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k250 + 5) (C250 + 22) := by
-    simpa [uniswapMidLowSplitPc, uniswapLowSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h250 uniswapLowSplitWellFormed hlow (by simp)
+    exact RD.selectorSplitNotTakenAuto h250 uniswapLowSplitWellFormed hlow (by simp)
   have h272 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapLowUpperFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k250 + 5 + 5) (C250 + 22 + 22) := by
     simpa [uniswapLowUpperFirstArmPc, uniswapMidLowSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
+      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using!
       RD.selectorSplitNotTakenAuto h261 uniswapMidLowSplitWellFormed hmidLow (by simp)
   exact ⟨_, _, h272⟩
 
@@ -783,14 +774,12 @@ theorem uniswapReachHighUpperFirstArm {σ σ₀ A I} {g : Sat256}
   have h54 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighMidSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k43 + 5) (C43 + 22) := by
-    simpa [uniswapHighMidSplitPc, uniswapHighSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h43 uniswapHighSplitWellFormed hhigh (by simp)
+    exact RD.selectorSplitNotTakenAuto h43 uniswapHighSplitWellFormed hhigh (by simp)
   have h65 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighUpperFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k43 + 5 + 5) (C43 + 22 + 22) := by
     simpa [uniswapHighUpperFirstArmPc, uniswapHighMidSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
+      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using!
       RD.selectorSplitNotTakenAuto h54 uniswapHighMidSplitWellFormed hhighMid (by simp)
   exact ⟨_, _, h65⟩
 
@@ -816,9 +805,7 @@ theorem uniswapReachHighMiddleFirstArm {σ σ₀ A I} {g : Sat256}
   have h54 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighMidSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k43 + 5) (C43 + 22) := by
-    simpa [uniswapHighMidSplitPc, uniswapHighSplitPc, selArmNextPc, armTgtWidth,
-      selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h43 uniswapHighSplitWellFormed hhigh (by simp)
+    exact RD.selectorSplitNotTakenAuto h43 uniswapHighSplitWellFormed hhigh (by simp)
   have h113 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       (armTgt uniswapV2PairBytecode uniswapHighMidSplitPc) [uniswapSelWord I]
       solcFreePtrMem (UInt256.ofNat 3) ByteArray.empty σ (k43 + 5 + 5)
@@ -827,8 +814,7 @@ theorem uniswapReachHighMiddleFirstArm {σ σ₀ A I} {g : Sat256}
   have h114 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighMiddleFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k43 + 5 + 5 + 1) (C43 + 22 + 22 + 1) := by
-    simpa [uniswapHighMiddleFirstArmPc, uniswapHighMiddleJumpdestPc, uniswapHighMidSplitPc,
-      armTgt, pushAt] using h113.jumpdest (by decide) (by simp)
+    exact h113.jumpdest (by decide) (by simp)
   exact ⟨_, _, h114⟩
 
 /-- Reach the high-lower split in Uniswap's high selector branch. -/
@@ -854,8 +840,7 @@ theorem uniswapReachHighLowerSplit {σ σ₀ A I} {g : Sat256}
   have h152 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighLowerSplitPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k43 + 5 + 1) (C43 + 22 + 1) := by
-    simpa [uniswapHighLowerSplitPc, uniswapHighLowerJumpdestPc, uniswapHighSplitPc, armTgt,
-      pushAt] using h151.jumpdest (by decide) (by simp)
+    exact h151.jumpdest (by decide) (by simp)
   exact ⟨_, _, h152⟩
 
 /-- Reach the first arm in Uniswap's high-lower selector group. -/
@@ -880,9 +865,7 @@ theorem uniswapReachHighLowerFirstArm {σ σ₀ A I} {g : Sat256}
   have h163 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighLowerFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k152 + 5) (C152 + 22) := by
-    simpa [uniswapHighLowerFirstArmPc, uniswapHighLowerSplitPc, selArmNextPc,
-      armTgtWidth, selArmJumpiPc, selArmPushTgtPc, selArmEqPc, selArmPush4Pc] using
-      RD.selectorSplitNotTakenAuto h152 uniswapHighLowerSplitWellFormed hlower (by simp)
+    exact RD.selectorSplitNotTakenAuto h152 uniswapHighLowerSplitWellFormed hlower (by simp)
   exact ⟨_, _, h163⟩
 
 /-- Reach the first arm in Uniswap's high-lowest selector group. -/
@@ -911,8 +894,7 @@ theorem uniswapReachHighLowestFirstArm {σ σ₀ A I} {g : Sat256}
   have h212 : RD uniswapV2PairBytecode I g (initState σ σ₀ g A I)
       uniswapHighLowestFirstArmPc [uniswapSelWord I] solcFreePtrMem (UInt256.ofNat 3)
       ByteArray.empty σ (k152 + 5 + 1) (C152 + 22 + 1) := by
-    simpa [uniswapHighLowestFirstArmPc, uniswapHighLowestJumpdestPc, uniswapHighLowerSplitPc,
-      armTgt, pushAt] using h211.jumpdest (by decide) (by simp)
+    exact h211.jumpdest (by decide) (by simp)
   exact ⟨_, _, h212⟩
 
 theorem uniswapJumpToNoMatchRevert {σ σ₀ A I} {g : Sat256}

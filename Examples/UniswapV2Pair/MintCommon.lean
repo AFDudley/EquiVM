@@ -49,15 +49,14 @@ theorem uniswapDecode_mint_ok {I : ExecutionEnv} (hsz36 : 36 ≤ I.calldata.size
     config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = some (mintStore I) := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = _
-  simpa [mintStore, mintToValue, mintToWord, calldataWord]
-    using decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
+  exact decodeCalldata_legacyAddress_ok (cd := I.calldata) (x := "to") hsz36
 
 theorem uniswapDecode_mint_none_short {I : ExecutionEnv}
     (hsz4 : 4 ≤ I.calldata.size) (hshort : I.calldata.size < 36) :
     config.externalABI.decodeCalldata? (mintTransition.params.map Param.name)
       (transitionSignature mintTransition).paramTypes I.calldata = none := by
   show config.externalABI.decodeCalldata? ["to"] [legacyAddr] I.calldata = none
-  simpa using decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
+  exact decodeCalldata_legacyAddress_none_short (cd := I.calldata) (x := "to")
     hsz4 hshort
 
 theorem mintStore_to (I : ExecutionEnv) :
@@ -243,6 +242,7 @@ theorem uniswapMintFeeToTypedCall_source_of_mem
       uniswapAddressAtSlot evm1S ⟨5⟩
     ext
     simp [EVM.uintN, EVM.twoPow, AccountAddress.size]
+    exact Fin.isLt _
   let target : EVM.Address := EVM.address (uniswapAddressAtSlot evm1S ⟨5⟩)
   have hdepthS : evm1S.executionEnv.depth.val < 1024 := by
     simpa [henv] using hdepth
@@ -474,7 +474,7 @@ theorem mintFeeFactoryGuardFalse_of_noCode {σ : AccountMap}
       simpa [u256_land_comm] using hcodeEvm
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, factoryWordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hcodeEvmRight
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hcodeEvmRight
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm.lookupAccount (uniswapAddressAtSlot evm ⟨5⟩)).option 0
@@ -529,7 +529,7 @@ theorem mintFeeFactoryGuardTrue_of_code {σ : AccountMap}
     apply hcodeEvmRight
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, factoryWordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hzero
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hzero
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm.lookupAccount (uniswapAddressAtSlot evm ⟨5⟩)).option 0
@@ -660,7 +660,7 @@ theorem uniswapMintX_lockEntered {σ σ₀ A I} {g : Sat256} {sel : UInt256}
     (R := [⟨0⟩, mintToMaskedWord I, ⟨861⟩, sel])
     rd3286 uniswap_lock_enter_body_ok_wf hperm hunlocked (by jump_dest)
       (by simp only [List.length_cons, List.length_nil]; omega)
-  exact ⟨_, _, by simpa using rd3368⟩
+  exact ⟨_, _, by exact rd3368⟩
 
 /-- In a static call, `mint(address)` halts at the lock-entry `SSTORE`. -/
 theorem uniswapMintX_lockEnteredStatic {σ σ₀ A I} {g : Sat256} {sel : UInt256}
@@ -807,7 +807,7 @@ theorem mintToken0GuardTrue_initState_of_code
       storageStore_accountMap, storageStore_executionEnv, State.lookupAccount, Stele.EVM.storageLoad,
       Account.lookupStorage, uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord,
         σLockS,
-      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using hzero
+      token0WordS, accountAddress_ofUInt256_eq_ofNat_toNat] using! hzero
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evmL.lookupAccount (uniswapAddressAtSlot evmL ⟨6⟩)).option 0
@@ -875,7 +875,7 @@ theorem mintToken1GuardFalse_of_noCode {σ : AccountMap}
       simpa [u256_land_comm] using hcodeEvm
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, token1WordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hcodeEvmRight
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hcodeEvmRight
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm0.lookupAccount (uniswapAddressAtSlot evm0 ⟨7⟩)).option 0
@@ -937,7 +937,7 @@ theorem mintToken1GuardTrue_of_code {σ : AccountMap}
     apply hcodeEvmRight
     simpa [State.lookupAccount, Stele.EVM.storageLoad, Account.lookupStorage,
       uniswapAddressAtSlot, extCodeSizeWord, solcSlotWordAt, solcSlotWord, token1WordE,
-      accountAddress_ofUInt256_eq_ofNat_toNat] using hzero
+      accountAddress_ofUInt256_eq_ofNat_toNat] using! hzero
   have hcodeSourceWord :
       EVM.Word.ofNat
           ((evm0.lookupAccount (uniswapAddressAtSlot evm0 ⟨7⟩)).option 0
