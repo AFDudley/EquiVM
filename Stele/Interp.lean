@@ -237,22 +237,56 @@ sizes evaluate beyond `allocationCap` end in `unsupported`. -/
 
 def allocationCap : Nat := 2 ^ 20
 
+/-- The index expressions of a storage reference. -/
+def allocationSizes.refExprs (ref : StorageRef) : List Expr :=
+  ref.steps.filterMap fun | .mindex e | .aindex e => some e | .field _ => none
+
+/-! The definitions below are total (structural recursion), not `partial`. A `partial def` is
+opaque to the logic, so no theorem could prove the result of `oversizedAllocation`, and so no
+theorem could prove the result of `execStmt`. -/
+
+mutual
+
 /-- The size expressions of the allocations in an expression. -/
-partial def allocationSizes : Expr → List Expr
+def allocationSizes : Expr → List Expr
   | .newBytes n => n :: allocationSizes n
   | .newArray _ n => n :: allocationSizes n
   | .tupleGet e _ | .field e _ | .inRange _ e | .cast e _ | .addrOf e | .unary _ e | .keccak256 e
   | .abiDecode _ e | .extCodeSize e | .blockhash e | .balanceOf e | .extCodeHash e => allocationSizes e
-  | .structLit _ fields => fields.flatMap fun (_, e) => allocationSizes e
-  | .arrayLit es | .tupleLit es | .abiEncodeCall _ es => es.flatMap allocationSizes
-  | .abiEncodePacked es => es.flatMap fun (_, e) => allocationSizes e
+  | .structLit _ fields => allocationSizes.fields fields
+  | .arrayLit es | .tupleLit es | .abiEncodeCall _ es => allocationSizes.list es
+  | .abiEncodePacked es => allocationSizes.typed es
   | .bytesSlice a b c | .ite a b c => allocationSizes a ++ allocationSizes b ++ allocationSizes c
   | .binary _ a b | .index a b | .extCodePrefix a b => allocationSizes a ++ allocationSizes b
-  | .storage ref | .transient ref | .arrayLength _ ref => refExprs ref |>.flatMap allocationSizes
+  | .storage ref | .transient ref | .arrayLength _ ref => allocationSizes.ref ref
   | _ => []
-where
-  refExprs (ref : StorageRef) : List Expr :=
-    ref.steps.filterMap fun | .mindex e | .aindex e => some e | .field _ => none
+
+/-- `es.flatMap allocationSizes`. -/
+def allocationSizes.list : List Expr → List Expr
+  | [] => []
+  | e :: es => allocationSizes e ++ allocationSizes.list es
+
+/-- `fields.flatMap fun (_, e) => allocationSizes e`. -/
+def allocationSizes.fields : List (Ident × Expr) → List Expr
+  | [] => []
+  | (_, e) :: fields => allocationSizes e ++ allocationSizes.fields fields
+
+/-- `es.flatMap fun (_, e) => allocationSizes e`. -/
+def allocationSizes.typed : List (ABIType × Expr) → List Expr
+  | [] => []
+  | (_, e) :: es => allocationSizes e ++ allocationSizes.typed es
+
+/-- `(allocationSizes.refExprs ref).flatMap allocationSizes`. -/
+def allocationSizes.ref : StorageRef → List Expr
+  | ⟨_, steps⟩ => allocationSizes.steps steps
+
+/-- The allocations in the index expressions of storage-reference steps. -/
+def allocationSizes.steps : List StorageRefStep → List Expr
+  | [] => []
+  | .mindex e :: steps | .aindex e :: steps => allocationSizes e ++ allocationSizes.steps steps
+  | .field _ :: steps => allocationSizes.steps steps
+
+end
 
 /-- The expressions a statement evaluates itself (nested blocks are checked when they run). -/
 def stmtExprs : Stmt → List Expr
