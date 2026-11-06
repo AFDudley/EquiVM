@@ -3403,7 +3403,8 @@ theorem u256_xor_ne_zero_of_ne {a b : UInt256} (h : a ≠ b) :
             rwa [Nat.mod_eq_of_lt hlt] at hxv'
           exact Nat.xor_eq_zero_iff.mp hx0
 
-theorem u256_lor_ne_zero_right {a b : UInt256} (hb : b ≠ ⟨0⟩) : UInt256.lor a b ≠ ⟨0⟩ := by
+theorem u256_lor_ne_zero_right {a b : UInt256} (hb : b ≠ ⟨0⟩) :
+    UInt256.lor a b ≠ ⟨0⟩ := by
   intro hzero
   have ha_nat : a.toNat < 2 ^ 256 := by simpa [UInt256.toNat, UInt256.size] using a.val.isLt
   have hb_nat : b.toNat < 2 ^ 256 := by simpa [UInt256.toNat, UInt256.size] using b.val.isLt
